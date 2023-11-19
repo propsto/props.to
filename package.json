@@ -14,6 +14,10 @@
     "tsconfig": "workspace:*",
     "turbo": "latest"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "packageManager": "pnpm@8.10.0",
   "author": "Leo <leo@props.to>",
   "name": "props.to"
