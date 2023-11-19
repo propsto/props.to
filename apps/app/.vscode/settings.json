@@ -1,0 +1,42 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "actionButtons": {
+    "commands": [
+      {
+        "name": "dx",
+        "color": "skyblue",
+        "singleInstance": true,
+        "command": "pnpm dx"
+      },
+      {
+        "name": "ts:check",
+        "color": "limegreen",
+        "singleInstance": true,
+        "command": "pnpm ts:check"
+      },
+      {
+        "name": "db-studio",
+        "color": "yellow",
+        "singleInstance": true,
+        "command": "pnpm db-studio"
+      },
+      {
+        "name": "db-reset",
+        "color": "pink",
+        "singleInstance": true,
+        "command": "pnpm db-reset"
+      }
+    ],
+    "defaultColor": "white",
+    "reloadButton": "↻",
+    "loadNpmCommands": false
+  }
+}
