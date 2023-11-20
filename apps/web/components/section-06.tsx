@@ -2,15 +2,14 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import Testimonial01 from "@public/images/testimonial-01.jpg";
-import TestimonialSign01 from "@public/images/testimonial-sign-01.svg";
-import Testimonial02 from "@public/images/testimonial-02.jpg";
-import TestimonialSign02 from "@public/images/testimonial-sign-02.svg";
+import Testimonial01 from "@/public/images/testimonial-01.jpg";
+import TestimonialSign01 from "@/public/images/testimonial-sign-01.svg";
+import Testimonial02 from "@/public/images/testimonial-02.jpg";
+import TestimonialSign02 from "@/public/images/testimonial-sign-02.svg";
 
 // Import Swiper
-import Swiper from "swiper";
-import { Pagination, EffectFade } from "swiper/modules";
-import "swiper/css";
+import Swiper, { Pagination, EffectFade } from "swiper";
+import "swiper/swiper.min.css";
 import "swiper/css/effect-fade";
 import "swiper/css/pagination";
 Swiper.use([Pagination, EffectFade]);

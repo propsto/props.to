@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import Illustration from "@public/images/hero-illustration.svg";
-import HeroImage from "@public/images/hero-image.png";
+import Illustration from "@/public/images/hero-illustration.svg";
+import HeroImage from "@/public/images/hero-image.png";
 
 export default function Hero() {
   return (

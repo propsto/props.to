@@ -1,6 +1,6 @@
 import Image from "next/image";
-import LogosIllustration from "@public/images/logos-illustration.svg";
-import Logos from "@public/images/logos.png";
+import LogosIllustration from "@/public/images/logos-illustration.svg";
+import Logos from "@/public/images/logos.png";
 
 export default function Section05() {
   return (

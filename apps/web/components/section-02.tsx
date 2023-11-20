@@ -1,7 +1,7 @@
 import Image from "next/image";
-import QuoteAuthor from "@public/images/quote-author-01.jpg";
-import CardsIllustration from "@public/images/cards-illustration.svg";
-import Features from "@public/images/features-02.png";
+import QuoteAuthor from "@/public/images/quote-author-01.jpg";
+import CardsIllustration from "@/public/images/cards-illustration.svg";
+import Features from "@/public/images/features-02.png";
 
 export default function Section02() {
   return (

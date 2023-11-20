@@ -5,27 +5,27 @@ import localFont from "next/font/local";
 const aspekta = localFont({
   src: [
     {
-      path: "../../public/fonts/Aspekta-350.woff2",
+      path: "../public/fonts/Aspekta-350.woff2",
       weight: "350",
     },
     {
-      path: "../../public/fonts/Aspekta-400.woff2",
+      path: "../public/fonts/Aspekta-400.woff2",
       weight: "400",
     },
     {
-      path: "../../public/fonts/Aspekta-450.woff2",
+      path: "../public/fonts/Aspekta-450.woff2",
       weight: "450",
     },
     {
-      path: "../../public/fonts/Aspekta-500.woff2",
+      path: "../public/fonts/Aspekta-500.woff2",
       weight: "500",
     },
     {
-      path: "../../public/fonts/Aspekta-550.woff2",
+      path: "../public/fonts/Aspekta-550.woff2",
       weight: "550",
     },
     {
-      path: "../../public/fonts/Aspekta-700.woff2",
+      path: "../public/fonts/Aspekta-700.woff2",
       weight: "700",
     },
   ],

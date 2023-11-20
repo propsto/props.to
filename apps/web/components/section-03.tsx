@@ -1,6 +1,6 @@
 import Image from "next/image";
-import QuoteAuthor from "@public/images/quote-author-02.jpg";
-import Features from "@public/images/features-03.png";
+import QuoteAuthor from "@/public/images/quote-author-02.jpg";
+import Features from "@/public/images/features-03.png";
 
 export default function Section03() {
   return (

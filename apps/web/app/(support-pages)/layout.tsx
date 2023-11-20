@@ -4,7 +4,7 @@ import Image from "next/image";
 import AppProvider from "../app-provider";
 import SupportHeader from "./header";
 import SupportSidebar from "./sidebar";
-import Illustration from "@public/images/support-illustration.svg";
+import Illustration from "@/public/images/support-illustration.svg";
 
 export default function SupportLayout({
   children,

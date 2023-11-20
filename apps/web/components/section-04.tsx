@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Features from "@public/images/features-04.png";
+import Features from "@/public/images/features-04.png";
 
 export default function Section04() {
   return (

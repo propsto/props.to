@@ -1,17 +1,13 @@
 {
   "name": "web",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.1.0",
   "packageManager": "pnpm@8.10.0",
+  "private": true,
   "scripts": {
-    "dev": "PORT=3001 next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "ts:check": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "validate": "pnpm ts:check && pnpm format:check"
+    "lint": "next lint"
   },
   "dependencies": {
     "@builder.io/react": "^3.1.1",
@@ -20,31 +16,25 @@
     "@types/react": "^18.2.24",
     "@types/react-dom": "^18.2.9",
     "aos": "^3.0.0-beta.6",
-    "contentlayer": "^0.3.4",
+    "contentlayer": "^0.3.2",
     "next": "^14.0.2",
     "next-contentlayer": "^0.3.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "swiper": "^11.0.4",
+    "swiper": "^8.4.7",
     "typescript": "^5.2.2"
   },
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/typography": "^0.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
     "@types/aos": "^3.0.5",
     "autoprefixer": "^10.4.16",
-    "@types/eslint": "^8.44.7",
-    "eslint": "^8.54.0",
-    "eslint-config-custom": "workspace:*",
     "postcss": "^8.4.23",
-    "prettier": "^3.1.0",
-    "prettier-plugin-tailwindcss": "^0.5.7",
-    "tailwindcss": "^3.3.5"
+    "prettier": "^3.0.3",
+    "tailwindcss": "^3.3.3"
   },
   "main": "index.js",
+  "repository": "git@github.com:propsto/website.git",
   "author": "Alan <alannnc@gmail.com>",
   "license": "MIT"
 }

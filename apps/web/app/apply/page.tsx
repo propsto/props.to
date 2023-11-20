@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import Illustration from "@public/images/hero-illustration.svg";
-import LogoFacebook from "@public/images/logo-facebook.svg";
-import LogoNike from "@public/images/logo-nike.svg";
-import LogoSamsung from "@public/images/logo-samsung.svg";
-import LogoDisney from "@public/images/logo-disney.svg";
+import Illustration from "@/public/images/hero-illustration.svg";
+import LogoFacebook from "@/public/images/logo-facebook.svg";
+import LogoNike from "@/public/images/logo-nike.svg";
+import LogoSamsung from "@/public/images/logo-samsung.svg";
+import LogoDisney from "@/public/images/logo-disney.svg";
 
 export const metadata = {
   title: "Apply - FinTech",
