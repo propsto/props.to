@@ -1,14 +1,15 @@
 import type { GetServerSidePropsContext } from "next";
+import { env } from "../env.mjs";
+import { prisma } from "../server/db";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import {
-  getServerSession,
   type DefaultSession,
   type NextAuthOptions,
+  getServerSession,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-
-import { env } from "@/env.mjs";
-import { prisma } from "@/server/db";
+import EmailProvider from "next-auth/providers/email";
+import GoogleProvider from "next-auth/providers/google";
 
 /**
  * Module augmentation for `next-auth` types.
@@ -50,11 +51,25 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  pages: {
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    newUser: "/auth/signup",
+    error: "/auth/error",
+  },
   adapter: PrismaAdapter(prisma),
   providers: [
+    EmailProvider({
+      server: env.EMAIL_SERVER,
+      from: env.EMAIL_FROM,
+    }),
     DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+      clientId: env.DISCORD_CLIENT_ID || "",
+      clientSecret: env.DISCORD_CLIENT_SECRET || "",
+    }),
+    GoogleProvider({
+      clientId: env.GOOGLE_CLIENT_ID || "",
+      clientSecret: env.GOOGLE_CLIENT_SECRET || "",
     }),
     /**
      * ...add more providers here
