@@ -8,7 +8,7 @@ export default function Hero() {
     <section className="relative">
       {/* Bg */}
       <div
-        className="absolute inset-0 rounded-bl-[100px] mb-28 md:mb-0 bg-gradient-to-tr from-blue-600 to-blue-500 pointer-events-none -z-10"
+        className="absolute inset-0 rounded-bl-[100px] mb-28 md:mb-0 bg-gradient-to-tr from-gray-700 to-black pointer-events-none -z-10"
         aria-hidden="true"
       />
 
@@ -25,8 +25,8 @@ export default function Hero() {
                 data-aos-delay="100"
               >
                 Compliments that Connect{" "}
-                <span className="relative inline-flex items-center justify-center">
-                  <svg
+                <span className="relative inline-flex items-center justify-center grayscale">
+                  {/* <svg
                     className="absolute -z-10"
                     width="246"
                     height="76"
@@ -37,7 +37,7 @@ export default function Hero() {
                       fill="#2DD4BF"
                       fillRule="nonzero"
                     />
-                  </svg>
+                  </svg> */}
                   Teams
                 </span>
               </h1>
@@ -64,7 +64,7 @@ export default function Hero() {
                     href="/apply"
                   >
                     Try it out
-                    <span className="tracking-normal text-sky-400 group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-2">
+                    <span className="tracking-normal text-white group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-2">
                       <svg
                         className="fill-current"
                         width="12"
@@ -78,7 +78,7 @@ export default function Hero() {
                 </div>
                 <div>
                   <Link
-                    className="btn-sm w-full inline-flex items-center text-white bg-gradient-to-tr from-blue-400 hover:bg-blue-500 shadow-sm relative before:absolute before:inset-0 before:bg-blue-400 before:bg-opacity-60 before:-z-10 before:rounded-full"
+                    className="btn-sm w-full inline-flex items-center text-white bg-gradient-to-tr from-gray-400 hover:bg-gray-500 shadow-sm relative before:absolute before:inset-0 before:bg-gray-400 before:bg-opacity-60 before:-z-10 before:rounded-full"
                     href="/support/welcome/installation"
                   >
                     Read more
@@ -91,7 +91,7 @@ export default function Hero() {
             <div className="max-w-sm mx-auto md:max-w-none md:absolute md:left-[600px] md:top-0 -mb-12 md:-mt-12 md:mb-0">
               <div className="relative -ml-3 -mr-24 md:mx-0">
                 <Image
-                  className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 mt-16 md:mt-0 pointer-events-none -z-10 max-w-none mix-blend-lighten"
+                  className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 mt-16 md:mt-0 pointer-events-none -z-10 max-w-none mix-blend-lighten hue-rotate-60"
                   src={Illustration}
                   priority
                   alt="Hero illustration"

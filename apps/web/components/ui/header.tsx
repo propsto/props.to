@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Header() {
@@ -9,22 +10,12 @@ export default function Header() {
           <div className="shrink-0 mr-4">
             {/* Logo */}
             <Link className="block" href="/" aria-label="Cruip">
-              <svg width="30" height="30" xmlns="http://www.w3.org/2000/svg">
-                <g fillRule="nonzero" fill="none">
-                  <g className="fill-blue-50" transform="translate(3 3)">
-                    <circle cx="5" cy="5" r="5" />
-                    <circle cx="19" cy="5" r="5" />
-                    <circle cx="5" cy="19" r="5" />
-                    <circle cx="19" cy="19" r="5" />
-                  </g>
-                  <g className="fill-sky-300">
-                    <circle cx="15" cy="5" r="5" />
-                    <circle cx="25" cy="15" r="5" />
-                    <circle cx="15" cy="25" r="5" />
-                    <circle cx="5" cy="15" r="5" />
-                  </g>
-                </g>
-              </svg>
+              <Image
+                width={200}
+                height={100}
+                src="/props.to.icon.letters.png"
+                alt="Logo"
+              />
             </Link>
           </div>
 
@@ -40,7 +31,7 @@ export default function Header() {
                   }
                 >
                   Get onboard
-                  <span className="tracking-normal text-sky-400 group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-2">
+                  <span className="tracking-normal text-white group-hover:translate-x-0.5 transition-transform duration-150 ease-in-out ml-2">
                     <svg
                       className="fill-current"
                       width="12"
