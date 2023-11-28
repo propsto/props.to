@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Home - Props to",
-  description: "Page description",
+  description: "Team appraisal and engagement platform",
 };
 
 import Hero from "@/components/hero";
