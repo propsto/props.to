@@ -1,3 +1,20 @@
+import { Inter, Inter_Tight } from "next/font/google";
+import "@/styles/globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const inter_tight = Inter_Tight({
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
 export default function AuthLayout({
   children,
 }: {

@@ -9,7 +9,7 @@ export default function Login() {
   return (
     <>
       {/* Page header */}
-      <div className="mx-auto max-w-3xl pb-12 text-center md:pb-16">
+      <div className="mx-auto max-w-3xl pb-8 text-center md:pb-16">
         <h1 className="font-inter-tight bg-gradient-to-r from-zinc-500 via-zinc-900 to-zinc-900 bg-clip-text text-4xl font-bold text-transparent md:text-5xl">
           Log in to Props.to
         </h1>

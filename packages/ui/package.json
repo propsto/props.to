@@ -10,12 +10,12 @@
   },
   "devDependencies": {
     "@turbo/gen": "^1.10.12",
-    "@types/node": "^20.5.2",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "eslint-config-custom": "workspace:*",
-    "react": "^18.2.0",
-    "tsconfig": "workspace:*",
+    "@types/node": "^20.8.2",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.9",
+    "eslint-config-custom": "0.0.0",
+    "react": "18.2.0",
+    "tsconfig": "0.0.0",
     "typescript": "^5.2.2"
   }
 }

@@ -8,18 +8,18 @@
     "validate": "turbo run validate",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
-  "devDependencies": {
-    "eslint": "^8.48.0",
-    "prettier": "^3.0.3",
-    "husky": "^8.0.3",
-    "tsconfig": "workspace:*",
-    "turbo": "latest"
-  },
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "packageManager": "pnpm@8.10.0",
   "author": "Leo <leo@props.to>",
-  "name": "props.to"
+  "name": "props.to",
+  "dependencies": {
+    "eslint": "^8.54.0",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.0",
+    "tsconfig": "workspace:*",
+    "turbo": "latest"
+  }
 }

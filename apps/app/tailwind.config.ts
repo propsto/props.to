@@ -9,6 +9,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
+        inter: ["var(--font-inter)", "sans-serif"],
+        "inter-tight": ["var(--font-inter-tight)", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -26,5 +28,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
 } satisfies Config;
