@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@propsto/tsconfig':
+        specifier: workspace:*
+        version: link:packages/tsconfig
       eslint:
         specifier: ^8.54.0
         version: 8.55.0
@@ -17,9 +20,6 @@ importers:
       prettier:
         specifier: ^3.1.0
         version: 3.1.0
-      tsconfig:
-        specifier: workspace:*
-        version: link:packages/tsconfig
       turbo:
         specifier: latest
         version: 1.10.16
@@ -37,7 +37,7 @@ importers:
         version: 1.0.7(@prisma/client@5.6.0)(next-auth@4.24.5)
       '@prisma/client':
         specifier: ^5.6.0
-        version: 5.6.0(prisma@packages+prisma)
+        version: 5.6.0(prisma@5.6.0)
       '@radix-ui/react-avatar':
         specifier: ^1.0.4
         version: 1.0.4(@types/react-dom@18.2.17)(@types/react@18.2.40)(react-dom@18.2.0)(react@18.2.0)
@@ -111,6 +111,15 @@ importers:
       '@prisma/nextjs-monorepo-workaround-plugin':
         specifier: ^5.6.0
         version: 5.6.0
+      '@propsto/eslint-config-custom':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config-custom
+      '@propsto/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
+      '@propsto/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       '@tailwindcss/forms':
         specifier: ^0.5.6
         version: 0.5.7(tailwindcss@3.3.5)
@@ -141,9 +150,6 @@ importers:
       eslint:
         specifier: ^8.54.0
         version: 8.55.0
-      eslint-config-custom:
-        specifier: workspace:*
-        version: link:../../packages/eslint-config-custom
       postcss:
         specifier: ^8.4.23
         version: 8.4.31
@@ -153,9 +159,6 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.5.7
         version: 0.5.7(@trivago/prettier-plugin-sort-imports@4.3.0)(prettier@3.1.0)
-      prisma:
-        specifier: workspace:*
-        version: link:../../packages/prisma
       start-server-and-test:
         specifier: ^2.0.0
         version: 2.0.3
@@ -165,9 +168,6 @@ importers:
       ts-node:
         specifier: ^10.9.1
         version: 10.9.1(@types/node@20.10.2)(typescript@5.3.2)
-      tsconfig:
-        specifier: workspace:*
-        version: link:../../packages/tsconfig
       typescript:
         specifier: ^5.2.2
         version: 5.3.2
@@ -253,6 +253,12 @@ importers:
 
   packages/ui:
     devDependencies:
+      '@propsto/eslint-config-custom':
+        specifier: workspace:*
+        version: link:../eslint-config-custom
+      '@propsto/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
       '@turbo/gen':
         specifier: ^1.10.12
         version: 1.10.16(@types/node@20.10.2)(typescript@5.3.2)
@@ -265,15 +271,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.9
         version: 18.2.17
-      eslint-config-custom:
-        specifier: 0.0.0
-        version: link:../eslint-config-custom
       react:
         specifier: 18.2.0
         version: 18.2.0
-      tsconfig:
-        specifier: 0.0.0
-        version: link:../tsconfig
       typescript:
         specifier: ^5.2.2
         version: 5.3.2
@@ -318,7 +318,7 @@ packages:
       '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5'
     dependencies:
       '@auth/core': 0.18.4
-      '@prisma/client': 5.6.0(prisma@packages+prisma)
+      '@prisma/client': 5.6.0(prisma@5.6.0)
     transitivePeerDependencies:
       - nodemailer
     dev: false
@@ -946,7 +946,7 @@ packages:
       '@prisma/client': '>=2.26.0 || >=3'
       next-auth: ^4
     dependencies:
-      '@prisma/client': 5.6.0(prisma@packages+prisma)
+      '@prisma/client': 5.6.0(prisma@5.6.0)
       next-auth: 4.24.5(next@14.0.3)(react-dom@18.2.0)(react@18.2.0)
     dev: false
 
@@ -1095,20 +1095,6 @@ packages:
     dependencies:
       '@prisma/engines-version': 5.6.0-32.e95e739751f42d8ca026f6b910f5a2dc5adeaeee
       prisma: 5.6.0
-    dev: false
-
-  /@prisma/client@5.6.0(prisma@packages+prisma):
-    resolution: {integrity: sha512-mUDefQFa1wWqk4+JhKPYq8BdVoFk9NFMBXUI8jAkBfQTtgx8WPx02U2HB/XbAz3GSUJpeJOKJQtNvaAIDs6sug==}
-    engines: {node: '>=16.13'}
-    requiresBuild: true
-    peerDependencies:
-      prisma: '*'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-    dependencies:
-      '@prisma/engines-version': 5.6.0-32.e95e739751f42d8ca026f6b910f5a2dc5adeaeee
-      prisma: link:packages/prisma
     dev: false
 
   /@prisma/engines-version@5.6.0-32.e95e739751f42d8ca026f6b910f5a2dc5adeaeee:

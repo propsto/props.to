@@ -3,7 +3,9 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --scope=@propsto/web",
+    "dev:app": "turbo run dev --scope=@propsto/app",
+    "dev:all": "turbo run dev",
     "lint": "turbo run lint",
     "validate": "turbo run validate",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
@@ -19,7 +21,7 @@
     "eslint": "^8.54.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.0",
-    "tsconfig": "workspace:*",
+    "@propsto/tsconfig": "workspace:*",
     "turbo": "latest"
   }
 }
