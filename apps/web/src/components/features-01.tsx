@@ -36,7 +36,7 @@ export default function Features01() {
           </div>
           <div>
             {/* Tabs buttons */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <button
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 1
