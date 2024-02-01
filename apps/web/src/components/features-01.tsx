@@ -124,7 +124,7 @@ export default function Features01() {
                   </svg>
                 </div>
                 <div className="text-sm text-zinc-500">
-                  Every feedback needs to be constructuve to help grow, using AI
+                  Every feedback needs to be constructive to help grow, using AI
                   we can assure that.
                 </div>
               </button>
