@@ -13,7 +13,7 @@ export default function Features02() {
                 <Image src={Logo} width={60} height={60} alt="Logo" />
               </Link>
             </div>
-            <h2 className="font-inter-tight text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
+            <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
               Start your journey&nbsp;
               <em className="relative not-italic inline-flex justify-center items-end">
                 today

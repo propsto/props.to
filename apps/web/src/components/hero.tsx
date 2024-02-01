@@ -60,11 +60,10 @@ export default function Hero() {
         <div className="px-4 sm:px-6">
           <div className="relative max-w-3xl mx-auto">
             <div className="text-center pb-12 md:pb-16">
-              <h1 className="font-inter-tight text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-500 via-zinc-900 to-zinc-900 pb-4">
-                Open source <br />
-                recognition software
+              <h1 className="font-cal leading-[100%] md:!leading-xl tracking-[-0.002em] md:text-[65px] lg:text-[69px] text-shadow-gray">
+                Open source <br /> recognition software
               </h1>
-              <p className="text-xl text-zinc-800 mb-8">
+              <p className="text-xl text-zinc-800 my-8">
                 Unleashing Human Potential
               </p>
               <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4">

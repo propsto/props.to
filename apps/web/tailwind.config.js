@@ -6,6 +6,7 @@ module.exports = {
       fontFamily: {
         inter: ["var(--font-inter)", "sans-serif"],
         "inter-tight": ["var(--font-inter-tight)", "sans-serif"],
+        cal: ["var(--font-cal)", "sans-serif"],
       },
       fontSize: {
         xs: ["0.75rem", { lineHeight: "1.5" }],
