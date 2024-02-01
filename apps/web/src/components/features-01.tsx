@@ -70,7 +70,7 @@ export default function Features01() {
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 2
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
-                    : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm rotate-1"
+                    : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
@@ -101,7 +101,7 @@ export default function Features01() {
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 3
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
-                    : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm rotate-1"
+                    : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm"
                 }`}
                 onClick={(e) => {
                   e.preventDefault();
