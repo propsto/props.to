@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import Image from "next/image";
-import PricingDecoration from "@/public/images/pricing-decoration.png";
 import Tooltip from "@/components/tooltip";
 import Accordion from "@/components/accordion";
 
@@ -229,14 +228,6 @@ export default function PricingTabs() {
               {/* Pricing tab 2 */}
               <div className="h-full">
                 <div className="relative flex flex-col h-full p-6 rounded-lg bg-zinc-800">
-                  <Image
-                    className="absolute right-6 -top-5 mix-blend-exclusion"
-                    src={PricingDecoration}
-                    alt="Pricing decoration"
-                    width={76}
-                    height={74}
-                    aria-hidden="true"
-                  />
                   <div className="mb-4">
                     <div className="text-lg text-zinc-200 font-semibold mb-1">
                       Premium

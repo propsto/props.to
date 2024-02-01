@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import FeaturesIllustration from "@/public/images/features-illustration.png";
-import FeatureIllustration from "@/public/images/feature-illustration.png";
 import FeatureImage01 from "@/public/images/feature-01.png";
 
 export default function Features01() {
