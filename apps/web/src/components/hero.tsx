@@ -1,59 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import useDeviceSize from "@/lib/useDeviceSize";
 import Link from "next/link";
-import gsap from "gsap";
-
-function findFirstDivisorWithNoRemainder(x: number) {
-  // Start from 2 since 1 is a divisor for all numbers
-  for (let i = 2; i <= x; i++) {
-    if (x % i === 0) {
-      return i; // Found the first divisor
-    }
-  }
-  return null; // If no divisor found
-}
-
-function Triangles() {
-  const [width, height] = useDeviceSize();
-  var size = 70;
-  var maxTileX = Math.ceil(width / size),
-    maxTileY = Math.ceil(height / size);
-  console.log({ maxTileX, maxTileY });
-  var types = ["TL", "TR", "BL", "BR"];
-  useEffect(() => {
-    if (maxTileX > 0 && maxTileY > 0) {
-      gsap.to(`.triangle`, {
-        scale: 1,
-        duration: 2 + Math.random() * 3,
-        delay: Math.random() * 2.5,
-      });
-    }
-  }, []);
-  return (
-    <div
-      id="container"
-      className="absolute w-full"
-      style={{ height: maxTileY * size }}
-    >
-      {[...Array(maxTileX)].map((x, i) =>
-        [...Array(maxTileY)].map((y, j) => {
-          return (
-            <div
-              key={`${i}${j}`}
-              className={`triangle ${types[Math.floor(Math.random() * 4)]}`}
-            />
-          );
-        })
-      )}
-    </div>
-  );
-}
+import Triangles from "@/components/triangles";
 
 export default function Hero() {
   return (
-    <section className="">
+    <section>
       <Triangles />
       <div className="pt-32 pb-12 md:pt-40 md:pb-20">
         {/* Section content */}
@@ -70,7 +22,7 @@ export default function Hero() {
                 <div>
                   <a
                     className="btn text-zinc-600 bg-white hover:text-zinc-900 w-full shadow"
-                    href="#early-access"
+                    href="/request-early-access"
                   >
                     Request early access
                   </a>

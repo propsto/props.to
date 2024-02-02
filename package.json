@@ -18,10 +18,10 @@
   "author": "Leo <leo@props.to>",
   "name": "props.to",
   "dependencies": {
+    "@propsto/tsconfig": "workspace:*",
     "eslint": "^8.54.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.0",
-    "@propsto/tsconfig": "workspace:*",
-    "turbo": "latest"
+    "turbo": "^1.12.2"
   }
 }

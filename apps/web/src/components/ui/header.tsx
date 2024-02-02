@@ -23,7 +23,7 @@ export default function Header() {
                 <li>
                   <Link
                     className="text-sm font-medium text-zinc-500 hover:text-zinc-900 px-3 lg:px-5 py-2 flex items-center transition"
-                    href="#early-access"
+                    href="/request-early-access"
                   >
                     Request early access
                   </Link>
