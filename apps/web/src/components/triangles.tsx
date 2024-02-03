@@ -8,7 +8,6 @@ export default function Triangles() {
   var size = 70;
   var maxTileX = Math.ceil(width / size),
     maxTileY = Math.ceil(height / size);
-  console.log({ maxTileX, maxTileY });
   var types = ["TL", "TR", "BL", "BR"];
   useEffect(() => {
     if (maxTileX > 0 && maxTileY > 0) {
@@ -20,11 +19,7 @@ export default function Triangles() {
     }
   }, []);
   return (
-    <div
-      id="container"
-      className="absolute w-full"
-      style={{ height: maxTileY * size }}
-    >
+    <div id="container" className="absolute w-full h-full overflow-hidden">
       {[...Array(maxTileX)].map((x, i) =>
         [...Array(maxTileY)].map((y, j) => {
           return (
