@@ -18,8 +18,8 @@ export async function requestEarlyAccess(formData: FormData) {
     body: formData,
   });
   if (response.status === 200) {
-    return { message: "Success!" };
+    return { success: true, message: "Success!" };
   } else {
-    return { message: "There was an error." };
+    return { success: false, message: "There was an error." };
   }
 }

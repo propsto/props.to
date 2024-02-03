@@ -15,7 +15,7 @@ export default function Home() {
     setMessage(res.message);
     setTimeout(() => {
       setMessage("");
-      if (formRef.current) {
+      if (formRef.current && res.success) {
         formRef.current.reset();
       }
     }, 3000);
