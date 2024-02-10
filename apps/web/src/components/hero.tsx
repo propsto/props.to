@@ -13,7 +13,7 @@ export default function Hero() {
           <div className="relative max-w-3xl mx-auto">
             <div className="text-center pb-12 md:pb-16">
               <h1 className="font-cal leading-[100%] md:!leading-xl tracking-[-0.002em] md:text-[65px] lg:text-[69px] text-shadow-gray">
-                Open source <br /> recognition software
+                Open Source <br /> Feedback Platform
               </h1>
               <p className="text-xl text-zinc-800 my-8">
                 Unleashing Human Potential
