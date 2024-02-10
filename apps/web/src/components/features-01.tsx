@@ -28,7 +28,7 @@ export default function Features01() {
               Key principles
             </h2>
             <p className="text-lg text-zinc-500">
-              Truly open source recognition software need these principles every
+              Truly open source feedback software need these principles every
               step of the way
             </p>
           </div>
