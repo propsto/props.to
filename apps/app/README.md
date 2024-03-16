@@ -1,36 +1,5 @@
-# Props.to Main App
+## App
 
-## Getting Started
+This is the monorepo project for Props.to webapp at [app.props.to](https://app.props.to).
 
-1. Install deps
-
-```bash
-pnpm install
-```
-
-2. Start the db
-
-```bash
-docker compose up -d
-```
-
-3. Update env and push the schema to the db
-
-```bash
-cp .env.example .env
-pnpm prisma db push
-```
-
-4. Start the dev server
-
-```bash
-pnpm dev
-```
-
-5. Run the tests
-
-```bash
-pnpm test
-```
-
----
+> Refer to the root `README.md` file for instructions
