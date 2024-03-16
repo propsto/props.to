@@ -1,7 +1,5 @@
-import { PrismaClient } from "prisma";
-import { withAccelerate } from "prisma";
-
 import { env } from "@/env.mjs";
+import { PrismaClient, withAccelerate } from "@propsto/prisma";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 

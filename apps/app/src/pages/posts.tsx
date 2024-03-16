@@ -1,4 +1,4 @@
-import { PostCategory } from "prisma";
+import { PostCategory } from "@propsto/prisma";
 import { useSession } from "next-auth/react";
 import { Controller } from "react-hook-form";
 import { z } from "zod";
