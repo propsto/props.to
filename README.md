@@ -16,7 +16,8 @@
 </p>
 
 <p align="center">
-  <img src="https://vercelbadge.vercel.app/api/propsto/props.to" alt="" />
+  <img src="https://img.shields.io/github/deployments/propsto/props.to/Production%20–%20web?label=web%20deployment" alt="" />
+  <img src="https://img.shields.io/github/deployments/propsto/props.to/Production%20–%20app?label=app%20deployment" alt="" />
 </p>
 
 ## About this project
