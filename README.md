@@ -1,7 +1,4 @@
-<!-- Banner here -->
-
-# <h1 style="text-align: center;"><img style="vertical-align:sub;" src="https://props.to/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprops.to.c7d44c4b.png&w=64&q=75" width="30" alt="" />&nbsp;Props.to</h1>
-
+<h1 align="center"><img style="vertical-align:sub;" src="https://props.to/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprops.to.c7d44c4b.png&w=64&q=75" width="30" alt="" />&nbsp;Props.to</h1>
 
 <p align="center" style="margin-top: 20px">
   <p align="center">
@@ -18,7 +15,9 @@
   </p>
 </p>
 
-![Vercel](https://vercelbadge.vercel.app/api/propsto/props.to)
+<p align="center">
+  <img src="https://vercelbadge.vercel.app/api/propsto/props.to" alt="" />
+</p>
 
 ## About this project
 
