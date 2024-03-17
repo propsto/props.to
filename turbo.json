@@ -1,15 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": [
+    "pnpm-lock.yaml"
+  ],
   "pipeline": {
     "dev": {
-      "dependsOn": ["^db-generate"],
+      "dependsOn": [
+        "^db-generate"
+      ],
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": ["^db-deploy", "^db-generate"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "dependsOn": [
+        "^db-deploy",
+        "^db-generate"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
     },
     "db-deploy": {
       "cache": false
