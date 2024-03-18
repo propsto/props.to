@@ -23,10 +23,6 @@ importers:
       turbo:
         specifier: ^1.12.2
         version: 1.12.2
-    devDependencies:
-      '@dotenv-run/cli':
-        specifier: ^1.3.5
-        version: 1.3.5
 
   apps/app:
     dependencies:
@@ -589,25 +585,6 @@ packages:
     engines: {node: '>=12'}
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
-
-  /@dotenv-run/cli@1.3.5:
-    resolution: {integrity: sha512-UpY4IYvbIDowfzT8Byzz3PbJ02PAxOlipKbwqxBxwic7Tf7lwcSSL4cGAoOmDPj8yd2mdcq7RoHfVaajgsUR8Q==}
-    hasBin: true
-    dependencies:
-      '@dotenv-run/core': 1.3.4
-      chalk: 4.1.2
-      cross-spawn: 7.0.3
-      minimist: 1.2.8
-    dev: true
-
-  /@dotenv-run/core@1.3.4:
-    resolution: {integrity: sha512-U/jCYwpzaRjKPhuMj5VdIiIFiIBtiX7lqkyqA+WjpG6S1j91N+5c6LOPUYC54b/N6bKr+fmTj9f05CpWRIuPXw==}
-    dependencies:
-      chalk: 4.1.2
-      dotenv: 16.4.5
-      dotenv-expand: 10.0.0
-      find-up: 5.0.0
-    dev: true
 
   /@esbuild/android-arm64@0.18.20:
     resolution: {integrity: sha512-Nz4rJcchGDtENV0eMKUNa6L12zz2zBDXuhj/Vjh18zGqB44Bi7MBMSXjgunJgjRhCmKOjnPuZp4Mb6OKqtMHLQ==}
@@ -3159,18 +3136,8 @@ packages:
       no-case: 2.3.2
     dev: true
 
-  /dotenv-expand@10.0.0:
-    resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
-    engines: {node: '>=12'}
-    dev: true
-
   /dotenv@16.0.3:
     resolution: {integrity: sha512-7GO6HghkA5fYG9TYnNxi14/7K9f5occMlp3zXAuSxn7CKCxt9xbNWG7yF8hTCSUchlfWSe3uLmlPfigevRItzQ==}
-    engines: {node: '>=12'}
-    dev: true
-
-  /dotenv@16.4.5:
-    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
     engines: {node: '>=12'}
     dev: true
 
