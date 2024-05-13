@@ -1,6 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
+  content: ["atoms/**", "molecules/**", "organisms/**"],
   theme: {
     container: {
       center: true,

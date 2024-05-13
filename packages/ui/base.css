@@ -1,3 +1,9 @@
+@config "./tailwind.base.config.cjs";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -69,4 +75,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.baseCSS {
+  background-color: azure;
 }
