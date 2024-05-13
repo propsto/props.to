@@ -76,7 +76,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-.baseCSS {
-  background-color: azure;
-}

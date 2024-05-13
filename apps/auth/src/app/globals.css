@@ -1,8 +1,4 @@
-@import "@propsto/ui/base.css";
+@config "../../tailwind.config.cjs";
 
 @tailwind components;
 @tailwind utilities;
-
-.globalsCSS {
-  background-color: aqua;
-}

@@ -1,7 +1,11 @@
+const path = require("path");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ["atoms/**", "molecules/**", "organisms/**"],
+  content: ["atoms", "molecules", "organisms"].flatMap((entity) =>
+    path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
+  ),
   theme: {
     container: {
       center: true,
