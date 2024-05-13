@@ -5,12 +5,16 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const user = await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: {
+      email: "test@props.to",
+    },
+    create: {
       name: "Test",
       email: "test@props.to",
       image: "https://avatars.githubusercontent.com/u/1?v=4",
     },
+    update: {},
   });
 }
 

@@ -3,9 +3,10 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev:web": "turbo run dev --scope=@propsto/web",
-    "dev:app": "turbo run dev --scope=@propsto/app",
-    "dev:all": "turbo run dev",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:app": "turbo run dev --filter=app",
+    "dev:auth": "turbo run dev --filter=auth",
+    "dev": "turbo run dev",
     "lint": "turbo run lint",
     "validate": "turbo run validate",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
@@ -14,7 +15,7 @@
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "pnpm@8.10.0",
+  "packageManager": "pnpm@9.1.0",
   "author": "Leo <leo@props.to>",
   "name": "props.to",
   "dependencies": {
@@ -22,6 +23,6 @@
     "eslint": "^8.54.0",
     "husky": "^8.0.3",
     "prettier": "^3.1.0",
-    "turbo": "^1.12.2"
+    "turbo": "^1.13.3"
   }
 }
