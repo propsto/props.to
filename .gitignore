@@ -34,3 +34,5 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+node_modules.nosync
