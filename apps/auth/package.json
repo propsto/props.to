@@ -2,13 +2,14 @@
   "name": "@propsto/auth",
   "private": true,
   "description": "Authentication app for props.to",
-  "packageManager": "pnpm@9.1.0",
   "scripts": {
     "dev": "PORT=3002 next",
     "build": "next build",
     "start": "next start"
   },
   "dependencies": {
+    "@propsto/prisma": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@radix-ui/react-avatar": "^1.0.3",
     "@radix-ui/react-collapsible": "^1.0.3",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
@@ -18,6 +19,7 @@
     "@vercel/kv": "^1.0.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
+    "gsap": "^3.12.5",
     "lucide-react": "^0.274.0",
     "next": "latest",
     "next-auth": "beta",
@@ -25,9 +27,7 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
-    "unstorage": "^1.10.1",
-    "@propsto/prisma": "workspace:*",
-    "@propsto/ui": "workspace:*"
+    "unstorage": "^1.10.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.8",

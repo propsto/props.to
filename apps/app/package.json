@@ -2,7 +2,6 @@
   "name": "@propsto/app",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.1.0",
   "scripts": {
     "build": "pnpm --filter @propsto/prisma db-generate && next build",
     "dev": "next dev",

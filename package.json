@@ -15,7 +15,7 @@
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.1.1",
   "author": "Leo <leo@props.to>",
   "name": "props.to",
   "dependencies": {

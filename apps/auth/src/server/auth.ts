@@ -9,7 +9,6 @@ import { PrismaClient } from "@propsto/prisma";
 const prisma = new PrismaClient();
 
 const config = {
-  theme: { logo: "https://authjs.dev/img/logo-sm.png" },
   adapter: PrismaAdapter(prisma),
   providers: [Passkey],
   basePath: "/auth",
