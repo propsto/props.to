@@ -1,16 +1,16 @@
 "use client";
 
-import { requestEarlyAccess } from "@/lib/actions/requestEarlyAccess";
-import Community from "./community";
-import FormButton from "@/components/formButton";
 import { useRef, useState } from "react";
-import Triangles from "@/components/triangles";
+import { Triangles } from "@propsto/ui/molecules/triangles";
+import { requestEarlyAccess } from "@/lib/actions/request-early-access";
+import FormButton from "@/components/form-button";
+import Community from "./community";
 
 export default function Home() {
   const [message, setMessage] = useState<string>("");
   const formRef = useRef<HTMLFormElement>(null);
 
-  async function osSubmit(formData: FormData) {
+  async function onSubmit(formData: FormData) {
     const res = await requestEarlyAccess(formData);
     setMessage(res.message);
     setTimeout(() => {
@@ -33,15 +33,15 @@ export default function Home() {
                 Request early access
               </h1>
               <p className="text-lg text-zinc-500">
-                Complete the form and we'll make sure to reach out when the time
-                comes to onboard you.
+                Complete the form and we&apos;ll make sure to reach out when the
+                time comes to onboard you.
               </p>
             </div>
 
             {/* Form */}
             <div className="max-w-[25rem] mx-auto p-6 rounded-lg shadow-2xl bg-gradient-to-b from-zinc-100 to-zinc-50/70 relative before:absolute before:-top-12 before:-left-16 before:w-96 before:h-96 before:bg-zinc-900 before:opacity-[.15] before:rounded-full before:blur-3xl before:-z-10">
               <form
-                action={osSubmit}
+                action={onSubmit}
                 id="webform"
                 name="WebToLeads6106600000000449577"
                 ref={formRef}
@@ -109,7 +109,7 @@ export default function Home() {
                       rows={4}
                       placeholder="Share your requirements"
                       required
-                    ></textarea>
+                    />
                   </div>
                 </div>
                 <div className="mt-5">

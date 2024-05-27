@@ -11,8 +11,8 @@ export default function Features01() {
   const tabs = useRef<HTMLDivElement>(null);
 
   const heightFix = () => {
-    if (tabs.current && tabs.current.parentElement)
-      tabs.current.parentElement.style.height = `${tabs.current.clientHeight}px`;
+    if (tabs.current?.parentElement)
+      tabs.current.parentElement.style.height = `${tabs.current.clientHeight.toString()}px`;
   };
 
   useEffect(() => {
@@ -36,6 +36,7 @@ export default function Features01() {
             {/* Tabs buttons */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <button
+                type="button"
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 1
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
@@ -67,6 +68,7 @@ export default function Features01() {
                 </div>
               </button>
               <button
+                type="button"
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 2
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
@@ -98,6 +100,7 @@ export default function Features01() {
                 </div>
               </button>
               <button
+                type="button"
                 className={`text-left px-4 py-5 border border-transparent rounded ${
                   tab !== 3
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
@@ -145,7 +148,9 @@ export default function Features01() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div className="inline-flex relative align-top">
@@ -168,7 +173,9 @@ export default function Features01() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div className="inline-flex relative align-top">
@@ -191,7 +198,9 @@ export default function Features01() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div className="inline-flex relative align-top">

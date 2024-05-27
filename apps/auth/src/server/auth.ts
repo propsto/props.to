@@ -1,32 +1,35 @@
 import NextAuth from "next-auth";
 import "next-auth/jwt";
-
 import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig } from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { PrismaClient } from "@propsto/prisma";
+import { PrismaClient, PrismaAdapter } from "@propsto/prisma";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
+
+const sessionShape = z.object({
+  user: z.object({
+    name: z.string(),
+  }),
+});
 
 const config = {
   adapter: PrismaAdapter(prisma),
   providers: [Passkey],
-  basePath: "/auth",
+  basePath: "/proceed",
   callbacks: {
     authorized({ request, auth }) {
       const { pathname } = request.nextUrl;
-      if (pathname === "/middleware-example") return !!auth;
+      if (pathname === "/middleware-example") return Boolean(auth);
       return true;
     },
-    jwt({ token, trigger, session, account }) {
-      if (trigger === "update") token.name = session.user.name;
-      if (account?.provider === "keycloak") {
-        return { ...token, accessToken: account.access_token };
-      }
+    jwt({ token, trigger, session }) {
+      const data = sessionShape.parse(session);
+      if (trigger === "update") token.name = data.user.name;
       return token;
     },
-    async session({ session, token }) {
-      if (token?.accessToken) {
+    session({ session, token }) {
+      if (token.accessToken) {
         session.accessToken = token.accessToken;
       }
       return session;
@@ -35,7 +38,7 @@ const config = {
   experimental: {
     enableWebAuthn: true,
   },
-  debug: process.env.NODE_ENV !== "production" ? true : false,
+  debug: process.env.NODE_ENV !== "production",
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);

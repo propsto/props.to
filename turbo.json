@@ -31,6 +31,15 @@
       "cache": false
     },
     "validate": {},
-    "lint": {}
-  }
+    "lint": {},
+    "type-check": {}
+  },
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "AUTH_SECRET",
+    "EMAIL_FROM",
+    "EMAIL_SERVER",
+    "SKIP_ENV_VALIDATION"
+  ]
 }

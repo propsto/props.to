@@ -21,8 +21,9 @@ export default function Footer() {
             </div>
             <div className="grow text-sm text-zinc-500 max-w-sm">
               The symbol <b>人</b> in Chinese, Japanese, and some other East
-              Asian languages means "person" or "human being." It represents the
-              concept of humanity. It's also the ASCII version of emoji 🙏
+              Asian languages means &quot;person&quot; or &quot;human
+              being.&quot; It represents the concept of humanity. It&apos;s also
+              the ASCII version of emoji 🙏
             </div>
             {/* Social links */}
             <ul className="flex space-x-4 mt-4 mb-1">

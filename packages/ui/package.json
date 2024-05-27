@@ -3,23 +3,32 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint ."
-  },
-  "devDependencies": {
-    "@propsto/eslint-config-custom": "workspace:*",
-    "@propsto/tsconfig": "workspace:*",
-    "@radix-ui/react-slot": "^1.0.2",
-    "@types/node": "^20.8.2",
-    "@types/react": "^18.2.24",
-    "@types/react-dom": "^18.2.9",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "react": "18.2.0",
-    "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.7",
-    "typescript": "^5.2.2"
+    "lint": "eslint **/*.{ts,tsx}",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@radix-ui/react-label": "^2.0.2"
+    "@radix-ui/react-avatar": "^1.0.4",
+    "@radix-ui/react-collapsible": "^1.0.3",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-navigation-menu": "^1.1.4",
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.379.0",
+    "react": "*"
+  },
+  "devDependencies": {
+    "@propsto/tsconfig": "workspace:*",
+    "@tailwindcss/forms": "^0.5.7",
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "eslint": "*",
+    "tailwind-merge": "*",
+    "tailwindcss": "*",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "*"
   }
 }

@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
-import Image from "next/image";
 import Tooltip from "@/components/tooltip";
 import Accordion from "@/components/accordion";
 
@@ -70,25 +68,31 @@ export default function PricingTabs() {
                     className={`absolute inset-0 w-1/2 border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] rounded shadow-sm transform transition-transform duration-150 ease-in-out ${
                       isAnnual ? "translate-x-0" : "translate-x-full"
                     }`}
-                  ></span>
+                  />
                 </span>
                 <button
+                  type="button"
                   className={`relative flex-1 text-sm font-medium h-8 rounded transition-colors duration-150 ease-in-out ${
                     isAnnual ? "text-zinc-700" : "text-zinc-400"
                   }`}
-                  onClick={() => setIsAnnual(true)}
+                  onClick={() => {
+                    setIsAnnual(true);
+                  }}
                   aria-pressed={isAnnual}
                 >
                   Bill Yearly{" "}
-                  <span className={`${isAnnual ? "text-emerald-500" : ""}`}>
+                  <span className={isAnnual ? "text-emerald-500" : ""}>
                     -20%
                   </span>
                 </button>
                 <button
+                  type="button"
                   className={`relative flex-1 text-sm font-medium h-8 rounded transition-colors duration-150 ease-in-out ${
                     isAnnual ? "text-zinc-400" : "text-zinc-700"
                   }`}
-                  onClick={() => setIsAnnual(false)}
+                  onClick={() => {
+                    setIsAnnual(false);
+                  }}
                   aria-pressed={isAnnual}
                 >
                   Bill Monthly
@@ -496,9 +500,9 @@ export default function PricingTabs() {
             <div className="space-y-2">
               {faqs.map((faq, index) => (
                 <Accordion
-                  key={index}
+                  key={faq.title}
                   title={faq.title}
-                  id={`faqs-${index}`}
+                  id={`faqs-${index.toString()}`}
                   active={faq.active}
                 >
                   {faq.text}

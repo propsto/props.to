@@ -2,18 +2,11 @@ const path = require("path");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
-  content: ["atoms", "molecules", "organisms"].flatMap((entity) =>
+  darkMode: ["selector", '[data-theme="dark"]'],
+  content: ["atoms", "molecules", "organisms", "utils"].flatMap((entity) =>
     path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -68,8 +61,9 @@ module.exports = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        grow: "grow 1.5s forwards",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate", "@tailwindcss/forms")],
 };

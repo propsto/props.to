@@ -1,5 +1,6 @@
-import { env } from "@/env.mjs";
+/* eslint-disable @typescript-eslint/no-unnecessary-condition -- globalForPrisma.prisma is not always truthy */
 import { PrismaClient, withAccelerate } from "@propsto/prisma";
+import { env } from "@/env.mjs";
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 

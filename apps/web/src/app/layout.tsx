@@ -1,3 +1,4 @@
+/* eslint-disable camelcase -- Google exports without camelcase */
 import "./css/style.css";
 
 import localFont from "next/font/local";

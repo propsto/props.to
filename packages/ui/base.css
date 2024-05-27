@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes grow {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -12,8 +12,8 @@ export default function Features03() {
   const tabs = useRef<HTMLDivElement>(null);
 
   const heightFix = () => {
-    if (tabs.current && tabs.current.parentElement)
-      tabs.current.parentElement.style.height = `${tabs.current.clientHeight}px`;
+    if (tabs.current?.parentElement)
+      tabs.current.parentElement.style.height = `${tabs.current.clientHeight.toString()}px`;
   };
 
   useEffect(() => {
@@ -44,6 +44,7 @@ export default function Features03() {
               {/* Tabs buttons */}
               <div className="mb-8 md:mb-0 space-y-2">
                 <button
+                  type="button"
                   className={`text-left flex items-center px-6 py-4 rounded border border-transparent ${
                     tab !== 1
                       ? ""
@@ -73,6 +74,7 @@ export default function Features03() {
                   </div>
                 </button>
                 <button
+                  type="button"
                   className={`text-left flex items-center px-6 py-4 rounded border border-transparent ${
                     tab !== 2
                       ? ""
@@ -102,6 +104,7 @@ export default function Features03() {
                   </div>
                 </button>
                 <button
+                  type="button"
                   className={`text-left flex items-center px-6 py-4 rounded border border-transparent ${
                     tab !== 3
                       ? ""
@@ -146,7 +149,9 @@ export default function Features03() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div>
@@ -169,7 +174,9 @@ export default function Features03() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div>
@@ -192,7 +199,9 @@ export default function Features03() {
                   leave="transition ease-in-out duration-300 transform absolute"
                   leaveFrom="opacity-100 translate-y-0"
                   leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => heightFix()}
+                  beforeEnter={() => {
+                    heightFix();
+                  }}
                   unmount={false}
                 >
                   <div>

@@ -1,28 +1,48 @@
 {
+  "name": "props.to",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev:web": "turbo run dev --filter=web",
-    "dev:app": "turbo run dev --filter=app",
-    "dev:auth": "turbo run dev --filter=auth",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "validate": "turbo run validate",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
+  "author": "Leo Giovanetti <leo@props.to>",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "pnpm@9.1.1",
-  "author": "Leo <leo@props.to>",
-  "name": "props.to",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:app": "turbo run dev --filter=app",
+    "dev:auth": "turbo run dev --filter=auth",
+    "dev:web": "turbo run dev --filter=web",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "validate": "turbo run validate"
+  },
   "dependencies": {
+    "autoprefixer": "^10.4.19",
+    "lucide-react": "^0.379.0",
+    "next": "^14.2.3",
+    "next-themes": "^0.3.0",
+    "postcss": "^8.4.38",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.1",
     "@propsto/tsconfig": "workspace:*",
-    "eslint": "^8.54.0",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
     "husky": "^8.0.3",
-    "prettier": "^3.1.0",
+    "prettier": "^3.2.5",
     "turbo": "^1.13.3"
-  }
+  },
+  "packageManager": "pnpm@9.1.1"
 }

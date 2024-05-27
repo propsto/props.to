@@ -3,27 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "PORT=3001 next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "PORT=3001 next dev",
+    "lint": "next lint",
+    "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.17",
+    "@headlessui/react": "^1.7.19",
     "@propsto/prisma": "workspace:*",
-    "@types/node": "^20.8.2",
-    "@types/react": "^18.2.24",
-    "@types/react-dom": "^18.2.9",
-    "gsap": "^3.12.5",
-    "next": "^14.2.3",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "^5.2.2"
+    "@propsto/ui": "workspace:*",
+    "next": "*",
+    "react": "*",
+    "react-dom": "*",
+    "typescript": "*"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.6",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.23",
-    "tailwindcss": "^3.3.5"
+    "@propsto/eslint": "workspace:*",
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "eslint": "*",
+    "autoprefixer": "*",
+    "postcss": "*",
+    "tailwindcss": "*"
   }
 }
