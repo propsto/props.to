@@ -2,14 +2,19 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import useLongPress from "@/lib/use-long-press";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [changeThemeValue, setChangeThemeValue] = useState<string>();
-
-  useEffect(() => {
-    setChangeThemeValue(theme === "dark" ? "light" : "dark");
-  }, [theme]);
+  const [changeThemeValue, setChangeThemeValue] = useState<string>("dark");
+  const { longPressHandlers } = useLongPress({
+    onLongPress: () => {
+      setTheme("system");
+    },
+    onClick: () => {
+      setTheme(changeThemeValue);
+    },
+  });
 
   useEffect(() => {
     // detect if current system theme is dark
@@ -23,9 +28,9 @@ export function ThemeToggle() {
     } else if (theme === "light") {
       newValue = "dark";
     } else if (checkDarkTheme) {
-      newValue = "dark";
-    } else {
       newValue = "light";
+    } else {
+      newValue = "dark";
     }
     setChangeThemeValue(newValue);
   }, [theme]);
@@ -34,14 +39,12 @@ export function ThemeToggle() {
     <button
       type="button"
       className="absolute bottom-4 right-4"
-      onClick={() => {
-        setTheme(changeThemeValue ?? "dark");
-      }}
+      {...longPressHandlers}
     >
       <img
         alt="theme toggle"
         className="size-6"
-        src={changeThemeValue === "dark" ? "sun.svg" : "moon.svg"}
+        src={changeThemeValue === "light" ? "sun.svg" : "moon.svg"}
       />
     </button>
   );
