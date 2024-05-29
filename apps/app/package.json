@@ -32,6 +32,7 @@
     "@propsto/eslint": "workspace:*",
     "@propsto/prisma": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

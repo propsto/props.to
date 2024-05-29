@@ -109,6 +109,9 @@ importers:
       '@propsto/tsconfig':
         specifier: workspace:*
         version: link:../../packages/tsconfig
+      '@propsto/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@types/node':
         specifier: '*'
         version: 20.12.12
