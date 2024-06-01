@@ -1,9 +1,9 @@
 "use client";
 
-import { useDeviceSize } from "../utils/use-device-size";
+import useDeviceSize from "../hooks/use-device-size";
 
 export function Triangles() {
-  const [width, height] = useDeviceSize();
+  const [width = 500, height = 700] = useDeviceSize();
   const size = 60;
   const maxTileX = Math.ceil(width / size),
     maxTileY = Math.ceil(height / size);

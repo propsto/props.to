@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@propsto/eslint": "workspace:*",
+    "@propsto/tsconfig": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

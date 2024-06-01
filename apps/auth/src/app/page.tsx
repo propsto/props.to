@@ -8,13 +8,13 @@ export default function Home() {
       <h1 className="text-4xl">Welcome!</h1>
       <div className="flex gap-4 justify-center">
         <Link className={cn(buttonVariants())} href="/signin">
-          Sign-in
+          Sign in
         </Link>
         <Link
           className={cn(buttonVariants({ variant: "outline" }))}
           href="/signup"
         >
-          Sign-up
+          Sign up
         </Link>
       </div>
     </>

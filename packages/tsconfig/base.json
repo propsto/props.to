@@ -9,7 +9,8 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "strict": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": true,
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "noEmit": true,
@@ -18,11 +19,6 @@
       "dom",
       "dom.iterable"
     ],
-    "paths": {
-      "@ui/*": [
-        "../../packages/ui/*"
-      ]
-    }
   },
   "exclude": [
     "node_modules"

@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@propsto/tsconfig": "workspace:*",
+    "@propsto/eslint": "workspace:*",
     "@tailwindcss/forms": "^0.5.7",
     "@types/node": "*",
     "@types/react": "*",
