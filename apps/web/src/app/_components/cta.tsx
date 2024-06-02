@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/public/images/logo-02.png";
+import { Button } from "@propsto/ui/atoms/button";
 
-export default function Features02() {
+export default function CTA() {
   return (
     <section>
       <div className="py-12 md:py-20">
@@ -10,7 +10,12 @@ export default function Features02() {
           <div className="relative max-w-3xl mx-auto text-center pb-12 md:pb-16">
             <div className="">
               <Link href="/">
-                <Image src={Logo} width={60} height={60} alt="Logo" />
+                <Image
+                  src="/images/logo-02.png"
+                  width={60}
+                  height={60}
+                  alt="Logo"
+                />
               </Link>
             </div>
             <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
@@ -36,24 +41,20 @@ export default function Features02() {
             </p>
             <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <div>
-                <a
-                  className="btn text-zinc-100 bg-zinc-900 hover:bg-zinc-800 w-full shadow"
-                  href="/request-demo"
-                >
-                  Request Demo
-                </a>
+                <Button asChild>
+                  <Link href="/request-early-access">Request early access</Link>
+                </Button>
               </div>
               <div>
-                <a
-                  className="btn text-zinc-600 bg-white hover:text-zinc-900 w-full shadow"
-                  href="#0"
-                >
-                  Try for Free
-                </a>
+                <Button asChild variant="outline">
+                  <Link href="https://github.com/propsto/props.to">
+                    Contribute
+                  </Link>
+                </Button>
               </div>
             </div>
           </div>
-          {/* Clients */}
+          {/* Clients 
           <div className="text-center">
             <ul className="inline-flex flex-wrap items-center justify-center -m-3">
               <li className="m-3">
@@ -145,7 +146,7 @@ export default function Features02() {
                 </svg>
               </li>
             </ul>
-          </div>
+          </div>*/}
         </div>
       </div>
     </section>

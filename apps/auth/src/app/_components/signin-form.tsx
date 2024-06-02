@@ -2,8 +2,9 @@
 
 import { cn } from "@propsto/ui/utils/cn";
 import { useFormState, useFormStatus } from "react-dom";
-import { Icons, Button, Label, Input } from "@propsto/ui/atoms";
-import { type SignUpFormStateProps, signUpAction } from "@/server/auth-actions";
+import { Label, Input } from "@propsto/ui/atoms";
+import { SubmitButton } from "@propsto/ui/molecules";
+import { signUpAction } from "@/server/auth-actions";
 
 export function SignupForm({
   className,
@@ -11,7 +12,6 @@ export function SignupForm({
 }: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
   const [state, action] = useFormState(signUpAction, {
     message: "",
-    code: 0,
   });
   const { pending } = useFormStatus();
 
@@ -33,7 +33,7 @@ export function SignupForm({
               type="email"
             />
           </div>
-          <LoginButton state={state} />
+          <SubmitButton state={state}>Sign in</SubmitButton>
         </div>
       </form>
       {/*<div className="relative">
@@ -55,21 +55,5 @@ export function SignupForm({
         GitHub
       </Button>*/}
     </div>
-  );
-}
-
-function LoginButton({
-  state,
-}: {
-  state: SignUpFormStateProps;
-}): React.ReactNode {
-  const { pending } = useFormStatus();
-
-  return (
-    <Button disabled={pending}>
-      {pending ? <Icons.Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      {state.code === 200 && <Icons.Check className="mr-2 h-4 w-4" />}
-      {state.message || "Create your account"}
-    </Button>
   );
 }

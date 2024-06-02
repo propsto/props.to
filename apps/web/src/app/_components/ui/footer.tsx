@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/public/props.to.png";
 
 export default function Footer() {
   return (
@@ -16,14 +15,13 @@ export default function Footer() {
                 className="flex items-center justify-center w-8 h-8"
                 href="/"
               >
-                <Image src={Logo} width={24} height={24} alt="Logo" />
+                <Image src="/props.to.png" width={24} height={24} alt="Logo" />
               </Link>
             </div>
             <div className="grow text-sm text-zinc-500 max-w-sm">
-              The symbol <b>人</b> in Chinese, Japanese, and some other East
-              Asian languages means &quot;person&quot; or &quot;human
-              being.&quot; It represents the concept of humanity. It&apos;s also
-              the ASCII version of emoji 🙏
+              The symbol <b>人</b> in Asia means &quot;human&quot; representing
+              the concept of humanity. It&apos;s also the ASCII version of emoji
+              🙏
             </div>
             {/* Social links */}
             <ul className="flex space-x-4 mt-4 mb-1">
@@ -157,7 +155,7 @@ export default function Footer() {
               <li>
                 <a
                   className="text-zinc-500 hover:text-zinc-900 transition"
-                  href="#0"
+                  href="https://docs.props.to/terms-and-conditions"
                 >
                   Terms & Conditions
                 </a>

@@ -1,8 +1,8 @@
-import Image, { type StaticImageData } from "next/image";
+import Image from "next/image";
 
 interface TestimonialProps {
   testimonial: {
-    image: StaticImageData;
+    image: string;
     name: string;
     user: string;
     link: string;
@@ -39,9 +39,7 @@ export default function Testimonial({
           </div>
         </div>
       </div>
-      <div className="text-zinc-500 before:content-['\u2'] after:content-['\u2']">
-        {children}
-      </div>
+      <div className="text-zinc-500">&quot;{children}&quot;</div>
     </div>
   );
 }

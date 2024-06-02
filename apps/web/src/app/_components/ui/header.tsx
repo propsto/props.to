@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/public/props.to.png";
+import { Button } from "@propsto/ui/atoms/button";
 
 export default function Header() {
   return (
@@ -12,7 +12,7 @@ export default function Header() {
             <div className="shrink-0 mr-4">
               {/* Logo */}
               <Link className="" href="/">
-                <Image src={Logo} width={32} height={32} alt="Logo" />
+                <Image src="/props.to.png" width={32} height={32} alt="Logo" />
               </Link>
             </div>
 
@@ -21,20 +21,18 @@ export default function Header() {
               {/* Desktop sign in links */}
               <ul className="flex grow justify-end flex-wrap items-center">
                 <li>
-                  <Link
-                    className="text-sm font-medium text-zinc-500 hover:text-zinc-900 px-3 lg:px-5 py-2 flex items-center transition"
-                    href="/request-early-access"
-                  >
-                    Request early access
-                  </Link>
+                  <Button asChild size="sm">
+                    <Link href="/request-early-access">
+                      Request early access
+                    </Link>
+                  </Button>
                 </li>
                 <li className="ml-1">
-                  <Link
-                    className="btn-sm text-zinc-100 bg-zinc-900 hover:bg-zinc-800 w-full shadow"
-                    href="https://github.com/propsto/props.to"
-                  >
-                    Contribute
-                  </Link>
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="https://github.com/propsto/props.to">
+                      Contribute
+                    </Link>
+                  </Button>
                 </li>
               </ul>
             </nav>

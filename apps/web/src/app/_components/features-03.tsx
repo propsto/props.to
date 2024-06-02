@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import CarouselIllustration from "@/public/images/carousel-illustration-01.jpg";
-import FeatureIllustration from "@/public/images/features-02-illustration.png";
 
 export default function Features03() {
   const [tab, setTab] = useState<number>(1);
@@ -157,7 +155,7 @@ export default function Features03() {
                   <div>
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src={CarouselIllustration}
+                      src="/images/carousel-illustration-01.jpg"
                       width={800}
                       height={620}
                       alt="Carousel 01"
@@ -182,7 +180,7 @@ export default function Features03() {
                   <div>
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src={CarouselIllustration}
+                      src="/images/carousel-illustration-01.jpg"
                       width={800}
                       height={620}
                       alt="Carousel 02"
@@ -207,7 +205,7 @@ export default function Features03() {
                   <div>
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src={CarouselIllustration}
+                      src="/images/carousel-illustration-01.jpg"
                       width={800}
                       height={620}
                       alt="Carousel 03"
@@ -218,7 +216,7 @@ export default function Features03() {
               {/* Gear illustration */}
               <Image
                 className="absolute left-0 bottom-0 -translate-x-1/2 translate-y-1/3 mix-blend-exclusion max-lg:w-32"
-                src={FeatureIllustration}
+                src="/images/features-02-illustration.png"
                 alt="Features 02 illustration"
                 width={173}
                 height={167}

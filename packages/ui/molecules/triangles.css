@@ -1,0 +1,36 @@
+.triangle {
+  @apply scale-0 size-0 float-right animate-grow border-solid flex-1 border-t-transparent;
+}
+
+.triangle.one {
+  border-top-width: 0;
+  border-right-width: 80px;
+  border-bottom-width: 80px;
+  border-left-width: 0;
+  transform-origin: 40px 0px;
+  border-right-color: hsl(var(--primary) / 0.1);
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+}
+
+.triangle.two {
+  border-top-width: 0;
+  border-right-width: 0;
+  border-bottom-width: 80px;
+  border-left-width: 80px;
+  transform-origin: 40px 40px;
+  border-right-color: transparent;
+  border-bottom-color: hsl(var(--primary) / 0.08);
+  border-left-color: transparent;
+}
+
+.triangle.three {
+  border-top-width: 80px;
+  border-right-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 80px;
+  transform-origin: 0px 40px;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: hsl(var(--primary) / 0.04);
+}

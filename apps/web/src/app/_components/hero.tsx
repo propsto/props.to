@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import Triangles from "@/components/triangles";
+import { Triangles } from "@propsto/ui/molecules/triangles";
+import { Button } from "@propsto/ui/atoms/button";
 
 export default function Hero() {
   return (
     <section>
       <Triangles />
-      <div className="pt-32 pb-12 md:pt-40 md:pb-20">
+      <div className="pt-32 pb-12 md:pt-48 md:pb-20">
         {/* Section content */}
         <div className="px-4 sm:px-6">
           <div className="relative max-w-3xl mx-auto">
@@ -20,20 +21,18 @@ export default function Hero() {
               </p>
               <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div>
-                  <a
-                    className="btn text-zinc-600 bg-white hover:text-zinc-900 w-full shadow"
-                    href="/request-early-access"
-                  >
-                    Request early access
-                  </a>
+                  <Button asChild>
+                    <Link href="/request-early-access">
+                      Request early access
+                    </Link>
+                  </Button>
                 </div>
                 <div>
-                  <Link
-                    className="btn text-zinc-100 bg-zinc-900 hover:bg-zinc-800 w-full shadow"
-                    href="https://github.com/propsto/props.to"
-                  >
-                    Contribute
-                  </Link>
+                  <Button asChild variant="outline">
+                    <Link href="https://github.com/propsto/props.to">
+                      Contribute
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </div>

@@ -2,10 +2,10 @@ import { buttonVariants } from "@propsto/ui/atoms/button";
 import { cn } from "@propsto/ui/utils/cn";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SignupForm } from "../_components/signin-form";
+import { SignupForm } from "@components/signup-form";
 
 export const metadata: Metadata = {
-  title: "Sign-up",
+  title: "Props.to - Sign up",
   description: "Become part of the biggest feedback open source community",
 };
 
@@ -19,7 +19,7 @@ export default function SignupPage() {
         )}
         href="/signin"
       >
-        Sign-in
+        Sign in
       </Link>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">

@@ -1,3 +1,5 @@
+@import "./molecules/triangles.css";
+
 @config "./tailwind.config.cjs";
 
 @tailwind base;
@@ -46,7 +48,7 @@
     --radius: 0.5rem;
   }
 
-  .dark {
+  [data-theme="dark"] {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 

@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import FeatureImage01 from "@/public/images/feature-01.png";
 
 export default function Features01() {
   const [tab, setTab] = useState<number>(1);
@@ -156,7 +155,7 @@ export default function Features01() {
                   <div className="inline-flex relative align-top">
                     <Image
                       className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
-                      src={FeatureImage01}
+                      src="/images/feature-01.png"
                       width={600}
                       height={360}
                       alt="Feature 01"
@@ -181,7 +180,7 @@ export default function Features01() {
                   <div className="inline-flex relative align-top">
                     <Image
                       className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
-                      src={FeatureImage01}
+                      src="/images/feature-01.png"
                       width={600}
                       height={360}
                       alt="Feature 02"
@@ -206,7 +205,7 @@ export default function Features01() {
                   <div className="inline-flex relative align-top">
                     <Image
                       className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
-                      src={FeatureImage01}
+                      src="/images/feature-01.png"
                       width={600}
                       height={360}
                       alt="Feature 03"

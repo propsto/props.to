@@ -2,6 +2,7 @@
   "extends": "@propsto/tsconfig/nextjs.json",
   "compilerOptions": {
     "paths": {
+      "@components/*": ["./src/app/_components/*"],
       "@/*": ["./src/*"],
     }
   },

@@ -1,10 +1,4 @@
 import Image from "next/image";
-import FeatureImage01 from "@/public/images/feature-post-01.png";
-import FeatureImage02 from "@/public/images/feature-post-02.png";
-import FeatureImage03 from "@/public/images/feature-post-03.png";
-import FeatureImage04 from "@/public/images/feature-post-04.png";
-import FeatureImage05 from "@/public/images/feature-post-05.png";
-import FeatureImage06 from "@/public/images/feature-post-06.png";
 
 export default function Features02() {
   return (
@@ -26,7 +20,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage01}
+                  src="/images/feature-post-01.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 01"
@@ -66,7 +60,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage02}
+                  src="/images/feature-post-02.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 02"
@@ -106,7 +100,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage03}
+                  src="/images/feature-post-03.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 03"
@@ -146,7 +140,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage04}
+                  src="/images/feature-post-04.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 04"
@@ -186,7 +180,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage05}
+                  src="/images/feature-post-05.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 05"
@@ -226,7 +220,7 @@ export default function Features02() {
               <figure className="relative after:absolute after:bottom-0 after:w-full after:h-1/4 after:bg-gradient-to-t from-zinc-50 from-5%">
                 <Image
                   className="w-full"
-                  src={FeatureImage06}
+                  src="/images/feature-post-06.png"
                   width={344}
                   height={227.5}
                   alt="Feature Post 06"

@@ -4,8 +4,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Sign-in",
-  description: "Sign-in to the biggest feedback open source community",
+  title: "Props.to - Sign in",
+  description: "Sign in to the biggest feedback open source community",
 };
 
 export default function SigninPage() {
@@ -18,7 +18,7 @@ export default function SigninPage() {
         )}
         href="/signup"
       >
-        Sign-up
+        Sign up
       </Link>
       <div className="flex flex-col space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">

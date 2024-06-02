@@ -1,18 +1,10 @@
 "use client";
-import Testimonial from "@/components/testimonial";
-import TestimonialImg01 from "@/public/images/testimonial-01.jpg";
-import TestimonialImg02 from "@/public/images/testimonial-02.jpg";
-import TestimonialImg03 from "@/public/images/testimonial-03.jpg";
-import TestimonialImg04 from "@/public/images/testimonial-04.jpg";
-import TestimonialImg05 from "@/public/images/testimonial-05.jpg";
-import TestimonialImg06 from "@/public/images/testimonial-06.jpg";
-import TestimonialImg07 from "@/public/images/testimonial-07.jpg";
-import TestimonialImg08 from "@/public/images/testimonial-08.jpg";
+import Testimonial from "@components/testimonial";
 
 export default function Testimonials() {
   const testimonials01 = [
     {
-      image: TestimonialImg01,
+      image: "/images/testimonial-01.jpg",
       name: "Lina James",
       user: "@linaj87",
       link: "#0",
@@ -20,23 +12,23 @@ export default function Testimonials() {
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg02,
-      name: "Lina James",
-      user: "@linaj87",
+      image: "/images/testimonial-02.jpg",
+      name: "Lisa Jones",
+      user: "@ljones",
       link: "#0",
       content:
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg03,
-      name: "Lina James",
-      user: "@linaj87",
+      image: "/images/testimonial-03.jpg",
+      name: "Pete Moore",
+      user: "@petemoore1",
       link: "#0",
       content:
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg04,
+      image: "/images/testimonial-04.jpg",
       name: "Mary Kahl",
       user: "@marykahl",
       link: "#0",
@@ -47,7 +39,7 @@ export default function Testimonials() {
 
   const testimonials02 = [
     {
-      image: TestimonialImg05,
+      image: "/images/testimonial-05.jpg",
       name: "Katy Dragán",
       user: "@katyd",
       link: "#0",
@@ -55,7 +47,7 @@ export default function Testimonials() {
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg06,
+      image: "/images/testimonial-06.jpg",
       name: "Karl Ahmed",
       user: "@karl87",
       link: "#0",
@@ -63,7 +55,7 @@ export default function Testimonials() {
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg07,
+      image: "/images/testimonial-07.jpg",
       name: "Carlotta Grech",
       user: "@carlagrech",
       link: "#0",
@@ -71,7 +63,7 @@ export default function Testimonials() {
         "Extremely thoughtful approaches to business. I highly recommend this product to anyone wanting to jump into something new.",
     },
     {
-      image: TestimonialImg08,
+      image: "/images/testimonial-08.jpg",
       name: "Alejandra Gok",
       user: "@alejandraIT",
       link: "#0",

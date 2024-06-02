@@ -35,4 +35,5 @@ yarn-error.log*
 # vercel
 .vercel
 
-node_modules.nosync
+# ts
+apps/*.tsbuildinfo

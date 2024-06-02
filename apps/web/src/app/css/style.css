@@ -1,9 +1,0 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-
-/* Additional styles */
-@import "additional-styles/utility-patterns.css";
-@import "additional-styles/theme.css";
-@import "additional-styles/triangles.css";
-
-@import "tailwindcss/utilities";

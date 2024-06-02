@@ -1,35 +1,34 @@
-/* eslint-disable @typescript-eslint/require-await -- Server actions must be async functions */
 "use server";
 
+import { type SubmitButtonProps } from "@propsto/ui/molecules";
 import { signIn } from "./auth";
 
-export interface SignUpFormStateProps {
-  message: string;
-  code: number;
-}
-
-function sleep(milliseconds: number) {
+async function sleep(milliseconds: number) {
+  const ok = await Promise.resolve(true);
   const date = Date.now();
   let currentDate = null;
   do {
     currentDate = Date.now();
-  } while (currentDate - date < milliseconds);
+  } while (currentDate - date < milliseconds && ok);
 }
 
 export async function signUpAction(
-  prevState: SignUpFormStateProps,
+  prevState: SubmitButtonProps,
   formData: FormData
-) {
+): Promise<SubmitButtonProps> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Temporary
   const rawFormData = {
     customerId: formData.get("customerId"),
     amount: formData.get("amount"),
     status: formData.get("status"),
   };
-  sleep(5000);
+  await sleep(5000);
   // mutate data
   //revalidatePath("/");
-  return { message: "Signed up successfully", code: 200 };
+  return {
+    message: "Signed up successfully",
+    iconName: "Success",
+  };
 }
 
 export async function signInAction(formData: FormData) {

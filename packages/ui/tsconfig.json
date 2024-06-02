@@ -1,11 +1,9 @@
 {
-  "extends": "@propsto/tsconfig/nextjs.json",
+  "extends": "@propsto/tsconfig/react-library.json",
   "include": [
-    "process.d.ts",
-    "next-env.d.ts",
+    "react.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
