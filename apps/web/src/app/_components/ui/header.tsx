@@ -28,7 +28,7 @@ export default function Header() {
                   </Button>
                 </li>
                 <li className="ml-1">
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="ghost" size="sm">
                     <Link href="https://github.com/propsto/props.to">
                       Contribute
                     </Link>

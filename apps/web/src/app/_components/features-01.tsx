@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
+import { AnimatedBeamMultipleInput } from "./animated-beam-multiple-input";
 
 export default function Features01() {
   const [tab, setTab] = useState<number>(1);
@@ -152,14 +153,8 @@ export default function Features01() {
                   }}
                   unmount={false}
                 >
-                  <div className="inline-flex relative align-top">
-                    <Image
-                      className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
-                      src="/images/feature-01.png"
-                      width={600}
-                      height={360}
-                      alt="Feature 01"
-                    />
+                  <div className="flex justify-center">
+                    <AnimatedBeamMultipleInput />
                   </div>
                 </Transition>
                 {/* Item 2 */}

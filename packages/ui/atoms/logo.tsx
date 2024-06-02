@@ -5,7 +5,8 @@ export type LogoVariantProps = VariantProps<typeof logoVariants>;
 const logoVariants = cva("", {
   variants: {
     size: {
-      default: "h-6 w-6",
+      default: "size-6",
+      mini: "size-4",
     },
   },
   defaultVariants: {
@@ -16,7 +17,7 @@ const logoVariants = cva("", {
 export function Logo({
   className,
   size = "default",
-}: Readonly<{ className: string } & LogoVariantProps>) {
+}: Readonly<{ className?: string } & LogoVariantProps>) {
   return (
     <svg
       viewBox="0 0 1680 1680"
@@ -188,6 +189,31 @@ export function Logo({
           <stop offset="1" stopColor="#3D4550" />
         </linearGradient>
       </defs>
+    </svg>
+  );
+}
+
+export function LogoSymbol({
+  className,
+  size = "default",
+}: Readonly<{ className?: string } & LogoVariantProps>) {
+  return (
+    <svg
+      viewBox="0 0 1680 1680"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn(logoVariants({ size, className }))}
+    >
+      <title>props.to logo</title>
+      <g>
+        <rect x="72" y="60" width="1536" height="1536" rx="348" />
+        <g>
+          <path
+            d="M823.495 801.244c-45.508 130.4-121.482 332.706-364.826 490.096-3.887 2.51-9.144 1.2-11.469-2.8-22.851-39.34-51.756-68.45-84.483-89.98-5.694-3.74-5.013-12.69 1.233-15.41 138.995-60.66 388.07-295.667 390.642-815.03.021-4.418 3.601-8.12 8.02-8.12h121.346c4.315 0 7.854 3.532 8.019 7.844 19.474 511.111 282.603 751.646 425.493 815.626 5.98 2.67 6.87 11.21 1.72 15.25-27.36 21.44-61.6 58.7-76.5 89.03-2.12 4.31-7.42 6.24-11.63 3.95-244.424-133.21-346.737-358.408-392.256-490.381-2.498-7.243-12.784-7.309-15.309-.075"
+            fill="currentColor"
+          />
+        </g>
+      </g>
     </svg>
   );
 }
