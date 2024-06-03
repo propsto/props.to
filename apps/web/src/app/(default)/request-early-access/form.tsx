@@ -4,7 +4,7 @@ import { useFormState, useFormStatus } from "react-dom";
 import { SubmitButton } from "@propsto/ui/molecules";
 import { requestEarlyAccess } from "@/server/request-early-access-action";
 
-export function Form() {
+export function Form(): JSX.Element {
   const [state, action] = useFormState(requestEarlyAccess, {
     message: "",
   });

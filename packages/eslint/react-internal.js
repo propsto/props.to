@@ -32,9 +32,5 @@ module.exports = {
     },
   },
   ignorePatterns: ["node_modules/", "dist/", ".eslintrc.js"],
-
-  rules: {
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "react/function-component-definition": "off",
-  },
+  rules: {},
 };

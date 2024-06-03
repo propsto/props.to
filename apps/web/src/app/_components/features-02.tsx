@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export default function Features02() {
+export function Features02(): JSX.Element {
   return (
     <section>
       <div className="py-12 md:py-20">

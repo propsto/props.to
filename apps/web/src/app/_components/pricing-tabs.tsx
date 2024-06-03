@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Tooltip from "@components/tooltip";
-import Accordion from "@components/accordion";
+import { Tooltip } from "@components/tooltip";
+import { Accordion } from "@components/accordion";
 
-export default function PricingTabs() {
+export function PricingTabs(): JSX.Element {
   const [isAnnual, setIsAnnual] = useState<boolean>(true);
 
   const faqs = [

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Become part of the biggest feedback open source community",
 };
 
-export default function SignupPage() {
+export function SignupPage(): JSX.Element {
   return (
     <>
       <Link

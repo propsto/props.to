@@ -2,9 +2,10 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import useLongPress from "@/lib/use-long-press";
+import Image from "next/image";
+import { useLongPress } from "@/lib/use-long-press";
 
-export function ThemeToggle() {
+export function ThemeToggle(): JSX.Element {
   const { theme, setTheme } = useTheme();
   const [changeThemeValue, setChangeThemeValue] = useState<string>("dark");
   const { longPressHandlers } = useLongPress({
@@ -41,8 +42,10 @@ export function ThemeToggle() {
       className="absolute bottom-4 right-4"
       {...longPressHandlers}
     >
-      <img
+      <Image
         alt="theme toggle"
+        width="24"
+        height="24"
         className="size-6"
         src={changeThemeValue === "light" ? "sun.svg" : "moon.svg"}
       />

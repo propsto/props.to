@@ -1,14 +1,14 @@
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import type { Metadata } from "next";
 import { Form } from "./form";
-import Community from "./community";
+import { Community } from "./community";
 
 export const metadata: Metadata = {
   title: "Props.to - Request Early Access",
   description: "Open Source Feedback Platform",
 };
 
-export default function Home() {
+export function Home(): JSX.Element {
   return (
     <>
       <section className="relative overflow-hidden before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-100 before:-z-10">

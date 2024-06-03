@@ -7,7 +7,7 @@ export function Triangles({
   parentRef,
 }: {
   parentRef?: MutableRefObject<HTMLElement | null>;
-}) {
+}): JSX.Element {
   const [deviceWidth, deviceHeight] = useDeviceSize();
   const [width, height] = parentRef?.current
     ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]

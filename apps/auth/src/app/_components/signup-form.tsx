@@ -9,7 +9,7 @@ import { signUpAction } from "@/server/auth-actions";
 export function SignupForm({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
   const [state, action] = useFormState(signUpAction, {
     message: "",
   });

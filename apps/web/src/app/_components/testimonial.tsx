@@ -11,10 +11,10 @@ interface TestimonialProps {
   children: React.ReactNode;
 }
 
-export default function Testimonial({
+export function Testimonial({
   testimonial,
   children,
-}: TestimonialProps) {
+}: TestimonialProps): JSX.Element {
   return (
     <div className="rounded h-full w-[22rem] border border-transparent [background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box] p-5">
       <div className="flex items-center mb-4">

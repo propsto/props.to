@@ -35,7 +35,7 @@ const quotes = [
   },
 ];
 
-function Quote() {
+function Quote(): JSX.Element | undefined {
   const quote = quotes[Math.floor(Math.random() * quotes.length)] as
     | (typeof quotes)[number]
     | undefined;
@@ -55,7 +55,7 @@ function Quote() {
   }
 }
 
-export function SideSection() {
+export function SideSection(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <div

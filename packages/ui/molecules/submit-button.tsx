@@ -27,7 +27,7 @@ export function SubmitButton({
 }: {
   state: SubmitButtonProps;
   children: React.ReactNode;
-}) {
+}): JSX.Element {
   const { pending } = useFormStatus();
   const { message, iconName } = state;
   const Icon = iconName ? availableIcons[iconName] : undefined;

@@ -4,7 +4,7 @@ export function useDeviceSize(): [number, number] {
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
 
-  const handleWindowResize = () => {
+  const handleWindowResize = (): void => {
     setWidth(window.innerWidth);
     setHeight(window.innerHeight);
   };

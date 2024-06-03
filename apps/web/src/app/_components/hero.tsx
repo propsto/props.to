@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Button } from "@propsto/ui/atoms/button";
 
-export default function Hero() {
+export function Hero(): JSX.Element {
   return (
     <section>
       <Triangles />

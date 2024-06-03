@@ -17,7 +17,7 @@ const logoVariants = cva("", {
 export function Logo({
   className,
   size = "default",
-}: Readonly<{ className?: string } & LogoVariantProps>) {
+}: Readonly<{ className?: string } & LogoVariantProps>): JSX.Element {
   return (
     <svg
       viewBox="0 0 1680 1680"
@@ -196,7 +196,7 @@ export function Logo({
 export function LogoSymbol({
   className,
   size = "default",
-}: Readonly<{ className?: string } & LogoVariantProps>) {
+}: Readonly<{ className?: string } & LogoVariantProps>): JSX.Element {
   return (
     <svg
       viewBox="0 0 1680 1680"

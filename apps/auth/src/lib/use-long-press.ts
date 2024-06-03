@@ -1,16 +1,24 @@
 import { useRef } from "react";
 
-export default function useLongPress({
+export function useLongPress({
   onLongPress,
   onClick,
 }: {
   onLongPress: () => void;
   onClick?: () => void;
-}) {
+}): {
+  longPressHandlers: {
+    onMouseDown: () => void;
+    onMouseUp: () => void;
+    onTouchStart: () => void;
+    onTouchEnd: () => void;
+    onClick: () => void;
+  };
+} {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const isLongPress = useRef<boolean>();
 
-  function startPressTimer() {
+  function startPressTimer(): void {
     isLongPress.current = false;
     timerRef.current = setTimeout(() => {
       isLongPress.current = true;
@@ -18,24 +26,24 @@ export default function useLongPress({
     }, 500);
   }
 
-  function handleOnClick() {
+  function handleOnClick(): void {
     if (isLongPress.current) return;
     onClick?.();
   }
 
-  function handleOnMouseDown() {
+  function handleOnMouseDown(): void {
     startPressTimer();
   }
 
-  function handleOnMouseUp() {
+  function handleOnMouseUp(): void {
     clearTimeout(timerRef.current);
   }
 
-  function handleOnTouchStart() {
+  function handleOnTouchStart(): void {
     startPressTimer();
   }
 
-  function handleOnTouchEnd() {
+  function handleOnTouchEnd(): void {
     if (isLongPress.current) return;
     clearTimeout(timerRef.current);
   }

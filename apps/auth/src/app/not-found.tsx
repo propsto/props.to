@@ -1,4 +1,4 @@
-export default function NotFoundPage() {
+export function NotFoundPage(): JSX.Element {
   return (
     <>
       <h1 className="text-2xl font-bold text-center">

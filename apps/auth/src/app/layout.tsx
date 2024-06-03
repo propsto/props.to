@@ -13,9 +13,9 @@ export const metadata: Metadata = {
   description: "Open Source Feedback Platform",
 };
 
-export default function RootLayout({
+export function RootLayout({
   children,
-}: Readonly<React.PropsWithChildren>) {
+}: Readonly<React.PropsWithChildren>): JSX.Element {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>

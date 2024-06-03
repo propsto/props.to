@@ -10,12 +10,12 @@ interface AccordionpProps {
   active?: boolean;
 }
 
-export default function Accordion({
+export function Accordion({
   children,
   title,
   id,
   active = false,
-}: AccordionpProps) {
+}: AccordionpProps): JSX.Element {
   const [accordionOpen, setAccordionOpen] = useState<boolean>(false);
 
   useEffect(() => {

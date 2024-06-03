@@ -3,7 +3,7 @@
 import { type SubmitButtonProps } from "@propsto/ui/molecules";
 import { signIn } from "./auth";
 
-async function sleep(milliseconds: number) {
+async function sleep(milliseconds: number): Promise<void> {
   const ok = await Promise.resolve(true);
   const date = Date.now();
   let currentDate = null;
@@ -31,7 +31,7 @@ export async function signUpAction(
   };
 }
 
-export async function signInAction(formData: FormData) {
+export async function signInAction(formData: FormData): Promise<never> {
   const provider = formData.get("provider") as string;
   return signIn(provider);
 }

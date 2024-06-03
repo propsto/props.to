@@ -21,7 +21,7 @@ export function BorderBeam({
   colorFrom = "#ffaa40",
   colorTo = "#9c40ff",
   delay = 0,
-}: BorderBeamProps) {
+}: BorderBeamProps): JSX.Element {
   return (
     <div
       style={

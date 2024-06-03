@@ -10,12 +10,12 @@ interface TooltipProps {
   dark?: boolean;
 }
 
-export default function Tooltip({
+export function Tooltip({
   children,
   content,
   id,
   dark = false,
-}: TooltipProps) {
+}: TooltipProps): JSX.Element {
   const [open, setOpen] = useState<boolean>(false);
 
   return (

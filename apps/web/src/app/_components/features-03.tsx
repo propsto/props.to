@@ -4,12 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
 
-export default function Features03() {
+export function Features03(): JSX.Element {
   const [tab, setTab] = useState<number>(1);
 
   const tabs = useRef<HTMLDivElement>(null);
 
-  const heightFix = () => {
+  const heightFix = (): void => {
     if (tabs.current?.parentElement)
       tabs.current.parentElement.style.height = `${tabs.current.clientHeight.toString()}px`;
   };

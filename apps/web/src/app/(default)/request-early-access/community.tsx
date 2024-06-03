@@ -1,4 +1,4 @@
-export default function Community() {
+export function Community(): JSX.Element {
   return (
     <section className="relative before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-50 before:-z-10">
       <div className="py-12 md:py-20">

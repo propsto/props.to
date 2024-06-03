@@ -1,7 +1,7 @@
 "use client";
-import Testimonial from "@components/testimonial";
+import { Testimonial } from "@components/testimonial";
 
-export default function Testimonials() {
+export function Testimonials(): JSX.Element {
   const testimonials01 = [
     {
       image: "/images/testimonial-01.jpg",

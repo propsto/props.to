@@ -5,12 +5,12 @@ import { Transition } from "@headlessui/react";
 import Image from "next/image";
 import { AnimatedBeamMultipleInput } from "./animated-beam-multiple-input";
 
-export default function Features01() {
+export function Features01(): JSX.Element {
   const [tab, setTab] = useState<number>(1);
 
   const tabs = useRef<HTMLDivElement>(null);
 
-  const heightFix = () => {
+  const heightFix = (): void => {
     if (tabs.current?.parentElement)
       tabs.current.parentElement.style.height = `${tabs.current.clientHeight.toString()}px`;
   };
