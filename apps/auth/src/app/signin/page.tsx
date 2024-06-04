@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: "Sign in to the biggest feedback open source community",
 };
 
-export function SigninPage(): JSX.Element {
+export default function SigninPage(): JSX.Element {
   return (
     <>
       <Link

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   description: "Open Source Feedback Platform",
 };
 
-export function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<React.PropsWithChildren>): JSX.Element {
   return (

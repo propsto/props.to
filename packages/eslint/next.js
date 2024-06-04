@@ -35,5 +35,7 @@ module.exports = {
     },
   },
   ignorePatterns: ["node_modules/", "dist/"],
-  rules: {},
+  rules: {
+    "import/no-default-export": "off", // Next.js v14 App Router relies on default exporting pages components
+  },
 };

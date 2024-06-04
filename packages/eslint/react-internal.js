@@ -32,5 +32,12 @@ module.exports = {
     },
   },
   ignorePatterns: ["node_modules/", "dist/", ".eslintrc.js"],
-  rules: {},
+  rules: {
+    "import/no-extraneous-dependencies": [
+      1,
+      {
+        packageDir: [process.cwd()],
+      },
+    ],
+  },
 };

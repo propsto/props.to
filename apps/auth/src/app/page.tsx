@@ -2,7 +2,7 @@ import { buttonVariants } from "@propsto/ui/atoms/button";
 import { cn } from "@propsto/ui/utils/cn";
 import Link from "next/link";
 
-export function Home(): JSX.Element {
+export default function Home(): JSX.Element {
   return (
     <>
       <h1 className="text-4xl">Welcome!</h1>
