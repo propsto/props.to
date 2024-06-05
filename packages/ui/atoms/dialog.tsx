@@ -13,7 +13,7 @@ const DialogClose = DialogPrimitive.Close;
 function DialogPortal({
   children,
   ...props
-}: DialogPrimitive.DialogPortalProps): JSX.Element {
+}: Readonly<DialogPrimitive.DialogPortalProps>): JSX.Element {
   return (
     <DialogPrimitive.Portal {...props}>
       <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">

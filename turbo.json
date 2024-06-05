@@ -3,7 +3,15 @@
   "globalDependencies": [
     "pnpm-lock.yaml"
   ],
-  "pipeline": {
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "AUTH_SECRET",
+    "EMAIL_FROM",
+    "EMAIL_SERVER",
+    "SKIP_ENV_VALIDATION"
+  ],
+  "tasks": {
     "dev": {
       "dependsOn": [
         "^db-generate"
@@ -33,13 +41,5 @@
     "validate": {},
     "lint": {},
     "type-check": {}
-  },
-  "globalEnv": [
-    "NODE_ENV",
-    "DATABASE_URL",
-    "AUTH_SECRET",
-    "EMAIL_FROM",
-    "EMAIL_SERVER",
-    "SKIP_ENV_VALIDATION"
-  ]
+  }
 }

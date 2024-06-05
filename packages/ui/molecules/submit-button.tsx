@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { icons } from "../atoms/icons";
+import { Check, Cross, LoaderCircle } from "lucide-react";
 import { Button } from "../atoms/button";
 
 export const AvailableIcons = {
@@ -12,8 +12,8 @@ export const AvailableIcons = {
 type AvailableIconNames = (typeof AvailableIcons)[keyof typeof AvailableIcons];
 
 const availableIcons: Record<AvailableIconNames, React.ElementType> = {
-  [AvailableIcons.Success]: icons.Check,
-  [AvailableIcons.Failure]: icons.Cross,
+  [AvailableIcons.Success]: Check,
+  [AvailableIcons.Failure]: Cross,
 };
 
 export interface SubmitButtonProps {
@@ -24,19 +24,17 @@ export interface SubmitButtonProps {
 export function SubmitButton({
   state,
   children,
-}: {
+}: Readonly<{
   state: SubmitButtonProps;
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   const { pending } = useFormStatus();
   const { message, iconName } = state;
   const Icon = iconName ? availableIcons[iconName] : undefined;
 
   return (
     <Button disabled={pending}>
-      {pending ? (
-        <icons.LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-      ) : null}
+      {pending ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : null}
       {Icon ? <Icon className="mr-2 h-4 w-4" /> : null}
       {message || children}
     </Button>
