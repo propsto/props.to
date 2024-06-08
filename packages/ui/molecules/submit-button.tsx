@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { useState, useEffect } from "react";
 import { useFormStatus } from "react-dom";
 import { Check, CircleX, LoaderCircle } from "lucide-react";
 import { Button } from "../atoms/button";
@@ -18,12 +18,12 @@ const availableIcons: Record<AvailableIconNames, React.ElementType> = {
   [AvailableIcons.Failure]: CircleX,
 };
 
-export type SubmitButtonProps = {
+export interface SubmitButtonProps {
   retry: number;
   message: string;
   iconName?: keyof typeof availableIcons;
   variant?: ButtonVariant;
-};
+}
 
 export function SubmitButton({
   state,
@@ -32,11 +32,11 @@ export function SubmitButton({
   state: SubmitButtonProps;
   children: React.ReactNode;
 }>): JSX.Element {
-  const [inState, setInState] = React.useState<SubmitButtonProps>(state);
+  const [inState, setInState] = useState<SubmitButtonProps>(state);
   const { pending } = useFormStatus();
   const Icon = inState.iconName ? availableIcons[inState.iconName] : undefined;
 
-  React.useEffect(() => {
+  useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     if (state.message) {
       setInState(state);
@@ -50,12 +50,14 @@ export function SubmitButton({
       }, 4000);
     }
 
-    return () => clearTimeout(timeoutId);
-  }, [state.retry]);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [state, state.retry]);
 
   return (
     <Button
-      disabled={pending || !!inState.message}
+      disabled={pending || Boolean(inState.message)}
       type="submit"
       variant={inState.variant}
     >

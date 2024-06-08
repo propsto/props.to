@@ -4,14 +4,14 @@ import { cn } from "@propsto/ui/utils/cn";
 import { useFormState, useFormStatus } from "react-dom";
 import { Label, Input, Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
-import { signInAction } from "./action";
 import { SubmitButton } from "@propsto/ui/molecules/submit-button";
+import { signInAction } from "./action";
 
 export function SigninForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
-  let [state, action] = useFormState(signInAction, { retry: 0, message: "" });
+  const [state, action] = useFormState(signInAction, { retry: 0, message: "" });
   const { pending } = useFormStatus();
 
   return (
@@ -47,7 +47,9 @@ export function SigninForm({
         <Button
           variant="outline"
           type="button"
-          onClick={async () => await signIn("passkey")}
+          onClick={() => {
+            void signIn("passkey");
+          }}
           disabled={pending}
         >
           Sign in with Passkey

@@ -9,7 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.19",
+    "@headlessui/react": "2.0.4",
     "@propsto/prisma": "workspace:*",
     "@propsto/ui": "workspace:*",
     "lucide-react": "*",

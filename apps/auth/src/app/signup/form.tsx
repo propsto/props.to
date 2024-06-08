@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { cn } from "@propsto/ui/utils/cn";
 import { useFormState, useFormStatus } from "react-dom";
 import { Label, Input } from "@propsto/ui/atoms";
@@ -12,6 +11,7 @@ export function SignupForm({
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
   const [state, action] = useFormState(signUpAction, {
+    retry: 0,
     message: "",
   });
   const { pending } = useFormStatus();

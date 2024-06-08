@@ -1,6 +1,6 @@
 "use server";
 
-import { SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
+import { type SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
 
 async function sleep(milliseconds: number): Promise<void> {
   const ok = await Promise.resolve(true);

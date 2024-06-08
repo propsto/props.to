@@ -1,6 +1,6 @@
 "use server";
 
-import { SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
+import { type SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
 import { signIn } from "@/server/auth";
 
 async function sleep(milliseconds: number): Promise<void> {
@@ -16,7 +16,7 @@ export async function signInAction(
   prevState: SubmitButtonProps,
   formData: FormData
 ): Promise<SubmitButtonProps> {
-  sleep(3000);
+  await sleep(3000);
   if (!formData.get("email")) {
     return {
       retry: prevState.retry + 1,
