@@ -1,15 +1,16 @@
 "use client";
 
+import { useEffect } from "react";
 import { cn } from "@propsto/ui/utils/cn";
 import { useFormState, useFormStatus } from "react-dom";
 import { Label, Input } from "@propsto/ui/atoms";
 import { SubmitButton } from "@propsto/ui/molecules";
-import { signUpAction } from "@/server/auth-actions";
+import { signUpAction } from "./action";
 
 export function SignupForm({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
+}: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
   const [state, action] = useFormState(signUpAction, {
     message: "",
   });
@@ -33,7 +34,7 @@ export function SignupForm({
               type="email"
             />
           </div>
-          <SubmitButton state={state}>Sign in</SubmitButton>
+          <SubmitButton state={state}>Create your account</SubmitButton>
         </div>
       </form>
       {/*<div className="relative">

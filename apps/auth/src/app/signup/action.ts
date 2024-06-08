@@ -1,12 +1,11 @@
 "use server";
 
-import { type SubmitButtonProps } from "@propsto/ui/molecules";
-import { signIn } from "./auth";
+import { SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
 
 async function sleep(milliseconds: number): Promise<void> {
   const ok = await Promise.resolve(true);
   const date = Date.now();
-  let currentDate = null;
+  let currentDate: number | null = null;
   do {
     currentDate = Date.now();
   } while (currentDate - date < milliseconds && ok);
@@ -26,12 +25,8 @@ export async function signUpAction(
   // mutate data
   //revalidatePath("/");
   return {
+    retry: 0,
     message: "Signed up successfully",
     iconName: "Success",
   };
-}
-
-export async function signInAction(formData: FormData): Promise<never> {
-  const provider = formData.get("provider") as string;
-  return signIn(provider);
 }

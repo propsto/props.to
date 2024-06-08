@@ -12,26 +12,26 @@
   "dependencies": {
     "@propsto/prisma": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "^9.0.3",
-    "lucide-react": "*",
-    "next": "*",
+    "lucide-react": "^0.383.0",
+    "next": "^14.2.3",
     "next-auth": "beta",
-    "next-themes": "*",
-    "react": "*",
-    "react-dom": "*",
-    "tailwind-merge": "*",
-    "zod": "*"
+    "next-themes": "^0.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.3.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@propsto/eslint": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
-    "@types/node": "*",
-    "@types/react": "*",
-    "@types/react-dom": "*",
-    "autoprefixer": "*",
-    "eslint": "*",
-    "postcss": "*",
-    "tailwindcss": "*",
-    "typescript": "*"
+    "@types/node": "^20.14.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "typescript": "^5.4.5"
   }
 }

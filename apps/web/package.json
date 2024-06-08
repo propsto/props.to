@@ -12,6 +12,7 @@
     "@headlessui/react": "^1.7.19",
     "@propsto/prisma": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "lucide-react": "*",
     "next": "*",
     "react": "*",
     "react-dom": "*",

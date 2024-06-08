@@ -3,7 +3,8 @@
 import React, { forwardRef, useRef } from "react";
 import { cn } from "@propsto/ui/utils/cn";
 import { AnimatedBeam } from "@propsto/ui/organisms/animated-beam";
-import { Logo, Icons, LogoSymbol, BorderBeam } from "@propsto/ui/atoms";
+import { Logo, LogoSymbol, BorderBeam } from "@propsto/ui/atoms";
+import { User } from "lucide-react";
 
 const Circle = forwardRef<
   HTMLDivElement,
@@ -80,7 +81,7 @@ export function AnimatedBeamMultipleInput(): JSX.Element {
         </div>
         <div className="flex flex-col justify-center">
           <Circle ref={div7Ref} className="size-16">
-            <Icons.User className="text-black fill-black" />
+            <User className="text-black fill-black" />
           </Circle>
         </div>
       </div>

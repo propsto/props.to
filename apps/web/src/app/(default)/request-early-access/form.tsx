@@ -6,6 +6,7 @@ import { requestEarlyAccess } from "@/server/request-early-access-action";
 
 export function Form(): JSX.Element {
   const [state, action] = useFormState(requestEarlyAccess, {
+    retry: 0,
     message: "",
   });
   const { pending } = useFormStatus();

@@ -2,7 +2,7 @@ import { buttonVariants } from "@propsto/ui/atoms/button";
 import { cn } from "@propsto/ui/utils/cn";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SignupForm } from "@components/signup-form";
+import { SignupForm } from "./form";
 
 export const metadata: Metadata = {
   title: "Props.to - Sign up",

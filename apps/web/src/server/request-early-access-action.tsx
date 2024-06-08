@@ -23,7 +23,12 @@ export async function requestEarlyAccess(
     body: formData,
   });
   if (response.status === 200) {
-    return { iconName: "Success", message: "Success!" };
+    return { retry: 0, iconName: "Success", message: "Success!" };
   }
-  return { iconName: "Failure", message: "There was an error." };
+  return {
+    retry: 0,
+    iconName: "Failure",
+    message: "There was an error.",
+    variant: "error",
+  };
 }
