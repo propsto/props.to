@@ -9,23 +9,23 @@
     "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "2.0.4",
-    "@propsto/prisma": "workspace:*",
-    "@propsto/ui": "workspace:*",
-    "lucide-react": "*",
-    "next": "*",
-    "react": "*",
-    "react-dom": "*",
-    "typescript": "*"
+    "@headlessui/react": "2.0.4"
   },
-  "devDependencies": {
+  "peerDependencies": {
     "@propsto/eslint": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
-    "eslint": "*",
     "autoprefixer": "*",
+    "eslint": "*",
+    "lucide-react": "*",
+    "next": "*",
     "postcss": "*",
-    "tailwindcss": "*"
+    "react": "*",
+    "react-dom": "*",
+    "tailwindcss": "*",
+    "typescript": "*"
   }
 }

@@ -1,7 +1,12 @@
 "use server";
 
 import { type SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
+import * as z from "zod";
 import { signIn } from "@/server/auth";
+
+const formSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
 
 async function sleep(milliseconds: number): Promise<void> {
   const ok = await Promise.resolve(true);
@@ -17,14 +22,16 @@ export async function signInAction(
   formData: FormData
 ): Promise<SubmitButtonProps> {
   await sleep(3000);
-  if (!formData.get("email")) {
+  const { success, error } = formSchema.safeParse({
+    email: formData.get("email"),
+  });
+  if (!success)
     return {
       retry: prevState.retry + 1,
-      message: "Email missing!",
+      message: error.issues[0].message,
       iconName: "Failure",
       variant: "error",
     };
-  }
   await signIn("resend", formData);
   return {
     retry: 0,

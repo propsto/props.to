@@ -29,7 +29,7 @@ export function SignupForm({
               autoComplete="email"
               autoCorrect="off"
               disabled={pending}
-              id="email"
+              name="email"
               placeholder="name@example.com"
               type="email"
             />

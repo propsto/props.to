@@ -5,32 +5,33 @@
   "scripts": {
     "build": "next build",
     "dev": "PORT=3002 next",
-    "start": "next start",
     "lint": "next lint",
+    "start": "next start",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@propsto/prisma": "workspace:*",
-    "@propsto/ui": "workspace:*",
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
-    "lucide-react": "*",
-    "next": "*",
-    "next-auth": "beta",
-    "next-themes": "*",
-    "react": "*",
-    "react-dom": "*",
-    "zod": "*"
+    "next-auth": "beta"
   },
-  "devDependencies": {
+  "peerDependencies": {
+    "@propsto/email": "workspace:*",
     "@propsto/eslint": "workspace:*",
+    "@propsto/data": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
     "autoprefixer": "*",
+    "lucide-react": "*",
+    "next": "*",
+    "next-themes": "*",
     "postcss": "*",
+    "react": "*",
+    "react-dom": "*",
     "tailwindcss": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "zod": "*"
   }
 }

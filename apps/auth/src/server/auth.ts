@@ -2,18 +2,11 @@ import NextAuth from "next-auth";
 import "next-auth/jwt";
 import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig } from "next-auth";
-import { PrismaClient, PrismaAdapter } from "@propsto/prisma";
-import { z } from "zod";
+import { PrismaClient, PrismaAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
 import Resend from "next-auth/providers/resend";
 
 const prisma = new PrismaClient();
-
-const sessionShape = z.object({
-  user: z.object({
-    name: z.string(),
-  }),
-});
 
 const config = {
   adapter: PrismaAdapter(prisma),
@@ -36,9 +29,11 @@ const config = {
       if (pathname === "/middleware-example") return Boolean(auth);
       return true;
     },
-    jwt({ token, trigger, session }) {
-      const data = sessionShape.parse(session);
-      if (trigger === "update") token.name = data.user.name;
+    jwt: ({ token, user }) => {
+      if (!token.email) {
+        return {};
+      }
+      token.user = user;
       return token;
     },
     session({ session, token }) {
@@ -51,8 +46,22 @@ const config = {
   experimental: {
     enableWebAuthn: true,
   },
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/signin",
+  },
+  events: {
+    createUser(message) {
+      const params = {
+        user: {
+          name: message.user.name,
+          email: message.user.email,
+        },
+      };
+      // eslint-disable-next-line no-console -- Lala
+      console.log(params);
+      //await sendWelcomeEmail(params); // <-- send welcome email
+    },
   },
   debug: process.env.NODE_ENV !== "production",
 } satisfies NextAuthConfig;

@@ -6,7 +6,9 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "14.2.3",
     "@vercel/style-guide": "6.0.0",
-    "eslint-config-turbo": "2.0.3",
+    "eslint-config-turbo": "2.0.3"
+  },
+  "peerDependencies": {
     "typescript": "*"
   }
 }

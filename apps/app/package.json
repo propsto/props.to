@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "pnpm --filter @propsto/prisma db-generate && next build",
+    "build": "pnpm --filter @propsto/data db-generate && next build",
     "dev": "next dev",
-    "dx": "pnpm --filter @propsto/prisma db-setup && pnpm dev",
-    "dx:nuke": "pnpm --filter @propsto/prisma db-nuke && pnpm dx",
+    "dx": "pnpm --filter @propsto/data db-setup && pnpm dev",
+    "dx:nuke": "pnpm --filter @propsto/data db-nuke && pnpm dx",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "postinstall": "pnpm --filter @propsto/prisma db-generate",
+    "postinstall": "pnpm --filter @propsto/data db-generate",
     "lint": "next lint",
     "start": "next start",
     "test": "pnpm test:unit && pnpm test:e2e",
@@ -19,18 +19,10 @@
     "type-check": "tsc --noEmit",
     "validate": "pnpm ts:check && pnpm format:check"
   },
-  "dependencies": {
-    "lucide-react": "*",
-    "next": "*",
-    "react": "*",
-    "react-dom": "*",
-    "tailwind-merge": "*",
-    "zod": "*"
-  },
-  "devDependencies": {
+  "peerDependencies": {
     "@playwright/test": "*",
     "@propsto/eslint": "workspace:*",
-    "@propsto/prisma": "workspace:*",
+    "@propsto/data": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@types/node": "*",
@@ -38,9 +30,15 @@
     "@types/react-dom": "*",
     "autoprefixer": "*",
     "eslint": "*",
+    "lucide-react": "*",
+    "next": "*",
     "postcss": "*",
+    "react": "*",
+    "react-dom": "*",
+    "tailwind-merge": "*",
     "tailwindcss": "*",
     "typescript": "*",
-    "vitest": "*"
+    "vitest": "*",
+    "zod": "*"
   }
 }
