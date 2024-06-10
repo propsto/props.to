@@ -1,0 +1,17 @@
+{
+  "name": "@propsto/logger",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "debug": "4.3.5"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12"
+  }
+}

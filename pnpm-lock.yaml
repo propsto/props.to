@@ -267,6 +267,9 @@ importers:
       '@prisma/extension-accelerate':
         specifier: 1.1.0
         version: 1.1.0(@prisma/client@5.15.0(prisma@5.15.0))
+      '@propsto/logger':
+        specifier: workspace:*
+        version: link:../logger
       prisma:
         specifier: 5.15.0
         version: 5.15.0
@@ -298,29 +301,8 @@ importers:
         specifier: 2.1.4
         version: 2.1.4(@swc/helpers@0.5.5)(eslint@8.57.0)(ts-node@10.9.2(@types/node@20.14.2)(typescript@5.4.5))
       resend:
-        specifier: ^3.2.0
+        specifier: 3.2.0
         version: 3.2.0
-
-  packages/emails:
-    dependencies:
-      '@propsto/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
-      '@react-email/components':
-        specifier: 0.0.19
-        version: 0.0.19(@types/react@18.3.3)(react@18.3.1)
-      '@types/react':
-        specifier: '*'
-        version: 18.3.3
-      '@types/react-dom':
-        specifier: '*'
-        version: 18.3.0
-      react:
-        specifier: '*'
-        version: 18.3.1
-      react-email:
-        specifier: 2.1.4
-        version: 2.1.4(@swc/helpers@0.5.5)(eslint@8.57.0)(ts-node@10.9.2(@types/node@20.14.2)(typescript@5.4.5))
 
   packages/eslint:
     dependencies:
@@ -338,26 +320,15 @@ importers:
         specifier: 2.0.3
         version: 2.0.3(eslint@8.57.0)
 
-  packages/prisma:
+  packages/logger:
     dependencies:
-      '@auth/prisma-adapter':
-        specifier: 2.2.0
-        version: 2.2.0(@prisma/client@5.15.0(prisma@5.15.0))(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.3)
-      '@prisma/client':
-        specifier: 5.15.0
-        version: 5.15.0(prisma@5.15.0)
-      '@prisma/extension-accelerate':
-        specifier: 1.1.0
-        version: 1.1.0(@prisma/client@5.15.0(prisma@5.15.0))
-      prisma:
-        specifier: 5.15.0
-        version: 5.15.0
-      ts-node:
-        specifier: 10.9.2
-        version: 10.9.2(@swc/core@1.3.101)(@types/node@20.14.2)(typescript@5.4.5)
-      typescript:
-        specifier: '*'
-        version: 5.4.5
+      debug:
+        specifier: 4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
 
   packages/tsconfig: {}
 
@@ -430,7 +401,7 @@ importers:
         specifier: '*'
         version: 3.4.3(ts-node@10.9.2(@types/node@20.14.1)(typescript@5.4.5))
       tailwindcss-animate:
-        specifier: ^1.0.7
+        specifier: 1.0.7
         version: 1.0.7(tailwindcss@3.4.3(ts-node@10.9.2(@types/node@20.14.1)(typescript@5.4.5)))
       typescript:
         specifier: '*'
@@ -1984,6 +1955,9 @@ packages:
   '@types/cors@2.8.17':
     resolution: {integrity: sha512-8CGDvrBj1zgo2qE+oS3pOCyYNqCPryMWY2bGfwA0dcfopWGgxs+78df0Rs3rc9THP4JkOhLsAa+15VdpAqkcUA==}
 
+  '@types/debug@4.1.12':
+    resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
+
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
 
@@ -1998,6 +1972,9 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
+
+  '@types/ms@0.7.34':
+    resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
 
   '@types/node@20.14.1':
     resolution: {integrity: sha512-T2MzSGEu+ysB/FkWfqmhV3PLyQlowdptmmgD20C6QxsS8Fmv5SjpZ1ayXaEC0S21/h5UJ9iA6W/5vSNU5l00OA==}
@@ -6349,6 +6326,10 @@ snapshots:
     dependencies:
       '@types/node': 20.14.2
 
+  '@types/debug@4.1.12':
+    dependencies:
+      '@types/ms': 0.7.34
+
   '@types/eslint-scope@3.7.7':
     dependencies:
       '@types/eslint': 8.56.10
@@ -6364,6 +6345,8 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
+
+  '@types/ms@0.7.34': {}
 
   '@types/node@20.14.1':
     dependencies:

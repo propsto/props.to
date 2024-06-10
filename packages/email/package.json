@@ -10,7 +10,7 @@
   "dependencies": {
     "@react-email/components": "0.0.19",
     "react-email": "2.1.4",
-    "resend": "^3.2.0"
+    "resend": "3.2.0"
   },
   "peerDependencies": {
     "@propsto/tsconfig": "workspace:*",

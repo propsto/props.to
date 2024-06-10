@@ -34,7 +34,14 @@ export async function signUpAction(
       variant: "error",
     };
   }
-  await createUser(data); // TODO try/catch, show error w/code in docs
+  const insert = await createUser(data);
+  if (!insert.success) {
+    return {
+      retry: 0,
+      message: insert.error,
+      iconName: "Failure",
+    };
+  }
   await sendWelcomeEmail(data); // TODO try/catch, show error w/code in docs
   return {
     retry: 0,

@@ -4,16 +4,16 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "db-deploy": "pnpm prisma migrate deploy",
+    "db-deploy": "prisma migrate deploy",
+    "db-migrate": "prisma migrate dev",
     "db-generate": "prisma generate",
     "db-nuke": "docker compose down --volumes --remove-orphans || docker-compose down --volumes --remove-orphans",
     "db-push": "prisma db push --skip-generate",
     "db-reset": "pnpm db-nuke && pnpm db-setup",
-    "db-seed": "pnpm prisma db seed",
+    "db-seed": "prisma db seed",
     "db-setup": "pnpm db-up && pnpm db-deploy && pnpm db-seed",
     "db-studio": "prisma studio",
     "db-up": "docker compose up -d || docker-compose up -d",
-    "postinstall": "pnpm db-generate",
     "lint": "prisma validate"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
     "ts-node": "10.9.2"
   },
   "peerDependencies": {
+    "@propsto/logger": "workspace:*",
     "typescript": "*"
   },
   "prisma": {

@@ -19,3 +19,6 @@ export type EmailTemplateReturnType<T extends EmailTemplateNames> = ReturnType<
 // Create a conditional type to check if a function takes no arguments
 export type NoArguments<T extends EmailTemplateNames> =
   EmailTemplateArguments<T> extends [] ? true : false;
+
+// Create a type for the arguments for each template send function
+export type Email = string | { email: string };
