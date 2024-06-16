@@ -1,9 +1,10 @@
 {
   "name": "@propsto/logger",
   "version": "1.0.0",
-  "main": "index.ts",
+  "main": "index.mjs",
+  "types": "index.d.mts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "DEBUG=* node test.mjs"
   },
   "keywords": [],
   "license": "ISC",
@@ -13,5 +14,9 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12"
+  },
+  "peerDependencies": {
+    "typescript": "*",
+    "ts-node": "*"
   }
 }

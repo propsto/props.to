@@ -10,10 +10,7 @@ export function SignupForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
-  const [state, action] = useFormState(signUpAction, {
-    retry: 0,
-    message: "",
-  });
+  const [state, action] = useFormState(signUpAction, undefined);
   const { pending } = useFormStatus();
 
   return (
@@ -24,6 +21,9 @@ export function SignupForm({
             <Label className="sr-only" htmlFor="email">
               Email
             </Label>
+            {state?.errors?.email ? (
+              <p className="text-sm text-red-500">{state.errors.email}</p>
+            ) : null}
             <Input
               autoCapitalize="none"
               autoComplete="email"
@@ -34,7 +34,10 @@ export function SignupForm({
               type="email"
             />
           </div>
-          <SubmitButton state={state}>Create your account</SubmitButton>
+          {state?.message ? (
+            <p className="text-sm text-red-500">{state.message}</p>
+          ) : null}
+          <SubmitButton>Create your account</SubmitButton>
         </div>
       </form>
       {/*<div className="relative">

@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "autoprefixer": "10.4.19",
-    "lucide-react": "0.390.0",
-    "next": "14.2.3",
+    "lucide-react": "0.395.0",
+    "next": "14.2.4",
     "next-themes": "0.3.0",
     "postcss": "8.4.38",
     "react": "18.3.1",
@@ -35,15 +35,18 @@
   },
   "devDependencies": {
     "@playwright/test": "1.44.1",
-    "@propsto/tsconfig": "workspace:*",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
     "@types/node": "20.14.2",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "eslint": "8.57.0",
     "husky": "9.0.11",
-    "prettier": "3.3.1",
-    "turbo": "2.0.3"
+    "prettier": "3.3.2",
+    "turbo": "2.0.4",
+    "ts-node": "10.9.2"
   },
-  "packageManager": "pnpm@9.2.0"
+  "peerDependencies": {
+    "@propsto/tsconfig": "workspace:*"
+  },
+  "packageManager": "pnpm@9.3.0"
 }

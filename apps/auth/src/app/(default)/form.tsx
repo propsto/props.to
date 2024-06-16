@@ -11,7 +11,7 @@ export function SigninForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
-  const [state, action] = useFormState(signInAction, { retry: 0, message: "" });
+  const [state, action] = useFormState(signInAction, undefined);
   const { pending } = useFormStatus();
 
   return (
@@ -31,8 +31,14 @@ export function SigninForm({
               placeholder="name@example.com"
               type="email"
             />
+            {state?.errors?.email ? (
+              <p className="text-sm text-red-500">{state.errors.email}</p>
+            ) : null}
           </div>
-          <SubmitButton state={state}>Sign in with email link</SubmitButton>
+          {state?.message ? (
+            <p className="text-sm text-red-500">{state.message}</p>
+          ) : null}
+          <SubmitButton>Sign in with email link</SubmitButton>
         </div>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

@@ -20,12 +20,12 @@
     "@auth/prisma-adapter": "2.2.0",
     "@prisma/client": "5.15.0",
     "@prisma/extension-accelerate": "1.1.0",
-    "prisma": "5.15.0",
-    "ts-node": "10.9.2"
+    "prisma": "5.15.0"
   },
   "peerDependencies": {
     "@propsto/logger": "workspace:*",
-    "typescript": "*"
+    "typescript": "*",
+    "ts-node": "*"
   },
   "prisma": {
     "seed": "ts-node --transpile-only ./seed.ts"

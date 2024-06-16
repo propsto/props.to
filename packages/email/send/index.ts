@@ -13,7 +13,7 @@ export async function send<T extends EmailTemplateNames>(
   email: Email,
   subject: string,
   template: EmailTemplate,
-  ...args: NoArguments<T> extends true ? [] : EmailTemplateArguments<T>
+  ...args: NoArguments<T> extends true ? [] : [...EmailTemplateArguments<T>]
 ) {
   const chosenTemplate = template as (...args: any[]) => any;
 

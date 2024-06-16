@@ -4,7 +4,7 @@
   "description": "Authentication app for props.to",
   "scripts": {
     "build": "next build",
-    "dev": "PORT=3002 next",
+    "dev": "DEBUG=* PORT=3002 next",
     "lint": "next lint",
     "start": "next start",
     "type-check": "tsc --noEmit"
@@ -20,6 +20,7 @@
     "@propsto/data": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

@@ -1,51 +1,43 @@
 "use server";
 
-import { type SubmitButtonProps } from "@propsto/ui/molecules/submit-button";
-import * as z from "zod";
-import { createUser } from "@propsto/data/repos";
+import { createUser, checkUserExistance } from "@propsto/data/repos";
 import { sendWelcomeEmail } from "@propsto/email";
-
-const formSchema = z.object({
-  email: z.string().email("Invalid email address"),
-});
-
-async function sleep(milliseconds: number): Promise<void> {
-  const ok = await Promise.resolve(true);
-  const date = Date.now();
-  let currentDate: number | null = null;
-  do {
-    currentDate = Date.now();
-  } while (currentDate - date < milliseconds && ok);
-}
+import logger from "@propsto/logger?auth";
+import { type FormState, SignupFormSchema } from "../types";
 
 export async function signUpAction(
-  prevState: SubmitButtonProps,
+  state: FormState,
   formData: FormData
-): Promise<SubmitButtonProps> {
-  await sleep(3000);
-  const { success, error, data } = formSchema.safeParse({
+): Promise<FormState> {
+  // Parse the form data against expected schema
+  const { data, success, error } = SignupFormSchema.safeParse({
     email: formData.get("email"),
   });
   if (!success) {
+    logger("signUpAction %O", error.flatten().fieldErrors);
     return {
-      retry: prevState.retry + 1,
-      message: error.issues[0].message,
-      iconName: "Failure",
-      variant: "error",
+      errors: error.flatten().fieldErrors,
     };
   }
-  const insert = await createUser(data);
-  if (!insert.success) {
+
+  // Check user doesn't exist yet before creating
+  const existingUser = await checkUserExistance(data);
+  if (existingUser.data) {
+    logger("signUpAction", { existingUser });
     return {
-      retry: 0,
-      message: insert.error,
-      iconName: "Failure",
+      message: "Email already exists, please use a different email or login.",
     };
   }
+
+  // Proceed to create the user since it doesn't exist
+  const newUser = await createUser(data);
+  if (!newUser.success) {
+    logger("signUpAction", { newUser });
+    return {
+      message: newUser.error,
+    };
+  }
+
+  // End process with email
   await sendWelcomeEmail(data); // TODO try/catch, show error w/code in docs
-  return {
-    retry: 0,
-    message: `Signed up successfully`,
-    iconName: "Success",
-  };
 }
