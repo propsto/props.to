@@ -1,11 +1,9 @@
 "use server";
 
-import { type SubmitButtonProps } from "@propsto/ui/molecules";
-
 export async function requestEarlyAccess(
-  prevState: SubmitButtonProps,
+  prevState: FormState,
   formData: FormData
-): Promise<SubmitButtonProps> {
+): Promise<FormState> {
   formData.set(
     "xnQsjsdp",
     "3eb3afc7ccfde7a401ada6e6b9f9aa7c9282cde4dc2ee4a23e114ad87745f81b"
@@ -23,12 +21,9 @@ export async function requestEarlyAccess(
     body: formData,
   });
   if (response.status === 200) {
-    return { retry: 0, iconName: "Success", message: "Success!" };
+    return { message: "Success!" };
   }
   return {
-    retry: 0,
-    iconName: "Failure",
     message: "There was an error.",
-    variant: "error",
   };
 }

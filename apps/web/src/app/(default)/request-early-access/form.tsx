@@ -2,13 +2,10 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { SubmitButton } from "@propsto/ui/molecules";
-import { requestEarlyAccess } from "@/server/request-early-access-action";
+import { requestEarlyAccess } from "./action";
 
 export function Form(): JSX.Element {
-  const [state, action] = useFormState(requestEarlyAccess, {
-    retry: 0,
-    message: "",
-  });
+  const [state, action] = useFormState(requestEarlyAccess, undefined);
   const { pending } = useFormStatus();
   return (
     <form action={action} id="webform" name="WebToLeads6106600000000449577">
@@ -83,7 +80,7 @@ export function Form(): JSX.Element {
         </div>
       </div>
       <div className="mt-5">
-        <SubmitButton state={state}>Request early access</SubmitButton>
+        <SubmitButton>Request early access</SubmitButton>
       </div>
     </form>
   );

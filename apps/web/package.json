@@ -26,6 +26,7 @@
     "react": "*",
     "react-dom": "*",
     "tailwindcss": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "zod": "*"
   }
 }
