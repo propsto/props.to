@@ -7,7 +7,7 @@ import {
   Email,
 } from "../types";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.AUTH_RESEND_KEY);
 
 export async function send<T extends EmailTemplateNames>(
   email: Email,

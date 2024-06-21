@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <main className="overflow-hidden">
-            <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+            <div className="relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
               <SideSection />
               <div className="lg:p-8">
                 <div className="mx-auto text-center flex flex-col justify-center space-y-4 sm:w-[350px]">

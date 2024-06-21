@@ -3,7 +3,7 @@ const path = require("node:path");
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["selector", '[data-theme="dark"]'],
-  content: ["atoms", "molecules", "hooks", "utils"].flatMap((entity) =>
+  content: ["atoms", "molecules", "organisms", "hooks", "utils"].flatMap((entity) =>
     path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
   theme: {
