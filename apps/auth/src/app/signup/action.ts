@@ -3,15 +3,17 @@
 import { createUser, checkUserExistance } from "@propsto/data/repos";
 import { sendWelcomeEmail } from "@propsto/email";
 import logger from "@propsto/logger?auth";
-import { type FormState, SignupFormSchema } from "../types";
+import { type SignUpFormState, SignupFormSchema } from "../types";
 
 export async function signUpAction(
-  state: FormState,
+  state: SignUpFormState,
   formData: FormData
-): Promise<FormState> {
+): Promise<SignUpFormState> {
   // Parse the form data against expected schema
   const { data, success, error } = SignupFormSchema.safeParse({
+    name: formData.get("name"),
     email: formData.get("email"),
+    password: formData.get("password"),
   });
   if (!success) {
     logger("signUpAction %O", error.flatten().fieldErrors);
@@ -39,5 +41,5 @@ export async function signUpAction(
   }
 
   // End process with email
-  await sendWelcomeEmail(data); // TODO try/catch, show error w/code in docs
+  await sendWelcomeEmail(data);
 }

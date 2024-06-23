@@ -31,11 +31,11 @@ export const metadata: Metadata = {
   description: "Open Source Feedback Platform",
 };
 
-export function RootLayout({
+export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}): JSX.Element {
+}>): JSX.Element {
   return (
     <html lang="en">
       <body

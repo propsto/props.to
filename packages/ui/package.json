@@ -23,6 +23,7 @@
   "peerDependencies": {
     "@propsto/eslint": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

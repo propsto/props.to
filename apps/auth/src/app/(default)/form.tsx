@@ -1,44 +1,30 @@
 "use client";
 
 import { cn } from "@propsto/ui/utils/cn";
-import { useFormState, useFormStatus } from "react-dom";
-import { Label, Input, Button } from "@propsto/ui/atoms";
+import { Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
-import { SubmitButton } from "@propsto/ui/molecules/submit-button";
+import { useActionState } from "react";
+import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
 import { signInAction } from "./action";
 
 export function SigninForm({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
-  const [state, action] = useFormState(signInAction, undefined);
-  const { pending } = useFormStatus();
+}: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
+  const [result, action, isPending] = useActionState(signInAction, undefined);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form action={action} className="flex flex-col gap-4">
         <div className="grid gap-4">
-          <div className="grid gap-1 relative">
-            <Label className="sr-only" htmlFor="email">
-              Email
-            </Label>
-            <Input
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              disabled={pending}
-              name="email"
-              placeholder="name@example.com"
-              type="email"
-            />
-            {state?.errors?.email ? (
-              <p className="text-sm text-red-500">{state.errors.email}</p>
-            ) : null}
-          </div>
-          {state?.message ? (
-            <p className="text-sm text-red-500">{state.message}</p>
-          ) : null}
-          <SubmitButton>Sign in with email link</SubmitButton>
+          <FormInputError
+            controlName="Email"
+            isPending={isPending}
+            result={result}
+          />
+          <SubmitButton result={result} isPending={isPending}>
+            Sign in
+          </SubmitButton>
         </div>
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -56,7 +42,7 @@ export function SigninForm({
           onClick={() => {
             void signIn("passkey");
           }}
-          disabled={pending}
+          disabled={isPending}
         >
           Sign in with Passkey
         </Button>

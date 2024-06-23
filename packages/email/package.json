@@ -3,9 +3,10 @@
   "version": "0.0.19",
   "private": true,
   "scripts": {
-    "build": "email build",
+    "build": "email build --dir templates",
     "dev": "email dev --dir templates",
-    "export": "email export"
+    "export": "email export",
+    "lint": "eslint **/*.{ts,tsx}"
   },
   "dependencies": {
     "@react-email/components": "0.0.19",
@@ -15,8 +16,10 @@
   "peerDependencies": {
     "@propsto/logger": "workspace:*",
     "@propsto/tsconfig": "workspace:*",
+    "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
+    "eslint": "*",
     "react": "*"
   }
 }

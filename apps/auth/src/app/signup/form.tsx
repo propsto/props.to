@@ -1,43 +1,41 @@
 "use client";
 
 import { cn } from "@propsto/ui/utils/cn";
-import { useFormState, useFormStatus } from "react-dom";
-import { Label, Input } from "@propsto/ui/atoms";
-import { SubmitButton } from "@propsto/ui/molecules";
+import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
+import { useActionState } from "react";
 import { signUpAction } from "./action";
 
 export function SignupForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
-  const [state, action] = useFormState(signUpAction, undefined);
-  const { pending } = useFormStatus();
+  const [result, action, isPending] = useActionState(signUpAction, undefined);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form action={action}>
         <div className="grid gap-2">
-          <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="email">
-              Email
-            </Label>
-            {state?.errors?.email ? (
-              <p className="text-sm text-red-500">{state.errors.email}</p>
-            ) : null}
-            <Input
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              disabled={pending}
-              name="email"
-              placeholder="name@example.com"
-              type="email"
-            />
-          </div>
-          {state?.message ? (
-            <p className="text-sm text-red-500">{state.message}</p>
-          ) : null}
-          <SubmitButton>Create your account</SubmitButton>
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Name"
+            autocapitalize="words"
+          />
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Email"
+          />
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Password"
+            autocapitalize="none"
+            autocomplete=""
+          />
+          <SubmitButton result={result} isPending={isPending}>
+            Create your account
+          </SubmitButton>
         </div>
       </form>
       {/*<div className="relative">

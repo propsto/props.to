@@ -10,23 +10,26 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --filter !@propsto/emails",
+    "debug": "turbo run debug --filter !@propsto/emails",
     "dev:app": "turbo run dev --filter @propsto/app",
     "dev:auth": "turbo run dev --filter @propsto/auth",
+    "debug:auth": "turbo run debug --filter @propsto/auth",
     "dev:web": "turbo run dev --filter @propsto/web",
+    "debug:web": "turbo run debug --filter @propsto/web",
     "dev:email": "turbo run dev --filter @propsto/email",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint --force",
     "type-check": "turbo run type-check",
     "validate": "turbo run validate"
   },
   "dependencies": {
     "autoprefixer": "10.4.19",
     "lucide-react": "0.395.0",
-    "next": "14.2.4",
+    "next": "15.0.0-canary.41",
     "next-themes": "0.3.0",
     "postcss": "8.4.38",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.0.0-rc.0",
+    "react-dom": "19.0.0-rc.0",
     "tailwind-merge": "2.3.0",
     "tailwindcss": "3.4.4",
     "typescript": "5.4.5",
@@ -48,5 +51,13 @@
   "peerDependencies": {
     "@propsto/tsconfig": "workspace:*"
   },
-  "packageManager": "pnpm@9.3.0"
+  "pnpm": {
+    "overrides": {
+      "next": "15.0.0-canary.41",
+      "react": "19.0.0-rc.0",
+      "react-dom": "19.0.0-rc.0",
+      "typescript": "5.4.5"
+    }
+  },
+  "packageManager": "pnpm@9.4.0"
 }

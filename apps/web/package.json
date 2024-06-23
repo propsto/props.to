@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "PORT=3001 next dev",
+    "debug": "DEBUG=@propsto:web pnpm dev",
     "lint": "next lint",
     "start": "next start"
   },
@@ -15,6 +16,8 @@
     "@propsto/eslint": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@propsto/tsconfig": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
@@ -26,6 +29,7 @@
     "react": "*",
     "react-dom": "*",
     "tailwindcss": "*",
-    "typescript": "*"
+    "typescript": "*",
+    "zod": "*"
   }
 }

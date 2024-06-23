@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   description: "Open Source Feedback Platform",
 };
 
-export function Home(): JSX.Element {
+export default function RequestEarlyAccess(): JSX.Element {
   return (
     <>
       <section className="relative overflow-hidden before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-100 before:-z-10">
         <Triangles />
-        <div className="pt-32 pb-12 md:pt-36 md:pb-20">
+        <div className="pt-28 pb-12 md:pt-32 md:pb-20">
           <div className="px-4 sm:px-6">
             {/* Page header */}
             <div className="relative max-w-3xl mx-auto text-center pb-12 md:pb-10">

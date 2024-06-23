@@ -1,6 +1,6 @@
 import { Heading, Button, Html } from "@react-email/components";
 
-export const WelcomeEmail = () => {
+export function WelcomeEmail(): JSX.Element {
   return (
     <Html>
       <Heading as="h1" style={{ fontFamily: "sans-serif" }}>
@@ -19,6 +19,4 @@ export const WelcomeEmail = () => {
       </Button>
     </Html>
   );
-};
-
-export default WelcomeEmail;
+}
