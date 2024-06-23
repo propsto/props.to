@@ -9,6 +9,9 @@ export async function signUpAction(
   state: SignUpFormState,
   formData: FormData
 ): Promise<SignUpFormState> {
+  await new Promise((resolve) => {
+    setTimeout(resolve, 5000);
+  });
   // Parse the form data against expected schema
   const { data, success, error } = SignupFormSchema.safeParse({
     name: formData.get("name"),

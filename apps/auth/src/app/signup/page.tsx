@@ -17,7 +17,7 @@ export default function SignupPage(): JSX.Element {
           buttonVariants({ variant: "ghost" }),
           "absolute right-4 top-4 md:right-8 md:top-8"
         )}
-        href="/signin"
+        href="/"
       >
         Sign in
       </Link>

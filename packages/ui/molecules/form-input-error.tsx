@@ -7,15 +7,6 @@ type FormInputErrorProps = {
   controlName: string;
 } & Partial<Pick<HTMLInputElement, "autocapitalize" | "autocomplete">>;
 
-/**
- *             name="name"
-            autocomplete="name"
-            placeholder="Name"
-            id="name"
-            label="Name"
-            type="name"
- */
-
 export function FormInputError({
   result,
   isPending,
@@ -24,7 +15,7 @@ export function FormInputError({
   autocomplete,
 }: FormInputErrorProps): JSX.Element {
   return (
-    <>
+    <div className="flex flex-col gap-2">
       <Label className="sr-only" htmlFor={controlName.toLowerCase()}>
         {controlName}
       </Label>
@@ -43,6 +34,6 @@ export function FormInputError({
           {result.errors[controlName.toLowerCase()]}
         </p>
       ) : null}
-    </>
+    </div>
   );
 }

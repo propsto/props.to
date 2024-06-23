@@ -48,7 +48,7 @@ const config = {
   },
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/signin",
+    signIn: "/",
   },
   events: {
     createUser(message) {

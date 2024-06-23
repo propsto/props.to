@@ -16,7 +16,7 @@ export function SigninForm({
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form action={action} className="flex flex-col gap-4">
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           <FormInputError
             controlName="Email"
             isPending={isPending}
