@@ -4,16 +4,20 @@ import { Button } from "../atoms";
 export interface SubmitButtonProps {
   isPending: boolean;
   children: React.ReactNode;
+  name?: string;
+  value?: string;
   result: PropstoFormState<Record<string, string>>;
 }
 
 export function SubmitButton({
   isPending,
   children,
+  name,
   result,
+  value,
 }: Readonly<SubmitButtonProps>): JSX.Element {
   return (
-    <Button aria-disabled={isPending} type="submit">
+    <Button aria-disabled={isPending} type="submit" name={name} value={value}>
       {isPending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
       {result?.success === true ? (
         <CheckCircle2 className="mr-2 size-4" />

@@ -5,6 +5,7 @@ type FormInputErrorProps = {
   result: PropstoFormState<Record<string, string>>;
   isPending: boolean;
   controlName: string;
+  className?: string;
 } & Partial<Pick<HTMLInputElement, "autocapitalize" | "autocomplete">>;
 
 export function FormInputError({
@@ -13,9 +14,10 @@ export function FormInputError({
   controlName,
   autocapitalize,
   autocomplete,
+  className,
 }: FormInputErrorProps): JSX.Element {
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", className)}>
       <Label className="sr-only" htmlFor={controlName.toLowerCase()}>
         {controlName}
       </Label>

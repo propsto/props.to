@@ -3,7 +3,7 @@
 import { cn } from "@propsto/ui/utils/cn";
 import { Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
 import { signInAction } from "./action";
 
@@ -12,6 +12,9 @@ export function SigninForm({
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
   const [result, action, isPending] = useActionState(signInAction, undefined);
+  const [signInMethod, setSignInMethod] = useState<"resend" | "credentials">(
+    "resend"
+  );
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
@@ -22,8 +25,23 @@ export function SigninForm({
             isPending={isPending}
             result={result}
           />
-          <SubmitButton result={result} isPending={isPending}>
-            Sign in
+          {signInMethod === "credentials" && (
+            <FormInputError
+              controlName="Password"
+              className="animate-in slide-in-from-left-72 duration-700 ease-out"
+              isPending={isPending}
+              result={result}
+              autocomplete=""
+            />
+          )}
+          <SubmitButton
+            result={result}
+            isPending={isPending}
+            name="signInMethod"
+            value={signInMethod}
+          >
+            Sign in with{" "}
+            {signInMethod === "credentials" ? "password" : "magic link"}
           </SubmitButton>
         </div>
         <div className="relative">
@@ -45,6 +63,22 @@ export function SigninForm({
           disabled={isPending}
         >
           Sign in with Passkey
+        </Button>
+        <Button
+          variant="outline"
+          type="button"
+          name="signInMethod"
+          value="credentials"
+          onClick={() => {
+            if (signInMethod === "resend") {
+              setSignInMethod("credentials");
+            } else {
+              setSignInMethod("resend");
+            }
+          }}
+          disabled={isPending}
+        >
+          Sign in with {signInMethod === "resend" ? "password" : "magic link"}
         </Button>
       </form>
     </div>

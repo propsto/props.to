@@ -9,9 +9,6 @@ export async function signUpAction(
   state: SignUpFormState,
   formData: FormData
 ): Promise<SignUpFormState> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 5000);
-  });
   // Parse the form data against expected schema
   const { data, success, error } = SignupFormSchema.safeParse({
     name: formData.get("name"),
@@ -30,7 +27,7 @@ export async function signUpAction(
   if (existingUser.data) {
     logger("signUpAction", { existingUser });
     return {
-      message: "Email already exists, please use a different email or login.",
+      message: "Email already exists, please sign in.",
     };
   }
 
