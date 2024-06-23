@@ -6,7 +6,7 @@ import { PricingTabs } from "@components/pricing-tabs";
 import { Testimonials } from "@components/testimonials";
 import { Cta } from "@components/cta";
 
-export function Home(): JSX.Element {
+export default function HomePage(): JSX.Element {
   return (
     <>
       <Hero />

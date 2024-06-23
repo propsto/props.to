@@ -1,1 +1,0 @@
-export { WelcomeEmailTemplate } from "./welcome";

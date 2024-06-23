@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import {
+import type {
   EmailTemplate,
   EmailTemplateArguments,
   EmailTemplateNames,
@@ -14,8 +14,8 @@ export async function send<T extends EmailTemplateNames>(
   subject: string,
   template: EmailTemplate,
   ...args: NoArguments<T> extends true ? [] : [...EmailTemplateArguments<T>]
-) {
-  const chosenTemplate = template as (...args: any[]) => any;
+): Promise<ReturnType<Resend["emails"]["send"]>> {
+  const chosenTemplate = template as (...args: unknown[]) => JSX.Element;
 
   return await resend.emails.send({
     from: "Props.to <hello@comm.props.to>",

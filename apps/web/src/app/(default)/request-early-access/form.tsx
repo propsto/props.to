@@ -1,12 +1,16 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
-import { SubmitButton } from "@propsto/ui/molecules";
+import { Button, Input, Textarea } from "@propsto/ui/atoms";
+import { LoaderCircle, CheckCircle2, XCircle } from "lucide-react";
+import { useActionState } from "react";
 import { requestEarlyAccess } from "./action";
 
 export function Form(): JSX.Element {
-  const [state, action] = useFormState(requestEarlyAccess, undefined);
-  const { pending } = useFormStatus();
+  const [result, action, isPending] = useActionState(
+    requestEarlyAccess,
+    undefined
+  );
+
   return (
     <form action={action} id="webform" name="WebToLeads6106600000000449577">
       <div className="space-y-4">
@@ -17,15 +21,18 @@ export function Form(): JSX.Element {
           >
             First Name
           </label>
-          <input
+          <Input
             id="First_Name"
             name="First Name"
-            className="form-input text-sm w-full"
             type="text"
             placeholder="John"
-            disabled={pending}
-            required
+            disabled={isPending}
           />
+          {result?.errors?.firstName ? (
+            <p className="text-sm text-left text-red-500">
+              {result.errors.firstName}
+            </p>
+          ) : null}
         </div>
         <div>
           <label
@@ -34,15 +41,18 @@ export function Form(): JSX.Element {
           >
             Last Name
           </label>
-          <input
+          <Input
             id="Last_Name"
             name="Last Name"
-            className="form-input text-sm w-full"
             type="text"
-            disabled={pending}
+            disabled={isPending}
             placeholder="Williams"
-            required
           />
+          {result?.errors?.lastName ? (
+            <p className="text-sm text-left text-red-500">
+              {result.errors.lastName}
+            </p>
+          ) : null}
         </div>
         <div>
           <label
@@ -51,15 +61,18 @@ export function Form(): JSX.Element {
           >
             Email
           </label>
-          <input
+          <Input
             id="Email"
-            name="Email"
-            className="form-input text-sm w-full"
+            name="email"
             type="email"
-            disabled={pending}
+            disabled={isPending}
             placeholder="john@acmecorp.com"
-            required
           />
+          {result?.errors?.email ? (
+            <p className="text-sm text-left text-red-500">
+              {result.errors.email}
+            </p>
+          ) : null}
         </div>
         <div>
           <label
@@ -68,19 +81,33 @@ export function Form(): JSX.Element {
           >
             Project Details
           </label>
-          <textarea
+          <Textarea
             id="Description"
             name="Description"
-            className="form-textarea text-sm w-full"
             rows={4}
-            disabled={pending}
+            disabled={isPending}
             placeholder="Share your requirements"
-            required
           />
+          {result?.errors?.projectDetails ? (
+            <p className="text-sm text-left text-red-500">
+              {result.errors.projectDetails}
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="mt-5">
-        <SubmitButton>Request early access</SubmitButton>
+        <Button aria-disabled={isPending} type="submit">
+          {isPending ? (
+            <LoaderCircle className="mr-2 size-4 animate-spin" />
+          ) : null}
+          {result?.success === true ? (
+            <CheckCircle2 className="mr-2 size-4" />
+          ) : null}
+          {result?.success === false && result.message ? (
+            <XCircle className="mr-2 size-4" />
+          ) : null}
+          {result?.message ?? "Request early access"}
+        </Button>
       </div>
     </form>
   );

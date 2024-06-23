@@ -41,5 +41,5 @@ export async function signUpAction(
   }
 
   // End process with email
-  await sendWelcomeEmail(data); // TODO try/catch, show error w/code in docs
+  await sendWelcomeEmail(data);
 }

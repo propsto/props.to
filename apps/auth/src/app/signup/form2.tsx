@@ -14,7 +14,7 @@ const steps = [
   { label: "Step 3", description: "Description 3" },
 ] satisfies StepItem[];
 
-export default function StepperDemo() {
+export default function StepperDemo(): JSX.Element {
   return (
     <div className="flex w-full flex-col gap-4">
       <Stepper initialstep={0} steps={steps} orientation="vertical">
@@ -33,7 +33,7 @@ export default function StepperDemo() {
   );
 }
 
-function Footer() {
+function Footer(): JSX.Element {
   const {
     nextStep,
     prevStep,

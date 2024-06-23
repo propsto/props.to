@@ -165,7 +165,7 @@ function useStepper(): UseStepper {
   const previousActiveStep = usePrevious(context.activeStep);
 
   const currentStep = context.steps[context.activeStep];
-  const isOptionalStep = Boolean(currentStep?.optional);
+  const isOptionalStep = Boolean(currentStep.optional);
 
   const isDisabledStep = context.activeStep === 0;
 
@@ -952,7 +952,6 @@ function StepLabel({
 }: StepLabelProps): JSX.Element | null {
   const { variant, styles, size, orientation } = useStepper();
   const shouldRender = Boolean(label) || Boolean(description);
-  console.log({ description });
 
   return shouldRender ? (
     <div

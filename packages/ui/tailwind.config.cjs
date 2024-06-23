@@ -1,10 +1,17 @@
-const path = require("node:path");
+/* eslint-disable import/no-default-export -- TailwindCSS requires a default object to be configured */
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import tailwindAnimation from "tailwindcss-animate";
+import tailwindForms from "@tailwindcss/forms"
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: ["selector", '[data-theme="dark"]'],
-  content: ["atoms", "molecules", "organisms", "hooks", "utils"].flatMap((entity) =>
-    path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
+  content: ["atoms", "molecules", "organisms", "hooks", "utils"].flatMap(
+    (entity) => path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
   theme: {
     container: {
@@ -78,5 +85,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
+  plugins: [tailwindAnimation, tailwindForms],
 };

@@ -1,78 +1,41 @@
 "use client";
 
 import { cn } from "@propsto/ui/utils/cn";
-import { useFormState, useFormStatus } from "react-dom";
-import { Label, Input } from "@propsto/ui/atoms";
-import { SubmitButton } from "@propsto/ui/molecules";
+import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
+import { useActionState } from "react";
 import { signUpAction } from "./action";
 
 export function SignupForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
-  const [state, action] = useFormState(signUpAction, undefined);
-  const { pending } = useFormStatus();
+  const [result, action, isPending] = useActionState(signUpAction, undefined);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form action={action}>
         <div className="grid gap-2">
-          <div className="grid gap-2">
-            <Label className="sr-only" htmlFor="email">
-              Name
-            </Label>
-            <Input
-              autoCapitalize="none"
-              autoComplete="name"
-              autoCorrect="off"
-              disabled={pending}
-              name="name"
-              placeholder="Name"
-              type="name"
-            />
-            {state?.errors?.name ? (
-              <p className="text-sm text-left text-red-500">
-                {state.errors.name}
-              </p>
-            ) : null}
-            <Label className="sr-only" htmlFor="email">
-              Email
-            </Label>
-            <Input
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              disabled={pending}
-              name="email"
-              placeholder="Email"
-              type="email"
-            />
-            {state?.errors?.email ? (
-              <p className="text-sm text-left text-red-500">
-                {state.errors.email}
-              </p>
-            ) : null}
-            <Label className="sr-only" htmlFor="password">
-              Password
-            </Label>
-            <Input
-              autoCapitalize="none"
-              autoCorrect="off"
-              disabled={pending}
-              name="password"
-              placeholder="Password"
-              type="password"
-            />
-            {state?.errors?.password ? (
-              <p className="text-sm text-left text-red-500">
-                {state.errors.password}
-              </p>
-            ) : null}
-          </div>
-          {state?.message ? (
-            <p className="text-sm text-left text-red-500">{state.message}</p>
-          ) : null}
-          <SubmitButton>Create your account</SubmitButton>
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Name"
+            autocapitalize="words"
+          />
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Email"
+          />
+          <FormInputError
+            result={result}
+            isPending={isPending}
+            controlName="Password"
+            autocapitalize="none"
+            autocomplete=""
+          />
+          <SubmitButton result={result} isPending={isPending}>
+            Create your account
+          </SubmitButton>
         </div>
       </form>
       {/*<div className="relative">

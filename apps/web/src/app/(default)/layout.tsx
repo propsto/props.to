@@ -3,7 +3,7 @@
 import { Header } from "@components/ui/header";
 import { Footer } from "@components/ui/footer";
 
-export function DefaultLayout({
+export default function DefaultLayout({
   children,
 }: {
   children: React.ReactNode;
