@@ -31,7 +31,7 @@ export function SignupForm({
             isPending={isPending}
             controlName="Password"
             autocapitalize="none"
-            autocomplete=""
+            autocomplete="off"
           />
           <SubmitButton result={result} isPending={isPending}>
             Create your account

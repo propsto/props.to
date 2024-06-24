@@ -25,15 +25,17 @@ export function SigninForm({
             isPending={isPending}
             result={result}
           />
-          {signInMethod === "credentials" && (
-            <FormInputError
-              controlName="Password"
-              className="animate-in slide-in-from-left-72 duration-700 ease-out"
-              isPending={isPending}
-              result={result}
-              autocomplete=""
-            />
-          )}
+          <FormInputError
+            controlName="Password"
+            className={cn(
+              signInMethod === "credentials"
+                ? "inline animate-in !slide-in-from-left-72"
+                : "hidden"
+            )}
+            isPending={isPending}
+            result={result}
+            autocomplete="off"
+          />
           <SubmitButton
             result={result}
             isPending={isPending}
@@ -49,9 +51,7 @@ export function SigninForm({
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
           </div>
         </div>
         <Button

@@ -33,6 +33,7 @@
     "react": "*",
     "react-dom": "*",
     "tailwindcss": "*",
+    "tailwindcss-animate": "*",
     "typescript": "*",
     "zod": "*"
   }
