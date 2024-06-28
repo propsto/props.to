@@ -19,8 +19,9 @@
     "dev:email": "turbo run dev --filter @propsto/email",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint --force",
+    "test": "turbo run test --force",
     "type-check": "turbo run type-check",
-    "validate": "turbo run validate"
+    "check-constants": "turbo run test --filter @propsto/constants"
   },
   "dependencies": {
     "autoprefixer": "10.4.19",
@@ -46,7 +47,7 @@
     "eslint": "8.57.0",
     "husky": "9.0.11",
     "prettier": "3.3.2",
-    "turbo": "2.0.4",
+    "turbo": "2.0.5",
     "ts-node": "10.9.2"
   },
   "peerDependencies": {

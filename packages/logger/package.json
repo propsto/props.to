@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.mjs",
   "scripts": {
-    "test": "DEBUG=* node test.mjs"
+    "test": "DEBUG=* node test.mjs",
+    "lint": "eslint **/*.{js,mjs}"
   },
   "keywords": [],
   "license": "ISC",
@@ -12,10 +13,9 @@
     "debug": "4.3.5"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.12"
+    "@types/debug": "4.1.12"
   },
   "peerDependencies": {
-    "typescript": "*",
-    "ts-node": "*"
+    "typescript": "*"
   }
 }

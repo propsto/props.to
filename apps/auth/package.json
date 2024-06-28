@@ -16,6 +16,7 @@
     "next-auth": "beta"
   },
   "peerDependencies": {
+    "@propsto/constants": "workspace:*",
     "@propsto/email": "workspace:*",
     "@propsto/eslint": "workspace:*",
     "@propsto/data": "workspace:*",

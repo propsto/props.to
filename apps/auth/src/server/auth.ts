@@ -4,14 +4,15 @@ import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig } from "next-auth";
 import { PrismaClient, PrismaAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
-import Resend from "next-auth/providers/resend";
+import EmailProvider from "next-auth/providers/nodemailer";
+import { server } from "@propsto/constants";
 
 const prisma = new PrismaClient();
 
 const config = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    Resend,
+    EmailProvider({}),
     Passkey,
     Credentials({
       credentials: {
@@ -63,7 +64,7 @@ const config = {
       //await sendWelcomeEmail(params); // <-- send welcome email
     },
   },
-  debug: process.env.NODE_ENV !== "production",
+  debug: server.NODE_ENV !== "production",
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);

@@ -23,6 +23,7 @@
     "prisma": "5.15.0"
   },
   "peerDependencies": {
+    "@propsto/constants": "workspace:*",
     "@propsto/logger": "workspace:*",
     "typescript": "*",
     "ts-node": "*"

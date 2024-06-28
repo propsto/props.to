@@ -28,9 +28,10 @@ export function SigninForm({
           <FormInputError
             controlName="Password"
             className={cn(
+              "overflow-hidden transition-all duration-300",
               signInMethod === "credentials"
-                ? "inline animate-in !slide-in-from-left-72"
-                : "hidden"
+                ? "max-h-[100px] opacity-100 translate-x-0"
+                : "max-h-0 opacity-0 -translate-x-full"
             )}
             isPending={isPending}
             result={result}
@@ -65,7 +66,7 @@ export function SigninForm({
           Sign in with Passkey
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           type="button"
           name="signInMethod"
           value="credentials"

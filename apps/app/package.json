@@ -16,8 +16,7 @@
     "test:e2e": "playwright test",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "type-check": "tsc --noEmit",
-    "validate": "pnpm ts:check && pnpm format:check"
+    "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
     "@playwright/test": "*",

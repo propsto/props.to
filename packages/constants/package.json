@@ -1,0 +1,23 @@
+{
+  "name": "@propsto/constants",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "lint": "eslint **/*.{js,mjs}",
+    "test": "pnpm ts-node test.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "peerDependencies": {
+    "@propsto/eslint": "workspace:*",
+    "ts-node": "*",
+    "typescript": "*",
+    "zod": "*"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "0.10.1",
+    "dotenv": "16.4.5"
+  }
+}

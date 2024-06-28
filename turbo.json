@@ -8,13 +8,13 @@
     "DATABASE_URL",
     "AUTH_SECRET",
     "EMAIL_FROM",
-    "EMAIL_SERVER",
-    "SKIP_ENV_VALIDATION"
+    "EMAIL_SERVER"
   ],
   "tasks": {
     "dev": {
       "dependsOn": [
-        "^db-generate"
+        "^db-generate",
+        "^check-constants"
       ],
       "cache": false,
       "persistent": true
@@ -38,9 +38,9 @@
     "db-push": {
       "cache": false
     },
-    "validate": {},
     "lint": {},
     "debug": {},
+    "test": {},
     "type-check": {}
   }
 }

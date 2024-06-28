@@ -1,3 +1,4 @@
+import { type CSSProperties } from "react";
 import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
@@ -6,6 +7,7 @@ type FormInputErrorProps = {
   isPending: boolean;
   controlName: string;
   className?: string;
+  style?: CSSProperties;
 } & Partial<Pick<HTMLInputElement, "autocapitalize" | "autocomplete">>;
 
 export function FormInputError({
@@ -15,9 +17,15 @@ export function FormInputError({
   autocapitalize,
   autocomplete,
   className,
+  style,
+  ...rest
 }: FormInputErrorProps): JSX.Element {
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
+    <div
+      className={cn("flex flex-col gap-2", className)}
+      {...rest}
+      style={style}
+    >
       <Label className="sr-only" htmlFor={controlName.toLowerCase()}>
         {controlName}
       </Label>
