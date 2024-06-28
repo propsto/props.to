@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
     "lint": "eslint **/*.{js,mjs}",
-    "test": "pnpm ts-node test.ts"
+    "test": "pnpm ts-node-esm test.ts"
   },
   "keywords": [],
   "author": "",
