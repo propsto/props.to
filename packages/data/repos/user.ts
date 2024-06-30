@@ -1,4 +1,4 @@
-import logger from "@propsto/logger?data";
+import { logger } from "@propsto/logger?data";
 import { db, type DbResult } from "../db";
 import { handleError } from "./errorHandling";
 

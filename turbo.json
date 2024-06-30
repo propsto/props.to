@@ -12,10 +12,6 @@
   ],
   "tasks": {
     "dev": {
-      "dependsOn": [
-        "^db-generate",
-        "^check-constants"
-      ],
       "cache": false,
       "persistent": true
     },

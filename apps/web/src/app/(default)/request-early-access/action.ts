@@ -1,6 +1,6 @@
 "use server";
 
-import logger from "@propsto/logger?web";
+import { logger } from "@propsto/logger?web";
 import {
   type RequestEarlyAccessFormType,
   RequestEarlyAccessFormSchema,

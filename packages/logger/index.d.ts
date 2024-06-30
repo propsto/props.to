@@ -1,4 +1,3 @@
 declare module "@propsto/logger?*" {
-  const value: (...args) => void;
-  export default value;
+  export const logger: (...args) => void;
 }

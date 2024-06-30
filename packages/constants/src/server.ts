@@ -1,23 +1,14 @@
-/* eslint-disable no-console -- Extra checks */
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { config } from "dotenv";
+import { resolve } from "path";
 
 // Load .env
-config();
+const envPath = resolve(".env");
+config({ path: envPath });
 
-function handleValidationError(error?: z.ZodError): void {
-  if (error) {
-    console.error(
-      "❌ Invalid environment variables:",
-      error.flatten().fieldErrors
-    );
-    throw new Error("Invalid environment variables");
-  }
-}
-
-const envVars = z
-  .object({
+export const server = createEnv({
+  server: {
     DATABASE_URL: z.string().url(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_SERVER: z.string().optional(),
@@ -26,29 +17,13 @@ const envVars = z
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     NODE_ENV: z.enum(["development", "test", "production"]),
-  })
-  .refine(
-    (data) =>
-      Boolean(data.RESEND_API_KEY) ||
-      (Boolean(data.EMAIL_FROM) && Boolean(data.EMAIL_SERVER)),
-    {
-      message: "Required",
-      path: ["RESEND_API_KEY || EMAIL_SERVER && EMAIL_FROM"],
-    }
-  );
-
-const { error } = envVars.safeParse(process.env);
-handleValidationError(error);
-
-export const server = createEnv({
-  server: envVars._def.schema.shape,
+  },
 
   /**
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
   runtimeEnv: process.env,
-  onValidationError: handleValidationError as (error: z.ZodError) => never,
 
   /**
    * By default, this library will feed the environment variables directly to

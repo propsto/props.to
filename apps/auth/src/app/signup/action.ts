@@ -2,7 +2,7 @@
 
 import { createUser, checkUserExistance } from "@propsto/data/repos";
 import { sendWelcomeEmail } from "@propsto/email";
-import logger from "@propsto/logger?auth";
+import { logger } from "@propsto/logger?auth";
 import { type SignUpFormState, SignupFormSchema } from "../types";
 
 export async function signUpAction(

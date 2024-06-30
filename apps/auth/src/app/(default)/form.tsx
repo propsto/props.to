@@ -10,10 +10,10 @@ import { signInAction } from "./action";
 export function SigninForm({
   className,
   ...props
-}: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
   const [result, action, isPending] = useActionState(signInAction, undefined);
-  const [signInMethod, setSignInMethod] = useState<"resend" | "credentials">(
-    "resend"
+  const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
+    "email"
   );
 
   return (
@@ -37,12 +37,8 @@ export function SigninForm({
             result={result}
             autocomplete="off"
           />
-          <SubmitButton
-            result={result}
-            isPending={isPending}
-            name="signInMethod"
-            value={signInMethod}
-          >
+          <input type="hidden" name="signInMethod" value={signInMethod} />
+          <SubmitButton result={result} isPending={isPending}>
             Sign in with{" "}
             {signInMethod === "credentials" ? "password" : "magic link"}
           </SubmitButton>
@@ -71,15 +67,15 @@ export function SigninForm({
           name="signInMethod"
           value="credentials"
           onClick={() => {
-            if (signInMethod === "resend") {
+            if (signInMethod === "email") {
               setSignInMethod("credentials");
             } else {
-              setSignInMethod("resend");
+              setSignInMethod("email");
             }
           }}
           disabled={isPending}
         >
-          Sign in with {signInMethod === "resend" ? "password" : "magic link"}
+          Sign in with {signInMethod === "email" ? "password" : "magic link"}
         </Button>
       </form>
     </div>

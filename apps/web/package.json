@@ -5,7 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "PORT=3001 next dev",
-    "debug": "DEBUG=@propsto:web pnpm dev",
+    "debug": "DEBUG=@propsto:* pnpm dev",
     "lint": "next lint",
     "start": "next start"
   },

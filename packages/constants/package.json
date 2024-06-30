@@ -13,6 +13,7 @@
   "license": "ISC",
   "peerDependencies": {
     "@propsto/eslint": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "ts-node": "*",
     "typescript": "*",
     "zod": "*"

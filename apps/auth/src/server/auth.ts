@@ -4,20 +4,38 @@ import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig } from "next-auth";
 import { PrismaClient, PrismaAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
-import EmailProvider from "next-auth/providers/nodemailer";
-import { server } from "@propsto/constants";
+import EmailProvider, {
+  type NodemailerConfig,
+} from "next-auth/providers/nodemailer";
+import Resend from "next-auth/providers/resend";
+import { server, other } from "@propsto/constants";
+import { type EmailConfig } from "next-auth/providers/email";
+import { logger } from "@propsto/logger?authConfig";
 
 const prisma = new PrismaClient();
+
+function getEmailProvider(): EmailConfig | NodemailerConfig {
+  if (other.emailProvider === "resend") {
+    logger("resend used");
+    return Resend({ apiKey: server.RESEND_API_KEY });
+  }
+  return EmailProvider({
+    id: "email",
+    name: "email",
+    server: server.EMAIL_SERVER,
+    from: server.EMAIL_FROM,
+  });
+}
 
 const config = {
   adapter: PrismaAdapter(prisma),
   providers: [
-    EmailProvider({}),
+    getEmailProvider(),
     Passkey,
     Credentials({
       credentials: {
-        email: {},
-        password: {},
+        email: { type: "email" },
+        password: { type: "password" },
       },
       authorize: () => {
         return { name: "Leo", email: "hello@leog.me", image: "", id: "1" };

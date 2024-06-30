@@ -21,7 +21,7 @@
     "lint": "turbo run lint --force",
     "test": "turbo run test --force",
     "type-check": "turbo run type-check",
-    "check-constants": "turbo run test --filter @propsto/constants"
+    "check-env": "turbo run test --filter @propsto/constants"
   },
   "dependencies": {
     "autoprefixer": "10.4.19",

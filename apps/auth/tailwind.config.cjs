@@ -2,5 +2,4 @@
 module.exports = {
   content: ["src/app/**/*.{ts,tsx}"],
   presets: [require("@propsto/ui/tailwind.config.cjs")],
-  plugins: [require("tailwindcss-animate")],
 };
