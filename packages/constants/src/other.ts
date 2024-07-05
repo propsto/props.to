@@ -1,8 +1,8 @@
-import { server } from "./server";
+import { constServer } from "./server";
 
 const emailProvider =
-  server.RESEND_API_KEY && server.NODE_ENV === "production"
+  constServer.RESEND_API_KEY && constServer.PROPSTO_ENV === "production"
     ? "resend"
     : "email";
 
-export const other = { emailProvider };
+export const constOther = { emailProvider };

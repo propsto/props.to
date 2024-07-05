@@ -1,3 +1,3 @@
-export { client } from "./src/client";
-export { server } from "./src/server";
-export { other } from "./src/other";
+export { constClient } from "./src/client";
+export { constServer } from "./src/server";
+export { constOther } from "./src/other";

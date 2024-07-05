@@ -9,19 +9,18 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter !@propsto/emails",
-    "debug": "turbo run debug --filter !@propsto/emails",
-    "dev:app": "turbo run dev --filter @propsto/app",
-    "dev:auth": "turbo run dev --filter @propsto/auth",
-    "debug:auth": "turbo run debug --filter @propsto/auth",
-    "dev:web": "turbo run dev --filter @propsto/web",
-    "debug:web": "turbo run debug --filter @propsto/web",
-    "dev:email": "turbo run dev --filter @propsto/email",
+    "dev": "turbo run --filter !@propsto/email dev",
+    "debug": "turbo run --filter !@propsto/email debug",
+    "dev:app": "turbo run --filter @propsto/app dev",
+    "dev:auth": "turbo run --filter @propsto/auth dev",
+    "debug:auth": "turbo run --filter @propsto/auth debug",
+    "dev:web": "turbo run --filter @propsto/web dev",
+    "debug:web": "turbo run --filter @propsto/web debug",
+    "dev:email": "turbo run --filter @propsto/email dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint --force",
     "test": "turbo run test --force",
-    "type-check": "turbo run type-check",
-    "check-env": "turbo run test --filter @propsto/constants"
+    "type-check": "turbo run type-check"
   },
   "dependencies": {
     "autoprefixer": "10.4.19",
@@ -47,8 +46,8 @@
     "eslint": "8.57.0",
     "husky": "9.0.11",
     "prettier": "3.3.2",
-    "turbo": "2.0.5",
-    "ts-node": "10.9.2"
+    "turbo": "2.0.6",
+    "tsx": "4.16.2"
   },
   "peerDependencies": {
     "@propsto/tsconfig": "workspace:*"

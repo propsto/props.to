@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
-  "type": "module",
   "scripts": {
-    "lint": "eslint **/*.{js,mjs}",
-    "test": "pnpm ts-node-esm test.ts"
+    "lint": "eslint **/*.ts",
+    "test": "pnpm tsx check-env.ts",
+    "check-env": "pnpm tsx check-env.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +14,8 @@
   "peerDependencies": {
     "@propsto/eslint": "workspace:*",
     "@propsto/logger": "workspace:*",
-    "ts-node": "*",
+    "@propsto/tsconfig": "workspace:*",
+    "tsx": "*",
     "typescript": "*",
     "zod": "*"
   },

@@ -8,22 +8,22 @@ import EmailProvider, {
   type NodemailerConfig,
 } from "next-auth/providers/nodemailer";
 import Resend from "next-auth/providers/resend";
-import { server, other } from "@propsto/constants";
+import { constServer, constOther } from "@propsto/constants";
 import { type EmailConfig } from "next-auth/providers/email";
 import { logger } from "@propsto/logger?authConfig";
 
 const prisma = new PrismaClient();
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
-  if (other.emailProvider === "resend") {
+  if (constOther.emailProvider === "resend") {
     logger("resend used");
-    return Resend({ apiKey: server.RESEND_API_KEY });
+    return Resend({ apiKey: constServer.RESEND_API_KEY });
   }
   return EmailProvider({
     id: "email",
     name: "email",
-    server: server.EMAIL_SERVER,
-    from: server.EMAIL_FROM,
+    server: constServer.EMAIL_SERVER,
+    from: constServer.EMAIL_FROM,
   });
 }
 
@@ -82,7 +82,7 @@ const config = {
       //await sendWelcomeEmail(params); // <-- send welcome email
     },
   },
-  debug: server.NODE_ENV !== "production",
+  debug: constServer.PROPSTO_ENV !== "production",
 } satisfies NextAuthConfig;
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);

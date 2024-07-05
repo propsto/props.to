@@ -26,9 +26,9 @@
     "@propsto/constants": "workspace:*",
     "@propsto/logger": "workspace:*",
     "typescript": "*",
-    "ts-node": "*"
+    "tsx": "*"
   },
   "prisma": {
-    "seed": "ts-node --transpile-only ./seed.ts"
+    "seed": "tsx ./seed.ts"
   }
 }
