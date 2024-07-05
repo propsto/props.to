@@ -20,7 +20,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint --force",
     "test": "turbo run test --force",
-    "type-check": "turbo run type-check"
+    "type-check": "turbo run type-check",
+    "prepare": "husky"
   },
   "dependencies": {
     "autoprefixer": "10.4.19",

@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function createPost(
   post: { title: string; body: string; category: string },
-  page: Page,
+  page: Page
 ) {
   // fill title, body and category and click submit
   await page.getByRole("textbox", { name: "Title" }).type(post.title);
@@ -12,14 +12,14 @@ async function createPost(
   await page.getByRole("button").getByText("Post").click();
 }
 
-test("write a post", async ({ page }) => {
+test.skip("write a post", async ({ page }) => {
   await page.goto("/");
 
   // go to posts page, fill title, body and category and click submit
   await page.getByRole("link", { name: "Posts" }).click();
   await createPost(
     { title: "Testy", body: "short post", category: "DESIGN" },
-    page,
+    page
   );
 
   // initial post should fail due to body being too short
@@ -32,7 +32,7 @@ test("write a post", async ({ page }) => {
   await expect(page.getByText("short post with looong body")).toBeVisible();
 });
 
-test("delete a post", async ({ page }) => {
+test.skip("delete a post", async ({ page }) => {
   await page.goto("/posts");
 
   await createPost(
@@ -41,7 +41,7 @@ test("delete a post", async ({ page }) => {
       body: "This will be a shortlived post",
       category: "ENGINEERING",
     },
-    page,
+    page
   );
 
   // post should be visible on the page

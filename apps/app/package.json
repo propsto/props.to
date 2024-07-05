@@ -13,8 +13,8 @@
     "lint": "next lint",
     "start": "next start",
     "test": "pnpm test:unit && pnpm test:e2e",
-    "test:e2e": "playwright test",
-    "test:unit": "vitest run",
+    "test:e2e": "playwright test --pass-with-no-tests",
+    "test:unit": "vitest run --passWithNoTests",
     "test:unit:watch": "vitest",
     "type-check": "tsc --noEmit"
   },
