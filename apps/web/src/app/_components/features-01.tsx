@@ -141,7 +141,6 @@ export function Features01(): JSX.Element {
                 {/* Item 1 */}
                 <Transition
                   show={tab === 1}
-                  className="w-full text-center"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -153,14 +152,13 @@ export function Features01(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div className="flex justify-center">
+                  <div className="w-full text-center flex justify-center">
                     <AnimatedBeamMultipleInput />
                   </div>
                 </Transition>
                 {/* Item 2 */}
                 <Transition
                   show={tab === 2}
-                  className="w-full text-center"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -172,7 +170,7 @@ export function Features01(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div className="inline-flex relative align-top">
+                  <div className="w-full text-center inline-flex relative align-top">
                     <Image
                       className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
                       src="/images/feature-01.png"
@@ -185,7 +183,6 @@ export function Features01(): JSX.Element {
                 {/* Item 3 */}
                 <Transition
                   show={tab === 3}
-                  className="w-full text-center"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -197,7 +194,7 @@ export function Features01(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div className="inline-flex relative align-top">
+                  <div className="inline-flex relative align-top w-full text-center">
                     <Image
                       className="rounded-t-lg border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] box-content shadow-2xl"
                       src="/images/feature-01.png"

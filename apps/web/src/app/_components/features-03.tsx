@@ -140,7 +140,6 @@ export function Features03(): JSX.Element {
                 {/* Item 1 */}
                 <Transition
                   show={tab === 1}
-                  className="w-full"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -152,7 +151,7 @@ export function Features03(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div>
+                  <div className="w-full">
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
                       src="/images/carousel-illustration-01.jpg"
@@ -165,7 +164,6 @@ export function Features03(): JSX.Element {
                 {/* Item 2 */}
                 <Transition
                   show={tab === 2}
-                  className="w-full"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -177,7 +175,7 @@ export function Features03(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div>
+                  <div className="w-full">
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
                       src="/images/carousel-illustration-01.jpg"
@@ -190,7 +188,6 @@ export function Features03(): JSX.Element {
                 {/* Item 3 */}
                 <Transition
                   show={tab === 3}
-                  className="w-full"
                   enter="transition ease-in-out duration-700 transform order-first"
                   enterFrom="opacity-0 -translate-y-4"
                   enterTo="opacity-100 translate-y-0"
@@ -202,7 +199,7 @@ export function Features03(): JSX.Element {
                   }}
                   unmount={false}
                 >
-                  <div>
+                  <div className="w-full">
                     <Image
                       className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
                       src="/images/carousel-illustration-01.jpg"

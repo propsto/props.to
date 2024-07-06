@@ -1,5 +1,5 @@
 import { Prisma, type DbError } from "../db";
-import logger from "@propsto/logger";
+import { logger } from "@propsto/logger?data";
 
 export function handleError(e: any): DbError {
   if (e instanceof Prisma.PrismaClientKnownRequestError) {
