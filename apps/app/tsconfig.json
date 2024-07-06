@@ -1,18 +1,11 @@
 {
-  "extends": "@propsto/tsconfig/nextjs.json",
+  "extends": "@propsto/config/tsconfig/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
-    "strictNullChecks": true
   },
   "include": [
     "next-env.d.ts",

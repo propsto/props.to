@@ -20,10 +20,10 @@
   },
   "peerDependencies": {
     "@playwright/test": "*",
-    "@propsto/eslint": "workspace:*",
+    "@propsto/config": "workspace:*",
     "@propsto/data": "workspace:*",
-    "@propsto/tsconfig": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

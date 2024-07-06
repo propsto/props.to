@@ -12,9 +12,8 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "@propsto/eslint": "workspace:*",
+    "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
-    "@propsto/tsconfig": "workspace:*",
     "tsx": "*",
     "typescript": "*",
     "zod": "*"

@@ -44,7 +44,13 @@
       "cache": false
     },
     "lint": {},
-    "debug": {},
+    "debug": {
+      "dependsOn": [
+        "@propsto/constants#check-env"
+      ],
+      "cache": false,
+      "persistent": true
+    },
     "test": {},
     "type-check": {}
   }

@@ -16,7 +16,7 @@
   },
   "peerDependencies": {
     "@propsto/logger": "workspace:*",
-    "@propsto/tsconfig": "workspace:*",
+    "@propsto/config": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

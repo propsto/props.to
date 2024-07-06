@@ -1,4 +1,4 @@
 module.exports = {
   root: true,
-  extends: [require.resolve("@propsto/eslint/next.js")],
+  extends: [require.resolve("@propsto/config/eslint/next.js")],
 };

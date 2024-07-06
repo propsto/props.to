@@ -1,5 +1,5 @@
 {
-  "extends": "@propsto/tsconfig/nextjs.json",
+  "extends": "@propsto/config/tsconfig/nextjs.json",
   "compilerOptions": {
     "paths": {
       "@components/*": ["./src/app/_components/*"],
@@ -7,7 +7,6 @@
     }
   },
   "include": [
-    "process.d.ts",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",

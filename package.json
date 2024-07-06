@@ -51,7 +51,7 @@
     "tsx": "4.16.2"
   },
   "peerDependencies": {
-    "@propsto/tsconfig": "workspace:*"
+    "@propsto/config": "workspace:*"
   },
   "pnpm": {
     "overrides": {

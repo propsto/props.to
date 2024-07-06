@@ -1,5 +1,5 @@
 {
-  "extends": "@propsto/tsconfig/react-library.json",
+  "extends": "@propsto/config/tsconfig/react-library.json",
   "include": [
     "react.d.ts",
     "**/*.ts",

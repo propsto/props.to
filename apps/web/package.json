@@ -14,10 +14,9 @@
     "@headlessui/react": "2.0.4"
   },
   "peerDependencies": {
-    "@propsto/eslint": "workspace:*",
+    "@propsto/config": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/ui": "workspace:*",
-    "@propsto/tsconfig": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
