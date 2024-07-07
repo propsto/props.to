@@ -1,5 +1,4 @@
 @config "./tailwind.config.cjs";
-@import "./molecules/triangles.css";
 
 @tailwind base;
 @tailwind utilities;

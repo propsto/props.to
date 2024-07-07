@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
-import { AnimatedBeamMultipleInput } from "./animated-beam-multiple-input";
 
 export function Features01(): JSX.Element {
   const [tab, setTab] = useState<number>(1);
@@ -153,7 +152,7 @@ export function Features01(): JSX.Element {
                   unmount={false}
                 >
                   <div className="w-full text-center flex justify-center">
-                    <AnimatedBeamMultipleInput />
+                    {/*<AnimatedBeamMultipleInput />*/}
                   </div>
                 </Transition>
                 {/* Item 2 */}

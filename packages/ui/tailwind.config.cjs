@@ -14,7 +14,7 @@ export default {
     (entity) => path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
   safelist: [
-    'font-cal',
+    'font-cal'
   ],
   theme: {
     container: {

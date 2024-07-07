@@ -1,13 +1,15 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Button } from "@propsto/ui/atoms/button";
 
 export function Hero(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
   return (
-    <section>
-      <Triangles />
+    <div ref={ref}>
+      <Triangles parentRef={ref} />
       <div className="pt-32 pb-12 md:pt-48 md:pb-20">
         {/* Section content */}
         <div className="px-4 sm:px-6">
@@ -39,6 +41,6 @@ export function Hero(): JSX.Element {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
