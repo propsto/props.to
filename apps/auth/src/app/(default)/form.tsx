@@ -39,7 +39,7 @@ export function SigninForm({
           />
           <input type="hidden" name="signInMethod" value={signInMethod} />
           <SubmitButton result={result} isPending={isPending}>
-            Sign in with{" "}
+            {signInMethod === "credentials" ? "Sign in" : "Continue"} with{" "}
             {signInMethod === "credentials" ? "password" : "magic link"}
           </SubmitButton>
         </div>
@@ -75,7 +75,7 @@ export function SigninForm({
           }}
           disabled={isPending}
         >
-          Sign in with {signInMethod === "email" ? "password" : "magic link"}
+          {signInMethod === "credentials" ? "Continue" : "Sign in"} with {signInMethod === "email" ? "password" : "magic link"}
         </Button>
       </form>
     </div>

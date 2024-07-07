@@ -46,8 +46,8 @@ function Quote(): JSX.Element | undefined {
           <p suppressHydrationWarning className="text-lg">
             &ldquo;{quote.text}&rdquo;
           </p>
-          <p suppressHydrationWarning className="text-sm">
-            {quote.author}
+          <p suppressHydrationWarning className="text-sm font-cal tracking-wider">
+            –{quote.author}
           </p>
         </blockquote>
       </div>
@@ -63,7 +63,7 @@ export function SideSection(): JSX.Element {
       className="relative hidden h-full flex-col bg-secondary-background border-r border-primary/10 p-10 lg:flex overflow-hidden"
     >
       <Triangles parentRef={ref} />
-      <div className="relative z-20 flex items-center text-lg font-medium">
+      <div className="relative z-20 flex items-center text-lg font-medium font-cal tracking-wider">
         <Logo className="mr-2" />
         Props.to
       </div>

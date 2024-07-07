@@ -47,8 +47,8 @@
     "eslint": "8.57.0",
     "husky": "9.0.11",
     "prettier": "3.3.2",
-    "turbo": "2.0.6",
-    "tsx": "4.16.2"
+    "tsx": "4.16.2",
+    "turbo": "2.0.6"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*"

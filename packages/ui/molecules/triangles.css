@@ -4,10 +4,10 @@
 
 .triangle.one {
   border-top-width: 0;
-  border-right-width: 80px;
-  border-bottom-width: 80px;
+  border-right-width: var(--triangle-size);
+  border-bottom-width: var(--triangle-size);
   border-left-width: 0;
-  transform-origin: 40px 0px;
+  transform-origin: calc(var(--triangle-size) / 2) 0px;
   border-right-color: hsl(var(--primary) / 0.1);
   border-bottom-color: transparent;
   border-left-color: transparent;
@@ -16,20 +16,20 @@
 .triangle.two {
   border-top-width: 0;
   border-right-width: 0;
-  border-bottom-width: 80px;
-  border-left-width: 80px;
-  transform-origin: 40px 40px;
+  border-bottom-width: var(--triangle-size);
+  border-left-width: var(--triangle-size);
+  transform-origin: calc(var(--triangle-size) / 2) calc(var(--triangle-size) / 2);
   border-right-color: transparent;
   border-bottom-color: hsl(var(--primary) / 0.08);
   border-left-color: transparent;
 }
 
 .triangle.three {
-  border-top-width: 80px;
+  border-top-width: var(--triangle-size);
   border-right-width: 0;
   border-bottom-width: 0;
-  border-left-width: 80px;
-  transform-origin: 0px 40px;
+  border-left-width: var(--triangle-size);
+  transform-origin: 0px calc(var(--triangle-size) / 2);
   border-right-color: transparent;
   border-bottom-color: transparent;
   border-left-color: hsl(var(--primary) / 0.04);

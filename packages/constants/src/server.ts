@@ -17,6 +17,7 @@ export const constServer = createEnv({
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
+    PROPSTO_AUTH_PORT: z.string(),
   },
 
   /**

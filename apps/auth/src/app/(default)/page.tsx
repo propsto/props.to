@@ -1,33 +1,28 @@
-import { buttonVariants } from "@propsto/ui/atoms/button";
-import { cn } from "@propsto/ui/utils/cn";
-import type { Metadata } from "next";
-import Link from "next/link";
+"use client";
+
+import { useRef } from "react";
+import { Logo } from "@propsto/ui/atoms/logo";
+import { Triangles } from "@propsto/ui/molecules/triangles";
 import { SigninForm } from "./form";
 
-export const metadata: Metadata = {
-  title: "Props.to - Sign in",
-  description: "Sign in to the biggest feedback open source community",
-};
-
 export default function SigninPage(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
   return (
     <>
-      <Link
-        className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "absolute right-4 top-4 md:right-8 md:top-8"
-        )}
-        href="/signup"
-      >
-        Sign up
-      </Link>
-      <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Sign in</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your email to get a link to sign in
-        </p>
+      <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider" ref={ref}>
+        <Triangles size="small" parentRef={ref} />
+        <Logo className="mr-2 z-20" size="large" />
+        Props.to
       </div>
-      <SigninForm />
+      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80">
+        <div className="flex flex-col space-y-2 text-center">
+          <h1>Get Started</h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your email to get a link to sign in
+          </p>
+        </div>
+        <SigninForm />
+      </div>
     </>
   );
 }

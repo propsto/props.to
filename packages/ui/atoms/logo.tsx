@@ -5,6 +5,7 @@ export type LogoVariantProps = VariantProps<typeof logoVariants>;
 const logoVariants = cva("", {
   variants: {
     size: {
+      large: "size-7",
       default: "size-6",
       mini: "size-4",
     },
@@ -21,9 +22,9 @@ export function Logo({
   return (
     <svg
       viewBox="0 0 1680 1680"
-      fill="none"
+      fill="currentColor"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn(logoVariants({ size, className }))}
+      className={cn("text-black", logoVariants({ size, className }))}
     >
       <title>props.to logo</title>
       <g filter="url(#a)">

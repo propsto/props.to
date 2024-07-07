@@ -2,7 +2,11 @@
   "name": "@propsto/config",
   "version": "1.0.0",
   "description": "Props.to configuration files",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "private": true,
+  "license": "MIT",
+  "devDependencies": {
+    "@next/eslint-plugin-next": "14.2.4",
+    "@vercel/style-guide": "6.0.0",
+    "eslint-config-turbo": "2.0.4"
+  }
 }

@@ -6,7 +6,7 @@
     "build": "email build --dir templates",
     "dev": "email dev --dir templates",
     "export": "email export",
-    "lint": "eslint **/*.{ts,tsx}",
+    "lint": "eslint --fix **/*.{ts,tsx}",
     "start": "pnpm maildev"
   },
   "dependencies": {

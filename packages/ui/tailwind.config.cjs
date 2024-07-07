@@ -13,6 +13,9 @@ export default {
   content: ["atoms", "molecules", "organisms", "hooks", "utils"].flatMap(
     (entity) => path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
+  safelist: [
+    'font-cal',
+  ],
   theme: {
     container: {
       center: true,
@@ -20,6 +23,9 @@ export default {
       screens: {
         "2xl": "1400px",
       },
+    },
+    fontFamily: {
+      cal: ['"Cal Sans"', "ui-serif", "Georgia", "Cambria", "times new roman", "Times", "serif"]
     },
     extend: {
       colors: {
@@ -76,6 +82,14 @@ export default {
             "offset-distance": "100%",
           },
         },
+        grow: {
+          from: {
+            transform: "scale(0)"
+          },
+          to: {
+            transform: "scale(1)"
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

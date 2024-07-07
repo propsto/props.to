@@ -4,7 +4,7 @@
   "main": "index.mjs",
   "scripts": {
     "test": "DEBUG=* node test.mjs",
-    "lint": "eslint **/*.{js,mjs}"
+    "lint": "eslint --fix **/*.{js,mjs}"
   },
   "keywords": [],
   "license": "ISC",

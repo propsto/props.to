@@ -1,19 +1,8 @@
+@config "./tailwind.config.cjs";
 @import "./molecules/triangles.css";
 
-@config "./tailwind.config.cjs";
-
 @tailwind base;
-@tailwind components;
 @tailwind utilities;
-
-@keyframes grow {
-  from {
-    transform: scale(0);
-  }
-  to {
-    transform: scale(1);
-  }
-}
 
 @layer base {
   :root {
@@ -85,5 +74,15 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  h1 {
+    @apply font-cal text-3xl;
+  }
+  @font-face {
+    font-family: "Cal Sans";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./node_modules/cal-sans/fonts/webfonts/CalSans-SemiBold.woff2') format('woff2');
   }
 }

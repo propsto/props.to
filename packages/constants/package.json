@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "lint": "eslint **/*.ts",
+    "lint": "eslint --fix **/*.ts",
     "test": "pnpm tsx check-env.ts",
     "check-env": "pnpm tsx check-env.ts"
   },
