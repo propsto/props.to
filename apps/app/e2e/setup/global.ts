@@ -1,4 +1,4 @@
-import path from "node:path";
+/* import path from "node:path";
 import { chromium, type BrowserContext } from "@playwright/test";
 
 import { prisma } from "@/server/db";
@@ -13,10 +13,10 @@ const testCookie: Cookie = {
   httpOnly: true,
   secure: false,
   sameSite: "Lax",
-};
+};*/
 
 export default async function globalSetup() {
-  const now = new Date();
+  /*const now = new Date();
 
   await prisma.user.upsert({
     where: {
@@ -53,5 +53,5 @@ export default async function globalSetup() {
   const context = await browser.newContext({ storageState });
   await context.addCookies([testCookie]);
   await context.storageState({ path: storageState });
-  await browser.close();
+  await browser.close();*/
 }

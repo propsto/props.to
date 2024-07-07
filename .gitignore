@@ -34,3 +34,9 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# ts
+*.tsbuildinfo
+
+# react-email
+.react-email

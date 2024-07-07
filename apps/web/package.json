@@ -1,29 +1,35 @@
 {
   "name": "@propsto/web",
   "version": "0.1.0",
-  "packageManager": "pnpm@8.10.0",
   "private": true,
   "scripts": {
-    "dev": "PORT=3001 next dev",
     "build": "next build",
+    "dev": "PORT=3001 next dev",
+    "debug": "DEBUG=@propsto:* pnpm dev",
+    "lint": "next lint",
     "start": "next start",
-    "lint": "next lint"
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.17",
-    "@types/node": "^20.8.2",
-    "@types/react": "^18.2.24",
-    "@types/react-dom": "^18.2.9",
-    "gsap": "^3.12.5",
-    "next": "^14.1.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "typescript": "^5.2.2"
+    "@headlessui/react": "2.0.4"
   },
-  "devDependencies": {
-    "@tailwindcss/forms": "^0.5.6",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.23",
-    "tailwindcss": "^3.3.5"
+  "peerDependencies": {
+    "@propsto/config": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/ui": "workspace:*",
+    "@propsto/logger": "workspace:*",
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "autoprefixer": "*",
+    "eslint": "*",
+    "lucide-react": "*",
+    "next": "*",
+    "postcss": "*",
+    "react": "*",
+    "react-dom": "*",
+    "tailwindcss": "*",
+    "typescript": "*",
+    "zod": "*"
   }
 }

@@ -1,0 +1,34 @@
+{
+  "name": "@propsto/data",
+  "version": "0.1.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "db-deploy": "prisma migrate deploy",
+    "db-migrate": "prisma migrate dev",
+    "db-generate": "prisma generate",
+    "db-nuke": "docker compose down --volumes --remove-orphans || docker-compose down --volumes --remove-orphans",
+    "db-push": "prisma db push --skip-generate",
+    "db-reset": "pnpm db-nuke && pnpm db-setup",
+    "db-seed": "prisma db seed",
+    "db-setup": "pnpm db-up && pnpm db-deploy && pnpm db-seed",
+    "db-studio": "prisma studio",
+    "db-up": "docker compose up -d || docker-compose up -d",
+    "lint": "prisma validate"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "2.4.1",
+    "@prisma/client": "5.16.1",
+    "@prisma/extension-accelerate": "1.1.0",
+    "prisma": "5.16.1"
+  },
+  "peerDependencies": {
+    "@propsto/constants": "workspace:*",
+    "@propsto/logger": "workspace:*",
+    "typescript": "*",
+    "tsx": "*"
+  },
+  "prisma": {
+    "seed": "tsx ./seed.ts"
+  }
+}

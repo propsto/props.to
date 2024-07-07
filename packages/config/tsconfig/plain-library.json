@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Plain library",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "strictNullChecks": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": [
+      "@propsto/logger"
+    ]
+  },
+  "include": [
+    "/**/*.ts",
+    "*.ts"
+  ],
+  "exclude": [
+    "./node_modules"
+  ]
+}

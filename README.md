@@ -62,3 +62,12 @@ pnpm test
 ```
 
 ---
+
+## Atomic design
+
+Leveraging [shadcn/ui](https://ui.shadcn.com/) elements and [Atomic Design](https://atomicdesign.bradfrost.com/chapter-2/), the `ui` package holds all the different elements to create anything in the UI.
+
+Just as a reference, here is how we like Atomic Design to work within this project and how it is structured inside `packages/ui`. Note that sub-atomic particles are given by our Tailwind CSS configuration file at `packages/ui/tailwind.config.ts`.
+
+![alt text](./.github/atomic_design.png)
+<sub>Illustration by Rohan Kamath from his Atomic Design article <a href="https://blog.kamathrohan.com/atomic-design-methodology-for-building-design-systems-f912cf714f53">here</a>.</sub>

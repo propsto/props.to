@@ -1,0 +1,3 @@
+{
+  "extends": "@propsto/config/tsconfig/plain-library.json"
+}

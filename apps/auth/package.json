@@ -1,0 +1,40 @@
+{
+  "name": "@propsto/auth",
+  "private": true,
+  "description": "Authentication app for props.to",
+  "scripts": {
+    "build": "next build",
+    "dev": "PORT=3002 next",
+    "debug": "DEBUG=@propsto:* pnpm dev",
+    "lint": "next lint",
+    "start": "next start",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "9.0.1",
+    "@simplewebauthn/server": "9.0.2",
+    "next-auth": "beta",
+    "nodemailer": "6.9.14"
+  },
+  "peerDependencies": {
+    "@propsto/constants": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/email": "workspace:*",
+    "@propsto/config": "workspace:*",
+    "@propsto/logger": "workspace:*",
+    "@propsto/ui": "workspace:*",
+    "@types/node": "*",
+    "@types/react": "*",
+    "@types/react-dom": "*",
+    "autoprefixer": "*",
+    "lucide-react": "*",
+    "next": "*",
+    "next-themes": "*",
+    "postcss": "*",
+    "react": "*",
+    "react-dom": "*",
+    "tailwindcss": "*",
+    "typescript": "*",
+    "zod": "*"
+  }
+}

@@ -1,12 +1,24 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    ".env"
   ],
-  "pipeline": {
+  "globalEnv": [
+    "PROPSTO_ENV",
+    "DATABASE_URL",
+    "AUTH_SECRET",
+    "EMAIL_FROM",
+    "EMAIL_SERVER",
+    "RESEND_API_KEY"
+  ],
+  "tasks": {
+    "@propsto/constants#check-env": {
+      "outputs": []
+    },
     "dev": {
       "dependsOn": [
-        "^db-generate"
+        "@propsto/constants#check-env"
       ],
       "cache": false,
       "persistent": true
@@ -14,7 +26,8 @@
     "build": {
       "dependsOn": [
         "^db-deploy",
-        "^db-generate"
+        "^db-generate",
+        "^check-env"
       ],
       "outputs": [
         ".next/**",
@@ -30,7 +43,15 @@
     "db-push": {
       "cache": false
     },
-    "validate": {},
-    "lint": {}
+    "lint": {},
+    "debug": {
+      "dependsOn": [
+        "@propsto/constants#check-env"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "test": {},
+    "type-check": {}
   }
 }

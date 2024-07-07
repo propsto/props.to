@@ -1,0 +1,21 @@
+{
+  "name": "@propsto/logger",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "DEBUG=* node test.mjs",
+    "lint": "eslint --fix **/*.{js,mjs}"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "debug": "4.3.5"
+  },
+  "devDependencies": {
+    "@types/debug": "4.1.12"
+  },
+  "peerDependencies": {
+    "typescript": "*"
+  }
+}

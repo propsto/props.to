@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "target": "es2022"
-  },
-  "include": ["/**/*.ts"],
-  "exclude": ["node_modules"]
-}
