@@ -1,18 +1,16 @@
+"use client";
+
+import { useRef } from "react";
 import { Triangles } from "@propsto/ui/molecules/triangles";
-import type { Metadata } from "next";
 import { Form } from "./form";
 import { Community } from "./community";
 
-export const metadata: Metadata = {
-  title: "Props.to - Request Early Access",
-  description: "Open Source Feedback Platform",
-};
-
 export default function RequestEarlyAccess(): JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
   return (
     <>
-      <section className="relative overflow-hidden before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-100 before:-z-10">
-        <Triangles />
+      <div ref={ref} className="relative overflow-hidden before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-100 before:-z-10">
+        <Triangles parentRef={ref} />
         <div className="pt-28 pb-12 md:pt-32 md:pb-20">
           <div className="px-4 sm:px-6">
             {/* Page header */}
@@ -42,7 +40,7 @@ export default function RequestEarlyAccess(): JSX.Element {
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <Community />
     </>

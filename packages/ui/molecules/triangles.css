@@ -1,7 +1,3 @@
-.triangle {
-  @apply scale-0 size-0 float-right animate-grow border-solid flex-1 border-t-transparent;
-}
-
 .triangle.one {
   border-top-width: 0;
   border-right-width: var(--triangle-size);
