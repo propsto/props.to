@@ -18,7 +18,7 @@ export default function SigninPage(): JSX.Element {
         <div className="flex flex-col space-y-2 text-center">
           <h1>Get Started</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your email to get a link to sign in
+            Enter your email to get a link to sign in or sign up
           </p>
         </div>
         <SigninForm />
