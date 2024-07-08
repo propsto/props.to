@@ -9,7 +9,10 @@ export default function SigninPage(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <>
-      <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider" ref={ref}>
+      <div
+        className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider"
+        ref={ref}
+      >
         <Triangles size="small" parentRef={ref} />
         <Logo className="mr-2 z-20" size="large" />
         Props.to
@@ -18,7 +21,7 @@ export default function SigninPage(): JSX.Element {
         <div className="flex flex-col space-y-2 text-center">
           <h1>Get Started</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your email to get a link to sign in or sign up
+            Enter your email address to get a link to sign in or sign up
           </p>
         </div>
         <SigninForm />
