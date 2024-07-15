@@ -318,9 +318,9 @@ importers:
 
   packages/data:
     dependencies:
-      '@auth/prisma-adapter':
-        specifier: 2.4.1
-        version: 2.4.1(@prisma/client@5.16.1(prisma@5.16.1))(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)
+      '@auth/core':
+        specifier: 0.34.1
+        version: 0.34.1(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)
       '@prisma/client':
         specifier: 5.16.1
         version: 5.16.1(prisma@5.16.1)
@@ -508,11 +508,6 @@ packages:
         optional: true
       nodemailer:
         optional: true
-
-  '@auth/prisma-adapter@2.4.1':
-    resolution: {integrity: sha512-VF5IOTHEWHX6WHUxIbsbc12m34cp5T82fzJfi7DmzwBZb89UsoROejV8l0B1dCTZ+pDIS0d4zN9dSa2gIKywNQ==}
-    peerDependencies:
-      '@prisma/client': '>=2.26.0 || >=3 || >=4 || >=5'
 
   '@babel/code-frame@7.24.7':
     resolution: {integrity: sha512-BcYH1CVJBO9tvyIZ2jVeXgSIMvGZ2FDRvDdOIVQyuklNKSsx+eppDEBq/g47Ayw+RqNFE+URvOShmf+f/qwAlA==}
@@ -5414,15 +5409,6 @@ snapshots:
       '@simplewebauthn/browser': 9.0.1
       '@simplewebauthn/server': 9.0.2
       nodemailer: 6.9.14
-
-  '@auth/prisma-adapter@2.4.1(@prisma/client@5.16.1(prisma@5.16.1))(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)':
-    dependencies:
-      '@auth/core': 0.34.1(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)
-      '@prisma/client': 5.16.1(prisma@5.16.1)
-    transitivePeerDependencies:
-      - '@simplewebauthn/browser'
-      - '@simplewebauthn/server'
-      - nodemailer
 
   '@babel/code-frame@7.24.7':
     dependencies:

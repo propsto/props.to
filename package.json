@@ -12,7 +12,7 @@
     "dev": "turbo run --filter !@propsto/email dev",
     "debug": "turbo run --filter !@propsto/email debug",
     "dev:app": "turbo run --filter @propsto/app dev",
-    "dev:auth": "turbo run --filter @propsto/auth dev",
+    "dev:auth": "turbo run --filter @propsto/auth --filter=@propsto/email dev",
     "debug:auth": "turbo run --filter @propsto/auth debug",
     "dev:web": "turbo run --filter @propsto/web dev",
     "debug:web": "turbo run --filter @propsto/web debug",
@@ -61,5 +61,5 @@
       "typescript": "5.4.5"
     }
   },
-  "packageManager": "pnpm@9.4.0"
+  "packageManager": "pnpm@9.5.0"
 }
