@@ -4,65 +4,58 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { SunMoon, Sun, Moon } from "lucide-react";
 
-export function ThemeToggle(): JSX.Element {
-  const { theme, setTheme } = useTheme();
-  const [changeThemeValue, setChangeThemeValue] = useState<string>("dark");
+export default function ThemeToggle(): JSX.Element | null {
+  const { theme = "system", setTheme } = useTheme();
+  const [nextValue, setNextValue] = useState<string>("system");
+  const [systemDark, setSystemDark] = useState(false);
 
   useEffect(() => {
-    function getNextThemeOption(matches: boolean): void {
+    function getNextThemeOption(): void {
       let newValue;
-      if (theme === "dark") {
-        newValue = "light";
+      if (theme === "system") {
+        newValue = systemDark ? "light" : "dark";
       } else if (theme === "light") {
-        newValue = "dark";
-      } else if (matches) {
-        newValue = "light";
+        newValue = systemDark ? "dark" : "system";
+      } else if (theme === "dark") {
+        newValue = systemDark ? "system" : "light";
       } else {
-        newValue = "dark";
+        newValue = "system";
       }
-      setChangeThemeValue(newValue);
+      setNextValue(newValue);
     }
     // detect if current system theme is dark
     const checkDarkTheme = window.matchMedia("(prefers-color-scheme: dark)");
-    getNextThemeOption(checkDarkTheme.matches);
+    setSystemDark(checkDarkTheme.matches);
+    getNextThemeOption();
     checkDarkTheme.addEventListener("change", (e: MediaQueryListEvent) => {
-      getNextThemeOption(e.matches);
+      setSystemDark(e.matches);
+      getNextThemeOption();
     });
     return () => {
       checkDarkTheme.removeEventListener("change", (e: MediaQueryListEvent) => {
-        getNextThemeOption(e.matches);
+        setSystemDark(e.matches);
+        getNextThemeOption();
       });
     };
-  }, [theme]);
+  }, [theme, systemDark]);
 
-  if (typeof window === "undefined") {
-    setChangeThemeValue("system");
-  }
-
+  const systemDarkText = systemDark ? " (dark)" : " (light)";
   return (
     <button
       type="button"
       className="absolute bottom-4 right-4"
-      title={
-        changeThemeValue === "dark" && theme !== "system"
-          ? "Switch to system theme"
-          : `Switch to ${theme === "system" ? "dark or light" : changeThemeValue} theme`
-      }
+      title={`Switch to ${nextValue}${nextValue === "system" ? systemDarkText : ""} theme`}
       onClick={() => {
-        setTheme(
-          changeThemeValue === "dark" && theme !== "system"
-            ? "system"
-            : changeThemeValue
-        );
+        setTheme(nextValue);
       }}
     >
-      {theme === "system" && (
+      {nextValue === "system" && (
         <SunMoon aria-label="System theme" className="size-6" />
       )}
-      {changeThemeValue === "light" && theme !== "system" && (
+      {nextValue === "light" && (
         <Sun aria-label="Light theme" className="size-6" />
       )}
-      {changeThemeValue === "dark" && theme !== "system" && (
+      {nextValue === "dark" && (
         <Moon aria-label="Dark theme" className="size-6" />
       )}
     </button>

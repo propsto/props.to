@@ -3,7 +3,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import type { Metadata } from "next";
-import { ThemeToggle } from "@components/theme-toogle";
+import dynamic from "next/dynamic";
 import { SideSection } from "@components/side-section";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "Props.to - Authenticate",
   description: "Open Source Feedback Platform",
 };
+
+const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"), {
+  ssr: false,
+});
 
 export default function RootLayout({
   children,
@@ -25,7 +29,7 @@ export default function RootLayout({
               <SideSection />
               <div className="lg:p-8">
                 {children}
-                <ThemeToggle />
+                <DynamicThemeToggle />
               </div>
             </div>
           </main>
