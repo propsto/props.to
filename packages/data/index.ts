@@ -1,4 +1,4 @@
 export * from "@prisma/client";
-export * from "@auth/prisma-adapter";
+export * from "./adapter";
 export { withAccelerate } from "@prisma/extension-accelerate";
 export * from "./db";

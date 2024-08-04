@@ -1,19 +1,17 @@
-"use client";
-
-import { useRef } from "react";
 import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
+import { redirect } from "next/navigation";
+import { auth } from "@/server/auth";
 import { SigninForm } from "./form";
 
-export default function SigninPage(): JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
+export default async function SigninPage(): Promise<JSX.Element> {
+  const session = await auth();
+  if (session?.user) redirect("/profile");
+
   return (
     <>
-      <div
-        className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider"
-        ref={ref}
-      >
-        <Triangles size="small" parentRef={ref} />
+      <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
+        <Triangles size="small" />
         <Logo className="mr-2 z-20" size="large" />
         Props.to
       </div>
