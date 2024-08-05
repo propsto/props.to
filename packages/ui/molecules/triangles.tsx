@@ -1,7 +1,7 @@
 "use client";
 
 import "./triangles.css";
-import { type MutableRefObject } from "react";
+import { useEffect, useState, type MutableRefObject } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useDeviceSize } from "../hooks/use-device-size";
 
@@ -21,19 +21,30 @@ const triangleVariants = cva("", {
 export function Triangles({
   parentRef,
   size = "default",
-}: Readonly<{
-  parentRef?: MutableRefObject<HTMLElement | null>;
-} & TriangleVariantProps>): JSX.Element {
+}: Readonly<
+  {
+    parentRef?: MutableRefObject<HTMLElement | null>;
+  } & TriangleVariantProps
+>): JSX.Element {
+  const [maxTileX, setMaxTileX] = useState(0);
+  const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();
-  const [width, height] = parentRef?.current
-    ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
-    : [deviceWidth, deviceHeight];
-    const triangleSize = Number(triangleVariants({ size }));
-  const maxTileX = Math.ceil(width / triangleSize),
-    maxTileY = Math.ceil(height / triangleSize);
   const types = ["one", "two", "three"];
-  return (/** eslint-disable no-explicit-any */
-    <div style={{ ['--triangle-size' as string] : `${triangleVariants({ size })}px`}} className="absolute overflow-hidden top-0 left-0 flex flex-wrap">
+  useEffect(() => {
+    const [width, height] = parentRef?.current
+      ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
+      : [deviceWidth, deviceHeight];
+    const triangleSize = Number(triangleVariants({ size }));
+    setMaxTileX(Math.ceil(width / triangleSize));
+    setMaxTileY(Math.ceil(height / triangleSize));
+  }, [deviceHeight, deviceWidth, parentRef, size]);
+  return (
+    <div
+      style={{
+        ["--triangle-size" as string]: `${triangleVariants({ size })}px`,
+      }}
+      className="absolute overflow-hidden top-0 left-0 flex flex-wrap"
+    >
       {...Array.from(
         { length: maxTileX },
         (x, i): React.ReactNode =>

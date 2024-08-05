@@ -1,29 +1,27 @@
 "use client";
 
-import React, { forwardRef, useRef } from "react";
+import React, { useRef } from "react";
 import { cn } from "@propsto/ui/utils/cn";
 import { AnimatedBeam } from "@propsto/ui/organisms/animated-beam";
 import { Logo, LogoSymbol, BorderBeam } from "@propsto/ui/atoms";
 import { User } from "lucide-react";
 
-const Circle = forwardRef<
-  HTMLDivElement,
-  { className?: string; children?: React.ReactNode }
->(({ className, children }, ref) => {
+function Circle({
+  className,
+  ...props
+}: React.ComponentProps<"div">): React.ReactNode {
   return (
     <div
-      ref={ref}
+      ref={props.ref}
       className={cn(
         "z-10 flex h-12 w-24 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
         className
       )}
     >
-      {children}
+      {props.children}
     </div>
   );
-});
-
-Circle.displayName = "Circle";
+}
 
 export function AnimatedBeamMultipleInput(): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null);

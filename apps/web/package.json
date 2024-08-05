@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "2.0.4"
+    "@headlessui/react": "insiders"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
