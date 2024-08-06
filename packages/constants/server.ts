@@ -7,6 +7,11 @@ import { config } from "dotenv";
 const envPath = resolve(".env");
 config({ path: envPath });
 
+process.env.EMAIL_PROVIDER =
+  process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
+    ? "resend"
+    : "email";
+
 export const constServer = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
@@ -17,6 +22,7 @@ export const constServer = createEnv({
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
+    EMAIL_PROVIDER: z.string(),
   },
 
   /**

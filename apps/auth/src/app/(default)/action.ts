@@ -1,7 +1,7 @@
 "use server";
 
 import { logger } from "@propsto/logger?auth";
-import { constOther } from "@propsto/constants";
+import { constServer } from "@propsto/constants/server";
 import { signIn } from "@/server/auth";
 import { type SigninFormType, SigninFormSchema } from "./types";
 
@@ -21,7 +21,7 @@ export async function signInAction(
     };
   }
   await signIn(
-    data.signInMethod === "email" && constOther.emailProvider === "resend"
+    data.signInMethod === "email" && constServer.EMAIL_PROVIDER === "resend"
       ? "resend"
       : "email",
     data

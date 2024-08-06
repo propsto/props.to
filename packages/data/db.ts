@@ -1,5 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
-import { constServer } from "@propsto/constants";
+import { constServer } from "@propsto/constants/server";
 
 const prismaClientSingleton = () => {
   return new PrismaClient();

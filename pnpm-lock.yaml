@@ -231,6 +231,9 @@ importers:
       '@propsto/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@propsto/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -398,6 +401,9 @@ importers:
       '@propsto/config':
         specifier: workspace:*
         version: link:../config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@propsto/logger':
         specifier: workspace:*
         version: link:../logger

@@ -18,6 +18,7 @@
     "@propsto/data": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@propsto/constants": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
