@@ -1,79 +1,83 @@
 "use client";
 
 import {
-  ArrowRightLeftIcon,
-  CloudUploadIcon,
-  CogIcon,
-  Fingerprint,
-  LockKeyholeIcon,
-  ServerIcon,
+  BaggageClaim,
+  BookOpenCheck,
+  GlobeIcon,
+  Infinity,
+  MousePointerClick,
+  PanelsTopLeft,
 } from "lucide-react";
 
 const features = [
   {
-    name: "Push to deploy.",
+    name: "Wide open.",
     description:
-      "Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.",
-    icon: CloudUploadIcon,
+      "Open-source, expandable, customizable, and secure feedback platform.",
+    icon: BookOpenCheck,
   },
   {
-    name: "SSL certificates.",
+    name: "Embeddable.",
     description:
-      "Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.",
-    icon: LockKeyholeIcon,
+      "Display feedback on your personal or product site with a code snippet.",
+    icon: PanelsTopLeft,
   },
   {
-    name: "Simple queues.",
+    name: "Claim what's yours.",
     description:
-      "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus.",
-    icon: ArrowRightLeftIcon,
+      "Claim URIs to claim the feedback your received in the platform.",
+    icon: BaggageClaim,
   },
   {
-    name: "Advanced security.",
+    name: "Universal.",
     description:
-      "Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.",
-    icon: Fingerprint,
+      "Leave feedback to any valid URI such as social profiles, emails, any platform videos, etc.",
+    icon: GlobeIcon,
   },
   {
-    name: "Powerful API.",
+    name: "Actionable.",
     description:
-      "Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.",
-    icon: CogIcon,
+      "Create custom feedback categories for targeted feedback in your props.to profile.",
+    icon: MousePointerClick,
   },
   {
-    name: "Database backups.",
+    name: "Infinite.",
     description:
-      "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus. ",
-    icon: ServerIcon,
+      "Consolidate feedback from organizations or self-hosted props.to instances in your public profile.",
+    icon: Infinity,
   },
 ];
 
 export function Features01(): JSX.Element {
   return (
-    <section className="relative bg-zinc-50">
+    <section className="relative [background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
       <div className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="relative max-w-3xl mx-auto text-center pb-12">
-            <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
+            <h2 className="font-cal text-3xl md:text-4xl font-bold text-gray-200 mb-4">
               Key features
             </h2>
-            <p className="text-lg text-zinc-500">
+            <p className="text-lg text-zinc-200">
               Truly open source feedback platform thought to conquer the
               feedback world!
             </p>
           </div>
-          <div className="mx-auto mt-16 max-w-7xl px-6 sm:mt-20 md:mt-24 lg:px-8">
-            <dl className="mx-auto grid max-w-2xl grid-cols-1 gap-x-6 gap-y-10 text-base leading-7 text-gray-300 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3 lg:gap-x-8 lg:gap-y-16">
+          <div className="mx-auto max-w-2xl lg:max-w-4xl">
+            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
               {features.map((feature) => (
-                <div key={feature.name} className="relative pl-9">
-                  <dt className="inline font-semibold text-white">
-                    <feature.icon
-                      aria-hidden="true"
-                      className="absolute left-1 top-1 h-5 w-5 text-indigo-500"
-                    />
+                <div key={feature.name} className="relative pl-16">
+                  <dt className="text-base font-semibold leading-7 text-white">
+                    <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-300">
+                      <feature.icon
+                        aria-hidden="true"
+                        className="h-6 w-6 text-black"
+                      />
+                    </div>
                     {feature.name}
-                  </dt>{" "}
-                  <dd className="inline">{feature.description}</dd>
+                  </dt>
+                  <dd className="mt-2 text-base leading-7 text-gray-300">
+                    {feature.description}
+                  </dd>
                 </div>
               ))}
             </dl>

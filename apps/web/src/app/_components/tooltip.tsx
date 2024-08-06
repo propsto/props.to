@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Transition } from "@headlessui/react";
+import { motion, type Variants } from "framer-motion";
 
 interface TooltipProps {
   children: React.ReactNode;
@@ -9,6 +9,28 @@ interface TooltipProps {
   id: string;
   dark?: boolean;
 }
+
+const tooltipVariants: Variants = {
+  initial: {
+    opacity: 0,
+    y: 4, // equivalent to translate-y-1
+  },
+  enter: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+      ease: "easeOut",
+    },
+  },
+};
 
 export function Tooltip({
   children,
@@ -44,19 +66,14 @@ export function Tooltip({
         role="tooltip"
         className="z-10 absolute top-full left-0"
       >
-        <Transition
-          show={open}
-          enter="transition ease-out duration-200 transform"
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-out duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+        <motion.div
+          initial="initial"
+          animate={open ? "enter" : "exit"}
+          variants={tooltipVariants}
+          className="w-[12.5rem] text-xs bg-white text-zinc-500 border border-zinc-200 px-3 py-2 rounded shadow-lg overflow-hidden mt-1"
         >
-          <div className="w-[12.5rem] text-xs bg-white text-zinc-500 border border-zinc-200 px-3 py-2 rounded shadow-lg overflow-hidden mt-1">
-            {content}
-          </div>
-        </Transition>
+          {content}
+        </motion.div>
       </div>
     </div>
   );

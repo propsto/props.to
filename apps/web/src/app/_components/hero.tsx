@@ -71,7 +71,7 @@ function TypeWriterCTA(): React.ReactNode {
           <Input
             placeholder={placeholderText}
             type="text"
-            className="peer font-sans w-[70%] inline-block bg-white h-16 font-extralight rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-5xl sm:leading-6"
+            className="peer focus:placeholder:text-white font-sans w-[70%] inline-block bg-white h-16 font-extralight rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-5xl sm:leading-6"
           />
           <Button
             variant="default"

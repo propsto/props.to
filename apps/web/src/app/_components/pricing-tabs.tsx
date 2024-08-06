@@ -47,11 +47,11 @@ export function PricingTabs(): JSX.Element {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="relative max-w-3xl mx-auto text-center pb-12">
             <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
-              Start your journey today
+              There&apos;s a plan for everyone
             </h2>
             <p className="text-lg text-zinc-500">
-              Start creating realtime design experiences for free. Upgrade for
-              extra features and collaboration with your team.
+              Start claiming your received feedback. Upgrade to get extra
+              features and buy a license to get them in a self-hosted props.to.
             </p>
           </div>
 

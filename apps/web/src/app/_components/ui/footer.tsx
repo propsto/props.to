@@ -6,9 +6,9 @@ export function Footer(): JSX.Element {
     <footer>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top area: Blocks */}
-        <div className="grid sm:grid-cols-12 gap-8 py-8 md:py-12 border-t border-zinc-200">
+        <div className="py-8 md:py-12 border-t border-zinc-200">
           {/* 1st block */}
-          <div className="sm:col-span-6 md:col-span-3 lg:col-span-6 max-sm:order-1 flex flex-col">
+          <div className="sm:col-span-6 md:col-span-3 lg:col-span-6 max-sm:order-1 flex flex-col items-center">
             <div className="mb-4">
               {/* Logo */}
               <Link
@@ -18,7 +18,7 @@ export function Footer(): JSX.Element {
                 <Image src="/props.to.png" width={24} height={24} alt="Logo" />
               </Link>
             </div>
-            <div className="grow text-sm text-zinc-500 max-w-sm">
+            <div className="grow text-sm text-zinc-500 max-w-[25rem] text-center">
               The symbol <b>人</b> in Asia means &quot;human&quot; representing
               the concept of humanity. It&apos;s also the ASCII version of emoji
               🙏
@@ -60,7 +60,7 @@ export function Footer(): JSX.Element {
             </ul>
           </div>
 
-          {/* 2nd block */}
+          {/* 2nd block 
           <div className="sm:col-span-6 md:col-span-3 lg:col-span-2">
             <h6 className="text-sm text-zinc-800 font-medium mb-2">Company</h6>
             <ul className="text-sm space-y-2">
@@ -105,9 +105,9 @@ export function Footer(): JSX.Element {
                 </a>
               </li>
             </ul>
-          </div>
+          </div>*/}
 
-          {/* 3rd block */}
+          {/* 3rd block 
           <div className="sm:col-span-6 md:col-span-3 lg:col-span-2">
             <h6 className="text-sm text-zinc-800 font-medium mb-2">
               Resources
@@ -138,9 +138,9 @@ export function Footer(): JSX.Element {
                 </a>
               </li>
             </ul>
-          </div>
+          </div>*/}
 
-          {/* 4th block */}
+          {/* 4th block 
           <div className="sm:col-span-6 md:col-span-3 lg:col-span-2">
             <h6 className="text-sm text-zinc-800 font-medium mb-2">Legals</h6>
             <ul className="text-sm space-y-2">
@@ -177,7 +177,7 @@ export function Footer(): JSX.Element {
                 </a>
               </li>
             </ul>
-          </div>
+          </div>*/}
         </div>
       </div>
     </footer>

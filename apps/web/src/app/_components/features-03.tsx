@@ -1,8 +1,34 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Transition } from "@headlessui/react";
+import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
+
+const transitionVariants: Variants = {
+  initial: {
+    opacity: 0,
+    y: -16, // equivalent to -translate-y-4
+    position: "absolute",
+  },
+  enter: {
+    opacity: 1,
+    y: 0,
+    position: "relative",
+    transition: {
+      duration: 0.7,
+      ease: "easeInOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: 16, // equivalent to translate-y-4
+    position: "absolute",
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
+};
 
 export function Features03(): JSX.Element {
   const [tab, setTab] = useState<number>(1);
@@ -138,77 +164,53 @@ export function Features03(): JSX.Element {
             <div className="relative lg:max-w-none">
               <div className="relative flex flex-col" ref={tabs}>
                 {/* Item 1 */}
-                <Transition
-                  show={tab === 1}
-                  enter="transition ease-in-out duration-700 transform order-first"
-                  enterFrom="opacity-0 -translate-y-4"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in-out duration-300 transform absolute"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => {
-                    heightFix();
-                  }}
-                  unmount={false}
+                <motion.div
+                  initial="initial"
+                  animate={tab === 1 ? "enter" : "exit"}
+                  variants={transitionVariants}
+                  onAnimationStart={heightFix} // Called when the animation starts
+                  className="w-full"
                 >
-                  <div className="w-full">
-                    <Image
-                      className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src="/images/carousel-illustration-01.jpg"
-                      width={800}
-                      height={620}
-                      alt="Carousel 01"
-                    />
-                  </div>
-                </Transition>
+                  <Image
+                    className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
+                    src="/images/carousel-illustration-01.jpg"
+                    width={800}
+                    height={620}
+                    alt="Carousel 01"
+                  />
+                </motion.div>
                 {/* Item 2 */}
-                <Transition
-                  show={tab === 2}
-                  enter="transition ease-in-out duration-700 transform order-first"
-                  enterFrom="opacity-0 -translate-y-4"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in-out duration-300 transform absolute"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => {
-                    heightFix();
-                  }}
-                  unmount={false}
+                <motion.div
+                  initial="initial"
+                  animate={tab === 2 ? "enter" : "exit"}
+                  variants={transitionVariants}
+                  onAnimationStart={heightFix} // Called when the animation starts
+                  className="w-full"
                 >
-                  <div className="w-full">
-                    <Image
-                      className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src="/images/carousel-illustration-01.jpg"
-                      width={800}
-                      height={620}
-                      alt="Carousel 02"
-                    />
-                  </div>
-                </Transition>
+                  <Image
+                    className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
+                    src="/images/carousel-illustration-01.jpg"
+                    width={800}
+                    height={620}
+                    alt="Carousel 02"
+                  />
+                </motion.div>
                 {/* Item 3 */}
-                <Transition
-                  show={tab === 3}
-                  enter="transition ease-in-out duration-700 transform order-first"
-                  enterFrom="opacity-0 -translate-y-4"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in-out duration-300 transform absolute"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 translate-y-4"
-                  beforeEnter={() => {
-                    heightFix();
-                  }}
-                  unmount={false}
+                <motion.div
+                  initial="initial"
+                  animate={tab === 3 ? "enter" : "exit"}
+                  variants={transitionVariants}
+                  onAnimationStart={heightFix} // Called when the animation starts
+                  className="w-full"
                 >
-                  <div className="w-full">
-                    <Image
-                      className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
-                      src="/images/carousel-illustration-01.jpg"
-                      width={800}
-                      height={620}
-                      alt="Carousel 03"
-                    />
-                  </div>
-                </Transition>
+                  <Image
+                    className="lg:max-w-none mx-auto rounded-lg shadow-2xl"
+                    src="/images/carousel-illustration-01.jpg"
+                    width={800}
+                    height={620}
+                    alt="Carousel 03"
+                  />
+                </motion.div>
               </div>
               {/* Gear illustration */}
               <Image

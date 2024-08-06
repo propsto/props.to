@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "insiders"
+    "framer-motion": "*"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
