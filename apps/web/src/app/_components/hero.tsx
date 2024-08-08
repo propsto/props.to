@@ -15,7 +15,7 @@ export function Hero(): JSX.Element {
     <div ref={ref}>
       {/* Pass ref to triangles for background effects */}
       <Triangles parentRef={ref} />
-      <div className="pt-32 pb-12 md:pt-48 md:pb-20">
+      <div className="pt-28 pb-12 md:pt-44 md:pb-20">
         {/* Section content */}
         <div className="px-4 sm:px-6">
           <div className="relative max-w-4xl mx-auto">
@@ -66,22 +66,22 @@ function TypeWriterCTA(): React.ReactNode {
           </p>
         </>
       ) : (
-        <h2 className="text-5xl font-black">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black flex flex-col md:flex-row items-center gap-1 flex-wrap justify-center">
           props.to/
           <Input
             placeholder={placeholderText}
             type="text"
-            className="peer focus:placeholder:text-white font-sans w-[70%] inline-block bg-white h-16 font-extralight rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-5xl sm:leading-6"
+            className="peer text-2xl focus:placeholder:text-white md:placeholder:text-3xl lg:placeholder:text-5xl placeholder:text-2xl font-sans w-[70%] min-w-[70%] inline-block bg-white h-10 md:h-14 lg:h-16 font-extralight rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-3xl lg:text-5xl sm:leading-6"
           />
           <Button
             variant="default"
-            className="peer-focus:visible active:visible hover:visible invisible absolute -right-14 h-16 text-xl"
+            className="peer-focus:visible active:visible hover:visible invisible md:text-xl h-10 md:h-14 lg:h-16"
             onClick={() => {
               setShowNotice(true);
             }}
           >
             Go&nbsp;
-            <ArrowRight className="size-6" />
+            <ArrowRight className="md:size-6 size-4" />
           </Button>
         </h2>
       )}
