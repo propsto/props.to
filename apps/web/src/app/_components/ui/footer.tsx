@@ -6,7 +6,7 @@ export function Footer(): JSX.Element {
     <footer className="[background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top area: Blocks */}
-        <div className="py-8 md:py-12 border-t border-zinc-200">
+        <div className="py-8 md:py-12">
           {/* 1st block */}
           <div className="sm:col-span-6 md:col-span-3 lg:col-span-6 max-sm:order-1 flex flex-col items-center">
             <div className="mb-4">
@@ -21,7 +21,7 @@ export function Footer(): JSX.Element {
             <div className="grow text-sm text-zinc-200 max-w-[25rem] text-center">
               The symbol <b>人</b> in Asia means &quot;human&quot; representing
               the concept of humanity. It&apos;s also the ASCII version of emoji
-              🙏
+              🙏 commonly used to express gratefulness.
             </div>
             {/* Social links */}
             <ul className="flex space-x-4 mt-4 mb-1">

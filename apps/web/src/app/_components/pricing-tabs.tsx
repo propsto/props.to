@@ -1,42 +1,64 @@
 "use client";
 
-import { Accordion } from "@components/accordion";
+import { cn } from "@propsto/ui/utils/cn";
+import { CheckCircle2, CircleDollarSign, X } from "lucide-react";
+import { Tooltip } from "./tooltip";
+
+const features = [
+  "Public user profile",
+  "Embedding capabilities",
+  "Customize profile design",
+  "Custom feedback links in profile",
+  "API access",
+  "Single social network integration",
+  "Additional integrations",
+  "Custom feedback values",
+  "App store",
+  "Single Sign-On",
+  "AI assistence",
+  "White labeling",
+  "Workflows",
+] as const;
+
+type FixedLengthTuple<T extends readonly unknown[], U> = {
+  [K in keyof T]: U;
+};
+
+type FeaturesTuple = FixedLengthTuple<typeof features, 0 | 1 | "paid">;
+
+interface Tier {
+  price: string;
+  priceSubtitle: string;
+  features: FeaturesTuple;
+  highlight?: string;
+  footer: string;
+}
+
+const tiers: Record<string, Tier> = {
+  INDIVIDUAL: {
+    price: "Free",
+    priceSubtitle: "Free for ever",
+    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, "paid"],
+    highlight: "MVP",
+    footer: "Literally you probably haven't heard of them jean shorts.",
+  },
+  ORGANIZATION: {
+    price: "TBD",
+    priceSubtitle: "a.k.a. hosted (company.props.to)",
+    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],
+    //highlight: "MVP",
+    footer: "Literally you probably haven't heard of them jean shorts.",
+  },
+  ENTERPRISE: {
+    price: "TBD",
+    priceSubtitle: "a.k.a hosted/self-hosted license",
+    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],
+    //highlight: "MVP",
+    footer: "Literally you probably haven't heard of them jean shorts.",
+  },
+};
 
 export function PricingTabs(): JSX.Element {
-  const faqs = [
-    {
-      title: "Can I use the product for free?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "What payment methods can I use?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "Can I change from monthly to yearly billing?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title:
-        "Can I use the tool for personal, client, and commercial projects?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: true,
-    },
-    {
-      title: "How can I ask other questions about pricing?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "Do you offer discount for students and no-profit companies?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-  ];
-
   return (
     <section>
       <div className="py-12 md:py-20">
@@ -56,462 +78,94 @@ export function PricingTabs(): JSX.Element {
             <div className="container px-5 py-24 mx-auto flex flex-wrap">
               <div className="lg:w-1/4 mt-48 hidden lg:block">
                 <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
-                  <p className="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">
-                    Fingerstache disrupt
-                  </p>
-                  <p className="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Franzen hashtag
-                  </p>
-                  <p className="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Tilde art party
-                  </p>
-                  <p className="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Banh mi cornhole
-                  </p>
-                  <p className="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Waistcoat squid hexagon
-                  </p>
-                  <p className="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Pinterest occupy authentic
-                  </p>
-                  <p className="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Brooklyn helvetica
-                  </p>
-                  <p className="text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Long Feature Two
-                  </p>
-                  <p className="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">
-                    Feature One
-                  </p>
+                  {features.map((feat, index) => (
+                    <p
+                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                      key={index}
+                      className={cn(
+                        "text-gray-900 h-12 text-center px-4 flex items-center justify-start",
+                        index === 0 && "-mt-px",
+                        index % 2 === 0 && "bg-gray-100"
+                      )}
+                    >
+                      {feat}
+                    </p>
+                  ))}
                 </div>
               </div>
-              <div className="flex lg:w-3/4 w-full flex-wrap lg:border border-gray-300 rounded-lg">
-                <div className="lg:w-1/3 lg:mt-px w-full mb-10 lg:mb-0 border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-                  <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
-                    <h3 className="tracking-widest">START</h3>
-                    <h2 className="text-5xl text-gray-900 font-medium leading-none mb-4 mt-2">
-                      Free
-                    </h2>
-                    <span className="text-sm text-gray-600">Next 3 months</span>
-                  </div>
-                  <p className="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-                    Schlitz single-origin
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="h-12 text-gray-600 px-6 text-center leading-relaxed flex items-center justify-center">
-                    Feature
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
+              <div className="flex lg:w-3/4 w-full flex-wrap rounded-lg">
+                {Object.keys(tiers).map((tierKey, index) => {
+                  const tier = tiers[tierKey];
+                  return (
+                    <div
+                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                      key={index}
+                      className={cn(
+                        "lg:w-1/3 w-full rounded-lg mb-10",
+                        tier.highlight
+                          ? "border-2 border-gray-800 relative"
+                          : "border-gray-300",
+                        !tier.highlight &&
+                          "border-r border-b border-t border-l",
+                        index !== 0 && !tier.highlight && "lg:border-l-0"
+                      )}
                     >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <div className="border-t border-gray-300 p-6 text-center rounded-bl-lg">
-                    <button className="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                      Button
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="w-4 h-4 ml-auto"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                      </svg>
-                    </button>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Literally you probably haven&apos;t heard of them jean
-                      shorts.
-                    </p>
-                  </div>
-                </div>
-                <div className="lg:w-1/3 lg:-mt-px w-full mb-10 lg:mb-0 border-2 rounded-lg border-indigo-500 relative">
-                  <span className="bg-indigo-500 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl">
-                    POPULAR
-                  </span>
-                  <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
-                    <h3 className="tracking-widest">PRO</h3>
-                    <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                      $38
-                      <span className="text-gray-600 text-base ml-1">/mo</span>
-                    </h2>
-                    <span className="text-sm text-gray-600">
-                      Charging $456 per year
-                    </span>
-                  </div>
-                  <p className="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-                    Schlitz single-origin
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">
-                    Feature
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <div className="p-6 text-center border-t border-gray-300">
-                    <button className="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                      Button
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="w-4 h-4 ml-auto"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                      </svg>
-                    </button>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Literally you probably haven&apos;t heard of them jean
-                      shorts.
-                    </p>
-                  </div>
-                </div>
-                <div className="lg:w-1/3 w-full lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-                  <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
-                    <h3 className="tracking-widest">BUSINESS</h3>
-                    <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                      $54
-                      <span className="text-gray-600 text-base ml-1">/mo</span>
-                    </h2>
-                    <span className="text-sm text-gray-600">
-                      Charging $648 per year
-                    </span>
-                  </div>
-                  <p className="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">
-                    Schlitz single-origin
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">
-                    Feature
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <span className="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="3"
-                        className="w-3 h-3"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M20 6L9 17l-5-5"></path>
-                      </svg>
-                    </span>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <p className="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                    <svg
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2.2"
-                      className="w-5 h-5 text-gray-500"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M18 6L6 18M6 6l12 12"></path>
-                    </svg>
-                  </p>
-                  <div className="p-6 text-center border-t border-gray-300">
-                    <button className="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                      Button
-                      <svg
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="w-4 h-4 ml-auto"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                      </svg>
-                    </button>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Literally you probably haven&apos;t heard of them jean
-                      shorts.
-                    </p>
-                  </div>
-                </div>
+                      {tier.highlight ? (
+                        <span className="bg-gray-800 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl rounded-tr">
+                          {tier.highlight}
+                        </span>
+                      ) : null}
+                      <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
+                        <h3 className="tracking-widest">{tierKey}</h3>
+                        <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
+                          {tier.price}
+                        </h2>
+                        <span className="text-sm text-gray-600">
+                          {tier.priceSubtitle}
+                        </span>
+                      </div>
+                      {tier.features.map((featState, indexState) => (
+                        <div
+                          // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                          key={index}
+                          className={cn(
+                            "text-gray-600 h-12 flex items-center justify-center",
+                            indexState === 0 && "border-t border-gray-300",
+                            tier.highlight && indexState === 0 && "-mt-px",
+                            indexState % 2 === 0 && "bg-gray-100"
+                          )}
+                        >
+                          <span className="lg:hidden font-bold">
+                            {features[indexState]}&nbsp;
+                          </span>
+                          {featState === 1 && (
+                            <CheckCircle2 className="size-5" />
+                          )}
+                          {featState === 0 && <X className="size-5" />}
+                          {featState === "paid" && (
+                            <Tooltip
+                              content="Extra"
+                              id={`paid${indexState.toString()}`}
+                            >
+                              <CircleDollarSign
+                                className="size-5 text-gray-600"
+                                aria-label="Extra"
+                              />
+                            </Tooltip>
+                          )}
+                        </div>
+                      ))}
+                      <div className="p-6 text-center border-t border-gray-300">
+                        <p className="text-xs text-gray-500 mt-3">
+                          {tier.footer}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </section>
-
-          {/* FAQs */}
-          <div className="max-w-2xl mx-auto">
-            <div className="space-y-2">
-              {faqs.map((faq, index) => (
-                <Accordion
-                  key={faq.title}
-                  title={faq.title}
-                  id={`faqs-${index.toString()}`}
-                  active={faq.active}
-                >
-                  {faq.text}
-                </Accordion>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </section>
