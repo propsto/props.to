@@ -16,17 +16,18 @@ const tiers: Record<string, Tier> = {
     price: "Free",
     priceSubtitle: "Free for ever",
     highlight: "MVP",
-    footer: "Literally you probably haven't heard of them jean shorts.",
+    footer: "Working on it right now. Be sure to request early access!",
   },
   ORGANIZATION: {
     price: "TBD",
     priceSubtitle: "a.k.a. hosted (company.props.to)",
-    footer: "Literally you probably haven't heard of them jean shorts.",
+    footer: "This will come as the first expansion of the MVP.",
   },
   ENTERPRISE: {
     price: "TBD",
     priceSubtitle: "a.k.a hosted/self-hosted license",
-    footer: "Literally you probably haven't heard of them jean shorts.",
+    footer:
+      "After the first expansion, this should not be that much additional work.",
   },
 };
 
