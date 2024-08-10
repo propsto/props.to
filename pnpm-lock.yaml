@@ -75,6 +75,9 @@ importers:
       eslint:
         specifier: 8.57.0
         version: 8.57.0
+      framer-motion:
+        specifier: 11.3.21
+        version: 11.3.21(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       husky:
         specifier: 9.0.11
         version: 9.0.11
@@ -85,8 +88,8 @@ importers:
         specifier: 4.16.2
         version: 4.16.2
       turbo:
-        specifier: 2.0.6
-        version: 2.0.6
+        specifier: 2.0.12
+        version: 2.0.12
 
   apps/app:
     dependencies:
@@ -197,7 +200,7 @@ importers:
         version: 15.0.0-canary.41(@babel/core@7.24.5)(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       next-auth:
         specifier: beta
-        version: 5.0.0-beta.19(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@15.0.0-canary.41(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0))(nodemailer@6.9.14)(react@19.0.0-rc.0)
+        version: 5.0.0-beta.20(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@15.0.0-canary.41(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0))(nodemailer@6.9.14)(react@19.0.0-rc.0)
       next-themes:
         specifier: '*'
         version: 0.3.0(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
@@ -225,12 +228,12 @@ importers:
 
   apps/web:
     dependencies:
-      '@headlessui/react':
-        specifier: 2.0.4
-        version: 2.0.4(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       '@propsto/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@propsto/data':
         specifier: workspace:*
         version: link:../../packages/data
@@ -255,6 +258,9 @@ importers:
       eslint:
         specifier: '*'
         version: 8.57.0
+      framer-motion:
+        specifier: '*'
+        version: 11.2.10(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       lucide-react:
         specifier: '*'
         version: 0.395.0(react@19.0.0-rc.0)
@@ -398,6 +404,9 @@ importers:
       '@propsto/config':
         specifier: workspace:*
         version: link:../config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../constants
       '@propsto/logger':
         specifier: workspace:*
         version: link:../logger
@@ -447,7 +456,7 @@ importers:
         specifier: '*'
         version: 8.57.0
       framer-motion:
-        specifier: 11.2.10
+        specifier: '*'
         version: 11.2.10(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       lucide-react:
         specifier: '*'
@@ -481,8 +490,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@auth/core@0.32.0':
-    resolution: {integrity: sha512-3+ssTScBd+1fd0/fscAyQN1tSygXzuhysuVVzB942ggU4mdfiTbv36P0ccVnExKWYJKvu3E2r3/zxXCCAmTOrg==}
+  '@auth/core@0.34.1':
+    resolution: {integrity: sha512-tuYU2VIbI8rFbkSwP710LmybB2FXJsPN7j3sjRVfN9SXVQBK2ej6LdewQaofpBGp4Mk+cC2UeiGNH0or4tgaeA==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -495,8 +504,8 @@ packages:
       nodemailer:
         optional: true
 
-  '@auth/core@0.34.1':
-    resolution: {integrity: sha512-tuYU2VIbI8rFbkSwP710LmybB2FXJsPN7j3sjRVfN9SXVQBK2ej6LdewQaofpBGp4Mk+cC2UeiGNH0or4tgaeA==}
+  '@auth/core@0.34.2':
+    resolution: {integrity: sha512-KywHKRgLiF3l7PLyL73fjLSIBe1YNcA6sMeew4yMP6cfCWGXZrkkXd32AjRi1hlJ9nvovUBGZHvbn+LijO6ZeQ==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -974,21 +983,8 @@ packages:
       react: 19.0.0-rc.0
       react-dom: 19.0.0-rc.0
 
-  '@floating-ui/react@0.26.19':
-    resolution: {integrity: sha512-Jk6zITdjjIvjO/VdQFvpRaD3qPwOHH6AoDHxjhpy+oK4KFgaSP871HYWUAPdnLmx1gQ+w/pB312co3tVml+BXA==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0
-
   '@floating-ui/utils@0.2.4':
     resolution: {integrity: sha512-dWO2pw8hhi+WrXq1YJy2yCuWoL20PddgGaqTgVe4cOS9Q6qklXCiA1tJEqX6BEwRNSCP84/afac9hd4MS+zEUA==}
-
-  '@headlessui/react@2.0.4':
-    resolution: {integrity: sha512-16d/rOLeYsFsmPlRmXGu8DCBzrWD0zV1Ccx3n73wN87yFu8Y9+X04zflv8EJEt9TAYRyLKOmQXUnOnqQl6NgpA==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0
 
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
@@ -1692,27 +1688,6 @@ packages:
   '@radix-ui/rect@1.0.1':
     resolution: {integrity: sha512-fyrgCaedtvMg9NK3en0pnOYJdtfwxUcNolezkNPUsoX57X8oQk+NkqcvzHXD2uKNij6GXmWU9NDru2IWjrO4BQ==}
 
-  '@react-aria/focus@3.17.1':
-    resolution: {integrity: sha512-FLTySoSNqX++u0nWZJPPN5etXY0WBxaIe/YuL/GTEeuqUIuC/2bJSaw5hlsM6T2yjy6Y/VAxBcKSdAFUlU6njQ==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
-  '@react-aria/interactions@3.21.3':
-    resolution: {integrity: sha512-BWIuf4qCs5FreDJ9AguawLVS0lV9UU+sK4CCnbCNNmYqOWY+1+gRXCsnOM32K+oMESBxilAjdHW5n1hsMqYMpA==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
-  '@react-aria/ssr@3.9.4':
-    resolution: {integrity: sha512-4jmAigVq409qcJvQyuorsmBR4+9r3+JEC60wC+Y0MZV0HCtTmm8D9guYXlJMdx0SSkgj0hHAyFm/HvPNFofCoQ==}
-    engines: {node: '>= 12'}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
-  '@react-aria/utils@3.24.1':
-    resolution: {integrity: sha512-O3s9qhPMd6n42x9sKeJ3lhu5V1Tlnzhu6Yk8QOvDuXf7UGuUjXf9mzfHJt1dYzID4l9Fwm8toczBzPM9t0jc8Q==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
   '@react-email/body@0.0.8':
     resolution: {integrity: sha512-gqdkNYlIaIw0OdpWu8KjIcQSIFvx7t2bZpXVxMMvBS859Ia1+1X3b5RNbjI3S1ZqLddUf7owOHkO4MiXGE+nxg==}
     peerDependencies:
@@ -1836,16 +1811,6 @@ packages:
   '@react-email/text@0.0.8':
     resolution: {integrity: sha512-uvN2TNWMrfC9wv/LLmMLbbEN1GrMWZb9dBK14eYxHHAEHCeyvGb5ePZZ2MPyzO7Y5yTC+vFEnCEr76V+hWMxCQ==}
     engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
-  '@react-stately/utils@3.10.1':
-    resolution: {integrity: sha512-VS/EHRyicef25zDZcM/ClpzYMC5i2YGN6uegOeQawmgfGjb02yaCX0F0zR69Pod9m2Hr3wunTbtpgVXvYbZItg==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-
-  '@react-types/shared@3.23.1':
-    resolution: {integrity: sha512-5d+3HbFDxGZjhbMBeFHRQhexMFt4pUce3okyRtUVKbbedQFUrtXSBg9VszgF2RTeQDKDkMCIQDtz5ccP/Lk1gw==}
     peerDependencies:
       react: 19.0.0-rc.0
 
@@ -2042,15 +2007,6 @@ packages:
     resolution: {integrity: sha512-QE7X69iQI+ZXwldE+rzasvbJiyV/ju1FGHH0Qn2W3FKbuYtqp8LKcy6iSw79fVUT5/Vvf+0XgLCeYVG+UV6hOw==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || >= 3.0.0-alpha.1'
-
-  '@tanstack/react-virtual@3.5.0':
-    resolution: {integrity: sha512-rtvo7KwuIvqK9zb0VZ5IL7fiJAEnG+0EiFZz8FUOs+2mhGqdGmjKIaT1XU7Zq0eFqL0jonLlhbayJI/J2SA/Bw==}
-    peerDependencies:
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0
-
-  '@tanstack/virtual-core@3.5.0':
-    resolution: {integrity: sha512-KnPRCkQTyqhanNC0K63GBG3wA8I+D1fQuVnAvcBF8f13akOKeQp1gSbu6f77zCxhEk727iV5oQnbHLYzHrECLg==}
 
   '@tootallnate/once@2.0.0':
     resolution: {integrity: sha512-XCuKFP5PS55gnMVu3dty8KPatLqUoy/ZYzDzAGCQ8JNFCkLXzmI7vNHCR+XpbZaMWQK/vQubr7PkYq8g470J/A==}
@@ -3344,6 +3300,20 @@ packages:
       react-dom:
         optional: true
 
+  framer-motion@11.3.21:
+    resolution: {integrity: sha512-D+hfIsvzV8eL/iycld4K+tKlg2Q2LdwnrcBEohtGw3cG1AIuNYATbT5RUqIM1ndsAk+EfGhoSGf0UaiFodc5Tw==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: 19.0.0-rc.0
+      react-dom: 19.0.0-rc.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   fresh@0.5.2:
     resolution: {integrity: sha512-zJ2mQYM18rEFOudeV4GShTGIQ7RbzA7ozbU9I/XBpm7kqgMywgmylMwXHxZJmkVoYkna9d2pVXVXPdYTP9ej8Q==}
     engines: {node: '>= 0.6'}
@@ -4029,8 +3999,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  next-auth@5.0.0-beta.19:
-    resolution: {integrity: sha512-YHu1igcAxZPh8ZB7GIM93dqgY6gcAzq66FOhQFheAdOx1raxNcApt05nNyNCSB6NegSiyJ4XOPsaNow4pfDmsg==}
+  next-auth@5.0.0-beta.20:
+    resolution: {integrity: sha512-+48SjV9k9AtUU3JbEIa4PXNjKIewfFjVGL7Xs2RKkuQ5QqegDNIQiIG8sLk6/qo7RTScQYIGKgeQ5IuQRtrTQg==}
     peerDependencies:
       '@simplewebauthn/browser': ^9.0.1
       '@simplewebauthn/server': ^9.0.2
@@ -4888,9 +4858,6 @@ packages:
     resolution: {integrity: sha512-7RnqIMq572L8PeEzKeBINYEJDDxpcH8JEgLwUqBd3TkofhFRbkq4QLR0u+36avGAhCRbk2nnmjcW9SE531hPDg==}
     engines: {node: ^14.18.0 || >=16.0.0}
 
-  tabbable@6.2.0:
-    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
-
   tailwind-merge@2.2.0:
     resolution: {integrity: sha512-SqqhhaL0T06SW59+JVNfAqKdqLs0497esifRrZ7jOaefP3o64fdFNDMrAQWZFMxTLJPiHVjRLUywT8uFz1xNWQ==}
 
@@ -5010,38 +4977,38 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  turbo-darwin-64@2.0.6:
-    resolution: {integrity: sha512-XpgBwWj3Ggmz/gQVqXdMKXHC1iFPMDiuwugLwSzE7Ih0O13JuNtYZKhQnopvbDQnFQCeRq2Vsm5OTWabg/oB/g==}
+  turbo-darwin-64@2.0.12:
+    resolution: {integrity: sha512-NAgfgbXxX/JScWQmmQnGbPuFZq7LIswHfcMk5JwyBXQM/xmklNOxxac7MnGGIOf19Z2f6S3qHy17VIj0SeGfnA==}
     cpu: [x64]
     os: [darwin]
 
-  turbo-darwin-arm64@2.0.6:
-    resolution: {integrity: sha512-RfeZYXIAkiA21E8lsvfptGTqz/256YD+eI1x37fedfvnHFWuIMFZGAOwJxtZc6QasQunDZ9TRRREbJNI68tkIw==}
+  turbo-darwin-arm64@2.0.12:
+    resolution: {integrity: sha512-cP02uer5KSJ+fXL+OfRRk5hnVjV0c60hxDgNcJxrZpfhun7HHoKDDR7w2xhQntiA45aC6ZZEXRqMKpj6GAmKbg==}
     cpu: [arm64]
     os: [darwin]
 
-  turbo-linux-64@2.0.6:
-    resolution: {integrity: sha512-92UDa0xNQQbx0HdSp9ag3YSS3xPdavhc7q9q9mxIAcqyjjD6VElA4Y85m4F/DDGE5SolCrvBz2sQhVmkOd6Caw==}
+  turbo-linux-64@2.0.12:
+    resolution: {integrity: sha512-+mQgGfg1eq5qF+wenK/FKJaNMNAo5DQLC4htQy+8osW+fx6U+8+6UlPQPaycAWDEqwOI7NwuqkeHfkEQLQUTyQ==}
     cpu: [x64]
     os: [linux]
 
-  turbo-linux-arm64@2.0.6:
-    resolution: {integrity: sha512-eQKu6utCVUkIH2kqOzD8OS6E0ba6COjWm6PRDTNCHQRljZW503ycaTUIdMOiJrVg1MkEjDyOReUg8s8D18aJ4Q==}
+  turbo-linux-arm64@2.0.12:
+    resolution: {integrity: sha512-KFyEZDXfPU1DK4zimxdCcqAcK7IIttX4mfsgB7NsSEOmH0dhHOih/YFYiyEDC1lTRx0C2RlzQ0Kjjdz48AN5Eg==}
     cpu: [arm64]
     os: [linux]
 
-  turbo-windows-64@2.0.6:
-    resolution: {integrity: sha512-+9u4EPrpoeHYCQ46dRcou9kbkSoelhOelHNcbs2d86D6ruYD/oIAHK9qgYK8LeARRz0jxhZIA/dWYdYsxJJWkw==}
+  turbo-windows-64@2.0.12:
+    resolution: {integrity: sha512-kJj4KCkZTkDTDCqsSw1m1dbO4WeoQq1mYUm/thXOH0OkeqYbSMt0EyoTcJOgKUDsrMnzZD2gPfYrlYHtV69lVA==}
     cpu: [x64]
     os: [win32]
 
-  turbo-windows-arm64@2.0.6:
-    resolution: {integrity: sha512-rdrKL+p+EjtdDVg0wQ/7yTbzkIYrnb0Pw4IKcjsy3M0RqUM9UcEi67b94XOAyTa5a0GqJL1+tUj2ebsFGPgZbg==}
+  turbo-windows-arm64@2.0.12:
+    resolution: {integrity: sha512-TY3ROxguDilN2olCwcZMaePdW01Xhma0pZU7bNhsQEqca9RGAmsZBuzfGnTMcWPmv4tpnb/PlX1hrt1Hod/44Q==}
     cpu: [arm64]
     os: [win32]
 
-  turbo@2.0.6:
-    resolution: {integrity: sha512-/Ftmxd5Mq//a9yMonvmwENNUN65jOVTwhhBPQjEtNZutYT9YKyzydFGLyVM1nzhpLWahQSMamRc/RDBv5EapzA==}
+  turbo@2.0.12:
+    resolution: {integrity: sha512-8s2KwqjwQj7z8Z53SUZSKVkQOZ2/Sl4D2F440oaBY/k2lGju60dW6srEpnn8/RIDeICZmQn3pQHF79Jfnc5Skw==}
     hasBin: true
 
   type-check@0.4.0:
@@ -5387,7 +5354,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@auth/core@0.32.0(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)':
+  '@auth/core@0.34.1(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)':
     dependencies:
       '@panva/hkdf': 1.2.1
       '@types/cookie': 0.6.0
@@ -5401,7 +5368,7 @@ snapshots:
       '@simplewebauthn/server': 9.0.2
       nodemailer: 6.9.14
 
-  '@auth/core@0.34.1(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)':
+  '@auth/core@0.34.2(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)':
     dependencies:
       '@panva/hkdf': 1.2.1
       '@types/cookie': 0.6.0
@@ -5806,24 +5773,7 @@ snapshots:
       react: 19.0.0-rc.0
       react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
 
-  '@floating-ui/react@0.26.19(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)':
-    dependencies:
-      '@floating-ui/react-dom': 2.1.1(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
-      '@floating-ui/utils': 0.2.4
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
-      tabbable: 6.2.0
-
   '@floating-ui/utils@0.2.4': {}
-
-  '@headlessui/react@2.0.4(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)':
-    dependencies:
-      '@floating-ui/react': 0.26.19(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
-      '@react-aria/focus': 3.17.1(react@19.0.0-rc.0)
-      '@react-aria/interactions': 3.21.3(react@19.0.0-rc.0)
-      '@tanstack/react-virtual': 3.5.0(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
 
   '@hexagon/base64@1.1.28': {}
 
@@ -6519,37 +6469,6 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.24.7
 
-  '@react-aria/focus@3.17.1(react@19.0.0-rc.0)':
-    dependencies:
-      '@react-aria/interactions': 3.21.3(react@19.0.0-rc.0)
-      '@react-aria/utils': 3.24.1(react@19.0.0-rc.0)
-      '@react-types/shared': 3.23.1(react@19.0.0-rc.0)
-      '@swc/helpers': 0.5.11
-      clsx: 2.1.1
-      react: 19.0.0-rc.0
-
-  '@react-aria/interactions@3.21.3(react@19.0.0-rc.0)':
-    dependencies:
-      '@react-aria/ssr': 3.9.4(react@19.0.0-rc.0)
-      '@react-aria/utils': 3.24.1(react@19.0.0-rc.0)
-      '@react-types/shared': 3.23.1(react@19.0.0-rc.0)
-      '@swc/helpers': 0.5.11
-      react: 19.0.0-rc.0
-
-  '@react-aria/ssr@3.9.4(react@19.0.0-rc.0)':
-    dependencies:
-      '@swc/helpers': 0.5.11
-      react: 19.0.0-rc.0
-
-  '@react-aria/utils@3.24.1(react@19.0.0-rc.0)':
-    dependencies:
-      '@react-aria/ssr': 3.9.4(react@19.0.0-rc.0)
-      '@react-stately/utils': 3.10.1(react@19.0.0-rc.0)
-      '@react-types/shared': 3.23.1(react@19.0.0-rc.0)
-      '@swc/helpers': 0.5.11
-      clsx: 2.1.1
-      react: 19.0.0-rc.0
-
   '@react-email/body@0.0.8(react@19.0.0-rc.0)':
     dependencies:
       react: 19.0.0-rc.0
@@ -6669,15 +6588,6 @@ snapshots:
       react: 19.0.0-rc.0
 
   '@react-email/text@0.0.8(react@19.0.0-rc.0)':
-    dependencies:
-      react: 19.0.0-rc.0
-
-  '@react-stately/utils@3.10.1(react@19.0.0-rc.0)':
-    dependencies:
-      '@swc/helpers': 0.5.11
-      react: 19.0.0-rc.0
-
-  '@react-types/shared@3.23.1(react@19.0.0-rc.0)':
     dependencies:
       react: 19.0.0-rc.0
 
@@ -6827,14 +6737,6 @@ snapshots:
     dependencies:
       mini-svg-data-uri: 1.4.4
       tailwindcss: 3.4.4
-
-  '@tanstack/react-virtual@3.5.0(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)':
-    dependencies:
-      '@tanstack/virtual-core': 3.5.0
-      react: 19.0.0-rc.0
-      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
-
-  '@tanstack/virtual-core@3.5.0': {}
 
   '@tootallnate/once@2.0.0': {}
 
@@ -8522,6 +8424,14 @@ snapshots:
       react: 19.0.0-rc.0
       react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
 
+  framer-motion@11.3.21(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0):
+    dependencies:
+      tslib: 2.6.3
+    optionalDependencies:
+      '@emotion/is-prop-valid': 0.8.8
+      react: 19.0.0-rc.0
+      react-dom: 19.0.0-rc.0(react@19.0.0-rc.0)
+
   fresh@0.5.2: {}
 
   fs.realpath@1.0.0: {}
@@ -9189,9 +9099,9 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  next-auth@5.0.0-beta.19(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@15.0.0-canary.41(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0))(nodemailer@6.9.14)(react@19.0.0-rc.0):
+  next-auth@5.0.0-beta.20(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@15.0.0-canary.41(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0))(nodemailer@6.9.14)(react@19.0.0-rc.0):
     dependencies:
-      '@auth/core': 0.32.0(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)
+      '@auth/core': 0.34.2(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@6.9.14)
       next: 15.0.0-canary.41(@babel/core@7.24.5)(@playwright/test@1.44.1)(react-dom@19.0.0-rc.0(react@19.0.0-rc.0))(react@19.0.0-rc.0)
       react: 19.0.0-rc.0
     optionalDependencies:
@@ -10193,8 +10103,6 @@ snapshots:
       '@pkgr/core': 0.1.1
       tslib: 2.6.3
 
-  tabbable@6.2.0: {}
-
   tailwind-merge@2.2.0:
     dependencies:
       '@babel/runtime': 7.24.7
@@ -10348,32 +10256,32 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  turbo-darwin-64@2.0.6:
+  turbo-darwin-64@2.0.12:
     optional: true
 
-  turbo-darwin-arm64@2.0.6:
+  turbo-darwin-arm64@2.0.12:
     optional: true
 
-  turbo-linux-64@2.0.6:
+  turbo-linux-64@2.0.12:
     optional: true
 
-  turbo-linux-arm64@2.0.6:
+  turbo-linux-arm64@2.0.12:
     optional: true
 
-  turbo-windows-64@2.0.6:
+  turbo-windows-64@2.0.12:
     optional: true
 
-  turbo-windows-arm64@2.0.6:
+  turbo-windows-arm64@2.0.12:
     optional: true
 
-  turbo@2.0.6:
+  turbo@2.0.12:
     optionalDependencies:
-      turbo-darwin-64: 2.0.6
-      turbo-darwin-arm64: 2.0.6
-      turbo-linux-64: 2.0.6
-      turbo-linux-arm64: 2.0.6
-      turbo-windows-64: 2.0.6
-      turbo-windows-arm64: 2.0.6
+      turbo-darwin-64: 2.0.12
+      turbo-darwin-arm64: 2.0.12
+      turbo-linux-64: 2.0.12
+      turbo-linux-arm64: 2.0.12
+      turbo-windows-64: 2.0.12
+      turbo-windows-arm64: 2.0.12
 
   type-check@0.4.0:
     dependencies:

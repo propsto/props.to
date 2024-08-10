@@ -11,13 +11,14 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "2.0.4"
+    "framer-motion": "*"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@propsto/constants": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

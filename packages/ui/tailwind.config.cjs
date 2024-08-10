@@ -14,7 +14,7 @@ export default {
     (entity) => path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
   ),
   safelist: [
-    'font-cal'
+    'font-cal', 'font-sans'
   ],
   theme: {
     container: {
@@ -25,7 +25,8 @@ export default {
       },
     },
     fontFamily: {
-      cal: ['"Cal Sans"', "ui-serif", "Georgia", "Cambria", "times new roman", "Times", "serif"]
+      cal: ['"Cal Sans"', "ui-serif", "Georgia", "Cambria", "times new roman", "Times", "serif"],
+      sans: ["ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"']
     },
     extend: {
       colors: {
