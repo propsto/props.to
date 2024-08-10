@@ -4,32 +4,9 @@ import { cn } from "@propsto/ui/utils/cn";
 import { CheckCircle2, CircleDollarSign, X } from "lucide-react";
 import { Tooltip } from "./tooltip";
 
-const features = [
-  "Public user profile",
-  "Embedding capabilities",
-  "Customize profile design",
-  "Custom feedback links in profile",
-  "API access",
-  "Single social network integration",
-  "Additional integrations",
-  "Custom feedback values",
-  "App store",
-  "Single Sign-On",
-  "AI assistence",
-  "White labeling",
-  "Workflows",
-] as const;
-
-type FixedLengthTuple<T extends readonly unknown[], U> = {
-  [K in keyof T]: U;
-};
-
-type FeaturesTuple = FixedLengthTuple<typeof features, 0 | 1 | "paid">;
-
 interface Tier {
   price: string;
   priceSubtitle: string;
-  features: FeaturesTuple;
   highlight?: string;
   footer: string;
 }
@@ -38,25 +15,127 @@ const tiers: Record<string, Tier> = {
   INDIVIDUAL: {
     price: "Free",
     priceSubtitle: "Free for ever",
-    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, "paid"],
     highlight: "MVP",
     footer: "Literally you probably haven't heard of them jean shorts.",
   },
   ORGANIZATION: {
     price: "TBD",
     priceSubtitle: "a.k.a. hosted (company.props.to)",
-    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],
-    //highlight: "MVP",
     footer: "Literally you probably haven't heard of them jean shorts.",
   },
   ENTERPRISE: {
     price: "TBD",
     priceSubtitle: "a.k.a hosted/self-hosted license",
-    features: [1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0],
-    //highlight: "MVP",
     footer: "Literally you probably haven't heard of them jean shorts.",
   },
 };
+
+// Define the FeaturesState type
+type FeaturesState = "no" | "yes" | "paid";
+
+// Create a utility type to construct a tuple of the same length as the keys of an object
+type FixedLengthTuple<T extends readonly string[], U> = {
+  [K in keyof T]: U;
+};
+
+// Extract the keys of the tiers object as a tuple of strings
+type TierKeys = keyof typeof tiers extends infer K ? K[] : never;
+
+// Create a TiersTuple type using the keys of the `tiers` object
+type TiersTuple = FixedLengthTuple<
+  TierKeys,
+  FeaturesState | [FeaturesState, string]
+>;
+
+// Define the FeatureItem type
+type FeatureItem = [string, TiersTuple];
+
+const features: FeatureItem[] = [
+  ["Public user profile", ["yes", "yes", "yes"]],
+  ["Embedding capabilities", ["yes", "yes", "yes"]],
+  ["Customize profile design", ["paid", "yes", "yes"]],
+  ["Custom feedback links in profile", ["paid", "yes", "yes"]],
+  [
+    "Integrate other props.to instances",
+    [
+      "yes",
+      [
+        "no",
+        "No third-party props.to is thought to be integrated in this tier",
+      ],
+      [
+        "no",
+        "No third-party props.to is thought to be integrated in this tier",
+      ],
+    ],
+  ],
+  ["API access", ["paid", "yes", "yes"]],
+  [
+    "Single social network integration",
+    [
+      "yes",
+      [
+        "no",
+        "Personal feedback from social networks only allowed outside organizations",
+      ],
+      [
+        "no",
+        "Personal feedback from social networks only allowed outside organizations",
+      ],
+    ],
+  ],
+  ["Additional integrations", ["paid", "yes", "yes"]],
+  [
+    "Custom feedback values",
+    ["no", ["yes", "High-level"], ["yes", "Low-level"]],
+  ],
+  ["App store", ["yes", "yes", "yes"]],
+  ["Single Sign-On", ["no", "yes", "yes"]],
+  ["AI assistence", ["no", "yes", "yes"]],
+  ["White labeling", ["no", "yes", "yes"]],
+  ["Workflows", ["no", "no", "yes"]],
+] as const;
+
+function FeatureState({
+  state,
+  recursion,
+}: {
+  state: FeaturesState | [FeaturesState, string];
+  recursion?: boolean;
+}): React.ReactNode {
+  return (
+    <>
+      {state === "yes" && <CheckCircle2 className="size-5 mb-0.5" />}
+      {state === "no" && (
+        <X className={cn("size-5", recursion ? "mb-px" : "mb-0.5")} />
+      )}
+      {state === "paid" && (
+        <Tooltip
+          content="Extra fee"
+          id={`paid${Math.random().toString()}`}
+          className="no-underline"
+        >
+          <div className="flex border-b border-dotted border-gray-500">
+            <CircleDollarSign className="size-5 text-gray-600 mb-0.5" />
+            <span className="text-sm">*</span>
+          </div>
+        </Tooltip>
+      )}
+      {typeof state === "object" ? (
+        <Tooltip
+          content={state[1]}
+          id={`paid${Math.random().toString()}`}
+          className="no-underline"
+        >
+          <div className="flex border-b border-dotted border-gray-500">
+            <FeatureState state={state[0]} recursion />
+            <span className="text-sm">*</span>
+          </div>
+        </Tooltip>
+      ) : null}
+    </>
+  );
+}
 
 export function PricingTabs(): JSX.Element {
   return (
@@ -74,7 +153,7 @@ export function PricingTabs(): JSX.Element {
           </div>
 
           {/* Pricing tabs component */}
-          <section className="text-gray-700 body-font overflow-hidden">
+          <section className="text-gray-700 body-font">
             <div className="container px-5 py-24 mx-auto flex flex-wrap">
               <div className="lg:w-1/4 mt-48 hidden lg:block">
                 <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
@@ -83,12 +162,12 @@ export function PricingTabs(): JSX.Element {
                       // eslint-disable-next-line react/no-array-index-key -- fixed items in array
                       key={index}
                       className={cn(
-                        "text-gray-900 h-12 text-center px-4 flex items-center justify-start",
+                        "text-gray-900 h-12 px-4 flex items-center justify-start",
                         index === 0 && "-mt-px",
                         index % 2 === 0 && "bg-gray-100"
                       )}
                     >
-                      {feat}
+                      {feat[0]}
                     </p>
                   ))}
                 </div>
@@ -124,7 +203,7 @@ export function PricingTabs(): JSX.Element {
                           {tier.priceSubtitle}
                         </span>
                       </div>
-                      {tier.features.map((featState, indexState) => (
+                      {features.map((featState, indexState) => (
                         <div
                           // eslint-disable-next-line react/no-array-index-key -- fixed items in array
                           key={index}
@@ -136,23 +215,9 @@ export function PricingTabs(): JSX.Element {
                           )}
                         >
                           <span className="lg:hidden font-bold">
-                            {features[indexState]}&nbsp;
+                            {featState[0]}&nbsp;
                           </span>
-                          {featState === 1 && (
-                            <CheckCircle2 className="size-5" />
-                          )}
-                          {featState === 0 && <X className="size-5" />}
-                          {featState === "paid" && (
-                            <Tooltip
-                              content="Extra"
-                              id={`paid${indexState.toString()}`}
-                            >
-                              <CircleDollarSign
-                                className="size-5 text-gray-600"
-                                aria-label="Extra"
-                              />
-                            </Tooltip>
-                          )}
+                          <FeatureState state={featState[1][index]} />
                         </div>
                       ))}
                       <div className="p-6 text-center border-t border-gray-300">

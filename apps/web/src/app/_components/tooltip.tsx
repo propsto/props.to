@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
+import { cn } from "@propsto/ui/utils/cn";
 
 interface TooltipProps {
   children: React.ReactNode;
   content: string;
   id: string;
   dark?: boolean;
+  className?: string;
 }
 
 const tooltipVariants: Variants = {
@@ -37,6 +39,7 @@ export function Tooltip({
   content,
   id,
   dark = false,
+  className,
 }: TooltipProps): JSX.Element {
   const [open, setOpen] = useState<boolean>(false);
 
@@ -44,7 +47,11 @@ export function Tooltip({
     <div className="relative">
       <button
         type="button"
-        className={`block text-left text-zinc-500 underline decoration-dotted underline-offset-4 cursor-help ${dark ? "decoration-zinc-600 " : "decoration-zinc-300"}`}
+        className={cn(
+          "block text-left text-zinc-500 underline decoration-dotted underline-offset-4 cursor-help",
+          dark ? "decoration-zinc-600 " : "decoration-zinc-300",
+          className
+        )}
         aria-describedby={`tooltip-${id}`}
         onMouseEnter={() => {
           setOpen(true);
