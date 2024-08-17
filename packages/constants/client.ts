@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
 import { config } from "dotenv";
+import { constCommon } from "./common";
 
 // Load .env
 const envPath = resolve("../../.env");
@@ -22,4 +23,5 @@ export const constClient = createEnv({
    * `process.env` or `import.meta.env`.
    */
   runtimeEnv: process.env,
+  extends: [constCommon],
 });

@@ -2,28 +2,14 @@ import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { config } from "dotenv";
-import { constCommon } from "./common";
 
 // Load .env
 const envPath = resolve("../../.env");
 config({ path: envPath });
 
-process.env.EMAIL_PROVIDER =
-  process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
-    ? "resend"
-    : "email";
-
-export const constServer = createEnv({
+export const constCommon = createEnv({
   server: {
-    DATABASE_URL: z.string().url(),
-    RESEND_API_KEY: z.string().optional(),
-    EMAIL_SERVER: z.string().optional(),
-    EMAIL_FROM: z.string().optional(),
-    AUTH_SECRET: z
-      .string()
-      .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
-    EMAIL_PROVIDER: z.string(),
   },
 
   /**
@@ -46,5 +32,4 @@ export const constServer = createEnv({
    * explicitly specify this option as true.
    */
   emptyStringAsUndefined: true,
-  extends: [constCommon],
 });
