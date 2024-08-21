@@ -6,6 +6,7 @@ declare global {
         errors?: SchemaToErrors<T>;
         message?: string;
         success?: boolean;
+        values?: T;
       }
     | undefined;
 

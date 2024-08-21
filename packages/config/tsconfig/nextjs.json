@@ -15,6 +15,10 @@
       "@propsto/logger",
       "../../global.d.ts"
     ],
+    "lib": [
+      "DOM",
+      "DOM.Iterable"
+    ],
     "paths": {
       "@components/*": [
         "./src/app/_components/*"
