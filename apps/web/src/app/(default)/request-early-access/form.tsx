@@ -103,7 +103,7 @@ export function Form(): JSX.Element {
           ) : null}
         </div>
       </div>
-      <div className="mt-5">
+      <div className="mt-5 text-center">
         <Button aria-disabled={isPending} type="submit">
           {isPending ? (
             <LoaderCircle className="mr-2 size-4 animate-spin" />
