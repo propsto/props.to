@@ -1,79 +1,139 @@
 datasource db {
-    provider  = "postgresql"
-    url       = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PayableResource {
+  PREMIUM_USERNAME
+  ADDITIONAL_INTEGRATION
 }
 
 model User {
-    id            String          @id @default(cuid())
-    name          String?
-    email         String          @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    // Optional for WebAuthn support
-    Authenticator Authenticator[]
+  id            String          @id @default(cuid())
+  email         String          @unique
+  username      String          @unique
+  firstName     String
+  lastName      String
+  role          Role            @default(USER)
+  dateOfBirth   DateTime?
+  feedbacks     Feedback[]
+  uriClaims     UriClaim[]
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  payments  Payment[]
+}
+
+model Integration {
+  id          BigInt       @id @default(autoincrement())
+  domain      String
+  subpath     String
+  uriSupports UriSupport[]
+}
+
+model Feedback {
+  id           BigInt   @id @default(autoincrement())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  uri          String
+  feedbackText String
+  createdAt    DateTime @default(now())
+}
+
+model UriSupport {
+  id            BigInt      @id @default(autoincrement())
+  integration   Integration @relation(fields: [integrationId], references: [id])
+  integrationId BigInt
+  uri           String      @unique
+  uriClaims     UriClaim[]
+}
+
+model UriClaim {
+  id        BigInt     @id @default(autoincrement())
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @unique
+  uri       UriSupport @relation(fields: [uriId], references: [id])
+  uriId     BigInt
+  claimedAt DateTime   @default(now())
 }
 
 model Account {
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String?
-    access_token      String?
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String?
-    session_state     String?
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([provider, providerAccountId])
+  @@id([provider, providerAccountId])
 }
 
 model Session {
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model VerificationToken {
-    identifier String
-    token      String
-    expires    DateTime
+  identifier String
+  token      String
+  expires    DateTime
 
-    @@id([identifier, token])
+  @@id([identifier, token])
 }
 
 // Optional for WebAuthn support
 model Authenticator {
-    credentialID         String  @unique
-    userId               String
-    providerAccountId    String
-    credentialPublicKey  String
-    counter              Int
-    credentialDeviceType String
-    credentialBackedUp   Boolean
-    transports           String?
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
 
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@id([userId, credentialID])
+  @@id([userId, credentialID])
+}
+
+model Payment {
+  id           BigInt          @id @default(autoincrement())
+  user         User            @relation(fields: [userId], references: [id])
+  userId       String
+  resourceType PayableResource
+  resourceId   BigInt?
+  amount       Float
+  paymentDate  DateTime        @default(now())
 }

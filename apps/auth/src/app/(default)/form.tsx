@@ -10,7 +10,7 @@ import { signInAction } from "./action";
 export function SigninForm({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): React.ReactNode {
+}: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
   const [result, action, isPending] = useActionState(signInAction, undefined);
   const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
     "email"
@@ -75,7 +75,8 @@ export function SigninForm({
           }}
           disabled={isPending}
         >
-          {signInMethod === "credentials" ? "Continue" : "Sign in"} with {signInMethod === "email" ? "password" : "magic link"}
+          {signInMethod === "credentials" ? "Continue" : "Sign in"} with{" "}
+          {signInMethod === "email" ? "password" : "magic link"}
         </Button>
       </form>
     </div>

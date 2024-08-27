@@ -1,4 +1,3 @@
-import "@propsto/ui/base.css";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
