@@ -9815,7 +9815,7 @@ snapshots:
       '@next/env': 15.0.0-canary.41
       '@swc/helpers': 0.5.11
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001640
+      caniuse-lite: 1.0.30001653
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 19.0.0-rc.0
@@ -9842,7 +9842,7 @@ snapshots:
       '@next/env': 15.0.0-canary.41
       '@swc/helpers': 0.5.11
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001640
+      caniuse-lite: 1.0.30001653
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 19.0.0-rc.0
@@ -9869,7 +9869,7 @@ snapshots:
       '@next/env': 15.0.0-canary.41
       '@swc/helpers': 0.5.11
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001640
+      caniuse-lite: 1.0.30001653
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 19.0.0-rc.0
