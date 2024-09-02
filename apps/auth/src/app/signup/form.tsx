@@ -2,14 +2,14 @@
 
 import { cn } from "@propsto/ui/utils/cn";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
-import { useActionState } from "react";
+import { useFormState } from "react-dom";
 import { signUpAction } from "./action";
 
 export function SignupForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): JSX.Element {
-  const [result, action, isPending] = useActionState(signUpAction, undefined);
+  const [result, action, isPending] = useFormState(signUpAction, undefined);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>

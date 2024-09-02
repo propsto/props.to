@@ -66,7 +66,6 @@ const config = {
   session: { strategy: "jwt" },
   pages: {
     signIn: "/",
-    verifyRequest: "/verify",
   },
   events: {
     createUser(message) {

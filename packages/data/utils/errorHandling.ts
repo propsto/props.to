@@ -2,6 +2,7 @@ import { Prisma, type DbError } from "../db";
 import { logger } from "@propsto/logger?data";
 
 export function handleError(e: any): DbError {
+  debugger;
   if (e instanceof Prisma.PrismaClientKnownRequestError) {
     logger("repos/handleError", e.code, e.message);
     switch (e.code) {

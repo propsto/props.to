@@ -7,7 +7,8 @@
     "start": "email dev --dir templates",
     "export": "email export",
     "lint": "eslint --fix **/*.{ts,tsx}",
-    "dev": "pnpm maildev"
+    "dev": "pnpm maildev",
+    "debug": "pnpm dev"
   },
   "dependencies": {
     "@react-email/components": "0.0.19",

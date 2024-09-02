@@ -20,7 +20,8 @@
     "@auth/core": "0.34.2",
     "@prisma/client": "5.18.0",
     "@prisma/extension-accelerate": "1.1.0",
-    "prisma": "5.18.0"
+    "prisma": "5.18.0",
+    "uuid": "10.0.0"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

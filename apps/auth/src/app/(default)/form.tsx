@@ -3,7 +3,8 @@
 import { cn } from "@propsto/ui/utils/cn";
 import { Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useFormState } from "react-dom";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
 import { signInAction } from "./action";
 
@@ -11,7 +12,7 @@ export function SigninForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
-  const [result, action, isPending] = useActionState(signInAction, undefined);
+  const [result, action, isPending] = useFormState(signInAction, undefined);
   const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
     "email"
   );

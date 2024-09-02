@@ -16,50 +16,32 @@
  * @module @auth/prisma-adapter
  */
 
-import { type Prisma, db, type PrismaClient } from "./db";
+import { type Prisma, type PrismaClient, DbError } from "./db";
 import type {
   Adapter,
   AdapterAccount,
   AdapterSession,
   AdapterUser,
 } from "@auth/core/adapters";
-import { handleError } from "./repos/errorHandling";
-
-const prisma = db;
+import { createUser, getUser, getUserByAccount, getUserByEmail } from "./repos";
 
 export function PropstoAdapter(): Adapter {
-  const p = prisma as PrismaClient;
-  const withHandleError = <B extends (...args: any[]) => ReturnType<B>>(
-    func: B
-  ): ReturnType<B> => {
-    try {
-      return func();
-    } catch (e) {
-      handleError(e);
-      // Provide a fallback value of the same type
-      return undefined as unknown as ReturnType<B>;
-    }
-  };
   return {
-    // We need to let Prisma generate the ID because our default UUID is incompatible with MongoDB
-    createUser: ({ id: _id, ...data }) => {
-      return withHandleError(() => {
-        return p.user.create({ data });
-      });
+    async createUser({ id: _id, ...data }) {
+      const result = await createUser(data);
+      return result.data;
     },
-    getUser: (id) =>
-      withHandleError(() => p.user.findUnique({ where: { id } })),
-    getUserByEmail: (email) =>
-      withHandleError(() => p.user.findUnique({ where: { email } })),
-    async getUserByAccount(provider_providerAccountId) {
-      const account = await withHandleError(
-        async () =>
-          await p.account.findUnique({
-            where: { provider_providerAccountId },
-            select: { user: true },
-          })
-      );
-      return (account?.user as AdapterUser) ?? null;
+    async getUser(id) {
+      const result = await getUser({ id });
+      return result.data;
+    },
+    async getUserByEmail(email) {
+      const result = await getUserByEmail({ email });
+      return result.data;
+    },
+    async getUserByAccount(providerAccountId) {
+      const result = await getUserByAccount(providerAccountId);
+      return (result?.data?.user as AdapterUser) ?? null;
     },
     updateUser: ({ id, ...data }) =>
       withHandleError(

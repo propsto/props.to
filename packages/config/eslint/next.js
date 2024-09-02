@@ -37,5 +37,6 @@ module.exports = {
   ignorePatterns: ["node_modules/", "dist/"],
   rules: {
     "import/no-default-export": "off", // Next.js v14 App Router relies on default exporting pages components
+    "restrict-prisma-import": require("../rules/restrict-prisma-import"),
   },
 };

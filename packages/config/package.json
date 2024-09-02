@@ -6,7 +6,7 @@
   "license": "MIT",
   "devDependencies": {
     "@next/eslint-plugin-next": "14.2.6",
-    "@vercel/style-guide": "6.0.0",
+    "@vercel/style-guide": "5.2.0",
     "eslint-config-turbo": "2.0.14"
   }
 }
