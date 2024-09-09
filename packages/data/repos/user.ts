@@ -50,15 +50,21 @@ export async function getUserByAccount(
   }
 }
 
-export async function checkUserExistance(data: {
-  email: string;
-}): Promise<DbResult> {
+export async function updateUser(id: string, data: any) {
   try {
-    logger("checkUserExistance", data);
-    const existingUser = await db.user.findFirst({
-      where: data,
-    });
-    return { success: true, data: existingUser, error: null };
+    logger("updateUser", { id, data });
+    const updatedUser = await db.user.update({ where: { id }, data });
+    return { success: true, data: updatedUser, error: null };
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function deleteUser(id: string) {
+  try {
+    logger("deleteUser", { id });
+    const deletedUser = await db.user.delete({ where: { id } });
+    return { success: true, data: deletedUser, error: null };
   } catch (e) {
     return handleError(e);
   }

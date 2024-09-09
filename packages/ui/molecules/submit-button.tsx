@@ -1,9 +1,8 @@
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
 import { Button } from "../atoms";
 
-export interface SubmitButtonProps {
+export interface SubmitButtonProps extends React.PropsWithChildren {
   isPending: boolean;
-  children: React.ReactNode;
   name?: string;
   value?: string;
   result: PropstoFormState<Record<string, string>>;

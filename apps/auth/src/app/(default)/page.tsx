@@ -6,7 +6,7 @@ import { SigninForm } from "./form";
 
 export default async function SigninPage(): Promise<JSX.Element> {
   const session = await auth();
-  if (session?.user) redirect("/profile");
+  if (session?.user) redirect("/welcome");
 
   return (
     <>

@@ -17,6 +17,7 @@ module.exports = {
     ],
   },
   create(context) {
+    debugger;
     const allowedFile = context.options[0]?.allowedFile;
 
     return {

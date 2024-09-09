@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@propsto/ui/utils/cn";
 
-interface AccordionpProps {
-  children: React.ReactNode;
+interface AccordionpProps extends React.PropsWithChildren {
   title: string;
   id: string;
   active?: boolean;

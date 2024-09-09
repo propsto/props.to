@@ -1,29 +1,33 @@
-/**
- * <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16}}>
- *  Official <a href="https://www.prisma.io/docs">Prisma</a> adapter for Auth.js / NextAuth.js.
- *  <a href="https://www.prisma.io/">
- *   <img style={{display: "block"}} src="https://authjs.dev/img/adapters/prisma.svg" width="38" />
- *  </a>
- * </div>
- *
- * ## Installation
- *
- * ```bash npm2yarn
- * npm install @prisma/client @auth/prisma-adapter
- * npm install prisma --save-dev
- * ```
- *
- * @module @auth/prisma-adapter
- */
-
-import { type Prisma, type PrismaClient, DbError } from "./db";
+import { type Prisma } from "./db";
 import type {
   Adapter,
   AdapterAccount,
+  AdapterAuthenticator,
   AdapterSession,
   AdapterUser,
+  VerificationToken,
 } from "@auth/core/adapters";
-import { createUser, getUser, getUserByAccount, getUserByEmail } from "./repos";
+import {
+  createSession,
+  createUser,
+  createVerificationToken,
+  deleteSession,
+  deleteUser,
+  getAccount,
+  getSession,
+  getUser,
+  getUserByAccount,
+  getUserByEmail,
+  linkAccount,
+  unlinkAccount,
+  updateSession,
+  updateUser,
+  useVerificationToken,
+  createAuthenticator,
+  getAuthenticator,
+  listAuthenticatorsByUserId,
+  updateAuthenticatorCounter,
+} from "./repos";
 
 export function PropstoAdapter(): Adapter {
   return {
@@ -43,66 +47,57 @@ export function PropstoAdapter(): Adapter {
       const result = await getUserByAccount(providerAccountId);
       return (result?.data?.user as AdapterUser) ?? null;
     },
-    updateUser: ({ id, ...data }) =>
-      withHandleError(
-        () => p.user.update({ where: { id }, data }) as Promise<AdapterUser>
-      ),
-    deleteUser: (id) =>
-      withHandleError(
-        () => p.user.delete({ where: { id } }) as Promise<AdapterUser>
-      ),
-    linkAccount: (data) =>
-      withHandleError(
-        () => p.account.create({ data }) as unknown as AdapterAccount
-      ),
-    unlinkAccount: (provider_providerAccountId) =>
-      withHandleError(
-        () =>
-          p.account.delete({
-            where: { provider_providerAccountId },
-          }) as unknown as AdapterAccount
-      ),
+    async updateUser({ id, ...data }) {
+      const result = await updateUser(id, data);
+      return result.data as AdapterUser;
+    },
+    async deleteUser(id) {
+      const result = await deleteUser(id);
+      return result.data as AdapterUser;
+    },
+    async linkAccount(data) {
+      const result = await linkAccount(data);
+      return result.data as unknown as AdapterAccount;
+    },
+    async unlinkAccount(data) {
+      const result = await unlinkAccount(data);
+      return result.data as unknown as AdapterAccount;
+    },
     async getSessionAndUser(sessionToken) {
-      const userAndSession = await withHandleError(
-        async () =>
-          await p.session.findUnique({
-            where: { sessionToken },
-            include: { user: true },
-          })
-      );
-      if (!userAndSession) return null;
-      const { user, ...session } = userAndSession;
+      const userAndSession = await getSession(sessionToken);
+      if (!userAndSession || !userAndSession.data?.user) return null;
+      const { user, ...session } = userAndSession.data;
       return { user, session } as {
         user: AdapterUser;
         session: AdapterSession;
       };
     },
-    createSession: (data) => withHandleError(() => p.session.create({ data })),
-    updateSession: (data) =>
-      withHandleError(() =>
-        p.session.update({ where: { sessionToken: data.sessionToken }, data })
-      ),
-    deleteSession: (sessionToken) =>
-      withHandleError(() => p.session.delete({ where: { sessionToken } })),
+    async createSession(data) {
+      const result = await createSession(data);
+      return result.data as AdapterSession;
+    },
+    async updateSession(data) {
+      const result = await updateSession(data);
+      return result.data;
+    },
+    async deleteSession(data) {
+      const result = await deleteSession(data);
+      return result.data;
+    },
     async createVerificationToken(data) {
-      const verificationToken = withHandleError(
-        async () => await p.verificationToken.create({ data })
-      );
+      const verificationToken = await createVerificationToken(data);
+      if (!verificationToken.data) return null;
       // @ts-expect-errors // MongoDB needs an ID, but we don't
-      if (verificationToken.id) delete verificationToken.id;
-      return verificationToken;
+      if (verificationToken.data.id) delete verificationToken.data.id;
+      return verificationToken as unknown as VerificationToken;
     },
     async useVerificationToken(identifier_token) {
       try {
-        const verificationToken = await withHandleError(
-          async () =>
-            await p.verificationToken.delete({
-              where: { identifier_token },
-            })
-        );
+        const verificationToken = await useVerificationToken(identifier_token);
+        if (!verificationToken.data) return null;
         // @ts-expect-errors // MongoDB needs an ID, but we don't
         if (verificationToken.id) delete verificationToken.id;
-        return verificationToken;
+        return verificationToken.data;
       } catch (error) {
         // If token already used/deleted, just return null
         // https://www.prisma.io/docs/reference/api-reference/error-reference#p2025
@@ -112,40 +107,24 @@ export function PropstoAdapter(): Adapter {
       }
     },
     async getAccount(providerAccountId, provider) {
-      return withHandleError(() => {
-        return p.account.findFirst({
-          where: { providerAccountId, provider },
-        }) as Promise<AdapterAccount | null>;
-      });
+      const result = await getAccount(providerAccountId, provider);
+      return result.data;
     },
     async createAuthenticator(authenticator) {
-      return withHandleError(() => {
-        return p.authenticator.create({
-          data: authenticator,
-        });
-      });
+      const result = await createAuthenticator(authenticator);
+      return result.data as unknown as AdapterAuthenticator;
     },
     async getAuthenticator(credentialID) {
-      return withHandleError(() => {
-        return p.authenticator.findUnique({
-          where: { credentialID },
-        });
-      });
+      const result = await getAuthenticator(credentialID);
+      return result.data;
     },
     async listAuthenticatorsByUserId(userId) {
-      return withHandleError(() => {
-        return p.authenticator.findMany({
-          where: { userId },
-        });
-      });
+      const result = await listAuthenticatorsByUserId(userId);
+      return result.data as AdapterAuthenticator[];
     },
     async updateAuthenticatorCounter(credentialID, counter) {
-      return withHandleError(() => {
-        return p.authenticator.update({
-          where: { credentialID },
-          data: { counter },
-        });
-      });
+      const result = await updateAuthenticatorCounter(credentialID, counter);
+      return result.data as AdapterAuthenticator;
     },
   };
 }

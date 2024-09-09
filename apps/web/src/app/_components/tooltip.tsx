@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Transition } from "@headlessui/react";
 
-interface TooltipProps {
-  children: React.ReactNode;
+interface TooltipProps extends React.PropsWithChildren {
   content: string;
   id: string;
   dark?: boolean;

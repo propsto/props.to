@@ -45,9 +45,8 @@ const StepperContext = React.createContext<
   },
 });
 
-interface StepperContextProviderProps {
+interface StepperContextProviderProps extends React.PropsWithChildren {
   value: Omit<StepperContextValue, "activeStep">;
-  children: React.ReactNode;
 }
 
 function StepperProvider({
@@ -350,9 +349,7 @@ Stepper.displayName = "Stepper";
 
 function VerticalContent({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>): JSX.Element {
+}: Readonly<React.PropsWithChildren>): JSX.Element {
   const { activeStep } = useStepper();
 
   const childArr = React.Children.toArray(children);
@@ -391,7 +388,7 @@ interface NodeProps {
 
 function HorizontalContent({
   children,
-}: Readonly<{ children: React.ReactNode }>): JSX.Element | null {
+}: Readonly<React.PropsWithChildren>): JSX.Element | null {
   const { activeStep } = useStepper();
   const childArr = React.Children.toArray(children);
 
@@ -535,7 +532,7 @@ const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
 
     const active =
       stepper.variant === "line"
-        ? props.isCompletedStep ?? props.isCurrentStep
+        ? (props.isCompletedStep ?? props.isCurrentStep)
         : props.isCompletedStep;
     const checkIcon = props.checkIcon ?? stepper.checkIcon;
     const errorIcon = props.errorIcon ?? stepper.errorIcon;
@@ -666,7 +663,7 @@ const HorizontalStep = React.forwardRef<HTMLDivElement, StepSharedProps>(
 
     const active =
       stepper.variant === "line"
-        ? props.isCompletedStep ?? props.isCurrentStep
+        ? (props.isCompletedStep ?? props.isCurrentStep)
         : props.isCompletedStep;
 
     const checkIcon = props.checkIcon ?? stepper.checkIcon;
@@ -745,9 +742,7 @@ HorizontalStep.displayName = "HorizontalStep";
 
 // <---------- STEP BUTTON CONTAINER ---------->
 
-type StepButtonContainerProps = StepSharedProps & {
-  children?: React.ReactNode;
-};
+type StepButtonContainerProps = StepSharedProps & React.PropsWithChildren;
 
 function StepButtonContainer({
   isCurrentStep,
@@ -784,10 +779,10 @@ function StepButtonContainer({
       )}
       aria-current={isCurrentStep ? "step" : undefined}
       data-current={isCurrentStep}
-      data-invalid={isError ? isCurrentStep ?? isCompletedStep : null}
+      data-invalid={isError ? (isCurrentStep ?? isCompletedStep) : null}
       data-active={isCompletedStep}
       data-clickable={currentStepClickable}
-      data-loading={isLoading ? isCurrentStep ?? isCompletedStep : null}
+      data-loading={isLoading ? (isCurrentStep ?? isCompletedStep) : null}
     >
       {children}
     </Button>
