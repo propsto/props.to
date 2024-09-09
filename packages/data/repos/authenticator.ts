@@ -1,8 +1,9 @@
 import { logger } from "@propsto/logger?data";
-import { db } from "../db";
+import { db, Prisma } from "../db";
 import { handleError } from "../utils/errorHandling";
+import { AdapterAuthenticator } from "@auth/core/adapters";
 
-export async function createAuthenticator(authenticator) {
+export async function createAuthenticator(authenticator: AdapterAuthenticator) {
   try {
     logger("createAuthenticator", { authenticator });
     const result = await db.authenticator.create({
@@ -13,7 +14,7 @@ export async function createAuthenticator(authenticator) {
     return handleError(e);
   }
 }
-export async function getAuthenticator(credentialID) {
+export async function getAuthenticator(credentialID: string) {
   try {
     logger("getAuthenticator", { credentialID });
     const result = await db.authenticator.findUnique({
@@ -24,7 +25,7 @@ export async function getAuthenticator(credentialID) {
     return handleError(e);
   }
 }
-export async function listAuthenticatorsByUserId(userId) {
+export async function listAuthenticatorsByUserId(userId: string) {
   try {
     logger("listAuthenticatorsByUserId", { userId });
     const result = await db.authenticator.findMany({
@@ -35,7 +36,7 @@ export async function listAuthenticatorsByUserId(userId) {
     return handleError(e);
   }
 }
-export async function updateAuthenticatorCounter(credentialID, counter) {
+export async function updateAuthenticatorCounter(credentialID: string, counter: number) {
   try {
     logger("updateAuthenticatorCounter", { credentialID, counter });
     const result = await db.authenticator.update({

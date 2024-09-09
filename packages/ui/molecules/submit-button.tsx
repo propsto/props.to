@@ -16,7 +16,7 @@ export function SubmitButton({
   value,
 }: Readonly<SubmitButtonProps>): JSX.Element {
   return (
-    <Button aria-disabled={isPending} type="submit" name={name} value={value}>
+    <Button aria-disabled={isPending} name={name} type="submit" value={value}>
       {isPending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
       {result?.success === true ? (
         <CheckCircle2 className="mr-2 size-4" />

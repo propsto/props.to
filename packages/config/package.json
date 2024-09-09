@@ -8,5 +8,8 @@
     "@next/eslint-plugin-next": "14.2.6",
     "@vercel/style-guide": "5.2.0",
     "eslint-config-turbo": "2.0.14"
+  },
+  "dependencies": {
+    "eslint-plugin-local-rules": "^3.0.2"
   }
 }

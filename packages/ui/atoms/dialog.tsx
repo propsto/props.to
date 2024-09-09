@@ -46,12 +46,12 @@ const DialogContent = React.forwardRef<
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
-      ref={ref}
       className={cn(
         "fixed z-50 grid w-full scale-100 gap-4 bg-white p-6 opacity-100 animate-in fade-in-90 slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 sm:slide-in-from-bottom-0",
         "dark:bg-slate-900",
         className
       )}
+      ref={ref}
       {...props}
     >
       {children}
@@ -101,12 +101,12 @@ const DialogTitle = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
-    ref={ref}
     className={cn(
       "text-lg font-semibold text-slate-900",
       "dark:text-slate-50",
       className
     )}
+    ref={ref}
     {...props}
   />
 ));
@@ -117,8 +117,8 @@ const DialogDescription = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
-    ref={ref}
     className={cn("text-sm text-slate-500", "dark:text-slate-400", className)}
+    ref={ref}
     {...props}
   />
 ));

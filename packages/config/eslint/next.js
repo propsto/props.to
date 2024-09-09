@@ -35,7 +35,44 @@ module.exports = {
     },
   },
   ignorePatterns: ["node_modules/", "dist/"],
+  plugins: [
+    "eslint-plugin-local-rules"
+  ],
   rules: {
     "import/no-default-export": "off", // Next.js v14 App Router relies on default exporting pages components
+    "react/jsx-sort-props": "off",
+    "local-rules/restrict-import": [
+      "error", { 
+        allowedFile: resolve(process.cwd(), "packages/data/db.ts"), 
+        checkPackage: "@prisma/client" 
+      }
+    ],
+    "local-rules/restrict-import": [
+      "error", { 
+        allowedFile: "^packages\/data\/repos\/.*\/.*\.ts", 
+        checkPackage: "@propsto/data" 
+      }
+    ],
   },
+  overrides: [
+    {
+      files: ["*.js", "*.ts", "*.tsx"],
+      rules: {
+        "local-rules/restrict-import": [
+          "error", { 
+            allowedFile: resolve(process.cwd(), "packages/data/db.ts"), 
+            checkPackage: "@prisma/client",
+            restrictedMembers: ["PrismaClient"]
+          }
+        ],
+        "local-rules/restrict-import": [
+          "error", { 
+            allowedFile: "^packages\/data\/repos\/.*\/.*\.ts", 
+            checkPackage: "@propsto/data",
+            restrictedMembers: ["db"]
+          }
+        ],
+      },
+    },
+  ],
 };

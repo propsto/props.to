@@ -33,7 +33,7 @@ export function Triangles({
     maxTileY = Math.ceil(height / triangleSize);
   const types = ["one", "two", "three"];
   return (/** eslint-disable no-explicit-any */
-    <div style={{ ['--triangle-size' as string] : `${triangleVariants({ size })}px`}} className="absolute overflow-hidden top-0 left-0 flex flex-wrap">
+    <div className="absolute overflow-hidden top-0 left-0 flex flex-wrap" style={{ ['--triangle-size' as string] : `${triangleVariants({ size })}px`}}>
       {...Array.from(
         { length: maxTileX },
         (x, i): React.ReactNode =>

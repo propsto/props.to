@@ -3,7 +3,7 @@ import { db } from "../db";
 import { AdapterAccount } from "@auth/core/adapters";
 import { handleError } from "../utils/errorHandling";
 
-export async function getAccount(providerAccountId, provider) {
+export async function getAccount(providerAccountId: string, provider: string) {
   try {
     logger("getAccount", { providerAccountId, provider });
     const account = db.account.findFirst({

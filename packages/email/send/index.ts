@@ -17,7 +17,7 @@ export async function send<T extends EmailTemplateNames>(
 ): Promise<ReturnType<Resend["emails"]["send"]>> {
   const chosenTemplate = template as (...args: unknown[]) => JSX.Element;
 
-  return await resend.emails.send({
+  return resend.emails.send({
     from: "Props.to <hello@comm.props.to>",
     to: [typeof email === "string" ? email : email.email],
     subject,

@@ -7,7 +7,7 @@ const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"), {
 
 export default function Layout({
   children,
-}: Readonly<React.PropsWithChildren>) {
+}: Readonly<React.PropsWithChildren>): React.ReactNode {
   return (
     <div className="relative h-screen flex-col items-center lg:justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <SideSection />
