@@ -16,6 +16,8 @@ export function SigninForm({
   const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
     "email"
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- temporary in wip
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className={cn("grid gap-6", className)} {...props}>
@@ -30,7 +32,7 @@ export function SigninForm({
             controlName="Password"
             className={cn(
               "overflow-hidden transition-all duration-300",
-              signInMethod === "credentials"
+              showPassword
                 ? "max-h-[100px] opacity-100 translate-x-0"
                 : "max-h-0 opacity-0 -translate-x-full"
             )}
@@ -40,8 +42,10 @@ export function SigninForm({
           />
           <input type="hidden" name="signInMethod" value={signInMethod} />
           <SubmitButton result={result} isPending={isPending}>
-            {signInMethod === "credentials" ? "Sign in" : "Continue"} with{" "}
-            {signInMethod === "credentials" ? "password" : "magic link"}
+            {signInMethod === "credentials" && showPassword
+              ? "Sign in"
+              : "Continue"}{" "}
+            with {signInMethod === "credentials" ? "password" : "magic link"}
           </SubmitButton>
         </div>
         <div className="relative">
@@ -76,8 +80,7 @@ export function SigninForm({
           }}
           disabled={isPending}
         >
-          {signInMethod === "credentials" ? "Continue" : "Sign in"} with{" "}
-          {signInMethod === "email" ? "password" : "magic link"}
+          Continue with {signInMethod === "email" ? "password" : "magic link"}
         </Button>
       </form>
     </div>

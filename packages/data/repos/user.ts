@@ -1,5 +1,5 @@
 import { logger } from "@propsto/logger?data";
-import { db, type DbResult } from "../db";
+import { db, Prisma, type DbResult } from "../db";
 import { handleError } from "../utils/errorHandling";
 import { v4 as uuidv4 } from "uuid";
 import { AdapterAccount } from "@auth/core/adapters";
@@ -25,10 +25,13 @@ export async function getUser(data: { id: string }) {
   }
 }
 
-export async function getUserByEmail(data: { email: string }) {
+export async function getUserByEmail(
+  data: { email: string },
+  select?: Prisma.UserSelect
+) {
   try {
     logger("getUserByEmail", data);
-    const existingUser = await db.user.findUnique({ where: data });
+    const existingUser = await db.user.findUnique({ where: data, select });
     return { success: true, data: existingUser, error: null };
   } catch (e) {
     return handleError(e);

@@ -2,6 +2,7 @@
 
 import { logger } from "@propsto/logger?auth";
 import { constOther } from "@propsto/constants";
+import { getUserByEmail } from "@propsto/data/repos";
 import { signIn } from "@/server/auth";
 import { type SigninFormType, SigninFormSchema } from "./types";
 
@@ -19,6 +20,16 @@ export async function signInAction(
     return {
       errors: error.flatten().fieldErrors,
     };
+  }
+  if (!data.password && data.signInMethod === "credentials") {
+    const user = await getUserByEmail(data, { password: true });
+    if (user.data) {
+      if (user.data.password) {
+        // TODO
+      }
+    } else {
+      // TODO
+    }
   }
   await signIn(
     data.signInMethod === "email" && constOther.emailProvider === "resend"
