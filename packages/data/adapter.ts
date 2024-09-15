@@ -40,7 +40,7 @@ export function PropstoAdapter(): Adapter {
       return result.data;
     },
     async getUserByEmail(email) {
-      const result = await getUserByEmail({ email });
+      const result = await getUserByEmail(email);
       return result.data;
     },
     async getUserByAccount(providerAccountId) {

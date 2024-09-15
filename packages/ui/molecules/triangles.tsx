@@ -21,19 +21,27 @@ const triangleVariants = cva("", {
 export function Triangles({
   parentRef,
   size = "default",
-}: Readonly<{
-  parentRef?: MutableRefObject<HTMLElement | null>;
-} & TriangleVariantProps>): JSX.Element {
+}: Readonly<
+  {
+    parentRef?: MutableRefObject<HTMLElement | null>;
+  } & TriangleVariantProps
+>): JSX.Element {
   const [deviceWidth, deviceHeight] = useDeviceSize();
   const [width, height] = parentRef?.current
     ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
     : [deviceWidth, deviceHeight];
-    const triangleSize = Number(triangleVariants({ size }));
+  const triangleSize = Number(triangleVariants({ size }));
   const maxTileX = Math.ceil(width / triangleSize),
     maxTileY = Math.ceil(height / triangleSize);
   const types = ["one", "two", "three"];
-  return (/** eslint-disable no-explicit-any */
-    <div className="absolute overflow-hidden top-0 left-0 flex flex-wrap" style={{ ['--triangle-size' as string] : `${triangleVariants({ size })}px`}}>
+  return (
+    /** eslint-disable no-explicit-any */
+    <div
+      className="absolute overflow-hidden top-0 left-0 flex flex-wrap"
+      style={{
+        ["--triangle-size" as string]: `${triangleVariants({ size })}px`,
+      }}
+    >
       {...Array.from(
         { length: maxTileX },
         (x, i): React.ReactNode =>
@@ -44,7 +52,7 @@ export function Triangles({
                 key={`${i.toString()}${j.toString()}`}
               />
             );
-          })
+          }),
       )}
     </div>
   );

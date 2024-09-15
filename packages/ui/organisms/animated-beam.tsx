@@ -92,7 +92,7 @@ export function AnimatedBeam({
     };
 
     // Initialize ResizeObserver
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(entries => {
       // For all entries, recalculate the path
       for (const _ of entries) {
         updatePath();
@@ -125,7 +125,7 @@ export function AnimatedBeam({
     <svg
       className={cn(
         "pointer-events-none absolute left-0 top-0 transform-gpu stroke-2",
-        className
+        className,
       )}
       fill="none"
       height={svgDimensions.height}

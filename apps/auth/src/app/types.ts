@@ -1,37 +1,12 @@
 import { z } from "zod";
 
-export const SignupFormSchema = z.object({
-  name: z.string().min(5, "Please enter a name with at least 5 characters."),
-  email: z.string().email({ message: "Please enter a valid email." }).trim(),
-  password: z.string().min(8, "Password must not be lesser than 8 characters"),
-});
-
 export const SigninFormSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email." }),
-  password: z.string().min(1, { message: "Password field must not be empty." }),
+  email: z.string().email("Invalid email address"),
+  password: z.string().optional(),
+  signInMethod: z.enum(["credentials", "email"]),
 });
 
-export type SignUpFormState =
-  | {
-      errors?: {
-        name?: string[];
-        email?: string[];
-        password?: string[];
-      };
-      message?: string;
-    }
-  | undefined;
+export const ResetPasswordFormSchema = SigninFormSchema.pick({ email: true });
 
-export type SignInFormState =
-  | {
-      errors?: {
-        email?: string[];
-      };
-      message?: string;
-    }
-  | undefined;
-
-export interface SessionPayload {
-  userId: string | number;
-  expiresAt: Date;
-}
+export type SigninFormType = z.infer<typeof SigninFormSchema>;
+export type ResetPasswordFormType = z.infer<typeof ResetPasswordFormSchema>;

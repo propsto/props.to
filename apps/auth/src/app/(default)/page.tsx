@@ -1,8 +1,8 @@
+import { redirect } from "next/navigation";
 import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
-import { redirect } from "next/navigation";
 import { auth } from "@/server/auth";
-import { SigninForm } from "./form";
+import { SigninForm } from "@components/signin-form";
 
 export default async function SigninPage(): Promise<JSX.Element> {
   const session = await auth();
@@ -15,7 +15,7 @@ export default async function SigninPage(): Promise<JSX.Element> {
         <Logo className="mr-2 z-20" size="large" />
         Props.to
       </div>
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80">
+      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
         <div className="flex flex-col space-y-2 text-center">
           <h1>Get Started</h1>
           <p className="text-sm text-muted-foreground">

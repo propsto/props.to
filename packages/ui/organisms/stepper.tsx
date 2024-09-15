@@ -59,11 +59,11 @@ function StepperProvider({
   const [activeStep, setActiveStep] = React.useState(value.initialstep);
 
   const nextStep = React.useCallback((): void => {
-    setActiveStep((prev) => prev + 1);
+    setActiveStep(prev => prev + 1);
   }, []);
 
   const prevStep = React.useCallback((): void => {
-    setActiveStep((prev) => prev - 1);
+    setActiveStep(prev => prev - 1);
   }, []);
 
   const resetSteps = React.useCallback((): void => {
@@ -94,7 +94,7 @@ function StepperProvider({
       prevStep,
       resetSteps,
       setStep,
-    ]
+    ],
   );
 
   return (
@@ -282,7 +282,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
     const stepCount = items.length;
 
     const isMobile = useMediaQuery(
-      `(max-width: ${props.mobileBreakpoint ?? "768px"})`
+      `(max-width: ${props.mobileBreakpoint ?? "768px"})`,
     );
 
     const clickable = Boolean(props.onClickStep);
@@ -321,7 +321,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
             orientation === "vertical" ? "flex-col" : "flex-row",
             props.variant === "line" && orientation === "horizontal" && "gap-4",
             props.className,
-            props.styles?.["main-container"]
+            props.styles?.["main-container"],
           )}
           ref={ref}
           style={
@@ -342,7 +342,7 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
         {footer}
       </StepperProvider>
     );
-  }
+  },
 );
 
 Stepper.displayName = "Stepper";
@@ -398,11 +398,11 @@ function HorizontalContent({
 
   return (
     <>
-      {React.Children.map(childArr[activeStep], (node) => {
+      {React.Children.map(childArr[activeStep], node => {
         if (!React.isValidElement<NodeProps>(node)) {
           return null;
         }
-        return React.Children.map(node.props.children, (childNode) => {
+        return React.Children.map(node.props.children, childNode => {
           if (React.isValidElement(childNode)) {
             return childNode;
           }
@@ -485,7 +485,7 @@ const Step = React.forwardRef<HTMLDivElement, StepProps & StepInternalConfig>(
     };
 
     return renderStep();
-  }
+  },
 );
 
 Step.displayName = "Step";
@@ -512,12 +512,12 @@ const verticalStepVariants = cva(
           "[&:not(:last-child)]:after:absolute",
           "[&:not(:last-child)]:after:top-[calc(var(--step-icon-size)+var(--step-gap))]",
           "[&:not(:last-child)]:after:bottom-[var(--step-gap)]",
-          "[&:not(:last-child)]:after:transition-all [&:not(:last-child)]:after:duration-200"
+          "[&:not(:last-child)]:after:transition-all [&:not(:last-child)]:after:duration-200",
         ),
         line: "flex-1 border-t-0 mb-4",
       },
     },
-  }
+  },
 );
 
 const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
@@ -543,7 +543,7 @@ const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
           <Collapsible open={props.isCurrentStep}>
             <CollapsibleContent
               className="overflow-hidden data-[state=open]:animate-collapsible-down data-[state=closed]:animate-collapsible-up"
-              ref={(node) => {
+              ref={node => {
                 if (
                   // If the step is the first step and the previous step
                   // was the last step or if the step is not the first step
@@ -578,7 +578,7 @@ const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
             variant: stepper.variant?.includes("circle") ? "circle" : "line",
           }),
           stepper.isLastStep && "gap-[var(--step-gap)]",
-          stepper.styles?.["vertical-step"]
+          stepper.styles?.["vertical-step"],
         )}
         data-active={active}
         data-clickable={stepper.clickable ?? Boolean(props.onClickStep)}
@@ -603,7 +603,7 @@ const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
             "flex items-center",
             stepper.variant === "line" &&
               "border-s-[3px] data-[active=true]:border-primary py-2 ps-3",
-            stepper.styles?.["vertical-step-container"]
+            stepper.styles?.["vertical-step-container"],
           )}
           data-active={active}
           data-vertical
@@ -638,14 +638,14 @@ const VerticalStep = React.forwardRef<HTMLDivElement, VerticalStepProps>(
             stepper.variant === "line" &&
               stepper.orientation === "vertical" &&
               "min-h-0",
-            stepper.styles?.["vertical-step-content"]
+            stepper.styles?.["vertical-step-content"],
           )}
         >
           {renderChildren()}
         </div>
       </div>
     );
-  }
+  },
 );
 
 VerticalStep.displayName = "VerticalStep";
@@ -686,7 +686,7 @@ const HorizontalStep = React.forwardRef<HTMLDivElement, StepSharedProps>(
             "[&:not(:last-child)]:after:flex-1 [&:not(:last-child)]:after:ms-[var(--step-gap)] [&:not(:last-child)]:after:me-[var(--step-gap)]",
           stepper.variant === "line" &&
             "flex-col flex-1 border-t-[3px] data-[active=true]:border-primary",
-          stepper.styles?.["horizontal-step"]
+          stepper.styles?.["horizontal-step"],
         )}
         data-active={active}
         data-clickable={stepper.clickable}
@@ -707,7 +707,7 @@ const HorizontalStep = React.forwardRef<HTMLDivElement, StepSharedProps>(
             "flex items-center",
             stepper.variant === "circle-alt" && "flex-col justify-center gap-1",
             stepper.variant === "line" && "w-full",
-            stepper.styles?.["horizontal-step-container"]
+            stepper.styles?.["horizontal-step-container"],
           )}
         >
           <StepButtonContainer
@@ -735,7 +735,7 @@ const HorizontalStep = React.forwardRef<HTMLDivElement, StepSharedProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 HorizontalStep.displayName = "HorizontalStep";
@@ -774,7 +774,7 @@ function StepButtonContainer({
         "data-[active=true]:bg-primary data-[active=true]:border-primary data-[active=true]:text-primary-foreground",
         "data-[current=true]:border-primary data-[current=true]:bg-secondary",
         "data-[invalid=true]:bg-destructive data-[invalid=true]:border-destructive data-[invalid=true]:text-destructive-foreground",
-        stepper.styles?.["step-button-container"]
+        stepper.styles?.["step-button-container"],
       )}
       data-active={isCompletedStep}
       data-clickable={currentStepClickable}
@@ -826,12 +826,12 @@ const StepIcon = React.forwardRef<HTMLDivElement, StepIconProps>(
 
     const ErrorIcon = React.useMemo(
       () => props.errorIcon ?? null,
-      [props.errorIcon]
+      [props.errorIcon],
     );
 
     const Check = React.useMemo(
       () => props.checkIcon ?? CheckIcon,
-      [props.checkIcon]
+      [props.checkIcon],
     );
 
     return React.useMemo(() => {
@@ -899,7 +899,7 @@ const StepIcon = React.forwardRef<HTMLDivElement, StepIconProps>(
       ref,
       size,
     ]);
-  }
+  },
 );
 
 StepIcon.displayName = "StepIcon";
@@ -958,7 +958,7 @@ function StepLabel({
         variant === "circle-alt" && "text-center",
         variant === "circle-alt" && orientation === "horizontal" && "ms-0",
         variant === "circle-alt" && orientation === "vertical" && "text-start",
-        styles?.["step-label-container"]
+        styles?.["step-label-container"],
       )}
       style={{
         opacity,
@@ -969,7 +969,7 @@ function StepLabel({
           className={cn(
             "stepper__step-label",
             labelVariants({ size }),
-            styles?.["step-label"]
+            styles?.["step-label"],
           )}
         >
           {label}
@@ -981,7 +981,7 @@ function StepLabel({
             "stepper__step-description",
             "text-muted-foreground",
             descriptionVariants({ size }),
-            styles?.["step-description"]
+            styles?.["step-description"],
           )}
         >
           {description}

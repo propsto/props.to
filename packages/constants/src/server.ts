@@ -4,7 +4,7 @@ import { z } from "zod";
 import { config } from "dotenv";
 
 // Load .env
-const envPath = resolve(".env");
+const envPath = resolve("../../.env");
 config({ path: envPath });
 
 export const constServer = createEnv({

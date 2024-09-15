@@ -26,12 +26,15 @@ export async function getUser(data: { id: string }) {
 }
 
 export async function getUserByEmail(
-  data: { email: string },
-  select?: Prisma.UserSelect
+  email: string,
+  select?: Prisma.UserSelect,
 ) {
   try {
-    logger("getUserByEmail", data);
-    const existingUser = await db.user.findUnique({ where: data, select });
+    logger("getUserByEmail", email);
+    const existingUser = await db.user.findUnique({
+      where: { email },
+      select,
+    });
     return { success: true, data: existingUser, error: null };
   } catch (e) {
     return handleError(e);
@@ -39,7 +42,7 @@ export async function getUserByEmail(
 }
 
 export async function getUserByAccount(
-  providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">
+  providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
 ) {
   try {
     logger("getUserByAccount", { data: { providerAccountId } });

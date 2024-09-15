@@ -1,7 +1,7 @@
 # Table of contents
 
-* [Welcome](README.md)
+- [Welcome](README.md)
 
 ## ⚖️ Legals
 
-* [Terms & Conditions](legals/terms-and-conditions.md)
+- [Terms & Conditions](legals/terms-and-conditions.md)

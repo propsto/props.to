@@ -1,4 +1,6 @@
-import * as templates from "./templates";
+import { type Resend } from "resend";
+import type * as templates from "./templates";
+import { type HandleErrorReturn } from "./utils/error-handling";
 
 // Create a type for all function names
 export type EmailTemplateNames = keyof typeof templates;
@@ -22,3 +24,12 @@ export type NoArguments<T extends EmailTemplateNames> =
 
 // Create a type for the arguments for each template send function
 export type Email = string | { email: string };
+
+export type SendEmailReturn = Promise<
+  | HandleErrorReturn
+  | {
+      success: boolean;
+      data: Awaited<ReturnType<Resend["emails"]["send"]>>;
+      error: null;
+    }
+>;

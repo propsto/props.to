@@ -8,9 +8,9 @@ import {
 
 export async function requestEarlyAccess(
   prevState: PropstoFormState<RequestEarlyAccessFormType>,
-  formData: FormData
+  formData: FormData,
 ): Promise<PropstoFormState<RequestEarlyAccessFormType>> {
-  await new Promise((resolve) => {
+  await new Promise(resolve => {
     // TODO Remove delay
     setTimeout(resolve, 5000);
   });
@@ -29,12 +29,12 @@ export async function requestEarlyAccess(
   }
   formData.set(
     "xnQsjsdp",
-    "3eb3afc7ccfde7a401ada6e6b9f9aa7c9282cde4dc2ee4a23e114ad87745f81b"
+    "3eb3afc7ccfde7a401ada6e6b9f9aa7c9282cde4dc2ee4a23e114ad87745f81b",
   );
   formData.set("zc_gad", "");
   formData.set(
     "xmIwtLD",
-    "c5a67418196961f2e9099d9c25aa7914ac21cbab455fc50f715214cff65bea2bc3b6ffa9e0d71ff2dd61fffb4d525011"
+    "c5a67418196961f2e9099d9c25aa7914ac21cbab455fc50f715214cff65bea2bc3b6ffa9e0d71ff2dd61fffb4d525011",
   );
   formData.set("actionType", "TGVhZHM=");
   formData.set("returnURL", "null");

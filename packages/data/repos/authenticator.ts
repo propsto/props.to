@@ -1,5 +1,5 @@
 import { logger } from "@propsto/logger?data";
-import { db, Prisma } from "../db";
+import { db } from "../db";
 import { handleError } from "../utils/errorHandling";
 import { AdapterAuthenticator } from "@auth/core/adapters";
 
@@ -36,7 +36,10 @@ export async function listAuthenticatorsByUserId(userId: string) {
     return handleError(e);
   }
 }
-export async function updateAuthenticatorCounter(credentialID: string, counter: number) {
+export async function updateAuthenticatorCounter(
+  credentialID: string,
+  counter: number,
+) {
   try {
     logger("updateAuthenticatorCounter", { credentialID, counter });
     const result = await db.authenticator.update({

@@ -3,45 +3,67 @@
 import { cn } from "@propsto/ui/utils/cn";
 import { Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
-import { useState } from "react";
-import { useFormState } from "react-dom";
+import { startTransition, useEffect, useState } from "react";
+import { useResetableActionState } from "@propsto/ui/hooks/use-resetable-action-state";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
-import { signInAction } from "./action";
+import { signInAction } from "@/server/signin-action";
 
 export function SigninForm({
   className,
   ...props
 }: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
-  const [result, action, isPending] = useFormState(signInAction, undefined);
-  const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
-    "email"
+  const [result, action, isPending, progress] = useResetableActionState(
+    signInAction,
+    undefined,
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- temporary in wip
+  const [signInMethod, setSignInMethod] = useState<"email" | "credentials">(
+    "email",
+  );
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    if (result?.code === "password-set") {
+      setShowPassword(true);
+    }
+  }, [result?.code]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => {
+      action(formData);
+    });
+  }
+
   return (
-    <div className={cn("grid gap-6", className)} {...props}>
-      <form action={action} className="flex flex-col gap-4">
+    <div className={cn("grid gap-6 relative", className)} {...props}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid gap-2">
           <FormInputError
             controlName="Email"
             isPending={isPending}
             result={result}
           />
-          <FormInputError
-            controlName="Password"
-            className={cn(
-              "overflow-hidden transition-all duration-300",
-              showPassword
-                ? "max-h-[100px] opacity-100 translate-x-0"
-                : "max-h-0 opacity-0 -translate-x-full"
-            )}
-            isPending={isPending}
-            result={result}
-            autocomplete="off"
-          />
+          {showPassword ? (
+            <FormInputError
+              controlName="Password"
+              className={cn(
+                "overflow-hidden transition-all duration-300",
+                signInMethod === "credentials"
+                  ? "max-h-[100px] opacity-100 translate-x-0"
+                  : "max-h-0 opacity-0 -translate-x-full",
+              )}
+              isPending={isPending}
+              result={result}
+              autocomplete="off"
+            />
+          ) : null}
           <input type="hidden" name="signInMethod" value={signInMethod} />
-          <SubmitButton result={result} isPending={isPending}>
+          <SubmitButton
+            result={result}
+            isPending={isPending}
+            progress={progress}
+          >
             {signInMethod === "credentials" && showPassword
               ? "Sign in"
               : "Continue"}{" "}

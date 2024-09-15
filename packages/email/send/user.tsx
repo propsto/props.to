@@ -1,17 +1,7 @@
-import { type Resend } from "resend";
 import { WelcomeEmail } from "../templates";
-import { type Email } from "../types";
-import { handleError, type HandleErrorReturn } from "./error-handling";
+import type { SendEmailReturn, Email } from "../types";
+import { handleError } from "../utils/error-handling";
 import { send } from ".";
-
-type SendEmailReturn = Promise<
-  | HandleErrorReturn
-  | {
-      success: boolean;
-      data: Awaited<ReturnType<Resend["emails"]["send"]>>;
-      error: null;
-    }
->;
 
 export async function sendWelcomeEmail(email: Email): SendEmailReturn {
   try {

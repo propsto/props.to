@@ -11,7 +11,7 @@ export default function Layout({
   return (
     <div className="relative h-screen flex-col items-center lg:justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <SideSection />
-      <div className="lg:p-8">
+      <div className="lg:p-8 h-screen">
         {children}
         <DynamicThemeToggle />
       </div>

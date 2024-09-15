@@ -41,7 +41,7 @@ export function Features01(): JSX.Element {
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
                     : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm"
                 }`}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   setTab(1);
                 }}
@@ -73,7 +73,7 @@ export function Features01(): JSX.Element {
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
                     : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm"
                 }`}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   setTab(2);
                 }}
@@ -105,7 +105,7 @@ export function Features01(): JSX.Element {
                     ? "bg-zinc-100 opacity-60 hover:opacity-100 transition"
                     : "[background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] shadow-sm"
                 }`}
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   setTab(3);
                 }}

@@ -8,7 +8,7 @@ import { requestEarlyAccess } from "./action";
 export function Form(): JSX.Element {
   const [result, action, isPending] = useResetableActionState(
     requestEarlyAccess,
-    undefined
+    undefined,
   );
 
   return (

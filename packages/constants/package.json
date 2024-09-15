@@ -15,11 +15,13 @@
     "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
     "tsx": "*",
-    "typescript": "*",
     "zod": "*"
   },
   "dependencies": {
     "@t3-oss/env-core": "0.10.1",
     "dotenv": "16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "5.4.5"
   }
 }

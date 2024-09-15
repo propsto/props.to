@@ -48,7 +48,7 @@ export function Features03(): JSX.Element {
                       ? ""
                       : "[background:linear-gradient(#2E2E32,#2E2E32)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700/0),theme(colors.zinc.700))_border-box]"
                   }`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     setTab(1);
                   }}
@@ -78,7 +78,7 @@ export function Features03(): JSX.Element {
                       ? ""
                       : "[background:linear-gradient(#2E2E32,#2E2E32)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700/0),theme(colors.zinc.700))_border-box]"
                   }`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     setTab(2);
                   }}
@@ -108,7 +108,7 @@ export function Features03(): JSX.Element {
                       ? ""
                       : "[background:linear-gradient(#2E2E32,#2E2E32)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700/0),theme(colors.zinc.700))_border-box]"
                   }`}
-                  onClick={(e) => {
+                  onClick={e => {
                     e.preventDefault();
                     setTab(3);
                   }}

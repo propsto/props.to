@@ -6,6 +6,7 @@ export interface SubmitButtonProps extends React.PropsWithChildren {
   name?: string;
   value?: string;
   result: PropstoFormState<Record<string, string>>;
+  progress?: number;
 }
 
 export function SubmitButton({
@@ -14,9 +15,16 @@ export function SubmitButton({
   name,
   result,
   value,
+  progress,
 }: Readonly<SubmitButtonProps>): JSX.Element {
   return (
-    <Button aria-disabled={isPending} name={name} type="submit" value={value}>
+    <Button
+      aria-disabled={isPending}
+      name={name}
+      progress={progress}
+      type="submit"
+      value={value}
+    >
       {isPending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
       {result?.success === true ? (
         <CheckCircle2 className="mr-2 size-4" />
@@ -24,7 +32,7 @@ export function SubmitButton({
       {result?.success === false && result.message ? (
         <XCircle className="mr-2 size-4" />
       ) : null}
-      {result?.message ?? children}
+      {result?.message ?? result?.button ?? children}
     </Button>
   );
 }

@@ -46,7 +46,10 @@ function Quote(): JSX.Element | undefined {
           <p suppressHydrationWarning className="text-lg">
             &ldquo;{quote.text}&rdquo;
           </p>
-          <p suppressHydrationWarning className="text-sm font-cal tracking-wider">
+          <p
+            suppressHydrationWarning
+            className="text-sm font-cal tracking-wider"
+          >
             –{quote.author}
           </p>
         </blockquote>
