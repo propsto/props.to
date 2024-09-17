@@ -1,4 +1,4 @@
-import React from "react";
+import React from "../../../@types/react";
 import { cn } from "../utils/cn";
 
 interface BorderBeamProps {

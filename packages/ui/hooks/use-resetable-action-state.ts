@@ -4,7 +4,7 @@ import {
   useActionState,
   type SetStateAction,
   type Dispatch,
-} from "react";
+} from "../../../@types/react";
 
 export function useResetableActionState<
   State extends PropstoFormState<unknown>,

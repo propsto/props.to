@@ -18,6 +18,7 @@
   "peerDependencies": {
     "@propsto/logger": "workspace:*",
     "@propsto/config": "workspace:*",
+    "@propsto/constants": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

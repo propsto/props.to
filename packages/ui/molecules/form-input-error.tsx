@@ -1,4 +1,4 @@
-import { type CSSProperties } from "react";
+import { type CSSProperties } from "../../../@types/react";
 import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
@@ -8,7 +8,9 @@ type FormInputErrorProps = {
   controlName: string;
   className?: string;
   style?: CSSProperties;
-} & Partial<Pick<HTMLInputElement, "autocapitalize" | "autocomplete">>;
+} & Partial<
+  Pick<HTMLInputElement, "autocapitalize" | "autocomplete" | "defaultValue">
+>;
 
 export function FormInputError({
   result,
@@ -16,6 +18,7 @@ export function FormInputError({
   controlName,
   autocapitalize,
   autocomplete,
+  defaultValue,
   className,
   style,
   ...rest
@@ -33,6 +36,7 @@ export function FormInputError({
         autoCapitalize={autocapitalize}
         autoComplete={autocomplete ?? controlName.toLowerCase()}
         className={cn(result?.errors?.name && "!border-red-500")}
+        defaultValue={defaultValue}
         disabled={isPending}
         id={controlName.toLowerCase()}
         name={controlName.toLowerCase()}

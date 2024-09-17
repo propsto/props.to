@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "../../../@types/react";
 
 export function useDeviceSize(): [number, number] {
   const [width, setWidth] = useState(0);

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
+import { z } from "../../../zod";
 import { config } from "dotenv";
 
 // Load .env
@@ -16,6 +16,7 @@ export const constServer = createEnv({
     AUTH_SECRET: z
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
+    AUTH_URL: z.string().url(),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
   },
 

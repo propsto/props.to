@@ -1,23 +1,23 @@
 "use server";
 
-import { constOther } from "@propsto/constants";
-import { getUserByEmail } from "@propsto/data/repos";
+import { deletePasswordResetToken, getUserByEmail } from "@propsto/data/repos";
+import { generatePasswordResetToken } from "@propsto/data/utils/token";
+import { sendPasswordResetEmail } from "@propsto/email";
 import { logger } from "@propsto/logger?auth";
-import { signIn } from "@/server/auth";
 import {
   type ResetPasswordFormType,
-  ResetPasswordFormSchema,
+  resetPasswordFormSchema,
 } from "@/app/types";
 
 export async function passwordResetAction(
   prevState: PropstoFormState<ResetPasswordFormType>,
   formData: FormData,
 ): Promise<PropstoFormState<ResetPasswordFormType>> {
-  const { success, error, data } = ResetPasswordFormSchema.safeParse({
+  const { success, error, data } = resetPasswordFormSchema.safeParse({
     email: formData.get("email"),
   });
   if (!success) {
-    logger("signUpAction", error.flatten());
+    logger("passwordResetAction", error.flatten());
     return {
       errors: error.flatten().fieldErrors,
     };
@@ -25,14 +25,20 @@ export async function passwordResetAction(
 
   const user = await getUserByEmail(data.email, { password: true });
   if (!user.data) {
-    logger("signInAction > no user found");
+    logger("passwordResetAction > no user found");
     return { success: false, message: "No user found" };
   }
-  const { emailProvider } = constOther;
-  let provider = "email";
-  if (emailProvider === "resend") {
-    provider = "resend";
+
+  const token = await generatePasswordResetToken(data.email);
+  if (!token.data) {
+    logger("passwordResetAction > generatePasswordResetToken no success");
+    return { success: false, message: "Unexpected error" };
   }
-  logger("signInAction > signIn", provider);
-  await signIn(provider, data);
+
+  const emailSent = await sendPasswordResetEmail(data.email, token.data.token);
+  if (!emailSent.success) {
+    logger("passwordResetAction > sendPasswordResetEmail no success");
+    await deletePasswordResetToken(token.data.id);
+    return { success: false, message: "Unexpected error" };
+  }
 }
