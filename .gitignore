@@ -2,7 +2,6 @@
 
 # dependencies
 node_modules
-node_modules.nosync
 .pnp
 .pnp.js
 
@@ -24,11 +23,11 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+/.env
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
 
 # turbo
 .turbo
@@ -41,4 +40,3 @@ yarn-error.log*
 
 # react-email
 .react-email
-node_modules.nosync

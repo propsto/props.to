@@ -1,5 +1,5 @@
-import { constServer } from "../../constants";
-import { PasswordResetTokenEmail } from "../templates";
+import { constServer } from "@propsto/constants";
+import { PasswordChanged, PasswordResetTokenEmail } from "../templates";
 import type { SendEmailReturn, Email } from "../types";
 import { handleError } from "../utils/error-handling";
 import { send } from ".";
@@ -16,6 +16,15 @@ export async function sendPasswordResetEmail(
       PasswordResetTokenEmail,
       resetLink,
     );
+    return { success: true, data: sent, error: null };
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function sendPasswordChanged(email: Email): SendEmailReturn {
+  try {
+    const sent = await send(email, "Password changed", PasswordChanged);
     return { success: true, data: sent, error: null };
   } catch (e) {
     return handleError(e);

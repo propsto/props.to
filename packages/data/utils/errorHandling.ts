@@ -2,7 +2,6 @@ import { Prisma, type DbError } from "../db";
 import { logger } from "@propsto/logger?data";
 
 export function handleError(e: any): DbError {
-  debugger;
   if (e instanceof Prisma.PrismaClientKnownRequestError) {
     logger("repos/handleError", e.code, e.message);
     switch (e.code) {
@@ -11,6 +10,10 @@ export function handleError(e: any): DbError {
       default:
         return { success: false, data: null, error: "Unexpected error" };
     }
+  }
+  if (e instanceof Error) {
+    logger("repos/handleError", e.message);
+    return { success: false, data: null, error: e.message };
   }
   return { success: false, data: null, error: "Unexpected error" };
 }

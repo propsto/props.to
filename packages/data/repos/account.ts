@@ -2,6 +2,7 @@ import { logger } from "@propsto/logger?data";
 import { db } from "../db";
 import { AdapterAccount } from "@auth/core/adapters";
 import { handleError } from "../utils/errorHandling";
+import { handleSuccess } from "../utils/successHandling";
 
 export async function getAccount(providerAccountId: string, provider: string) {
   try {
@@ -9,7 +10,7 @@ export async function getAccount(providerAccountId: string, provider: string) {
     const account = db.account.findFirst({
       where: { providerAccountId, provider },
     }) as Promise<AdapterAccount | null>;
-    return { success: true, data: account, error: null };
+    return handleSuccess(account);
   } catch (e) {
     return handleError(e);
   }
@@ -19,7 +20,7 @@ export async function linkAccount(data: AdapterAccount) {
   try {
     logger("linkAccount", { data });
     const linkedAccount = await db.account.create({ data });
-    return { success: true, data: linkedAccount, error: null };
+    return handleSuccess(linkAccount);
   } catch (e) {
     return handleError(e);
   }
@@ -34,7 +35,7 @@ export async function unlinkAccount(providerAccountId: {
     const unlinkedAccount = await db.account.delete({
       where: { provider_providerAccountId: providerAccountId },
     });
-    return { success: true, data: unlinkedAccount, error: null };
+    return handleSuccess(unlinkedAccount);
   } catch (e) {
     return handleError(e);
   }

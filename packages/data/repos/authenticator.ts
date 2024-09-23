@@ -2,6 +2,7 @@ import { logger } from "@propsto/logger?data";
 import { db } from "../db";
 import { handleError } from "../utils/errorHandling";
 import { AdapterAuthenticator } from "@auth/core/adapters";
+import { handleSuccess } from "../utils/successHandling";
 
 export async function createAuthenticator(authenticator: AdapterAuthenticator) {
   try {
@@ -9,7 +10,7 @@ export async function createAuthenticator(authenticator: AdapterAuthenticator) {
     const result = await db.authenticator.create({
       data: authenticator,
     });
-    return { success: true, data: result, error: null };
+    return handleSuccess(result);
   } catch (e) {
     return handleError(e);
   }
@@ -20,7 +21,7 @@ export async function getAuthenticator(credentialID: string) {
     const result = await db.authenticator.findUnique({
       where: { credentialID },
     });
-    return { success: true, data: result, error: null };
+    return handleSuccess(result);
   } catch (e) {
     return handleError(e);
   }
@@ -31,7 +32,7 @@ export async function listAuthenticatorsByUserId(userId: string) {
     const result = await db.authenticator.findMany({
       where: { userId },
     });
-    return { success: true, data: result, error: null };
+    return handleSuccess(result);
   } catch (e) {
     return handleError(e);
   }
@@ -46,7 +47,7 @@ export async function updateAuthenticatorCounter(
       where: { credentialID },
       data: { counter },
     });
-    return { success: true, data: result, error: null };
+    return handleSuccess(result);
   } catch (e) {
     return handleError(e);
   }

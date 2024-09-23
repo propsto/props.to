@@ -13,7 +13,7 @@ export default function Layout({
   return (
     <div className="relative h-screen flex-col items-center lg:justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
       <SideSection />
-      <div className="lg:p-8 h-screen">
+      <div className="lg:p-8 lg:h-screen">
         <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
           <Triangles size="small" />
           <Logo className="mr-2 z-20" size="large" />

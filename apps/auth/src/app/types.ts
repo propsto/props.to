@@ -10,3 +10,11 @@ export const resetPasswordFormSchema = SigninFormSchema.pick({ email: true });
 
 export type SigninFormType = z.infer<typeof SigninFormSchema>;
 export type ResetPasswordFormType = z.infer<typeof resetPasswordFormSchema>;
+
+export const newPasswordFormSchema = z.object({
+  password: z.string(),
+  repeatPassword: z.string(),
+  token: z.string(),
+});
+
+export type NewPasswordFormType = z.infer<typeof newPasswordFormSchema>;

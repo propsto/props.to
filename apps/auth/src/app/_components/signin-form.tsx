@@ -43,6 +43,7 @@ export function SigninForm({
             controlName="Email"
             isPending={isPending}
             result={result}
+            type="email"
           />
           {showPassword ? (
             <FormInputError
@@ -55,6 +56,7 @@ export function SigninForm({
               )}
               isPending={isPending}
               result={result}
+              type="password"
               autocomplete="off"
             />
           ) : null}

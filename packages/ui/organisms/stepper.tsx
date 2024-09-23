@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "../../../@types/react";
 import { cva } from "class-variance-authority";
 import { CheckIcon, Loader2, type LucideIcon, X } from "lucide-react";
+import * as React from "react";
 import { cn } from "../utils/cn";
 import { Button } from "../atoms/button";
 import { Collapsible, CollapsibleContent } from "../molecules/collapsible";

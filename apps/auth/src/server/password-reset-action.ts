@@ -1,7 +1,7 @@
 "use server";
 
 import { deletePasswordResetToken, getUserByEmail } from "@propsto/data/repos";
-import { generatePasswordResetToken } from "@propsto/data/utils/token";
+import { generatePasswordResetToken } from "@propsto/data/utils/password-reset-token";
 import { sendPasswordResetEmail } from "@propsto/email";
 import { logger } from "@propsto/logger?auth";
 import {
@@ -41,4 +41,6 @@ export async function passwordResetAction(
     await deletePasswordResetToken(token.data.id);
     return { success: false, message: "Unexpected error" };
   }
+
+  return { success: true, message: "Email sent!" };
 }

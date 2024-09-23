@@ -1,4 +1,4 @@
-import { type CSSProperties } from "../../../@types/react";
+import type { ChangeEventHandler, CSSProperties } from "react";
 import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
@@ -8,8 +8,12 @@ type FormInputErrorProps = {
   controlName: string;
   className?: string;
   style?: CSSProperties;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
 } & Partial<
-  Pick<HTMLInputElement, "autocapitalize" | "autocomplete" | "defaultValue">
+  Pick<
+    HTMLInputElement,
+    "autocapitalize" | "autocomplete" | "defaultValue" | "type" | "placeholder"
+  >
 >;
 
 export function FormInputError({
@@ -21,6 +25,9 @@ export function FormInputError({
   defaultValue,
   className,
   style,
+  type,
+  onChange,
+  placeholder,
   ...rest
 }: FormInputErrorProps): JSX.Element {
   return (
@@ -40,8 +47,9 @@ export function FormInputError({
         disabled={isPending}
         id={controlName.toLowerCase()}
         name={controlName.toLowerCase()}
-        placeholder={controlName}
-        type={controlName}
+        onChange={onChange}
+        placeholder={placeholder || controlName}
+        type={type}
       />
       {result?.errors?.[controlName.toLowerCase()] ? (
         <p className="text-sm text-red-500 text-left">

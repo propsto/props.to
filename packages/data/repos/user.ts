@@ -3,13 +3,15 @@ import { db, Prisma, type DbResult } from "../db";
 import { handleError } from "../utils/errorHandling";
 import { v4 as uuidv4 } from "uuid";
 import { AdapterAccount } from "@auth/core/adapters";
+import { hash } from "bcryptjs";
+import { handleSuccess } from "../utils/successHandling";
 
-export async function createUser(data: { email: string }): Promise<DbResult> {
+export async function createUser(data: { email: string }) {
   try {
     const dataWithUsername = { ...data, username: `user-${uuidv4()}` };
     logger("createUser", dataWithUsername);
     const newUser = await db.user.create({ data: dataWithUsername });
-    return { success: true, data: newUser, error: null };
+    return handleSuccess(newUser);
   } catch (e) {
     return handleError(e);
   }
@@ -19,7 +21,7 @@ export async function getUser(data: { id: string }) {
   try {
     logger("getUser", data);
     const existingUser = await db.user.findUnique({ where: data });
-    return { success: true, data: existingUser, error: null };
+    return handleSuccess(existingUser);
   } catch (e) {
     return handleError(e);
   }
@@ -35,7 +37,7 @@ export async function getUserByEmail(
       where: { email },
       select,
     });
-    return { success: true, data: existingUser, error: null };
+    return handleSuccess(existingUser);
   } catch (e) {
     return handleError(e);
   }
@@ -50,17 +52,26 @@ export async function getUserByAccount(
       where: { provider_providerAccountId: providerAccountId },
       select: { user: true },
     });
-    return { success: true, data: existingUser, error: null };
+    return handleSuccess(existingUser);
   } catch (e) {
     return handleError(e);
   }
 }
 
-export async function updateUser(id: string, data: any) {
+export async function updateUser<T extends Prisma.UserSelect>(
+  id: string,
+  data: Prisma.UserUncheckedUpdateInput,
+  select: T = { id: true } as T,
+) {
   try {
-    logger("updateUser", { id, data });
-    const updatedUser = await db.user.update({ where: { id }, data });
-    return { success: true, data: updatedUser, error: null };
+    const { password, ...rest } = data;
+    logger("updateUser", { id, rest });
+    const updatedUser = await db.user.update({
+      where: { id },
+      data: { ...rest, password: await hash(password as string, 10) },
+      select,
+    });
+    return handleSuccess(updatedUser);
   } catch (e) {
     return handleError(e);
   }
@@ -70,7 +81,7 @@ export async function deleteUser(id: string) {
   try {
     logger("deleteUser", { id });
     const deletedUser = await db.user.delete({ where: { id } });
-    return { success: true, data: deletedUser, error: null };
+    return handleSuccess(deletedUser);
   } catch (e) {
     return handleError(e);
   }

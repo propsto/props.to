@@ -15,9 +15,9 @@ export { prisma as db, Prisma, PrismaClient };
 
 if (constServer.PROPSTO_ENV !== "production") globalThis.prismaGlobal = prisma;
 
-export interface DbSuccess {
+export interface DbSuccess<T> {
   success: true;
-  data: any;
+  data: T;
   error: null;
 }
 
@@ -27,4 +27,4 @@ export interface DbError {
   error: string;
 }
 
-export type DbResult = DbSuccess | DbError;
+export type DbResult<T> = DbSuccess<T> | DbError;

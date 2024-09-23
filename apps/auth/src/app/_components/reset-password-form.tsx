@@ -26,6 +26,7 @@ export function ResetPasswordForm({
             defaultValue={email}
             isPending={isPending}
             result={result}
+            type="email"
           />
           <SubmitButton
             result={result}

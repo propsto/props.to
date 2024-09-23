@@ -16,9 +16,9 @@ const resetPasswordParamsSchema = z.object({
 
 export default async function ResetPasswordPage({
   searchParams,
-}: {
+}: Readonly<{
   searchParams: Record<string, string>;
-}): Promise<JSX.Element> {
+}>): Promise<JSX.Element> {
   const { code, email = "" } = resetPasswordParamsSchema.parse(searchParams);
   const session = await auth();
   if (session?.user) redirect("/welcome");

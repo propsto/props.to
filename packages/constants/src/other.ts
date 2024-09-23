@@ -6,3 +6,7 @@ const emailProvider =
     : "email";
 
 export const constOther = { emailProvider };
+
+export enum ErrorCodes {
+  "InvalidNewPassordToken" = "InvalidNewPassordToken",
+}

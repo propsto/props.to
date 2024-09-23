@@ -1,8 +1,8 @@
 "use client";
 
 import "./triangles.css";
-import { type MutableRefObject } from "../../../@types/react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { type MutableRefObject } from "react";
 import { useDeviceSize } from "../hooks/use-device-size";
 
 export type TriangleVariantProps = VariantProps<typeof triangleVariants>;

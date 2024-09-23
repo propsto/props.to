@@ -33,7 +33,7 @@ export function PropstoAdapter(): Adapter {
   return {
     async createUser({ id: _id, ...data }) {
       const result = await createUser(data);
-      return result.data;
+      return result.data!;
     },
     async getUser(id) {
       const result = await getUser({ id });
