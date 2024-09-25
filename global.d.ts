@@ -14,4 +14,18 @@ declare global {
   type SchemaToErrors<T> = {
     [K in keyof T]?: string[] | undefined;
   };
+
+  type HandleSuccessEvent<T> = {
+    success: true;
+    data: T;
+    error: null;
+  };
+
+  type HandleErrorEvent = {
+    success: false;
+    data: null;
+    error: string;
+  };
+
+  type HandleEvent<T> = HandleSuccessEvent<T> | HandleErrorEvent;
 }

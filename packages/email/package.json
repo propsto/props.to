@@ -11,18 +11,20 @@
     "debug": "pnpm dev"
   },
   "dependencies": {
-    "@react-email/components": "0.0.19",
-    "react-email": "2.1.4",
-    "resend": "3.2.0"
+    "@react-email/components": "0.0.25",
+    "react-email": "3.0.1",
+    "resend": "4.0.0"
   },
   "peerDependencies": {
     "@propsto/logger": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@types/node": "*",
+    "@types/nodemailer": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
     "eslint": "*",
+    "nodemailer": "*",
     "react": "*"
   },
   "devDependencies": {

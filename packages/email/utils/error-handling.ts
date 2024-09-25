@@ -5,13 +5,7 @@ function isErrorResponse(error: unknown): error is ErrorResponse {
   return typeof error === "object" && error !== null && "message" in error;
 }
 
-export interface HandleErrorReturn {
-  success: boolean;
-  data: null;
-  error: string;
-}
-
-export function handleError(e: unknown): HandleErrorReturn {
+export function handleError(e: unknown): HandleErrorEvent {
   logger("handleError %O", e);
   if (isErrorResponse(e)) {
     if (e.name === "rate_limit_exceeded") {

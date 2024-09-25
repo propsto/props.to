@@ -1,8 +1,8 @@
 import { logger } from "@propsto/logger?data";
 import { db } from "../db";
-import { handleError } from "../utils/errorHandling";
+import { handleError } from "../utils/error-handling";
+import { handleSuccess } from "../utils/success-handling";
 import { AdapterAuthenticator } from "@auth/core/adapters";
-import { handleSuccess } from "../utils/successHandling";
 
 export async function createAuthenticator(authenticator: AdapterAuthenticator) {
   try {

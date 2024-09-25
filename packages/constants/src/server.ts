@@ -12,7 +12,7 @@ export const constServer = createEnv({
     DATABASE_URL: z.string().url(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_SERVER: z.string().optional(),
-    EMAIL_FROM: z.string().optional(),
+    EMAIL_FROM: z.string(),
     AUTH_SECRET: z
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),

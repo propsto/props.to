@@ -1,10 +1,10 @@
 import { logger } from "@propsto/logger?data";
-import { db, Prisma, type DbResult } from "../db";
-import { handleError } from "../utils/errorHandling";
+import { db, Prisma } from "../db";
+import { handleError } from "../utils/error-handling";
+import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
 import { AdapterAccount } from "@auth/core/adapters";
 import { hash } from "bcryptjs";
-import { handleSuccess } from "../utils/successHandling";
 
 export async function createUser(data: { email: string }) {
   try {

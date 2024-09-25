@@ -17,6 +17,7 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
     logger("resend used");
     return Resend({ apiKey: constServer.RESEND_API_KEY });
   }
+  logger("nodemailer used");
   return NodemailerProvider({
     id: "email",
     name: "email",

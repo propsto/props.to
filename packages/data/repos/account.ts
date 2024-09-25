@@ -1,8 +1,8 @@
 import { logger } from "@propsto/logger?data";
 import { db } from "../db";
 import { AdapterAccount } from "@auth/core/adapters";
-import { handleError } from "../utils/errorHandling";
-import { handleSuccess } from "../utils/successHandling";
+import { handleError } from "../utils/error-handling";
+import { handleSuccess } from "../utils/success-handling";
 
 export async function getAccount(providerAccountId: string, provider: string) {
   try {

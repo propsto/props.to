@@ -1,7 +1,7 @@
 import { logger } from "@propsto/logger?data";
 import { db } from "../db";
-import { handleError } from "../utils/errorHandling";
-import { handleSuccess } from "../utils/successHandling";
+import { handleError } from "../utils/error-handling";
+import { handleSuccess } from "../utils/success-handling";
 
 export async function createVerificationToken(tokenData: any) {
   try {

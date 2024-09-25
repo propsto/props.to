@@ -35,12 +35,12 @@ export function useResetableActionState<
     let timeout: NodeJS.Timeout;
     let interval: NodeJS.Timeout;
     if (result !== initialState && !result?.button) {
-      timeout = setTimeout(() => {
-        setResultState(initialState);
-      }, 5000);
       interval = setInterval(() => {
         setProgress(currProgress => currProgress + 1);
       }, 1000);
+      timeout = setTimeout(() => {
+        setResultState(initialState);
+      }, 5000);
     }
 
     return () => {

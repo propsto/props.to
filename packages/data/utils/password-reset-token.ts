@@ -3,8 +3,6 @@ import {
   createPasswordResetToken,
   deletePasswordResetToken,
   getPasswordResetTokenByEmail,
-  getPasswordResetTokenByToken,
-  getUserByEmail,
 } from "../repos";
 
 export const generatePasswordResetToken = async (email: string) => {
@@ -13,7 +11,7 @@ export const generatePasswordResetToken = async (email: string) => {
 
   const existingToken = await getPasswordResetTokenByEmail(email);
 
-  if (existingToken) {
+  if (existingToken.data) {
     await deletePasswordResetToken(existingToken.data?.id);
   }
 
