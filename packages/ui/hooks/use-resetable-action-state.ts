@@ -32,20 +32,22 @@ export function useResetableActionState<
     setResultState(result); // Update resultState to the latest result
     setProgress(0);
 
-    let timeout: NodeJS.Timeout;
     let interval: NodeJS.Timeout;
     if (result !== initialState && !result?.button) {
       interval = setInterval(() => {
-        setProgress(currProgress => currProgress + 1);
+        setProgress(currProgress => {
+          if (currProgress >= 5) {
+            setResultState(initialState);
+            clearInterval(interval);
+            return 0;
+          }
+          return currProgress + 1;
+        });
       }, 1000);
-      timeout = setTimeout(() => {
-        setResultState(initialState);
-      }, 5000);
     }
 
     return () => {
-      clearTimeout(timeout);
-      clearTimeout(interval);
+      clearInterval(interval);
     };
   }, [result, result?.message, initialState]);
 

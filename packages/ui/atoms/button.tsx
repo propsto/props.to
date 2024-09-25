@@ -49,7 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const Comp = asChild ? Slot : "button";
     const progressValues = {
-      0: "w-[20%]",
+      0: "w-[0%]",
       1: "w-[20%]",
       2: "w-[40%]",
       3: "w-[60%]",
