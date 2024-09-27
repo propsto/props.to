@@ -5,8 +5,12 @@ const emailProvider =
     ? "resend"
     : "email";
 
-export const constOther = { emailProvider };
+const errorMessages: Record<string, string> = {
+  InvalidNewPassordToken: "The provided token is invalid",
+} as const;
 
-export enum ErrorCodes {
-  "InvalidNewPassordToken" = "InvalidNewPassordToken",
-}
+const errorCodes = Object.fromEntries(
+  new Map(Object.keys(errorMessages).map(i => [i, i])),
+);
+
+export const constOther = { emailProvider, errorMessages, errorCodes };

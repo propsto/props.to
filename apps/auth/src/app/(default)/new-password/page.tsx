@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { validPasswordResetToken } from "@propsto/data/utils/password-reset-token";
-import { ErrorCodes } from "@propsto/constants/src/other";
+import { constOther } from "@propsto/constants";
 import { NewPasswordForm } from "@components/new-password-form";
 
 const newPasswordParamsSchema = z.object({
@@ -14,10 +14,12 @@ export default async function NewPasswordPage({
   searchParams: Record<string, string>;
 }>): Promise<JSX.Element> {
   const { token } = newPasswordParamsSchema.parse(searchParams);
-  if (!token) redirect(`/error?code=${ErrorCodes.InvalidNewPassordToken}`);
+  if (!token)
+    redirect(`/error?code=${constOther.errorCodes.InvalidNewPassordToken}`);
 
   const tokenValid = await validPasswordResetToken(token);
-  if (!tokenValid) redirect(`/error?code=${ErrorCodes.InvalidNewPassordToken}`);
+  if (!tokenValid)
+    redirect(`/error?code=${constOther.errorCodes.InvalidNewPassordToken}`);
 
   return (
     <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
