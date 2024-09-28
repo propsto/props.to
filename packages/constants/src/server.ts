@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { z } from "zod";
 
 // Load .env
-const envPath = resolve("../../.env");
+const envPath = resolve("../.env");
 config({ path: envPath });
 
 export const constServer = createEnv({
@@ -16,7 +16,10 @@ export const constServer = createEnv({
     AUTH_SECRET: z
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
-    AUTH_URL: z.string().url(),
+    AUTH_URL:
+      process.env.VERCEL === "1"
+        ? z.string().url().optional()
+        : z.string().url(),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
   },
 
