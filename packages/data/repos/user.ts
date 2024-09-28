@@ -64,11 +64,14 @@ export async function updateUser<T extends Prisma.UserSelect>(
   select: T = { id: true } as T,
 ) {
   try {
-    const { password, ...rest } = data;
-    logger("updateUser", { id, rest });
+    const { password, ...noPasswordParams } = data;
+    logger("updateUser", { id, noPasswordParams });
     const updatedUser = await db.user.update({
       where: { id },
-      data: { ...rest, password: await hash(password as string, 10) },
+      data: {
+        ...noPasswordParams,
+        ...(password ? { password: await hash(password as string, 10) } : {}),
+      },
       select,
     });
     return handleSuccess(updatedUser);
