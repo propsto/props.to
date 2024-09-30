@@ -13,7 +13,7 @@ export type ResetPasswordFormType = z.infer<typeof resetPasswordFormSchema>;
 
 export const newPasswordFormSchema = z.object({
   password: z.string(),
-  repeatPassword: z.string(),
+  repeatPassword: z.string(), // TODO test form errors from zod and the timeout
   token: z.string(),
 });
 

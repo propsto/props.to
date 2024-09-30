@@ -46,9 +46,9 @@ export function FormInputError({
         defaultValue={defaultValue}
         disabled={isPending}
         id={controlName.toLowerCase()}
-        name={controlName.toLowerCase()}
+        name={controlName}
         onChange={onChange}
-        placeholder={placeholder || controlName}
+        placeholder={placeholder ?? controlName}
         type={type}
       />
       {result?.errors?.[controlName.toLowerCase()] ? (

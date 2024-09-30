@@ -40,7 +40,8 @@ export function SigninForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="grid gap-2">
           <FormInputError
-            controlName="Email"
+            controlName="email"
+            placeholder="Email"
             isPending={isPending}
             result={result}
             type="email"

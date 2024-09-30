@@ -19,7 +19,9 @@ export async function newPasswordAction(
   if (!success) {
     logger("newPasswordAction", error.flatten());
     return {
+      success: false,
       errors: error.flatten().fieldErrors,
+      message: "Please correct the errors.",
     };
   }
 
@@ -28,7 +30,7 @@ export async function newPasswordAction(
     return { success: false, message: "Passwords don't match" };
   }
 
-  if (isPasswordValid(data.password)) {
+  if (!isPasswordValid(data.password)) {
     logger("newPasswordAction > password not valid");
     return { success: false, message: "Password is not valid" };
   }

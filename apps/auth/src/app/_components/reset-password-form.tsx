@@ -22,7 +22,8 @@ export function ResetPasswordForm({
       <form action={action} className="flex flex-col gap-4">
         <div className="grid gap-2">
           <FormInputError
-            controlName="Email"
+            controlName="email"
+            placeholder="Email"
             defaultValue={email}
             isPending={isPending}
             result={result}

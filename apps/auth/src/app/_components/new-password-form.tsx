@@ -16,6 +16,7 @@ export function NewPasswordForm({
   React.HTMLAttributes<HTMLDivElement> & { token: string }
 >): React.ReactNode {
   const [passwordValue, setPasswordValue] = useState("");
+  const [repeatPasswordValue, setRepeatPasswordValue] = useState("");
   const [passwordCheck, setPasswordCheck] = useState<
     ReturnType<typeof isPasswordValid> | undefined
   >(undefined);
@@ -30,13 +31,21 @@ export function NewPasswordForm({
     }
   }, [passwordValue]);
 
+  useEffect(() => {
+    if (result?.success === false) {
+      setPasswordValue("");
+      setRepeatPasswordValue("");
+    }
+  }, [result]);
+
   return (
     <div className={cn("grid gap-6 relative", className)} {...props}>
       <form action={action} className="flex flex-col gap-4">
         <div className="grid gap-2">
           <input type="hidden" name="token" value={token} />
           <FormInputError
-            controlName="Password"
+            controlName="password"
+            placeholder="Password"
             isPending={isPending}
             onChange={e => {
               setPasswordValue(e.target.value);
@@ -83,6 +92,9 @@ export function NewPasswordForm({
             controlName="repeatPassword"
             placeholder="Repeat password"
             isPending={isPending}
+            onChange={e => {
+              setRepeatPasswordValue(e.target.value);
+            }}
             type="password"
             result={result}
           />
@@ -90,6 +102,12 @@ export function NewPasswordForm({
             result={result}
             isPending={isPending}
             progress={progress}
+            disabled={
+              !passwordCheck?.caplow ||
+              !passwordCheck.min ||
+              !passwordCheck.num ||
+              passwordValue !== repeatPasswordValue
+            }
           >
             Set password
           </SubmitButton>

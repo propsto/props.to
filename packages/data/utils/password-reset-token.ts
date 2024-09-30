@@ -27,6 +27,7 @@ export const generatePasswordResetToken = async (email: string) => {
 };
 
 export const validPasswordResetToken = async (token: string) => {
+  // TODO return specific errors for disambiguation
   const { success, data } = await getPasswordResetTokenByToken(token);
   if (!success || !data) return false;
   const hasExpired = new Date(data.expires) < new Date();
