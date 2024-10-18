@@ -11,9 +11,9 @@ const newPasswordParamsSchema = z.object({
 export default async function NewPasswordPage({
   searchParams,
 }: Readonly<{
-  searchParams: Record<string, string>;
+  searchParams: Promise<Record<string, string>>;
 }>): Promise<JSX.Element> {
-  const { token } = newPasswordParamsSchema.parse(searchParams);
+  const { token } = newPasswordParamsSchema.parse(await searchParams);
   if (!token)
     redirect(`/error?code=${constOther.errorCodes.InvalidNewPassordToken}`);
 
