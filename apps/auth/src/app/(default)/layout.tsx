@@ -1,9 +1,13 @@
+"use client";
+
 import dynamic from "next/dynamic";
 import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { SideSection } from "@components/side-section";
 
-const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"));
+const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"), {
+  ssr: false,
+});
 
 export default function Layout({
   children,
