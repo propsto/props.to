@@ -3,9 +3,7 @@ import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { SideSection } from "@components/side-section";
 
-const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"), {
-  ssr: false,
-});
+const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"));
 
 export default function Layout({
   children,

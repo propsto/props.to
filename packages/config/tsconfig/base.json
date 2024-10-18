@@ -11,7 +11,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": false,
     "strictNullChecks": true,
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "noEmit": true,
     "lib": [

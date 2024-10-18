@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "PORT=3001 next dev",
+    "dev": "PORT=3001 next dev --turbo",
     "debug": "DEBUG=@propsto:* pnpm dev",
     "lint": "next lint",
     "start": "next start",

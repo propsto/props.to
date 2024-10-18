@@ -4,7 +4,7 @@
   "description": "Authentication app for props.to",
   "scripts": {
     "build": "next build",
-    "dev": "PORT=3002 next",
+    "dev": "PORT=3002 next dev --turbo",
     "debug": "DEBUG=@propsto:* pnpm dev",
     "lint": "next lint",
     "start": "next start",
