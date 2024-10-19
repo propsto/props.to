@@ -3,6 +3,7 @@ import "./style.css";
 
 import { Inter, Inter_Tight } from "next/font/google";
 import type { Metadata } from "next";
+import { type JSX } from "react";
 
 const inter = Inter({
   subsets: ["latin"],

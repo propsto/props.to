@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@propsto/ui/utils/cn";
+import { type JSX } from "react";
 
 interface AccordionpProps extends React.PropsWithChildren {
   title: string;

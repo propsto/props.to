@@ -1,3 +1,4 @@
+import { type JSX } from "react";
 import { auth } from "@/server/auth";
 
 export default async function ProfilePage(): Promise<JSX.Element> {

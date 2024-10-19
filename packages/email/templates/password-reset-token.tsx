@@ -1,3 +1,5 @@
+import { type JSX } from "react";
+
 export function PasswordResetTokenEmail(resetLink: string): JSX.Element {
   return (
     <p>

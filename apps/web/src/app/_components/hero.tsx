@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Button } from "@propsto/ui/atoms/button";
+import { type JSX } from "react";
 
 export function Hero(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);

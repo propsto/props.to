@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, CSSProperties } from "react";
+import type { ChangeEventHandler, CSSProperties, JSX } from "react";
 import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 

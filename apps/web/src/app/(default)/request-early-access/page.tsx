@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
 import { Triangles } from "@propsto/ui/molecules/triangles";
-import { Form } from "./form";
+import { useRef, type JSX } from "react";
 import { Community } from "./community";
+import { Form } from "./form";
 
 export default function RequestEarlyAccess(): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);

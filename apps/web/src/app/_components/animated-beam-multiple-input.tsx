@@ -5,6 +5,7 @@ import { cn } from "@propsto/ui/utils/cn";
 import { AnimatedBeam } from "@propsto/ui/organisms/animated-beam";
 import { Logo, LogoSymbol, BorderBeam } from "@propsto/ui/atoms";
 import { User } from "lucide-react";
+import { type JSX } from "react";
 
 const Circle = forwardRef<
   HTMLDivElement,

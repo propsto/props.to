@@ -1,4 +1,5 @@
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
+import { type JSX } from "react";
 import { Button } from "../atoms";
 
 export interface SubmitButtonProps extends React.PropsWithChildren {

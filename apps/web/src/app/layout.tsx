@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Inter, Inter_Tight } from "next/font/google";
+import { type JSX } from "react";
 
 const calFont = localFont({
   src: "../../public/fonts/CalSans-SemiBold.woff2",

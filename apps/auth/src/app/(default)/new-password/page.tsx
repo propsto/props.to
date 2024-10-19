@@ -1,7 +1,8 @@
+import { constOther } from "@propsto/constants";
+import { validPasswordResetToken } from "@propsto/data/utils/password-reset-token";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { validPasswordResetToken } from "@propsto/data/utils/password-reset-token";
-import { constOther } from "@propsto/constants";
+import { type JSX } from "react";
 import { NewPasswordForm } from "@components/new-password-form";
 
 const newPasswordParamsSchema = z.object({

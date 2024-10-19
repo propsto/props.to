@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { type JSX, useRef } from "react";
 import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 

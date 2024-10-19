@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { type JSX, useEffect, useState } from "react";
 import { SunMoon, Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle(): JSX.Element | null {

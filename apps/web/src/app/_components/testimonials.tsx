@@ -1,4 +1,5 @@
 "use client";
+import { type JSX } from "react";
 import { Testimonial } from "@components/testimonial";
 
 export function Testimonials(): JSX.Element {

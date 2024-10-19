@@ -1,4 +1,5 @@
 import { type VariantProps, cva } from "class-variance-authority";
+import { type JSX } from "react";
 import { cn } from "../utils/cn";
 
 export type LogoVariantProps = VariantProps<typeof logoVariants>;

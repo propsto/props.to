@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { type JSX } from "react";
 
 interface TestimonialProps extends React.PropsWithChildren {
   testimonial: {

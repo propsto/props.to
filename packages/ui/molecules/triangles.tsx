@@ -2,7 +2,7 @@
 
 import "./triangles.css";
 import { cva, type VariantProps } from "class-variance-authority";
-import { type MutableRefObject } from "react";
+import { type JSX, type MutableRefObject } from "react";
 import { useDeviceSize } from "../hooks/use-device-size";
 
 export type TriangleVariantProps = VariantProps<typeof triangleVariants>;

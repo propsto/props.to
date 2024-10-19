@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Transition } from "@headlessui/react";
+import { type JSX } from "react";
 
 interface TooltipProps extends React.PropsWithChildren {
   content: string;

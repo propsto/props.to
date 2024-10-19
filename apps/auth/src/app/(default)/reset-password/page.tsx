@@ -1,9 +1,10 @@
-import { redirect } from "next/navigation";
-import { z } from "zod";
-import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { auth } from "@/server/auth";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { type JSX } from "react";
+import { z } from "zod";
 import { ResetPasswordForm } from "@components/reset-password-form";
+import { auth } from "@/server/auth";
 
 const internalMessages = {
   "no-password-set": "You have not set a password for your account.",

@@ -13,19 +13,20 @@
   "dependencies": {
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
+    "@stepperize/react": "3.1.1",
     "next-auth": "beta"
   },
   "peerDependencies": {
+    "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/email": "workspace:*",
-    "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/nodemailer": "*",
-    "@types/react": "npm:types-react@19.0.0-rc.0",
-    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.0",
+    "@types/react": "npm:types-react@^19.0.0-rc",
+    "@types/react-dom": "npm:types-react@^19.0.0-rc",
     "autoprefixer": "*",
     "lucide-react": "*",
     "next": "*",

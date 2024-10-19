@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { type JSX } from "react";
 
 export function Footer(): JSX.Element {
   return (

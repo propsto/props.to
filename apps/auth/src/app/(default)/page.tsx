@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { type JSX } from "react";
 import { auth } from "@/server/auth";
 import { SigninForm } from "@components/signin-form";
 

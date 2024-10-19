@@ -2,6 +2,7 @@ import { constOther } from "@propsto/constants";
 import { Button } from "@propsto/ui/atoms";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
+import { type JSX } from "react";
 
 function getErrorMessage(code = ""): string {
   const message = constOther.errorMessages[code];

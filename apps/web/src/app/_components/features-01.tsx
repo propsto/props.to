@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 import Image from "next/image";
+import { type JSX } from "react";
 
 export function Features01(): JSX.Element {
   const [tab, setTab] = useState<number>(1);
