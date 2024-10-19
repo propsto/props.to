@@ -5,6 +5,7 @@ import { constOther, constServer } from "@propsto/constants";
 import { createTransport } from "nodemailer";
 import { render } from "@react-email/components";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import type { JSX } from "react";
 import type {
   EmailTemplate,
   EmailTemplateArguments,

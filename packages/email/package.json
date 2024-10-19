@@ -21,8 +21,8 @@
     "@propsto/constants": "workspace:*",
     "@types/node": "*",
     "@types/nodemailer": "*",
-    "@types/react": "*",
-    "@types/react-dom": "*",
+    "@types/react": "npm:types-react@19.0.0-rc.0",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.0",
     "eslint": "*",
     "nodemailer": "*",
     "react": "*"

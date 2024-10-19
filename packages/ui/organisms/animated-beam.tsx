@@ -6,9 +6,9 @@ import { cn } from "../utils/cn";
 
 export interface AnimatedBeamProps {
   className?: string;
-  containerRef: RefObject<HTMLElement>; // Container ref
-  fromRef: RefObject<HTMLElement>;
-  toRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLDivElement | null>; // Container ref
+  fromRef: RefObject<HTMLDivElement | null>;
+  toRef: RefObject<HTMLDivElement | null>;
   curvature?: number;
   reverse?: boolean;
   pathColor?: string;

@@ -1,3 +1,5 @@
+"use client";
+
 import dynamic from "next/dynamic";
 import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";

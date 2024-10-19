@@ -9,17 +9,17 @@ function getErrorMessage(code = ""): string {
   return message;
 }
 
-export default function ErrorPage({
+export default async function ErrorPage({
   searchParams,
 }: Readonly<{
-  searchParams: Record<string, string | undefined>;
-}>): JSX.Element {
+  searchParams: Promise<Record<string, string | undefined>>;
+}>): Promise<JSX.Element> {
   return (
     <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
       <div className="flex flex-col items-center space-y-8">
         <TriangleAlert className="size-24 text-foreground" />
         <h1 className="text-muted-foreground">
-          {getErrorMessage(searchParams.code)}
+          {getErrorMessage((await searchParams).code)}
         </h1>
         <Button>
           <Link href="/">Go home</Link>
