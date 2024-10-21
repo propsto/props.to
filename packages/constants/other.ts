@@ -29,4 +29,8 @@ const quotes = [
   },
 ];
 
-export const constOther = { quotes };
+const errorCodes: Record<string, string> = {
+  InvalidNewPassordToken: "The provided token is invalid",
+} as const;
+
+export const constOther = { quotes, errorCodes };

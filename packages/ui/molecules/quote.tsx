@@ -1,3 +1,4 @@
+import { type JSX } from "react";
 import { constOther } from "@propsto/constants/other";
 import { cn } from "../utils/cn";
 
@@ -12,12 +13,12 @@ export function Quote({
     return (
       <div className={cn("relative z-20 mt-auto", className)}>
         <blockquote className="space-y-2">
-          <p suppressHydrationWarning className="text-lg">
+          <p className="text-lg" suppressHydrationWarning>
             &ldquo;{quote.text}&rdquo;
           </p>
           <p
-            suppressHydrationWarning
             className="text-sm font-cal tracking-wider"
+            suppressHydrationWarning
           >
             –{quote.author}
           </p>

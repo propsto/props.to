@@ -12,8 +12,8 @@
     "allowJs": true,
     "jsx": "preserve",
     "types": [
-      "@propsto/logger",
-      "../../global.d.ts"
+      "../../global.d.ts",
+      "@propsto/logger"
     ],
     "lib": [
       "DOM",
@@ -29,7 +29,7 @@
       "@root/*": [
         "../../*"
       ]
-    }
+    },
   },
   "include": [
     "src",

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@propsto/ui/utils/cn";
+import { type JSX } from "react";
 
-interface AccordionpProps {
-  children: React.ReactNode;
+interface AccordionpProps extends React.PropsWithChildren {
   title: string;
   id: string;
   active?: boolean;
@@ -28,7 +28,7 @@ export function Accordion({
         <button
           type="button"
           className="flex items-center justify-between w-full font-inter-tight text-left font-medium text-zinc-800 px-4 py-2.5"
-          onClick={(e) => {
+          onClick={e => {
             e.preventDefault();
             setAccordionOpen(!accordionOpen);
           }}
@@ -49,7 +49,7 @@ export function Accordion({
               rx="1"
               className={cn(
                 "transform origin-center transition duration-200 ease-out",
-                accordionOpen && "!rotate-180"
+                accordionOpen && "!rotate-180",
               )}
             />
             <rect
@@ -59,7 +59,7 @@ export function Accordion({
               rx="1"
               className={cn(
                 "transform origin-center rotate-90 transition duration-200 ease-out",
-                accordionOpen && "!rotate-180"
+                accordionOpen && "!rotate-180",
               )}
             />
           </svg>

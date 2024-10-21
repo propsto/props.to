@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@propsto/ui/atoms/button";
+import { type JSX } from "react";
 
 export function Cta(): JSX.Element {
   return (

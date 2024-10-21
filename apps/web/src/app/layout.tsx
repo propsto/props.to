@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Inter, Inter_Tight } from "next/font/google";
+import { type JSX } from "react";
 
 const calFont = localFont({
   src: "../../public/fonts/CalSans-SemiBold.ttf",
@@ -36,9 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>): JSX.Element {
+}: Readonly<React.PropsWithChildren>): JSX.Element {
   return (
     <html lang="en">
       <body

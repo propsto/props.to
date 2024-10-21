@@ -1,4 +1,5 @@
 import { Heading, Button, Html } from "@react-email/components";
+import { type JSX } from "react";
 
 export function WelcomeEmail(): JSX.Element {
   return (

@@ -9,7 +9,7 @@ function Card({
     <div
       className={cn(
         "bg-card text-card-foreground rounded-lg border shadow-sm",
-        className
+        className,
       )}
       {...props}
     />
@@ -30,6 +30,7 @@ function CardHeader({
 
 function CardTitle({
   className,
+  ref,
   ...props
 }: React.ComponentProps<"h3">): React.ReactNode {
   const { children } = props;
@@ -37,8 +38,9 @@ function CardTitle({
     <h3
       className={cn(
         "text-2xl font-semibold leading-none tracking-tight",
-        className
+        className,
       )}
+      ref={ref}
       {...props}
     >
       {children}

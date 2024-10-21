@@ -1,10 +1,10 @@
-import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import * as React from "react";
 import { cn } from "../utils/cn";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex overflow-hidden relative items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -30,7 +30,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 export type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
@@ -39,22 +39,44 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  progress?: number;
 }
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> & ButtonProps): React.ReactNode {
-  const Comp = asChild ? Slot : "button";
-  return (
-    <Comp
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  );
-}
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    { className, variant, size, asChild = false, progress, children, ...props },
+    ref,
+  ) => {
+    const Comp = asChild ? Slot : "button";
+    const progressValues = {
+      0: "w-[0%]",
+      1: "w-[20%]",
+      2: "w-[40%]",
+      3: "w-[60%]",
+      4: "w-[80%]",
+      5: "w-[100%]",
+    };
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      >
+        <>
+          {progress ? (
+            <div
+              className={cn(
+                "bg-primary-foreground/20 left-0 h-11 absolute",
+                progressValues[progress as keyof typeof progressValues],
+              )}
+            />
+          ) : null}
+          {children}
+        </>
+      </Comp>
+    );
+  },
+);
+Button.displayName = "Button";
 
 export { Button, buttonVariants };

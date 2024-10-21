@@ -1,6 +1,7 @@
 import Image from "next/image";
+import { type JSX } from "react";
 
-interface TestimonialProps {
+interface TestimonialProps extends React.PropsWithChildren {
   testimonial: {
     image: string;
     name: string;
@@ -8,7 +9,6 @@ interface TestimonialProps {
     link: string;
     content: string;
   };
-  children: React.ReactNode;
 }
 
 export function Testimonial({

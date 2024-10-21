@@ -1,14 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { type RefObject, useEffect, useId, useState } from "react";
+import { type JSX, type RefObject, useEffect, useId, useState } from "react";
 import { cn } from "../utils/cn";
 
 export interface AnimatedBeamProps {
   className?: string;
-  containerRef: RefObject<HTMLElement>; // Container ref
-  fromRef: RefObject<HTMLElement>;
-  toRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLDivElement | null>; // Container ref
+  fromRef: RefObject<HTMLDivElement | null>;
+  toRef: RefObject<HTMLDivElement | null>;
   curvature?: number;
   reverse?: boolean;
   pathColor?: string;
@@ -92,7 +92,7 @@ export function AnimatedBeam({
     };
 
     // Initialize ResizeObserver
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(entries => {
       // For all entries, recalculate the path
       for (const _ of entries) {
         updatePath();
@@ -123,46 +123,46 @@ export function AnimatedBeam({
   ]);
   return (
     <svg
-      fill="none"
-      width={svgDimensions.width}
-      height={svgDimensions.height}
-      xmlns="http://www.w3.org/2000/svg"
       className={cn(
         "pointer-events-none absolute left-0 top-0 transform-gpu stroke-2",
-        className
+        className,
       )}
+      fill="none"
+      height={svgDimensions.height}
       viewBox={`0 0 ${svgDimensions.width.toString()} ${svgDimensions.height.toString()}`}
+      width={svgDimensions.width}
+      xmlns="http://www.w3.org/2000/svg"
     >
       <path
         d={pathD}
         stroke={pathColor}
-        strokeWidth={pathWidth}
-        strokeOpacity={pathOpacity}
         strokeLinecap="round"
+        strokeOpacity={pathOpacity}
+        strokeWidth={pathWidth}
       />
       <path
         d={pathD}
-        strokeWidth={pathWidth}
         stroke={`url(#${id})`}
-        strokeOpacity="1"
         strokeLinecap="round"
+        strokeOpacity="1"
+        strokeWidth={pathWidth}
       />
       <defs>
         <motion.linearGradient
-          className="transform-gpu"
-          id={id}
-          gradientUnits="userSpaceOnUse"
-          initial={{
-            x1: "0%",
-            x2: "0%",
-            y1: "0%",
-            y2: "0%",
-          }}
           animate={{
             x1: gradientCoordinates.x1,
             x2: gradientCoordinates.x2,
             y1: gradientCoordinates.y1,
             y2: gradientCoordinates.y2,
+          }}
+          className="transform-gpu"
+          gradientUnits="userSpaceOnUse"
+          id={id}
+          initial={{
+            x1: "0%",
+            x2: "0%",
+            y1: "0%",
+            y2: "0%",
           }}
           transition={{
             delay,

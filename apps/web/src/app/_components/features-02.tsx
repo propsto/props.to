@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { type JSX } from "react";
 
 export function Features02(): JSX.Element {
   return (

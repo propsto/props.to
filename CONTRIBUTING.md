@@ -13,8 +13,6 @@ Contributions are what makes the open source community such an amazing place to 
     - Issues from non-core members automatically receive the `🚨 needs approval` label.
     - We greatly value new feature ideas. To ensure consistency in the product's direction, they undergo review and approval.
 
-
-
 ## Priorities
 
 <table>
@@ -177,21 +175,25 @@ If you get errors, be sure to fix them before committing.
 Do not commit your `pnpm-lock.yml` unless you've made changes to the `package.json`. If you've already committed `pnpm-lock.yml` unintentionally, follow these steps to undo:
 
 If your last commit has the `pnpm-lock.yml` file alongside other files and you only wish to uncommit the `pnpm-lock.yml`:
-   ```bash
-   git checkout HEAD~1 yarn.lock
-   git commit -m "Revert pnpm-lock.yml changes"
-   ```
-If you've pushed the commit with the `pnpm-lock.yml`:
-   1. Correct the commit locally using the above method.
-   2. Carefully force push:
 
-   ```bash
-   git push origin <your-branch-name> --force
-   ```
+```bash
+git checkout HEAD~1 yarn.lock
+git commit -m "Revert pnpm-lock.yml changes"
+```
+
+If you've pushed the commit with the `pnpm-lock.yml`:
+
+1.  Correct the commit locally using the above method.
+2.  Carefully force push:
+
+```bash
+git push origin <your-branch-name> --force
+```
 
 If `pnpm-lock.yml` was committed a while ago and there have been several commits since, you can use the following steps to revert just the `pnpm-lock.yml` changes without impacting the subsequent changes:
 
 1. **Checkout a Previous Version**:
+
    - Find the commit hash before the `pnpm-lock.yml` was unintentionally committed. You can do this by viewing the Git log:
      ```bash
      git log pnpm-lock.yml
@@ -202,6 +204,7 @@ If `pnpm-lock.yml` was committed a while ago and there have been several commits
      ```
 
 2. **Commit the Reverted Version**:
+
    - After checking out the previous version of the `pnpm-lock.yml`, commit this change:
      ```bash
      git commit -m "Revert pnpm-lock.yml to its state before unintended changes"

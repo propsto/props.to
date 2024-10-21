@@ -1,13 +1,12 @@
 "use client";
 
-import { Header } from "@components/ui/header";
+import type { JSX } from "react";
 import { Footer } from "@components/ui/footer";
+import { Header } from "@components/ui/header";
 
 export default function DefaultLayout({
   children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+}: Readonly<React.PropsWithChildren>): JSX.Element {
   return (
     <>
       <Header />

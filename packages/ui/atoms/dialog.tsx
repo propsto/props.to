@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import * as React from "react";
+import { type JSX } from "react";
 import { cn } from "../utils/cn";
 
 const Dialog = DialogPrimitive.Root;
@@ -26,14 +27,16 @@ DialogPortal.displayName = DialogPrimitive.Portal.displayName;
 
 function DialogOverlay({
   className,
+  ref,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Overlay>): React.ReactNode {
   return (
     <DialogPrimitive.Overlay
       className={cn(
         "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-opacity animate-in fade-in",
-        className
+        className,
       )}
+      ref={ref}
       {...props}
     />
   );
@@ -50,7 +53,7 @@ function DialogContent({
         className={cn(
           "fixed z-50 grid w-full scale-100 gap-4 bg-white p-6 opacity-100 animate-in fade-in-90 slide-in-from-bottom-10 sm:max-w-lg sm:rounded-lg sm:zoom-in-90 sm:slide-in-from-bottom-0",
           "dark:bg-slate-900",
-          className
+          className,
         )}
         {...props}
       >
@@ -72,7 +75,7 @@ function DialogHeader({
     <div
       className={cn(
         "flex flex-col space-y-2 text-center sm:text-left",
-        className
+        className,
       )}
       {...props}
     />
@@ -88,7 +91,7 @@ function DialogFooter({
     <div
       className={cn(
         "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-        className
+        className,
       )}
       {...props}
     />
@@ -105,7 +108,7 @@ function DialogTitle({
       className={cn(
         "text-lg font-semibold text-slate-900",
         "dark:text-slate-50",
-        className
+        className,
       )}
       {...props}
     />

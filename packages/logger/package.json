@@ -2,6 +2,7 @@
   "name": "@propsto/logger",
   "version": "1.0.0",
   "main": "index.mjs",
+  "types": "index.d.ts",
   "scripts": {
     "test": "DEBUG=* node test.mjs",
     "lint": "eslint --fix **/*.{js,mjs}"
@@ -10,7 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "debug": "4.3.5"
+    "debug": "4.3.7"
   },
   "devDependencies": {
     "@types/debug": "4.1.12"

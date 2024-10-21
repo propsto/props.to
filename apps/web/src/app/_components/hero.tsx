@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { type JSX, useRef, useState } from "react";
 import Link from "next/link";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Button } from "@propsto/ui/atoms/button";

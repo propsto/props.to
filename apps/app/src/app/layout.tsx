@@ -3,6 +3,7 @@ import "./style.css";
 
 import { Inter, Inter_Tight } from "next/font/google";
 import type { Metadata } from "next";
+import { type JSX } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,9 +26,7 @@ export const metadata: Metadata = {
 
 export function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+}: Readonly<React.PropsWithChildren>): JSX.Element {
   return (
     <html lang="en">
       <body

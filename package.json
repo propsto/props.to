@@ -3,65 +3,68 @@
   "version": "0.1.0",
   "private": true,
   "author": "Leo Giovanetti <leo@props.to>",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run --filter !@propsto/email dev",
     "debug": "turbo run --filter !@propsto/email debug",
     "dev:app": "turbo run --filter @propsto/app dev",
-    "dev:auth": "turbo run --filter @propsto/auth dev",
-    "debug:auth": "turbo run --filter @propsto/auth debug",
+    "dev:auth": "turbo run --filter @propsto/auth --filter @propsto/email dev",
+    "debug:auth": "turbo run --filter @propsto/auth --filter @propsto/email debug",
     "dev:web": "turbo run --filter @propsto/web dev",
     "debug:web": "turbo run --filter @propsto/web debug",
     "dev:email": "turbo run --filter @propsto/email dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint": "turbo run lint --force",
-    "test": "turbo run test --force",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
     "type-check": "turbo run type-check",
     "prepare": "husky"
   },
   "dependencies": {
-    "autoprefixer": "10.4.19",
+    "autoprefixer": "10.4.20",
     "cal-sans": "1.0.1",
-    "lucide-react": "0.395.0",
-    "next": "15.0.0-canary.41",
+    "lucide-react": "0.266.0-beta.0",
+    "next": "15.0.0-rc.1",
     "next-themes": "0.3.0",
-    "postcss": "8.4.38",
-    "react": "19.0.0-rc.0",
-    "react-dom": "19.0.0-rc.0",
-    "tailwind-merge": "2.3.0",
-    "tailwindcss": "3.4.4",
+    "nodemailer": "6.9.15",
+    "postcss": "8.4.41",
+    "react": "^19.0.0-rc",
+    "react-dom": "^19.0.0-rc",
+    "tailwind-merge": "2.5.2",
+    "tailwindcss": "3.4.10",
     "tailwindcss-animate": "1.0.7",
-    "typescript": "5.4.5",
-    "vitest": "1.6.0",
+    "typescript": "5.3.3",
+    "uuid": "10.0.0",
+    "vitest": "2.0.5",
     "zod": "3.23.8"
   },
   "devDependencies": {
-    "@playwright/test": "1.44.1",
+    "@playwright/test": "1.48.0",
     "@trivago/prettier-plugin-sort-imports": "4.3.0",
-    "@types/node": "20.14.2",
-    "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0",
+    "@types/node": "22.5.0",
+    "@types/nodemailer": "6.4.16",
+    "@types/react": "npm:types-react@^19.0.0-rc",
+    "@types/react-dom": "npm:types-react@^19.0.0-rc",
+    "@typescript-eslint/typescript-estree": "8.7.0",
     "eslint": "8.57.0",
     "framer-motion": "11.3.21",
-    "husky": "9.0.11",
-    "prettier": "3.3.2",
-    "tsx": "4.16.2",
-    "turbo": "2.0.14"
+    "husky": "9.1.5",
+    "prettier": "3.3.3",
+    "tsx": "4.18.0",
+    "turbo": "2.2.2"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*"
   },
   "pnpm": {
     "overrides": {
-      "next": "15.0.0-canary.41",
-      "react": "19.0.0-rc.0",
-      "react-dom": "19.0.0-rc.0",
-      "typescript": "5.4.5"
+      "next": "$next",
+      "react": "$react",
+      "react-dom": "$react-dom",
+      "eslint": "$eslint",
+      "@typescript-eslint/typescript-estree": "$@typescript-eslint/typescript-estree",
+      "typescript": "$typescript",
+      "framer-motion": "$framer-motion"
     }
   },
-  "packageManager": "pnpm@9.4.0"
+  "packageManager": "pnpm@9.11.0"
 }

@@ -15,8 +15,8 @@ export function useLongPress({
     onClick: () => void;
   };
 } {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-  const isLongPress = useRef<boolean>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const isLongPress = useRef<boolean>(null);
 
   function startPressTimer(): void {
     isLongPress.current = false;
@@ -36,7 +36,7 @@ export function useLongPress({
   }
 
   function handleOnMouseUp(): void {
-    clearTimeout(timerRef.current);
+    timerRef.current && clearTimeout(timerRef.current);
   }
 
   function handleOnTouchStart(): void {
@@ -45,7 +45,7 @@ export function useLongPress({
 
   function handleOnTouchEnd(): void {
     if (isLongPress.current) return;
-    clearTimeout(timerRef.current);
+    timerRef.current && clearTimeout(timerRef.current);
   }
 
   return {
