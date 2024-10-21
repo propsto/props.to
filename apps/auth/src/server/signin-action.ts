@@ -1,6 +1,6 @@
 "use server";
 
-import { constOther } from "@propsto/constants";
+import { constServer } from "@propsto/constants/server";
 import { getUserByEmail } from "@propsto/data/repos";
 import { logger } from "@propsto/logger?auth";
 import { redirect } from "next/navigation";
@@ -43,9 +43,8 @@ export async function signInAction(
     }
     return redirect(`/reset-password?code=no-password-set&email=${data.email}`);
   }
-  const { emailProvider } = constOther;
   let provider = "email";
-  if (signInMethod === "email" && emailProvider === "resend") {
+  if (signInMethod === "email" && constServer.EMAIL_PROVIDER === "resend") {
     provider = "resend";
   }
   logger("signInAction > signIn", provider);

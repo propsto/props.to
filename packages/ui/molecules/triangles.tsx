@@ -2,7 +2,8 @@
 
 import "./triangles.css";
 import { cva, type VariantProps } from "class-variance-authority";
-import { type JSX, type MutableRefObject } from "react";
+import { type JSX, useState, useEffect, type MutableRefObject } from "react";
+import React from "react";
 import { useDeviceSize } from "../hooks/use-device-size";
 
 export type TriangleVariantProps = VariantProps<typeof triangleVariants>;
@@ -26,16 +27,19 @@ export function Triangles({
     parentRef?: MutableRefObject<HTMLElement | null>;
   } & TriangleVariantProps
 >): JSX.Element {
+  const [maxTileX, setMaxTileX] = useState(0);
+  const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();
-  const [width, height] = parentRef?.current
-    ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
-    : [deviceWidth, deviceHeight];
-  const triangleSize = Number(triangleVariants({ size }));
-  const maxTileX = Math.ceil(width / triangleSize),
-    maxTileY = Math.ceil(height / triangleSize);
   const types = ["one", "two", "three"];
+  useEffect(() => {
+    const [width, height] = parentRef?.current
+      ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
+      : [deviceWidth, deviceHeight];
+    const triangleSize = Number(triangleVariants({ size }));
+    setMaxTileX(Math.ceil(width / triangleSize));
+    setMaxTileY(Math.ceil(height / triangleSize));
+  }, [deviceHeight, deviceWidth, parentRef, size]);
   return (
-    /** eslint-disable no-explicit-any */
     <div
       className="absolute overflow-hidden top-0 left-0 flex flex-wrap"
       style={{

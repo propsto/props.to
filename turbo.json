@@ -11,7 +11,8 @@
     "AUTH_SECRET",
     "EMAIL_FROM",
     "EMAIL_SERVER",
-    "RESEND_API_KEY"
+    "RESEND_API_KEY",
+    "VERCEL_URL"
   ],
   "tasks": {
     "@propsto/constants#check-env": {

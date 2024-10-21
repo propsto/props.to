@@ -1,4 +1,4 @@
-import { constServer } from "@propsto/constants";
+import { constServer } from "@propsto/constants/server";
 import { PasswordChanged, PasswordResetTokenEmail } from "../templates";
 import type { Email, HandleEmailEvent } from "../types";
 import { handleError } from "../utils/error-handling";

@@ -8,12 +8,12 @@ import NodemailerProvider, {
   type NodemailerConfig,
 } from "next-auth/providers/nodemailer";
 import Resend from "next-auth/providers/resend";
-import { constServer, constOther } from "@propsto/constants";
+import { constServer } from "@propsto/constants/server";
 import { type EmailConfig } from "next-auth/providers/email";
 import { logger } from "@propsto/logger?authConfig";
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
-  if (constOther.emailProvider === "resend") {
+  if (constServer.EMAIL_PROVIDER === "resend") {
     logger("resend used");
     return Resend({ apiKey: constServer.RESEND_API_KEY });
   }

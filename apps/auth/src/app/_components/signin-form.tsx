@@ -48,7 +48,8 @@ export function SigninForm({
           />
           {showPassword ? (
             <FormInputError
-              controlName="Password"
+              placeholder="Password"
+              controlName="password"
               className={cn(
                 "overflow-hidden transition-all duration-300",
                 signInMethod === "credentials"

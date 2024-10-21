@@ -62,15 +62,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {progress ? (
-          <div
-            className={cn(
-              "bg-primary-foreground/20 left-0 h-11 absolute",
-              progressValues[progress as keyof typeof progressValues],
-            )}
-          />
-        ) : null}
-        {children}
+        <>
+          {progress ? (
+            <div
+              className={cn(
+                "bg-primary-foreground/20 left-0 h-11 absolute",
+                progressValues[progress as keyof typeof progressValues],
+              )}
+            />
+          ) : null}
+          {children}
+        </>
       </Comp>
     );
   },

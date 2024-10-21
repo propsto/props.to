@@ -3,7 +3,7 @@ import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
 type FormInputErrorProps = {
-  result: PropstoFormState<Record<string, string>>;
+  result?: { errors?: SchemaToErrors<unknown> | undefined };
   isPending: boolean;
   controlName: string;
   className?: string;
@@ -30,6 +30,7 @@ export function FormInputError({
   placeholder,
   ...rest
 }: FormInputErrorProps): JSX.Element {
+  const errorKey = controlName.toLowerCase();
   return (
     <div
       className={cn("flex flex-col gap-2", className)}
@@ -42,7 +43,11 @@ export function FormInputError({
       <Input
         autoCapitalize={autocapitalize}
         autoComplete={autocomplete ?? controlName.toLowerCase()}
-        className={cn(result?.errors?.name && "!border-red-500")}
+        className={cn(
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- to be fixed
+          result?.errors?.["name" as keyof typeof result.errors] &&
+            "!border-red-500",
+        )}
         defaultValue={defaultValue}
         disabled={isPending}
         id={controlName.toLowerCase()}
@@ -51,9 +56,10 @@ export function FormInputError({
         placeholder={placeholder ?? controlName}
         type={type}
       />
-      {result?.errors?.[controlName.toLowerCase()] ? (
+      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- to be fixed */}
+      {result?.errors?.[errorKey as keyof typeof result.errors] ? (
         <p className="text-sm text-red-500 text-left">
-          {result.errors[controlName.toLowerCase()]}
+          {result.errors[errorKey as keyof typeof result.errors]}
         </p>
       ) : null}
     </div>

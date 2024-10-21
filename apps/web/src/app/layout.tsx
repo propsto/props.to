@@ -7,7 +7,7 @@ import { Inter, Inter_Tight } from "next/font/google";
 import { type JSX } from "react";
 
 const calFont = localFont({
-  src: "../../public/fonts/CalSans-SemiBold.woff2",
+  src: "../../public/fonts/CalSans-SemiBold.ttf",
   variable: "--font-cal",
   preload: true,
   display: "block",
@@ -30,6 +30,9 @@ const inter_tight = Inter_Tight({
 export const metadata: Metadata = {
   title: "Props.to",
   description: "Open Source Feedback Platform",
+  openGraph: {
+    images: ["https://props.to/api/og"],
+  },
 };
 
 export default function RootLayout({
@@ -40,7 +43,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${inter_tight.variable} ${calFont.variable} font-inter antialiased bg-white text-zinc-900 tracking-tight`}
       >
-        <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip">
+        <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip bg-white/50">
           {children}
         </div>
       </body>

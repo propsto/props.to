@@ -10,31 +10,29 @@ export async function requestEarlyAccess(
   prevState: PropstoFormState<RequestEarlyAccessFormType>,
   formData: FormData,
 ): Promise<PropstoFormState<RequestEarlyAccessFormType>> {
-  await new Promise(resolve => {
-    // TODO Remove delay
-    setTimeout(resolve, 5000);
-  });
+  const comingData = Object.fromEntries(
+    formData.entries(),
+  ) as RequestEarlyAccessFormType;
+  logger("requestEarlyAccess submit %O", comingData);
   // Parse the form data against expected schema
-  const { success, error } = RequestEarlyAccessFormSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
+  const { success, error, data } =
+    RequestEarlyAccessFormSchema.safeParse(comingData);
   if (!success) {
-    logger("signUpAction %O", error.flatten().fieldErrors);
+    logger("signUpAction %O %O", error.flatten().fieldErrors);
     return {
       errors: error.flatten().fieldErrors,
       success: false,
+      values: data,
     };
   }
   formData.set(
     "xnQsjsdp",
-    "3eb3afc7ccfde7a401ada6e6b9f9aa7c9282cde4dc2ee4a23e114ad87745f81b",
+    "5205582e0022d842036f9e00dd829d2759c77e1712eb531d8cd132bc9dd1d5a0",
   );
   formData.set("zc_gad", "");
   formData.set(
     "xmIwtLD",
-    "c5a67418196961f2e9099d9c25aa7914ac21cbab455fc50f715214cff65bea2bc3b6ffa9e0d71ff2dd61fffb4d525011",
+    "83d980870da6bef654a33c1ba4b767eb4ef63d64f7112614f01cd1f05f8e64de12a55a73d48e636f790f19756bf64c93",
   );
   formData.set("actionType", "TGVhZHM=");
   formData.set("returnURL", "null");
@@ -49,5 +47,6 @@ export async function requestEarlyAccess(
   return {
     message: "There was an error.",
     success: false,
+    values: data,
   };
 }

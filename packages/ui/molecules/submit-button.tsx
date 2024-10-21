@@ -6,7 +6,7 @@ export interface SubmitButtonProps extends React.PropsWithChildren {
   isPending: boolean;
   name?: string;
   value?: string;
-  result: PropstoFormState<Record<string, string>>;
+  result?: { success?: boolean; message?: string; button?: string };
   progress?: number;
   disabled?: boolean;
 }
@@ -25,7 +25,7 @@ export function SubmitButton({
       aria-disabled={isPending}
       disabled={disabled}
       name={name}
-      progress={progress}
+      progress={result?.success !== undefined ? progress : undefined}
       type="submit"
       value={value}
     >

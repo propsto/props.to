@@ -1,11 +1,11 @@
-import { constOther } from "@propsto/constants";
+import { constOther } from "@propsto/constants/other";
 import { Button } from "@propsto/ui/atoms";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { type JSX } from "react";
 
 function getErrorMessage(code = ""): string {
-  const message = constOther.errorMessages[code];
+  const message = constOther.errorCodes[code];
   if (!message) return "Something went wrong.";
   return message;
 }

@@ -1,515 +1,238 @@
 "use client";
 
-import { useState, type JSX } from "react";
-import { Accordion } from "@components/accordion";
-import { Tooltip } from "@components/tooltip";
+import { cn } from "@propsto/ui/utils/cn";
+import { CheckCircle2, CircleDollarSign, X } from "lucide-react";
+import { type JSX } from "react";
+import { Tooltip } from "./tooltip";
+
+interface Tier {
+  price: string;
+  priceSubtitle: string;
+  highlight?: string;
+  footer: string;
+}
+
+const tiers: Record<string, Tier> = {
+  INDIVIDUAL: {
+    price: "Free",
+    priceSubtitle: "Free for ever",
+    highlight: "MVP",
+    footer: "Working on it right now. Be sure to request early access!",
+  },
+  ORGANIZATION: {
+    price: "TBD",
+    priceSubtitle: "a.k.a. hosted (company.props.to)",
+    footer: "This will come as the first expansion of the MVP.",
+  },
+  ENTERPRISE: {
+    price: "TBD",
+    priceSubtitle: "a.k.a hosted/self-hosted license",
+    footer:
+      "After the first expansion, this should not be that much additional work.",
+  },
+};
+
+// Define the FeaturesState type
+type FeaturesState = "no" | "yes" | "paid";
+
+// Create a utility type to construct a tuple of the same length as the keys of an object
+type FixedLengthTuple<T extends readonly string[], U> = {
+  [K in keyof T]: U;
+};
+
+// Extract the keys of the tiers object as a tuple of strings
+type TierKeys = keyof typeof tiers extends infer K ? K[] : never;
+
+// Create a TiersTuple type using the keys of the `tiers` object
+type TiersTuple = FixedLengthTuple<
+  TierKeys,
+  FeaturesState | [FeaturesState, string]
+>;
+
+// Define the FeatureItem type
+type FeatureItem = [string, TiersTuple];
+
+const features: FeatureItem[] = [
+  ["Public user profile", ["yes", "yes", "yes"]],
+  ["Embedding capabilities", ["yes", "yes", "yes"]],
+  ["Customize profile design", ["paid", "yes", "yes"]],
+  ["Custom feedback links in profile", ["paid", "yes", "yes"]],
+  [
+    "Integrate other props.to instances",
+    [
+      "yes",
+      [
+        "no",
+        "No third-party props.to is thought to be integrated in this tier",
+      ],
+      [
+        "no",
+        "No third-party props.to is thought to be integrated in this tier",
+      ],
+    ],
+  ],
+  ["API access", ["paid", "yes", "yes"]],
+  [
+    "Single social network integration",
+    [
+      "yes",
+      [
+        "no",
+        "Personal feedback from social networks only allowed outside organizations",
+      ],
+      [
+        "no",
+        "Personal feedback from social networks only allowed outside organizations",
+      ],
+    ],
+  ],
+  ["Additional integrations", ["paid", "yes", "yes"]],
+  [
+    "Custom feedback values",
+    ["no", ["yes", "High-level"], ["yes", "Low-level"]],
+  ],
+  ["App store", ["yes", "yes", "yes"]],
+  ["Single Sign-On", ["no", "yes", "yes"]],
+  ["AI assistence", ["no", "yes", "yes"]],
+  ["White labeling", ["no", "yes", "yes"]],
+  ["Workflows", ["no", "no", "yes"]],
+] as const;
+
+function FeatureState({
+  state,
+  recursion,
+}: {
+  state: FeaturesState | [FeaturesState, string];
+  recursion?: boolean;
+}): React.ReactNode {
+  return (
+    <>
+      {state === "yes" && <CheckCircle2 className="size-5 mb-0.5" />}
+      {state === "no" && (
+        <X className={cn("size-5", recursion ? "mb-px" : "mb-0.5")} />
+      )}
+      {state === "paid" && (
+        <Tooltip
+          content="Extra fee"
+          id={`paid${Math.random().toString()}`}
+          className="no-underline"
+        >
+          <div className="flex border-b border-dotted border-gray-500">
+            <CircleDollarSign className="size-5 text-gray-600 mb-0.5" />
+            <span className="text-sm">*</span>
+          </div>
+        </Tooltip>
+      )}
+      {typeof state === "object" ? (
+        <Tooltip
+          content={state[1]}
+          id={`paid${Math.random().toString()}`}
+          className="no-underline"
+        >
+          <div className="flex border-b border-dotted border-gray-500">
+            <FeatureState state={state[0]} recursion />
+            <span className="text-sm">*</span>
+          </div>
+        </Tooltip>
+      ) : null}
+    </>
+  );
+}
 
 export function PricingTabs(): JSX.Element {
-  const [isAnnual, setIsAnnual] = useState<boolean>(true);
-
-  const faqs = [
-    {
-      title: "Can I use the product for free?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "What payment methods can I use?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "Can I change from monthly to yearly billing?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title:
-        "Can I use the tool for personal, client, and commercial projects?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: true,
-    },
-    {
-      title: "How can I ask other questions about pricing?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-    {
-      title: "Do you offer discount for students and no-profit companies?",
-      text: "Absolutely! Grey allows you to create as many commercial graphics/images as you like, for yourself or your clients.",
-      active: false,
-    },
-  ];
-
   return (
     <section>
       <div className="py-12 md:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="relative max-w-3xl mx-auto text-center pb-12">
+          <div className="relative max-w-3xl mx-auto text-center">
             <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
-              Start your journey today
+              There&apos;s a plan for everyone
             </h2>
             <p className="text-lg text-zinc-500">
-              Start creating realtime design experiences for free. Upgrade for
-              extra features and collaboration with your team.
+              Start claiming your received feedback. Upgrade to get extra
+              features and buy a license to get them in a self-hosted props.to.
             </p>
           </div>
 
           {/* Pricing tabs component */}
-          <div className="pb-12 md:pb-20">
-            {/* Pricing toggle */}
-            <div className="flex justify-center max-w-[16rem] m-auto mb-8 lg:mb-12">
-              <div className="relative flex w-full p-1 bg-zinc-100 rounded">
-                <span
-                  className="absolute inset-0 m-1 pointer-events-none"
-                  aria-hidden="true"
-                >
-                  <span
-                    className={`absolute inset-0 w-1/2 border border-transparent [background:linear-gradient(theme(colors.white),theme(colors.white))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box] rounded shadow-sm transform transition-transform duration-150 ease-in-out ${
-                      isAnnual ? "translate-x-0" : "translate-x-full"
-                    }`}
-                  />
-                </span>
-                <button
-                  type="button"
-                  className={`relative flex-1 text-sm font-medium h-8 rounded transition-colors duration-150 ease-in-out ${
-                    isAnnual ? "text-zinc-700" : "text-zinc-400"
-                  }`}
-                  onClick={() => {
-                    setIsAnnual(true);
-                  }}
-                  aria-pressed={isAnnual}
-                >
-                  Bill Yearly{" "}
-                  <span className={isAnnual ? "text-emerald-500" : ""}>
-                    -20%
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className={`relative flex-1 text-sm font-medium h-8 rounded transition-colors duration-150 ease-in-out ${
-                    isAnnual ? "text-zinc-400" : "text-zinc-700"
-                  }`}
-                  onClick={() => {
-                    setIsAnnual(false);
-                  }}
-                  aria-pressed={isAnnual}
-                >
-                  Bill Monthly
-                </button>
-              </div>
-            </div>
-
-            <div className="max-w-sm mx-auto grid gap-6 lg:grid-cols-3 items-start lg:max-w-none">
-              {/* Pricing tab 1 */}
-              <div className="h-full">
-                <div className="relative flex flex-col h-full p-6 rounded-lg border border-transparent [background:linear-gradient(theme(colors.zinc.50),theme(colors.zinc.50))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box]">
-                  <div className="mb-4">
-                    <div className="text-lg text-zinc-900 font-semibold mb-1">
-                      Essential
-                    </div>
-                    <div className="font-inter-tight inline-flex items-baseline mb-2">
-                      <span className="text-zinc-900 font-bold text-2xl">
-                        $
-                      </span>
-                      <span className="text-zinc-900 font-bold text-3xl">
-                        {isAnnual ? "249" : "349"}
-                      </span>
-                      <span className="text-zinc-500 font-medium">/mo</span>
-                    </div>
-                    <div className="text-zinc-500">
-                      For power users who want access to creative features.
-                    </div>
-                  </div>
-                  <div className="grow">
-                    <div className="text-sm text-zinc-900 font-medium mb-4">
-                      Includes:
-                    </div>
-                    <ul className="text-zinc-600 dark:text-zinc-400 text-sm space-y-3 grow">
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="01"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited workspace boards
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="02"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited viewers
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="03"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited project templates
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="04"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Change management
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="05"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Taxonomy development
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="06"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Customer success manager
-                        </Tooltip>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="mt-8">
-                    <a
-                      className="btn text-zinc-100 bg-gradient-to-r from-zinc-700 to-zinc-900 hover:from-zinc-900 hover:to-zinc-900 w-full shadow"
-                      href="#0"
+          <section className="text-gray-700 body-font">
+            <div className="container px-5 py-24 mx-auto flex flex-wrap">
+              <div className="lg:w-1/4 mt-48 hidden lg:block">
+                <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
+                  {features.map((feat, index) => (
+                    <p
+                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                      key={index}
+                      className={cn(
+                        "text-gray-900 h-12 px-4 flex items-center justify-start",
+                        index === 0 && "-mt-px",
+                        index % 2 === 0 && "bg-gray-100",
+                      )}
                     >
-                      Try for Free
-                    </a>
-                  </div>
+                      {feat[0]}
+                    </p>
+                  ))}
                 </div>
               </div>
-
-              {/* Pricing tab 2 */}
-              <div className="h-full">
-                <div className="relative flex flex-col h-full p-6 rounded-lg bg-zinc-800">
-                  <div className="mb-4">
-                    <div className="text-lg text-zinc-200 font-semibold mb-1">
-                      Premium
-                    </div>
-                    <div className="font-inter-tight inline-flex items-baseline mb-2">
-                      <span className="text-zinc-200 font-bold text-2xl">
-                        $
-                      </span>
-                      <span className="text-zinc-200 font-bold text-3xl">
-                        {isAnnual ? "449" : "549"}
-                      </span>
-                      <span className="text-zinc-500 font-medium">/mo</span>
-                    </div>
-                    <div className="text-zinc-500">
-                      For creative organizations that need full control &
-                      support.
-                    </div>
-                  </div>
-                  <div className="grow">
-                    <div className="text-sm text-zinc-200 font-medium mb-4">
-                      Includes:
-                    </div>
-                    <ul className="text-zinc-600 dark:text-zinc-400 text-sm space-y-3 grow">
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="07"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Unlimited workspace boards
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="08"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Unlimited viewers
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="09"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Unlimited project templates
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="10"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Change management
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="11"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Taxonomy development
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="12"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                          dark
-                        >
-                          Customer success manager
-                        </Tooltip>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="mt-8">
-                    <a
-                      className="btn text-zinc-600 bg-white hover:text-zinc-900 w-full shadow"
-                      href="#0"
+              <div className="flex lg:w-3/4 w-full flex-wrap rounded-lg">
+                {Object.keys(tiers).map((tierKey, index) => {
+                  const tier = tiers[tierKey];
+                  return (
+                    <div
+                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                      key={index}
+                      className={cn(
+                        "lg:w-1/3 w-full rounded-lg mb-10",
+                        tier.highlight
+                          ? "border-2 border-gray-800 relative"
+                          : "border-gray-300",
+                        !tier.highlight &&
+                          "border-r border-b border-t border-l",
+                        index !== 0 && !tier.highlight && "lg:border-l-0",
+                      )}
                     >
-                      Try for Free
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Pricing tab 3 */}
-              <div className="h-full">
-                <div className="relative flex flex-col h-full p-6 rounded-lg border border-transparent [background:linear-gradient(theme(colors.zinc.50),theme(colors.zinc.50))_padding-box,linear-gradient(120deg,theme(colors.zinc.300),theme(colors.zinc.100),theme(colors.zinc.300))_border-box]">
-                  <div className="mb-4">
-                    <div className="text-lg text-zinc-900 font-semibold mb-1">
-                      Enterprise
+                      {tier.highlight ? (
+                        <span className="bg-gray-800 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl rounded-tr">
+                          {tier.highlight}
+                        </span>
+                      ) : null}
+                      <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
+                        <h3 className="tracking-widest">{tierKey}</h3>
+                        <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
+                          {tier.price}
+                        </h2>
+                        <span className="text-sm text-gray-600">
+                          {tier.priceSubtitle}
+                        </span>
+                      </div>
+                      {features.map((featState, indexState) => (
+                        <div
+                          // eslint-disable-next-line react/no-array-index-key -- fixed items in array
+                          key={index}
+                          className={cn(
+                            "text-gray-600 h-12 flex items-center justify-center",
+                            indexState === 0 && "border-t border-gray-300",
+                            tier.highlight && indexState === 0 && "-mt-px",
+                            indexState % 2 === 0 && "bg-gray-100",
+                          )}
+                        >
+                          <span className="lg:hidden font-bold">
+                            {featState[0]}&nbsp;
+                          </span>
+                          <FeatureState state={featState[1][index]} />
+                        </div>
+                      ))}
+                      <div className="p-6 text-center border-t border-gray-300">
+                        <p className="text-xs text-gray-500 mt-3">
+                          {tier.footer}
+                        </p>
+                      </div>
                     </div>
-                    <div className="font-inter-tight inline-flex items-baseline mb-2">
-                      <span className="text-zinc-900 font-bold text-2xl">
-                        $
-                      </span>
-                      <span className="text-zinc-900 font-bold text-3xl">
-                        {isAnnual ? "749" : "849"}
-                      </span>
-                      <span className="text-zinc-500 font-medium">/mo</span>
-                    </div>
-                    <div className="text-zinc-500">
-                      For creative organizations that need full control &
-                      support.
-                    </div>
-                  </div>
-                  <div className="grow">
-                    <div className="text-sm text-zinc-900 font-medium mb-4">
-                      Includes:
-                    </div>
-                    <ul className="text-zinc-600 dark:text-zinc-400 text-sm space-y-3 grow">
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="13"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited workspace boards
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="14"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited viewers
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="15"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Unlimited project templates
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="16"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Change management
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="17"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Taxonomy development
-                        </Tooltip>
-                      </li>
-                      <li className="flex items-center">
-                        <svg
-                          className="w-3 h-3 fill-emerald-500 mr-3 shrink-0"
-                          viewBox="0 0 12 12"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="M10.28 2.28L3.989 8.575 1.695 6.28A1 1 0 00.28 7.695l3 3a1 1 0 001.414 0l7-7A1 1 0 0010.28 2.28z" />
-                        </svg>
-                        <Tooltip
-                          id="18"
-                          content="Lorem Ipsum is simply dummy text of the printing."
-                        >
-                          Customer success manager
-                        </Tooltip>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="mt-8">
-                    <a
-                      className="btn text-zinc-100 bg-gradient-to-r from-zinc-700 to-zinc-900 hover:from-zinc-900 hover:to-zinc-900 w-full shadow"
-                      href="#0"
-                    >
-                      Try for Free
-                    </a>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
-          </div>
-
-          {/* FAQs */}
-          <div className="max-w-2xl mx-auto">
-            <div className="space-y-2">
-              {faqs.map((faq, index) => (
-                <Accordion
-                  key={faq.title}
-                  title={faq.title}
-                  id={`faqs-${index.toString()}`}
-                  active={faq.active}
-                >
-                  {faq.text}
-                </Accordion>
-              ))}
-            </div>
-          </div>
+          </section>
         </div>
       </div>
     </section>

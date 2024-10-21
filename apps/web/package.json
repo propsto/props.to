@@ -11,17 +11,20 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@headlessui/react": "2.0.4"
+    "framer-motion": "*"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@propsto/constants": "workspace:*",
     "@types/node": "*",
     "@types/react": "npm:types-react@^19.0.0-rc",
     "@types/react-dom": "npm:types-react@^19.0.0-rc",
+    "@vercel/og": "*",
     "autoprefixer": "*",
+    "cal-sans": "*",
     "eslint": "*",
     "lucide-react": "*",
     "next": "*",

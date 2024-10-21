@@ -1,14 +1,14 @@
 import { z } from "zod";
 
 export const RequestEarlyAccessFormSchema = z.object({
-  firstName: z
-    .string()
-    .min(5, "Your first name must have at least 5 characters"),
-  lastName: z.string().min(5, "Your last name must have at least 5 characters"),
-  email: z.string().email("Please enter a valid email.").trim(),
-  projectDetails: z
-    .string()
-    .min(50, "Your project details must have at least 50 characters"),
+  "First Name": z
+    .string({ required_error: "First name is required" })
+    .min(1, { message: "You must enter a valid first name" }),
+  "Last Name": z
+    .string({ required_error: "Last name is required" })
+    .min(1, { message: "You must enter a valid last name" }),
+  Email: z.string().email("Please enter a valid email.").trim(),
+  Description: z.string().optional(),
 });
 
 export type RequestEarlyAccessFormType = z.infer<

@@ -1,4 +1,4 @@
-import { constOther } from "@propsto/constants";
+import { constOther } from "@propsto/constants/other";
 import { validPasswordResetToken } from "@propsto/data/utils/password-reset-token";
 import { redirect } from "next/navigation";
 import { z } from "zod";
