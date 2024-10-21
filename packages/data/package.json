@@ -19,14 +19,14 @@
   "dependencies": {
     "@auth/core": "0.34.2",
     "@prisma/extension-accelerate": "1.1.0",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "2.4.3",
     "@auth/prisma-adapter": "2.4.2"
   },
   "devDependencies": {
-    "@prisma/client": "5.20.0",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/uuid": "^10.0.0",
-    "prisma": "5.20.0"
+    "@prisma/client": "5.21.1",
+    "@types/bcryptjs": "2.4.6",
+    "@types/uuid": "10.0.0",
+    "prisma": "5.21.1"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

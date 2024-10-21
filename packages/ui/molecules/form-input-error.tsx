@@ -3,7 +3,7 @@ import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
 type FormInputErrorProps = {
-  result?: { errors?: SchemaToErrors<unknown> | undefined };
+  result: PropstoFormState<Record<string, string>>;
   isPending: boolean;
   controlName: string;
   className?: string;
@@ -43,11 +43,7 @@ export function FormInputError({
       <Input
         autoCapitalize={autocapitalize}
         autoComplete={autocomplete ?? controlName.toLowerCase()}
-        className={cn(
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- to be fixed
-          result?.errors?.["name" as keyof typeof result.errors] &&
-            "!border-red-500",
-        )}
+        className={cn(result?.errors?.[errorKey] && "!border-red-500")}
         defaultValue={defaultValue}
         disabled={isPending}
         id={controlName.toLowerCase()}
@@ -56,10 +52,9 @@ export function FormInputError({
         placeholder={placeholder ?? controlName}
         type={type}
       />
-      {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- to be fixed */}
-      {result?.errors?.[errorKey as keyof typeof result.errors] ? (
+      {result?.errors?.[errorKey] ? (
         <p className="text-sm text-red-500 text-left">
-          {result.errors[errorKey as keyof typeof result.errors]}
+          {result.errors[errorKey]}
         </p>
       ) : null}
     </div>
