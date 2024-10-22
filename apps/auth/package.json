@@ -14,7 +14,7 @@
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
     "next-auth": "beta",
-    "nodemailer": "6.9.14"
+    "@stepperize/react": "3.1.1"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",
@@ -24,12 +24,14 @@
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@types/node": "*",
+    "@types/nodemailer": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
     "autoprefixer": "*",
     "lucide-react": "*",
     "next": "*",
     "next-themes": "*",
+    "nodemailer": "*",
     "postcss": "*",
     "react": "*",
     "react-dom": "*",

@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-interface TestimonialProps {
+type TestimonialProps = Readonly<React.PropsWithChildren> & {
   testimonial: {
     image: string;
     name: string;
@@ -8,8 +8,7 @@ interface TestimonialProps {
     link: string;
     content: string;
   };
-  children: React.ReactNode;
-}
+};
 
 export function Testimonial({
   testimonial,

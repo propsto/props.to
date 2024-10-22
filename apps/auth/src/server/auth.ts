@@ -2,9 +2,9 @@ import NextAuth from "next-auth";
 import "next-auth/jwt";
 import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig } from "next-auth";
-import { PrismaClient, PrismaAdapter } from "@propsto/data";
+import { PropstoAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
-import EmailProvider, {
+import NodemailerProvider, {
   type NodemailerConfig,
 } from "next-auth/providers/nodemailer";
 import Resend from "next-auth/providers/resend";
@@ -12,14 +12,13 @@ import { constServer } from "@propsto/constants/server";
 import { type EmailConfig } from "next-auth/providers/email";
 import { logger } from "@propsto/logger?authConfig";
 
-const prisma = new PrismaClient();
-
 function getEmailProvider(): EmailConfig | NodemailerConfig {
   if (constServer.EMAIL_PROVIDER === "resend") {
     logger("resend used");
     return Resend({ apiKey: constServer.RESEND_API_KEY });
   }
-  return EmailProvider({
+  logger("nodemailer used");
+  return NodemailerProvider({
     id: "email",
     name: "email",
     server: constServer.EMAIL_SERVER,
@@ -28,7 +27,7 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
 }
 
 const config = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PropstoAdapter(),
   providers: [
     getEmailProvider(),
     Passkey,
@@ -68,6 +67,7 @@ const config = {
   session: { strategy: "jwt" },
   pages: {
     signIn: "/",
+    newUser: "/welcome",
   },
   events: {
     createUser(message) {

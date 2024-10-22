@@ -4,13 +4,12 @@ import { useState } from "react";
 import { motion, type Variants } from "framer-motion";
 import { cn } from "@propsto/ui/utils/cn";
 
-interface TooltipProps {
-  children: React.ReactNode;
+type TooltipProps = Readonly<React.PropsWithChildren> & {
   content: string;
   id: string;
   dark?: boolean;
   className?: string;
-}
+};
 
 const tooltipVariants: Variants = {
   initial: {
@@ -50,7 +49,7 @@ export function Tooltip({
         className={cn(
           "block text-left text-zinc-500 underline decoration-dotted underline-offset-4 cursor-help",
           dark ? "decoration-zinc-600 " : "decoration-zinc-300",
-          className
+          className,
         )}
         aria-describedby={`tooltip-${id}`}
         onMouseEnter={() => {

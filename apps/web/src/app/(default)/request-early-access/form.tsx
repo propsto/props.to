@@ -1,14 +1,15 @@
 "use client";
 
 import { Button, Input, Textarea } from "@propsto/ui/atoms";
-import { LoaderCircle, CheckCircle2, XCircle } from "lucide-react";
-import { useActionState } from "react";
+import { useResetableActionState } from "@propsto/ui/hooks/use-resetable-action-state";
+import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
+import { type JSX } from "react";
 import { requestEarlyAccess } from "./action";
 
 export function Form(): JSX.Element {
-  const [result, action, isPending] = useActionState(
+  const [result, action, isPending] = useResetableActionState(
     requestEarlyAccess,
-    undefined
+    undefined,
   );
 
   return (

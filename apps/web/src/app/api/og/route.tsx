@@ -9,13 +9,13 @@ export function GET(): ImageResponse {
       ? `https://props.to`
       : `http://localhost:3001`;
   const calSans = fs.readFileSync(
-    path.resolve("./public/fonts/CalSans-SemiBold.ttf")
+    path.resolve("./public/fonts/CalSans-SemiBold.ttf"),
   );
   const interRegular = fs.readFileSync(
-    path.resolve("./public/fonts/Inter-Regular.ttf")
+    path.resolve("./public/fonts/Inter-Regular.ttf"),
   );
   const interSemiBold = fs.readFileSync(
-    path.resolve("./public/fonts/Inter-SemiBold.ttf")
+    path.resolve("./public/fonts/Inter-SemiBold.ttf"),
   );
   return new ImageResponse(
     (
@@ -115,6 +115,6 @@ export function GET(): ImageResponse {
           style: "normal",
         },
       ],
-    }
+    },
   );
 }

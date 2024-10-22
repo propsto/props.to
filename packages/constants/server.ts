@@ -1,7 +1,7 @@
 import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
 import { config } from "dotenv";
+import { z } from "zod";
 import { constCommon } from "./common";
 
 // Load .env
@@ -18,10 +18,11 @@ export const constServer = createEnv({
     DATABASE_URL: z.string().url(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_SERVER: z.string().optional(),
-    EMAIL_FROM: z.string().optional(),
+    EMAIL_FROM: z.string(),
     AUTH_SECRET: z
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
+    AUTH_URL: z.string().url(),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
     EMAIL_PROVIDER: z.string(),
   },

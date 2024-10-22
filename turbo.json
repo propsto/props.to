@@ -5,6 +5,7 @@
     ".env"
   ],
   "globalEnv": [
+    "AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",
     "AUTH_SECRET",
