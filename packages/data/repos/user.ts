@@ -4,7 +4,7 @@ import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
 import { AdapterAccount } from "@auth/core/adapters";
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 
 export async function createUser(data: { email: string }) {
   try {
@@ -29,7 +29,7 @@ export async function getUser(data: { id: string }) {
 
 export async function getUserByEmail(
   email: string,
-  select?: Prisma.UserSelect,
+  select?: Parameters<typeof db.user.findUnique>[0]["select"],
 ) {
   try {
     logger("getUserByEmail", email);
@@ -38,6 +38,43 @@ export async function getUserByEmail(
       select,
     });
     return handleSuccess(existingUser);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+export async function getUserByEmailAndPassword({
+  email,
+  password,
+}: {
+  email: unknown;
+  password: unknown;
+}) {
+  try {
+    const hashedPassword = await hash(password as string, 10);
+    logger("getUserByEmailAndPassword", email, hashedPassword);
+    const existingUser = await db.user.findUnique({
+      where: { email: email as string },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        image: true,
+        password: true,
+        username: true,
+        dateOfBirth: true,
+      },
+    });
+    if (!existingUser) throw Error("User does not exist");
+    const { password: userPassword, dateOfBirth, ...rest } = existingUser;
+    if (!userPassword) throw Error("Password is not defined");
+    const comparePassword = await compare(password as string, userPassword);
+    if (!comparePassword) throw Error("Password is not correct");
+    return handleSuccess({
+      ...rest,
+      dateOfBirth: dateOfBirth && new Date(dateOfBirth),
+    });
   } catch (e) {
     return handleError(e);
   }

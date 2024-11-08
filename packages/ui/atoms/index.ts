@@ -5,3 +5,4 @@ export * from "./label";
 export * from "./logo";
 export * from "./border-beam";
 export * from "./text-area";
+export * from "./separator";

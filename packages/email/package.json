@@ -3,11 +3,12 @@
   "version": "0.0.19",
   "private": true,
   "scripts": {
+    "dotenv": "dotenv -e ../../.env",
     "build": "email build --dir templates",
-    "dev": "email dev --dir templates",
+    "start": "email dev --dir templates",
     "export": "email export",
     "lint": "eslint --fix **/*.{ts,tsx}",
-    "start": "pnpm maildev"
+    "dev": "DEBUG=@propsto:* pnpm maildev"
   },
   "dependencies": {
     "@react-email/components": "0.0.25",

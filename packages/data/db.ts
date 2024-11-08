@@ -2,7 +2,32 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient() /*.$extends({
+    result: {
+      user: {
+        name: {
+          needs: { firstName: true, lastName: true },
+          compute(user) {
+            if (!user.firstName || !user.lastName) return null;
+            return `${user.firstName} ${user.lastName}`;
+          },
+        },
+        needsOnboarding: {
+          needs: {
+            firstName: true,
+            lastName: true,
+            image: true,
+            dateOfBirth: true,
+          },
+          compute(user) {
+            return Boolean(
+              user.firstName && user.lastName && user.image && user.dateOfBirth,
+            );
+          },
+        },
+      },
+    },
+  })*/;
 };
 
 declare const globalThis: {

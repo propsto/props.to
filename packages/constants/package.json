@@ -5,8 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "lint": "eslint --fix **/*.ts",
-    "test": "pnpm tsx check-env.ts",
-    "check-env": "pnpm tsx check-env.ts"
+    "dotenv": "dotenv -e ../../.env",
+    "test": "pnpm dotenv -- pnpm tsx check-env.ts",
+    "check-env": "pnpm dotenv -- pnpm tsx check-env.ts"
   },
   "keywords": [],
   "author": "",
@@ -14,13 +15,13 @@
   "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@types/node": "*",
     "tsx": "*",
     "typescript": "*",
     "zod": "*"
   },
   "dependencies": {
-    "@t3-oss/env-core": "0.10.1",
-    "dotenv": "16.4.5"
+    "@t3-oss/env-core": "0.10.1"
   },
   "devDependencies": {
     "typescript": "5.4.5"

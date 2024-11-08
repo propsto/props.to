@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import "next-auth/jwt";
 import Passkey from "next-auth/providers/passkey";
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig, User as NextAuthUser } from "next-auth";
 import { PropstoAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
 import NodemailerProvider, {
@@ -11,6 +11,7 @@ import Resend from "next-auth/providers/resend";
 import { constServer } from "@propsto/constants/server";
 import { type EmailConfig } from "next-auth/providers/email";
 import { logger } from "@propsto/logger?authConfig";
+import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
   if (constServer.EMAIL_PROVIDER === "resend") {
@@ -33,32 +34,32 @@ const config = {
     Passkey,
     Credentials({
       credentials: {
-        email: { type: "email" },
-        password: { type: "password" },
+        email: { type: "email", required: true },
+        password: { type: "password", required: true },
       },
-      authorize: () => {
-        return { name: "Leo", email: "hello@leog.me", image: "", id: "1" };
+      authorize: async ({ email, password }) => {
+        if (!email || !password) return null;
+        const user = await getUserByEmailAndPassword({ email, password });
+        if (user.data) return user.data;
+        return null;
       },
     }),
   ],
   callbacks: {
-    authorized({ request, auth }) {
-      const { pathname } = request.nextUrl;
-      if (pathname === "/middleware-example") return Boolean(auth);
-      return true;
+    authorized({ auth }) {
+      return Boolean(auth);
     },
-    jwt: ({ token, user }) => {
+    jwt: ({ token }) => {
       if (!token.email) {
         return {};
       }
-      token.user = user;
       return token;
     },
     session({ session, token }) {
-      if (token.accessToken) {
-        session.accessToken = token.accessToken;
-      }
-      return session;
+      return {
+        ...session,
+        user: (token.user ?? session.user) as NextAuthUser,
+      };
     },
   },
   experimental: {
@@ -88,13 +89,14 @@ const config = {
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
 
 declare module "next-auth" {
-  interface Session {
-    accessToken?: string;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    accessToken?: string;
+  interface User {
+    id?: string;
+    name?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    dateOfBirth?: Date | null;
+    username?: string;
+    email?: string | null;
+    image?: string | null;
   }
 }

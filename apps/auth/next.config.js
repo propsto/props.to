@@ -1,4 +1,6 @@
 /** @type {import("next").NextConfig} */
 module.exports = {
-  trailingSlash: true,
+  images: {
+    remotePatterns: [{ hostname: "*.public.blob.vercel-storage.com" }],
+  },
 };

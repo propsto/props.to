@@ -50,12 +50,6 @@ export function SigninForm({
             <FormInputError
               placeholder="Password"
               controlName="password"
-              className={cn(
-                "overflow-hidden transition-all duration-300",
-                signInMethod === "credentials"
-                  ? "max-h-[100px] opacity-100 translate-x-0"
-                  : "max-h-0 opacity-0 -translate-x-full",
-              )}
               isPending={isPending}
               result={result}
               type="password"

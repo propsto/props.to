@@ -8,11 +8,13 @@
     "AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",
+    "DIRECT_URL",
     "AUTH_SECRET",
     "EMAIL_FROM",
     "EMAIL_SERVER",
     "RESEND_API_KEY",
-    "VERCEL_URL"
+    "VERCEL_URL",
+    "PROPSTO_APP_URL"
   ],
   "tasks": {
     "@propsto/constants#check-env": {
@@ -46,13 +48,6 @@
       "cache": false
     },
     "lint": {},
-    "debug": {
-      "dependsOn": [
-        "@propsto/constants#check-env"
-      ],
-      "cache": false,
-      "persistent": true
-    },
     "test": {},
     "type-check": {}
   }

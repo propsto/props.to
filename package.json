@@ -6,33 +6,35 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run --filter !@propsto/email dev",
-    "debug": "turbo run --filter !@propsto/email debug",
     "dev:app": "turbo run --filter @propsto/app dev",
     "dev:auth": "turbo run --filter @propsto/auth --filter @propsto/email dev",
-    "debug:auth": "turbo run --filter @propsto/auth --filter @propsto/email debug",
-    "dev:web": "turbo run --filter @propsto/web dev",
-    "debug:web": "turbo run --filter @propsto/web debug",
     "dev:email": "turbo run --filter @propsto/email dev",
+    "dev:web": "turbo run --filter @propsto/web dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "health": "turbo run lint type-check",
     "lint": "turbo run lint --force",
+    "prepare": "husky",
     "test": "turbo run test --force",
-    "type-check": "turbo run type-check",
-    "prepare": "husky"
+    "type-check": "turbo run type-check"
   },
   "dependencies": {
+    "@upstash/ratelimit": "2.0.4",
+    "@vercel/blob": "0.25.1",
+    "@vercel/kv": "3.0.0",
     "autoprefixer": "10.4.19",
     "cal-sans": "1.0.1",
     "lucide-react": "0.395.0",
-    "next": "15.0.0-canary.41",
+    "next": "15.0.2",
     "next-themes": "0.3.0",
     "nodemailer": "6.9.15",
     "postcss": "8.4.38",
     "react": "19.0.0-rc.0",
     "react-dom": "19.0.0-rc.0",
+    "react-hook-form": "7.53.1",
     "tailwind-merge": "2.3.0",
     "tailwindcss": "3.4.4",
     "tailwindcss-animate": "1.0.7",
-    "typescript": "5.4.5",
+    "typescript": "5.6.3",
     "vitest": "1.6.0",
     "zod": "3.23.8"
   },
@@ -43,23 +45,26 @@
     "@types/nodemailer": "6.4.16",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
+    "@typescript-eslint/typescript-estree": "8.13.0",
+    "dotenv-cli": "7.4.2",
     "eslint": "8.57.0",
     "framer-motion": "11.3.21",
     "husky": "9.0.11",
     "prettier": "3.3.2",
     "tsx": "4.16.2",
-    "turbo": "2.0.14"
+    "turbo": "2.2.3"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*"
   },
+  "packageManager": "pnpm@9.12.3",
   "pnpm": {
     "overrides": {
-      "next": "15.0.0-canary.41",
+      "@typescript-eslint/typescript-estree": "8.13.0",
+      "next": "15.0.2",
       "react": "19.0.0-rc.0",
       "react-dom": "19.0.0-rc.0",
-      "typescript": "5.4.5"
+      "typescript": "5.6.3"
     }
-  },
-  "packageManager": "pnpm@9.4.0"
+  }
 }

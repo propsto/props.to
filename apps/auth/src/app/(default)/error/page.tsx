@@ -15,15 +15,18 @@ export default async function ErrorPage({
 }: Readonly<{
   searchParams: Promise<Record<string, string | undefined>>;
 }>): Promise<JSX.Element> {
+  const code = (await searchParams).code;
   return (
     <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
       <div className="flex flex-col items-center space-y-8">
         <TriangleAlert className="size-24 text-foreground" />
-        <h1 className="text-muted-foreground">
-          {getErrorMessage((await searchParams).code)}
-        </h1>
+        <h1 className="text-muted-foreground">{getErrorMessage(code)}</h1>
         <Button>
-          <Link href="/">Go home</Link>
+          {code === "InvalidSession" ? (
+            <Link href="/api/auth/signout">Sign out</Link>
+          ) : (
+            <Link href="/">Go home</Link>
+          )}
         </Button>
       </div>
     </div>

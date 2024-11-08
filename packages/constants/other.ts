@@ -30,7 +30,9 @@ const quotes = [
 ];
 
 const errorCodes: Record<string, string> = {
-  InvalidNewPassordToken: "The provided token is invalid",
+  InvalidNewPassordToken: "The provided token is invalid.",
+  RateLimitBlocked: "Your request was blocked by our rate limiter.",
+  InvalidSession: "Your session is not valid, please signout to continue.",
 } as const;
 
 export const constOther = { quotes, errorCodes };

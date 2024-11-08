@@ -1,12 +1,6 @@
-import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
-import { config } from "dotenv";
 import { z } from "zod";
 import { constCommon } from "./common";
-
-// Load .env
-const envPath = resolve("../../.env");
-config({ path: envPath });
 
 process.env.EMAIL_PROVIDER =
   process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"

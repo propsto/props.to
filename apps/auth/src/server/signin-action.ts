@@ -43,7 +43,8 @@ export async function signInAction(
     }
     return redirect(`/reset-password?code=no-password-set&email=${data.email}`);
   }
-  let provider = "email";
+
+  let provider: string = signInMethod;
   if (signInMethod === "email" && constServer.EMAIL_PROVIDER === "resend") {
     provider = "resend";
   }
