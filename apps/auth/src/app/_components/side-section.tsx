@@ -10,7 +10,7 @@ export function SideSection(): JSX.Element {
   return (
     <div
       ref={ref}
-      className="flex flex-col bg-secondary-background border-r border-primary/10 p-10 relative"
+      className="relative hidden h-full flex-col bg-secondary-background border-r border-primary/10 p-10 lg:flex overflow-hidden"
     >
       <Triangles parentRef={ref} />
       <div className="relative z-20 flex items-center text-lg font-medium font-cal tracking-wider">
