@@ -10,7 +10,9 @@
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": [
-      "@propsto/logger"
+      "@propsto/logger",
+      "../../global.d.ts",
+      "node"
     ]
   },
   "include": [

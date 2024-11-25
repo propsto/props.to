@@ -8,10 +8,10 @@ import {
 
 export async function requestEarlyAccess(
   prevState: PropstoFormState<RequestEarlyAccessFormType>,
-  formData: FormData
+  formData: FormData,
 ): Promise<PropstoFormState<RequestEarlyAccessFormType>> {
   const comingData = Object.fromEntries(
-    formData.entries()
+    formData.entries(),
   ) as RequestEarlyAccessFormType;
   logger("requestEarlyAccess submit %O", comingData);
   // Parse the form data against expected schema
@@ -22,17 +22,17 @@ export async function requestEarlyAccess(
     return {
       errors: error.flatten().fieldErrors,
       success: false,
-      values: comingData,
+      values: data,
     };
   }
   formData.set(
     "xnQsjsdp",
-    "5205582e0022d842036f9e00dd829d2759c77e1712eb531d8cd132bc9dd1d5a0"
+    "5205582e0022d842036f9e00dd829d2759c77e1712eb531d8cd132bc9dd1d5a0",
   );
   formData.set("zc_gad", "");
   formData.set(
     "xmIwtLD",
-    "83d980870da6bef654a33c1ba4b767eb4ef63d64f7112614f01cd1f05f8e64de12a55a73d48e636f790f19756bf64c93"
+    "83d980870da6bef654a33c1ba4b767eb4ef63d64f7112614f01cd1f05f8e64de12a55a73d48e636f790f19756bf64c93",
   );
   formData.set("actionType", "TGVhZHM=");
   formData.set("returnURL", "null");

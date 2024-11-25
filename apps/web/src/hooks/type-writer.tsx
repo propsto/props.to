@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 export const useTypeWriter = (
   words: string[],
-  { wait = 3000, speed = 150 } = {}
+  { wait = 3000, speed = 150 } = {},
 ): string => {
   const [text, setText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -30,13 +30,13 @@ export const useTypeWriter = (
       } else if (isDeleting && text === "") {
         clearInterval(intervalRef.current);
         setIsDeleting(false);
-        setWordIndex((prevIndex) => (prevIndex + 1) % words.length);
+        setWordIndex(prevIndex => (prevIndex + 1) % words.length);
       }
     };
 
     intervalRef.current = setInterval(
       handleTyping,
-      isDeleting ? speed / 2 : speed
+      isDeleting ? speed / 2 : speed,
     );
 
     return () => {

@@ -85,7 +85,8 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('./node_modules/cal-sans/fonts/webfonts/CalSans-SemiBold.woff2') format('woff2');
+    src: url("./node_modules/cal-sans/fonts/webfonts/CalSans-SemiBold.woff2")
+      format("woff2");
   }
   .triangle {
     @apply scale-0 size-0 float-right animate-grow border-solid flex-1 border-t-transparent;

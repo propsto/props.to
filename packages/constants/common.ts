@@ -1,15 +1,10 @@
-import { resolve } from "node:path";
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-import { config } from "dotenv";
-
-// Load .env
-const envPath = resolve("../../.env");
-config({ path: envPath });
 
 export const constCommon = createEnv({
   server: {
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
+    PROPSTO_APP_URL: z.string().url(),
   },
 
   /**

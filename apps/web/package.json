@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "PORT=3001 next dev",
-    "debug": "DEBUG=@propsto:* pnpm dev",
+    "dev": "DEBUG=@propsto:* PORT=3001 next dev",
     "lint": "next lint",
     "start": "next start",
     "type-check": "tsc --noEmit"
