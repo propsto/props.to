@@ -1,4 +1,4 @@
-const quotes = [
+const quotes: { text: string; author?: string }[] = [
   {
     text: "We all need people who will give us feedback. That's how we improve.",
     author: "Bill Gates",
