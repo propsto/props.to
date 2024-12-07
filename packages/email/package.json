@@ -3,22 +3,25 @@
   "version": "0.0.19",
   "private": true,
   "scripts": {
-    "dotenv": "dotenv -e ../../.env",
     "build": "email build --dir templates",
-    "start": "email dev --dir templates",
+    "dev": "DEBUG=@propsto:* pnpm maildev",
+    "dotenv": "dotenv -e ../../.env",
     "export": "email export",
     "lint": "eslint --fix **/*.{ts,tsx}",
-    "dev": "DEBUG=@propsto:* pnpm maildev"
+    "start": "email dev --dir templates"
   },
   "dependencies": {
-    "@react-email/components": "0.0.25",
-    "react-email": "3.0.1",
-    "resend": "4.0.0"
+    "@react-email/components": "0.0.30",
+    "react-email": "3.0.3",
+    "resend": "4.0.1"
+  },
+  "devDependencies": {
+    "maildev": "2.1.0"
   },
   "peerDependencies": {
-    "@propsto/logger": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "@types/nodemailer": "*",
     "@types/react": "*",
@@ -27,8 +30,5 @@
     "nodemailer": "*",
     "react": "*",
     "react-dom": "*"
-  },
-  "devDependencies": {
-    "maildev": "2.1.0"
   }
 }

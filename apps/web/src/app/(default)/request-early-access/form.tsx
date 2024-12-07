@@ -3,10 +3,9 @@
 import { Button, Input, Textarea } from "@propsto/ui/atoms";
 import { useResetableActionState } from "@propsto/ui/hooks/use-resetable-action-state";
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
-import { type JSX } from "react";
 import { requestEarlyAccess } from "./action";
 
-export function Form(): JSX.Element {
+export function Form(): React.ReactElement {
   const [result, action, isPending] = useResetableActionState(
     requestEarlyAccess,
     undefined,

@@ -2,7 +2,6 @@ import { constOther } from "@propsto/constants/other";
 import { validPasswordResetToken } from "@propsto/data/utils/password-reset-token";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { type JSX } from "react";
 import { NewPasswordForm } from "@components/new-password-form";
 
 const newPasswordParamsSchema = z.object({
@@ -13,7 +12,7 @@ export default async function NewPasswordPage({
   searchParams,
 }: Readonly<{
   searchParams: Promise<Record<string, string>>;
-}>): Promise<JSX.Element> {
+}>): Promise<React.ReactElement> {
   const { token } = newPasswordParamsSchema.parse(await searchParams);
   if (!token)
     redirect(`/error?code=${constOther.errorCodes.InvalidNewPassordToken}`);

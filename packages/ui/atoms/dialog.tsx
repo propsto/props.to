@@ -13,7 +13,7 @@ const DialogClose = DialogPrimitive.Close;
 function DialogPortal({
   children,
   ...props
-}: Readonly<DialogPrimitive.DialogPortalProps>): JSX.Element {
+}: Readonly<DialogPrimitive.DialogPortalProps>): React.ReactElement {
   return (
     <DialogPrimitive.Portal {...props}>
       <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -67,7 +67,7 @@ function DialogContent({
 function DialogHeader({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return (
     <div
       className={cn(
@@ -83,7 +83,7 @@ DialogHeader.displayName = "DialogHeader";
 function DialogFooter({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
+}: React.HTMLAttributes<HTMLDivElement>): React.ReactElement {
   return (
     <div
       className={cn(

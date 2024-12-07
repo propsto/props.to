@@ -1,10 +1,10 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { type JSX, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { SunMoon, Sun, Moon } from "lucide-react";
 
-export default function ThemeToggle(): JSX.Element | null {
+export default function ThemeToggle(): React.ReactElement | null {
   const { theme = "system", setTheme } = useTheme();
   const [nextValue, setNextValue] = useState<string>("system");
   const [systemDark, setSystemDark] = useState(false);

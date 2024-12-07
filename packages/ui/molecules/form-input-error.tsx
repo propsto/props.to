@@ -28,7 +28,7 @@ export function FormInputError({
   style,
   onChange,
   ...rest
-}: FormInputErrorProps): JSX.Element {
+}: FormInputErrorProps): React.ReactElement {
   return (
     <div
       className={cn("flex flex-col gap-2", className)}

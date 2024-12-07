@@ -2,7 +2,7 @@
 
 import "./triangles.css";
 import { cva, type VariantProps } from "class-variance-authority";
-import { type JSX, useState, useEffect, type MutableRefObject } from "react";
+import { useState, useEffect, type MutableRefObject } from "react";
 import React from "react";
 import { useDeviceSize } from "../hooks/use-device-size";
 
@@ -26,7 +26,7 @@ export function Triangles({
   {
     parentRef?: MutableRefObject<HTMLElement | null>;
   } & TriangleVariantProps
->): JSX.Element {
+>): React.ReactElement {
   const [maxTileX, setMaxTileX] = useState(0);
   const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();

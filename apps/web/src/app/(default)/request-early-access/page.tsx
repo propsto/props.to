@@ -5,7 +5,7 @@ import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Form } from "./form";
 import { Community } from "./community";
 
-export default function RequestEarlyAccess(): JSX.Element {
+export default function RequestEarlyAccess(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <>

@@ -9,7 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { Quote } from "@propsto/ui/molecules/quote";
 import { useTypeWriter } from "@/hooks/type-writer";
 
-export function Hero(): JSX.Element {
+export function Hero(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <div ref={ref}>

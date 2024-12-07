@@ -1,4 +1,3 @@
-import React, { type JSX } from "react";
 import { cn } from "../utils/cn";
 
 interface BorderBeamProps {
@@ -21,7 +20,7 @@ export function BorderBeam({
   colorFrom = "#ffaa40",
   colorTo = "#9c40ff",
   delay = 0,
-}: Readonly<BorderBeamProps>): JSX.Element {
+}: Readonly<BorderBeamProps>): React.ReactElement {
   return (
     <div
       className={cn(

@@ -1,5 +1,4 @@
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
-import { type JSX } from "react";
 import { ButtonProgress } from "../atoms";
 
 export interface SubmitButtonProps extends React.PropsWithChildren {
@@ -19,7 +18,7 @@ export function SubmitButton({
   value,
   progress,
   disabled,
-}: Readonly<SubmitButtonProps>): JSX.Element {
+}: Readonly<SubmitButtonProps>): React.ReactElement {
   return (
     <ButtonProgress
       aria-disabled={isPending}

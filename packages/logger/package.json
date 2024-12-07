@@ -4,11 +4,11 @@
   "private": true,
   "main": "index.mjs",
   "scripts": {
-    "test": "DEBUG=* node test.mjs",
-    "lint": "eslint --fix **/*.{js,mjs}"
+    "lint": "eslint --fix **/*.{js,mjs}",
+    "test": "DEBUG=* node test.mjs"
   },
   "dependencies": {
-    "debug": "4.3.7"
+    "debug": "4.4.0"
   },
   "devDependencies": {
     "@types/debug": "4.1.12"

@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
-import { type JSX } from "react";
 import { auth } from "@/server/auth";
 import { SigninForm } from "@components/signin-form";
 
-export default async function SigninPage(): Promise<JSX.Element> {
+export default async function SigninPage(): Promise<React.ReactElement> {
   const session = await auth();
   if (session?.user) redirect("/welcome");
 

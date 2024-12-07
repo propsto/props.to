@@ -71,7 +71,7 @@ export function WelcomeStepper({
   user,
 }: Readonly<{
   user: Required<Omit<User, "name">>;
-}>): JSX.Element {
+}>): React.ReactElement {
   const stepper = useStepper();
   const form = useForm<PersonalFormValues>({
     resolver: zodResolver(stepper.current.schema),
@@ -175,7 +175,7 @@ export function WelcomeStepper({
   );
 }
 
-function PersonalComponent(): JSX.Element {
+function PersonalComponent(): React.ReactElement {
   const {
     register,
     formState: { errors },
@@ -312,7 +312,7 @@ function PersonalComponent(): JSX.Element {
   );
 }
 
-function AccountComponent(): JSX.Element {
+function AccountComponent(): React.ReactElement {
   const {
     register,
     formState: { errors },
@@ -376,6 +376,6 @@ function AccountComponent(): JSX.Element {
   );
 }
 
-function CompleteComponent(): JSX.Element {
+function CompleteComponent(): React.ReactElement {
   return <div className="text-center">Thank you! Your order is complete.</div>;
 }

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 export function RootLayout({
   children,
-}: Readonly<React.PropsWithChildren>): JSX.Element {
+}: Readonly<React.PropsWithChildren>): React.ReactElement {
   return (
     <html lang="en">
       <body

@@ -6,9 +6,9 @@ import { cn } from "../utils/cn";
 
 export interface AnimatedBeamProps {
   className?: string;
-  containerRef: RefObject<HTMLElement>; // Container ref
-  fromRef: RefObject<HTMLElement>;
-  toRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>; // Container ref
+  fromRef: RefObject<HTMLElement | null>;
+  toRef: RefObject<HTMLElement | null>;
   curvature?: number;
   reverse?: boolean;
   pathColor?: string;
@@ -46,7 +46,7 @@ export function AnimatedBeam({
   endYOffset = 0,
   dotted = false,
   dotSpacing = 6,
-}: AnimatedBeamProps): JSX.Element {
+}: AnimatedBeamProps): React.ReactElement {
   const id = useId();
   const [pathD, setPathD] = useState("");
 
@@ -210,7 +210,7 @@ export function Circle({
   className?: string;
   children?: React.ReactNode;
   innerRef?: React.Ref<HTMLDivElement>;
-}): JSX.Element {
+}): React.ReactElement {
   return (
     <div
       ref={innerRef}

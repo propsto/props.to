@@ -5,7 +5,6 @@ import { constServer } from "@propsto/constants/server";
 import { createTransport } from "nodemailer";
 import { render } from "@react-email/components";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
-import type { JSX } from "react";
 import type {
   EmailTemplate,
   EmailTemplateArguments,
@@ -22,7 +21,7 @@ export async function send<T extends EmailTemplateNames>(
     ? []
     : [...EmailTemplateArguments<T>]
 ): Promise<CreateEmailResponse | SMTPTransport.SentMessageInfo> {
-  const chosenTemplate = template as (...args: unknown[]) => JSX.Element;
+  const chosenTemplate = template as (...args: unknown[]) => React.ReactElement;
   logger("send", { email, subject });
   if (constServer.EMAIL_PROVIDER === "resend") {
     return new Resend(process.env.AUTH_RESEND_KEY).emails.send({

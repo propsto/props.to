@@ -5,7 +5,7 @@ import { Footer } from "@components/ui/footer";
 
 export default function DefaultLayout({
   children,
-}: Readonly<React.PropsWithChildren>): JSX.Element {
+}: Readonly<React.PropsWithChildren>): React.ReactElement {
   return (
     <>
       <Header />

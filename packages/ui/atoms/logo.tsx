@@ -1,5 +1,4 @@
 import { type VariantProps, cva } from "class-variance-authority";
-import { type JSX } from "react";
 import { cn } from "../utils/cn";
 
 export type LogoVariantProps = VariantProps<typeof logoVariants>;
@@ -19,7 +18,7 @@ const logoVariants = cva("", {
 export function Logo({
   className,
   size = "default",
-}: Readonly<{ className?: string } & LogoVariantProps>): JSX.Element {
+}: Readonly<{ className?: string } & LogoVariantProps>): React.ReactElement {
   return (
     <svg
       className={cn("text-black", logoVariants({ size, className }))}
@@ -198,7 +197,7 @@ export function Logo({
 export function LogoSymbol({
   className,
   size = "default",
-}: Readonly<{ className?: string } & LogoVariantProps>): JSX.Element {
+}: Readonly<{ className?: string } & LogoVariantProps>): React.ReactElement {
   return (
     <svg
       className={cn(logoVariants({ size, className }))}

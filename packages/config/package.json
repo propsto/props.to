@@ -1,15 +1,15 @@
 {
   "name": "@propsto/config",
   "version": "1.0.0",
-  "description": "Props.to configuration files",
   "private": true,
+  "description": "Props.to configuration files",
   "license": "MIT",
+  "dependencies": {
+    "eslint-plugin-local-rules": "3.0.2"
+  },
   "devDependencies": {
     "@next/eslint-plugin-next": "14.2.4",
     "@vercel/style-guide": "6.0.0",
     "eslint-config-turbo": "2.0.4"
-  },
-  "dependencies": {
-    "eslint-plugin-local-rules": "3.0.2"
   }
 }

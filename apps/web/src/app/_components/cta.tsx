@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@propsto/ui/atoms/button";
 
-export function Cta(): JSX.Element {
+export function Cta(): React.ReactElement {
   return (
     <section>
       <div className="py-12 md:py-20">

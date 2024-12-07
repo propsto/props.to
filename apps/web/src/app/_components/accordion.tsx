@@ -14,7 +14,7 @@ export function Accordion({
   title,
   id,
   active = false,
-}: AccordionpProps): JSX.Element {
+}: AccordionpProps): React.ReactElement {
   const [accordionOpen, setAccordionOpen] = useState<boolean>(false);
 
   useEffect(() => {

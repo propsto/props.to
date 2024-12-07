@@ -2,7 +2,6 @@ import { constOther } from "@propsto/constants/other";
 import { Button } from "@propsto/ui/atoms";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { type JSX } from "react";
 
 function getErrorMessage(code = ""): string {
   const message = constOther.errorCodes[code];
@@ -14,7 +13,7 @@ export default async function ErrorPage({
   searchParams,
 }: Readonly<{
   searchParams: Promise<Record<string, string | undefined>>;
-}>): Promise<JSX.Element> {
+}>): Promise<React.ReactElement> {
   const code = (await searchParams).code;
   return (
     <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">

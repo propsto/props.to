@@ -14,10 +14,10 @@
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
-    "@propsto/data": "workspace:*",
-    "@propsto/ui": "workspace:*",
-    "@propsto/logger": "workspace:*",
     "@propsto/constants": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/logger": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

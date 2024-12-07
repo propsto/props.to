@@ -1,5 +1,3 @@
-import { type JSX } from "react";
-
-export function PasswordChanged(): JSX.Element {
+export function PasswordChanged(): React.ReactElement {
   return <p>Your password was successfully updated.</p>;
 }

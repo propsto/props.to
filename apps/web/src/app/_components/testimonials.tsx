@@ -1,7 +1,7 @@
 "use client";
 import { Testimonial } from "@components/testimonial";
 
-export function Testimonials(): JSX.Element {
+export function Testimonials(): React.ReactElement {
   const testimonials01 = [
     {
       image: "/images/testimonial-01.jpg",

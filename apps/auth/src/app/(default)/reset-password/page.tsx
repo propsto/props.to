@@ -1,7 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { type JSX } from "react";
 import { z } from "zod";
 import { ResetPasswordForm } from "@components/reset-password-form";
 import { auth } from "@/server/auth";
@@ -19,7 +18,7 @@ export default async function ResetPasswordPage({
   searchParams,
 }: Readonly<{
   searchParams: Promise<Record<string, string>>;
-}>): Promise<JSX.Element> {
+}>): Promise<React.ReactElement> {
   const { code, email = "" } = resetPasswordParamsSchema.parse(
     await searchParams,
   );

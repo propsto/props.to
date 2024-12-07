@@ -1,11 +1,10 @@
-import { type JSX } from "react";
 import { constServer } from "@propsto/constants/server";
 import { redirect } from "next/navigation";
 import { getUserByEmail } from "@propsto/data/repos";
 import { auth } from "@/server/auth";
 import { WelcomeStepper } from "@components/welcome-stepper";
 
-export default async function WelcomePage(): Promise<JSX.Element> {
+export default async function WelcomePage(): Promise<React.ReactElement> {
   const session = await auth();
   if (!session?.user?.email) redirect("/");
   const { success, data } = await getUserByEmail(session.user.email, {

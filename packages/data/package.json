@@ -4,10 +4,9 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "dotenv": "dotenv -e ../../.env",
     "db-deploy": "prisma migrate deploy",
-    "db-migrate": "prisma migrate dev",
     "db-generate": "prisma generate",
+    "db-migrate": "prisma migrate dev",
     "db-nuke": "docker compose down --volumes --remove-orphans || docker-compose down --volumes --remove-orphans",
     "db-push": "prisma db push --skip-generate",
     "db-reset": "pnpm db-nuke && pnpm db-setup",
@@ -15,19 +14,20 @@
     "db-setup": "pnpm db-up && pnpm db-deploy && pnpm db-seed",
     "db-studio": "prisma studio",
     "db-up": "docker compose up -d || docker-compose up -d",
+    "dotenv": "dotenv -e ../../.env",
     "lint": "pnpm dotenv -- prisma validate"
   },
   "dependencies": {
-    "@auth/core": "0.34.2",
-    "@auth/prisma-adapter": "2.4.2",
-    "@prisma/extension-accelerate": "1.1.0",
+    "@auth/core": "0.37.4",
+    "@auth/prisma-adapter": "2.7.4",
+    "@prisma/extension-accelerate": "1.2.1",
     "bcryptjs": "2.4.3"
   },
   "devDependencies": {
-    "@prisma/client": "5.22.0",
+    "@prisma/client": "6.0.1",
     "@types/bcryptjs": "2.4.6",
     "@types/uuid": "10.0.0",
-    "prisma": "5.22.0"
+    "prisma": "6.0.1"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

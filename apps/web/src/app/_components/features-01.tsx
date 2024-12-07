@@ -48,7 +48,7 @@ const features = [
   },
 ];
 
-export function Features01(): JSX.Element {
+export function Features01(): React.ReactElement {
   return (
     <section className="relative [background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
       <div className="py-12 md:py-20">

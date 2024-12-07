@@ -23,7 +23,7 @@ function Circle({
   );
 }
 
-export function AnimatedBeamMultipleInput(): JSX.Element {
+export function AnimatedBeamMultipleInput(): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const div1Ref = useRef<HTMLDivElement>(null);
   const div2Ref = useRef<HTMLDivElement>(null);

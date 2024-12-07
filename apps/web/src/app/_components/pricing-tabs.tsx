@@ -138,7 +138,7 @@ function FeatureState({
   );
 }
 
-export function PricingTabs(): JSX.Element {
+export function PricingTabs(): React.ReactElement {
   return (
     <section>
       <div className="py-12 md:py-20">

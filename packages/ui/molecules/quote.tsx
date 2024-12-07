@@ -3,7 +3,7 @@ import { cn } from "../utils/cn";
 
 export function Quote({
   className,
-}: React.ComponentProps<"div">): JSX.Element | undefined {
+}: React.ComponentProps<"div">): React.ReactElement | undefined {
   const { quotes } = constOther;
   const quote = quotes[Math.floor(Math.random() * quotes.length)] as
     | (typeof quotes)[number]
