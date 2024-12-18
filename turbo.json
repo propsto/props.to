@@ -38,13 +38,13 @@
         "!.next/cache/**"
       ]
     },
-    "db-deploy": {
+    "db-setup": {
       "cache": false
     },
-    "db-generate": {
+    "db-nuke": {
       "cache": false
     },
-    "db-push": {
+    "db-studio": {
       "cache": false
     },
     "lint": {},

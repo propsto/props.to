@@ -36,30 +36,29 @@ Props.to is the go-to open source solution to own your feedback throughout all y
 pnpm install
 ```
 
-2. Start the db
-
-```bash
-docker compose up -d
-```
-
-3. Update env and push the schema to the db
+1. Setup your local environment (local postgres using docker and prisma)
 
 ```bash
 cp .env.example .env
-pnpm prisma db push
+pnpm dev:setup
 ```
 
-4. Start the dev server
-
-```bash
-pnpm dev:all
-```
-
-5. Run the tests
+3. Run the tests
 
 ```bash
 pnpm test
 ```
+
+4. Start the dev server for some application (web, auth, app)
+
+```bash
+pnpm dev:auth
+```
+
+5. Open the following URLs:
+   1. http://localhost:3002 -> Auth app
+   2. http://0.0.0.0:1080 -> Local email server
+   3. http://localhost:5555 -> Prisma Studio (will be opened automatically)
 
 ---
 
