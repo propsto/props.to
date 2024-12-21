@@ -21,7 +21,7 @@ export function Hero(): React.ReactElement {
           <div className="relative max-w-4xl mx-auto">
             <div className="text-center pb-12 md:pb-16">
               <TypeWriterCTA />
-              <Quote className="mt-8" />
+              <Quote className="mt-8 text-xl font-semibold" />
               <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4 my-8">
                 <div>
                   <Button asChild>
@@ -50,8 +50,9 @@ function TypeWriterCTA(): React.ReactNode {
   const [showNotice, setShowNotice] = useState(false);
   const placeholderText = useTypeWriter([
     "https://youtube.com/mrbeast",
-    "john.doe@gmail.com",
-    "https://apple.com/ipad-mini",
+    "john.doe@company.com",
+    "company/john.doe",
+    "https://x.com/elonmusk",
     "type any URI here!",
   ]);
   return (

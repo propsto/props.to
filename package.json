@@ -76,5 +76,9 @@
       "react-dom": "$react-dom",
       "typescript": "$typescript"
     }
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
   }
 }

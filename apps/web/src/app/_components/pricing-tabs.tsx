@@ -100,9 +100,11 @@ const features: FeatureItem[] = [
 function FeatureState({
   state,
   recursion,
+  id,
 }: {
   state: FeaturesState | [FeaturesState, string];
   recursion?: boolean;
+  id: string;
 }): React.ReactNode {
   return (
     <>
@@ -111,11 +113,7 @@ function FeatureState({
         <X className={cn("size-5", recursion ? "mb-px" : "mb-0.5")} />
       )}
       {state === "paid" && (
-        <Tooltip
-          content="Extra fee"
-          id={`paid${Math.random().toString()}`}
-          className="no-underline"
-        >
+        <Tooltip content="Extra fee" id={`paid${id}`} className="no-underline">
           <div className="flex border-b border-dotted border-gray-500">
             <CircleDollarSign className="size-5 text-gray-600 mb-0.5" />
             <span className="text-sm">*</span>
@@ -123,13 +121,9 @@ function FeatureState({
         </Tooltip>
       )}
       {typeof state === "object" ? (
-        <Tooltip
-          content={state[1]}
-          id={`paid${Math.random().toString()}`}
-          className="no-underline"
-        >
+        <Tooltip content={state[1]} id={`other${id}`} className="no-underline">
           <div className="flex border-b border-dotted border-gray-500">
-            <FeatureState state={state[0]} recursion />
+            <FeatureState state={state[0]} id={`recursion${id}`} recursion />
             <span className="text-sm">*</span>
           </div>
         </Tooltip>
@@ -160,8 +154,7 @@ export function PricingTabs(): React.ReactElement {
                 <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
                   {features.map((feat, index) => (
                     <p
-                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
-                      key={index}
+                      key={`feature${index.toString()}`}
                       className={cn(
                         "text-gray-900 h-12 px-4 flex items-center justify-start",
                         index === 0 && "-mt-px",
@@ -178,8 +171,7 @@ export function PricingTabs(): React.ReactElement {
                   const tier = tiers[tierKey];
                   return (
                     <div
-                      // eslint-disable-next-line react/no-array-index-key -- fixed items in array
-                      key={index}
+                      key={`tier${index.toString()}`}
                       className={cn(
                         "lg:w-1/3 w-full rounded-lg mb-10",
                         tier.highlight
@@ -206,8 +198,7 @@ export function PricingTabs(): React.ReactElement {
                       </div>
                       {features.map((featState, indexState) => (
                         <div
-                          // eslint-disable-next-line react/no-array-index-key -- fixed items in array
-                          key={index}
+                          key={`featState${indexState.toString()}`}
                           className={cn(
                             "text-gray-600 h-12 flex items-center justify-center",
                             indexState === 0 && "border-t border-gray-300",
@@ -218,7 +209,10 @@ export function PricingTabs(): React.ReactElement {
                           <span className="lg:hidden font-bold">
                             {featState[0]}&nbsp;
                           </span>
-                          <FeatureState state={featState[1][index]} />
+                          <FeatureState
+                            state={featState[1][index]}
+                            id={featState[0]}
+                          />
                         </div>
                       ))}
                       <div className="p-6 text-center border-t border-gray-300">

@@ -10,17 +10,19 @@ export function Quote({
     | undefined;
   if (quote) {
     return (
-      <div className={cn("relative z-20 mt-auto", className)}>
+      <div className={cn("relative z-20 mt-auto text-lg", className)}>
         <blockquote className="space-y-2">
-          <p suppressHydrationWarning className="text-lg">
-            &ldquo;{quote.text}&rdquo;
+          <p suppressHydrationWarning>
+            {quote.author ? `&ldquo;${quote.text}&rdquo;` : quote.text}
           </p>
-          <p
-            suppressHydrationWarning
-            className="text-sm font-cal tracking-wider"
-          >
-            –{quote.author}
-          </p>
+          {quote.author ? (
+            <p
+              suppressHydrationWarning
+              className="text-sm font-cal tracking-wider"
+            >
+              –{quote.author}
+            </p>
+          ) : null}
         </blockquote>
       </div>
     );
