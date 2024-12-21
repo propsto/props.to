@@ -9,7 +9,7 @@ function Card({
     <div
       className={cn(
         "bg-card text-card-foreground rounded-lg border shadow-sm",
-        className
+        className,
       )}
       {...props}
     />
@@ -37,7 +37,7 @@ function CardTitle({
     <h3
       className={cn(
         "text-2xl font-semibold leading-none tracking-tight",
-        className
+        className,
       )}
       {...props}
     >

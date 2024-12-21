@@ -1,4 +1,6 @@
-import * as templates from "./templates";
+import type { CreateEmailResponse } from "resend";
+import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import type * as templates from "./templates";
 
 // Create a type for all function names
 export type EmailTemplateNames = keyof typeof templates;
@@ -22,3 +24,7 @@ export type NoArguments<T extends EmailTemplateNames> =
 
 // Create a type for the arguments for each template send function
 export type Email = string | { email: string };
+
+export type HandleEmailEvent =
+  | HandleSuccessEvent<CreateEmailResponse | SMTPTransport.SentMessageInfo>
+  | HandleErrorEvent;

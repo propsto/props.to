@@ -1,5 +1,3 @@
-// Prisma Seed
-
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -10,8 +8,10 @@ async function main() {
       email: "test@props.to",
     },
     create: {
-      name: "Test",
-      email: "test@props.to",
+      firstName: "Test",
+      lastName: "Account 1",
+      username: "test",
+      email: "test1@props.to",
       image: "https://avatars.githubusercontent.com/u/1?v=4",
     },
     update: {},
@@ -19,7 +19,7 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     throw e;
   })
   .finally(async () => {

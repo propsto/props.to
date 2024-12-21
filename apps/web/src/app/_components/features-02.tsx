@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export function Features02(): JSX.Element {
+export function Features02(): React.ReactElement {
   return (
     <section>
       <div className="py-12 md:py-20">

@@ -15,7 +15,7 @@ function Circle({
       ref={props.ref}
       className={cn(
         "z-10 flex h-12 w-24 items-center justify-center rounded-full border-2 border-border bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
-        className
+        className,
       )}
     >
       {props.children}
@@ -23,7 +23,7 @@ function Circle({
   );
 }
 
-export function AnimatedBeamMultipleInput(): JSX.Element {
+export function AnimatedBeamMultipleInput(): React.ReactElement {
   const containerRef = useRef<HTMLDivElement>(null);
   const div1Ref = useRef<HTMLDivElement>(null);
   const div2Ref = useRef<HTMLDivElement>(null);

@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "PORT=3001 next dev",
-    "debug": "DEBUG=@propsto:* pnpm dev",
+    "dev": "DEBUG=@propsto:* PORT=3001 next dev",
     "lint": "next lint",
     "start": "next start",
     "type-check": "tsc --noEmit"
@@ -15,10 +14,10 @@
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
-    "@propsto/data": "workspace:*",
-    "@propsto/ui": "workspace:*",
-    "@propsto/logger": "workspace:*",
     "@propsto/constants": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/logger": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

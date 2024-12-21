@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm --filter @propsto/data db-generate && next build",
-    "dev": "next dev",
+    "dev": "DEBUG=@propsto:* next dev",
     "dx": "pnpm --filter @propsto/data db-setup && pnpm dev",
     "dx:nuke": "pnpm --filter @propsto/data db-nuke && pnpm dx",
     "format": "prettier --write .",
@@ -22,8 +22,8 @@
     "@playwright/test": "*",
     "@propsto/config": "workspace:*",
     "@propsto/data": "workspace:*",
-    "@propsto/ui": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@propsto/ui": "workspace:*",
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

@@ -5,7 +5,7 @@ import { Logo } from "@propsto/ui/atoms/logo";
 import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Quote } from "@propsto/ui/molecules/quote";
 
-export function SideSection(): JSX.Element {
+export function SideSection(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <div

@@ -1,2 +1,6 @@
 /** @type {import("next").NextConfig} */
-module.exports = {};
+module.exports = {
+  images: {
+    remotePatterns: [{ hostname: "*.public.blob.vercel-storage.com" }],
+  },
+};

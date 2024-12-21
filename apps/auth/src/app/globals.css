@@ -1,4 +1,6 @@
 @config "../../tailwind.config.cjs";
 
+@import "@propsto/ui/base.css";
+
 @tailwind components;
 @tailwind utilities;

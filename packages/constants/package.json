@@ -2,24 +2,28 @@
   "name": "@propsto/constants",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
   "main": "index.ts",
   "scripts": {
+    "check-env": "pnpm dotenv -- pnpm tsx check-env.ts",
+    "dotenv": "dotenv -e ../../.env",
     "lint": "eslint --fix **/*.ts",
-    "test": "pnpm tsx check-env.ts",
-    "check-env": "pnpm tsx check-env.ts"
+    "test": "pnpm dotenv -- pnpm tsx check-env.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "@t3-oss/env-core": "0.11.1"
+  },
+  "devDependencies": {
+    "typescript": "5.7.2"
+  },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@types/node": "*",
     "tsx": "*",
     "typescript": "*",
     "zod": "*"
-  },
-  "dependencies": {
-    "@t3-oss/env-core": "0.10.1",
-    "dotenv": "16.4.5"
   }
 }

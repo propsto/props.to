@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@propsto/ui/atoms/button";
 
-export function Header(): JSX.Element {
+export function Header(): React.ReactElement {
   return (
     <header className="fixed top-2 md:top-6 w-full z-30">
       <div className="px-4 sm:px-6">

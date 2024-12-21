@@ -5,7 +5,7 @@ import { Triangles } from "@propsto/ui/molecules/triangles";
 import { Form } from "./form";
 import { Community } from "./community";
 
-export default function RequestEarlyAccess(): JSX.Element {
+export default function RequestEarlyAccess(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <>
@@ -34,7 +34,7 @@ export default function RequestEarlyAccess(): JSX.Element {
                   By submitting you agree with our{" "}
                   <a
                     className="underline hover:no-underline"
-                    href="https://docs.props.to/legsls/terms-and-conditions"
+                    href="https://docs.props.to/legals/terms-and-conditions"
                   >
                     Terms & Conditions
                   </a>

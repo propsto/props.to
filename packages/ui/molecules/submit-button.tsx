@@ -1,12 +1,13 @@
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
-import { Button } from "../atoms";
+import { ButtonProgress } from "../atoms";
 
-export interface SubmitButtonProps {
+export interface SubmitButtonProps extends React.PropsWithChildren {
   isPending: boolean;
-  children: React.ReactNode;
   name?: string;
   value?: string;
-  result: PropstoFormState<Record<string, string>>;
+  result?: { success?: boolean; message?: string; button?: string };
+  progress?: number;
+  disabled?: boolean;
 }
 
 export function SubmitButton({
@@ -15,9 +16,18 @@ export function SubmitButton({
   name,
   result,
   value,
-}: Readonly<SubmitButtonProps>): JSX.Element {
+  progress,
+  disabled,
+}: Readonly<SubmitButtonProps>): React.ReactElement {
   return (
-    <Button aria-disabled={isPending} type="submit" name={name} value={value}>
+    <ButtonProgress
+      aria-disabled={isPending}
+      disabled={disabled}
+      name={name}
+      progress={result?.success !== undefined ? progress : undefined}
+      type="submit"
+      value={value}
+    >
       {isPending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
       {result?.success === true ? (
         <CheckCircle2 className="mr-2 size-4" />
@@ -25,7 +35,7 @@ export function SubmitButton({
       {result?.success === false && result.message ? (
         <XCircle className="mr-2 size-4" />
       ) : null}
-      {result?.message ?? children}
-    </Button>
+      {result?.message ?? result?.button ?? children}
+    </ButtonProgress>
   );
 }

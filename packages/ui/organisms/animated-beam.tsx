@@ -6,9 +6,9 @@ import { cn } from "../utils/cn";
 
 export interface AnimatedBeamProps {
   className?: string;
-  containerRef: RefObject<HTMLElement>; // Container ref
-  fromRef: RefObject<HTMLElement>;
-  toRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>; // Container ref
+  fromRef: RefObject<HTMLElement | null>;
+  toRef: RefObject<HTMLElement | null>;
   curvature?: number;
   reverse?: boolean;
   pathColor?: string;
@@ -22,6 +22,8 @@ export interface AnimatedBeamProps {
   startYOffset?: number;
   endXOffset?: number;
   endYOffset?: number;
+  dotted?: boolean;
+  dotSpacing?: number;
 }
 
 export function AnimatedBeam({
@@ -33,20 +35,25 @@ export function AnimatedBeam({
   reverse = false, // Include the reverse prop
   duration = Math.random() * 3 + 4,
   delay = 0,
-  pathColor = "black",
+  pathColor = "gray",
   pathWidth = 2,
   pathOpacity = 0.2,
-  gradientStartColor = "#ffaa40",
-  gradientStopColor = "#9c40ff",
+  gradientStartColor = "#4d40ff",
+  gradientStopColor = "#4043ff",
   startXOffset = 0,
   startYOffset = 0,
   endXOffset = 0,
   endYOffset = 0,
-}: AnimatedBeamProps): JSX.Element {
+  dotted = false,
+  dotSpacing = 6,
+}: AnimatedBeamProps): React.ReactElement {
   const id = useId();
   const [pathD, setPathD] = useState("");
-  const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
 
+  const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
+  const strokeDasharray = dotted
+    ? `${dotSpacing.toString()} ${dotSpacing.toString()}`
+    : "none";
   // Calculate the gradient coordinates based on the reverse prop
   const gradientCoordinates = reverse
     ? {
@@ -92,7 +99,7 @@ export function AnimatedBeam({
     };
 
     // Initialize ResizeObserver
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(entries => {
       // For all entries, recalculate the path
       for (const _ of entries) {
         updatePath();
@@ -121,6 +128,7 @@ export function AnimatedBeam({
     endXOffset,
     endYOffset,
   ]);
+
   return (
     <svg
       fill="none"
@@ -129,7 +137,7 @@ export function AnimatedBeam({
       xmlns="http://www.w3.org/2000/svg"
       className={cn(
         "pointer-events-none absolute left-0 top-0 transform-gpu stroke-2",
-        className
+        className,
       )}
       viewBox={`0 0 ${svgDimensions.width.toString()} ${svgDimensions.height.toString()}`}
     >
@@ -139,13 +147,25 @@ export function AnimatedBeam({
         strokeWidth={pathWidth}
         strokeOpacity={pathOpacity}
         strokeLinecap="round"
+        strokeDasharray={strokeDasharray}
       />
-      <path
+      <motion.path
         d={pathD}
-        strokeWidth={pathWidth}
         stroke={`url(#${id})`}
-        strokeOpacity="1"
         strokeLinecap="round"
+        strokeDasharray={strokeDasharray}
+        initial={{
+          strokeWidth: pathWidth,
+          strokeOpacity: 0,
+        }}
+        animate={{
+          strokeWidth: pathWidth * 1.5, // or any scale factor you prefer
+          strokeOpacity: 1,
+        }}
+        transition={{
+          duration: 2, // adjust as needed
+          delay, // use the same delay as the gradient animation
+        }}
       />
       <defs>
         <motion.linearGradient
@@ -179,5 +199,27 @@ export function AnimatedBeam({
         </motion.linearGradient>
       </defs>
     </svg>
+  );
+}
+
+export function Circle({
+  className,
+  children,
+  innerRef,
+}: {
+  className?: string;
+  children?: React.ReactNode;
+  innerRef?: React.Ref<HTMLDivElement>;
+}): React.ReactElement {
+  return (
+    <div
+      ref={innerRef}
+      className={cn(
+        "z-10 flex h-12 w-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]",
+        className,
+      )}
+    >
+      {children}
+    </div>
   );
 }

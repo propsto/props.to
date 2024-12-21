@@ -1,14 +1,20 @@
-import { type CSSProperties } from "react";
+import { type ChangeEventHandler, type CSSProperties } from "react";
 import { Input, Label } from "../atoms";
 import { cn } from "../utils/cn";
 
 type FormInputErrorProps = {
-  result: PropstoFormState<Record<string, string>>;
+  result: PropstoFormState<Record<string, string | null>>;
   isPending: boolean;
   controlName: string;
   className?: string;
   style?: CSSProperties;
-} & Partial<Pick<HTMLInputElement, "autocapitalize" | "autocomplete">>;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+} & Partial<
+  Pick<
+    HTMLInputElement,
+    "autocapitalize" | "autocomplete" | "defaultValue" | "type" | "placeholder"
+  >
+>;
 
 export function FormInputError({
   result,
@@ -17,9 +23,12 @@ export function FormInputError({
   autocapitalize,
   autocomplete,
   className,
+  placeholder,
+  type,
   style,
+  onChange,
   ...rest
-}: FormInputErrorProps): JSX.Element {
+}: FormInputErrorProps): React.ReactElement {
   return (
     <div
       className={cn("flex flex-col gap-2", className)}
@@ -35,13 +44,14 @@ export function FormInputError({
         className={cn(result?.errors?.name && "!border-red-500")}
         disabled={isPending}
         id={controlName.toLowerCase()}
-        name={controlName.toLowerCase()}
-        placeholder={controlName}
-        type={controlName}
+        name={controlName}
+        onChange={onChange}
+        placeholder={placeholder ?? controlName}
+        type={type}
       />
-      {result?.errors?.[controlName.toLowerCase()] ? (
+      {result?.errors?.[controlName] ? (
         <p className="text-sm text-red-500 text-left">
-          {result.errors[controlName.toLowerCase()]}
+          {result.errors[controlName]}
         </p>
       ) : null}
     </div>

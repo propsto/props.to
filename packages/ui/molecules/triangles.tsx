@@ -1,8 +1,9 @@
 "use client";
 
 import "./triangles.css";
-import { useEffect, useState, type MutableRefObject } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useState, useEffect, type MutableRefObject } from "react";
+import React from "react";
 import { useDeviceSize } from "../hooks/use-device-size";
 
 export type TriangleVariantProps = VariantProps<typeof triangleVariants>;
@@ -25,7 +26,7 @@ export function Triangles({
   {
     parentRef?: MutableRefObject<HTMLElement | null>;
   } & TriangleVariantProps
->): JSX.Element {
+>): React.ReactElement {
   const [maxTileX, setMaxTileX] = useState(0);
   const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();
@@ -40,10 +41,10 @@ export function Triangles({
   }, [deviceHeight, deviceWidth, parentRef, size]);
   return (
     <div
+      className="absolute overflow-hidden top-0 left-0 flex flex-wrap"
       style={{
         ["--triangle-size" as string]: `${triangleVariants({ size })}px`,
       }}
-      className="absolute overflow-hidden top-0 left-0 flex flex-wrap"
     >
       {...Array.from(
         { length: maxTileX },
@@ -55,7 +56,7 @@ export function Triangles({
                 key={`${i.toString()}${j.toString()}`}
               />
             );
-          })
+          }),
       )}
     </div>
   );

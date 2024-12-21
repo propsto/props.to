@@ -1,7 +1,7 @@
 "use client";
 import { Testimonial } from "@components/testimonial";
 
-export function Testimonials(): JSX.Element {
+export function Testimonials(): React.ReactElement {
   const testimonials01 = [
     {
       image: "/images/testimonial-01.jpg",
@@ -87,7 +87,7 @@ export function Testimonials(): JSX.Element {
           <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_28%,_black_calc(100%-28%),transparent_100%)] group">
             <div className="flex items-start justify-center md:justify-start [&>div]:mx-3 animate-infinite-scroll group-hover:[animation-play-state:paused]">
               {/* Items */}
-              {testimonials01.map((testimonial) => (
+              {testimonials01.map(testimonial => (
                 <Testimonial key={testimonial.name} testimonial={testimonial}>
                   {testimonial.content}
                 </Testimonial>
@@ -99,7 +99,7 @@ export function Testimonials(): JSX.Element {
               aria-hidden="true"
             >
               {/* Items */}
-              {testimonials01.map((testimonial) => (
+              {testimonials01.map(testimonial => (
                 <Testimonial key={testimonial.name} testimonial={testimonial}>
                   {testimonial.content}
                 </Testimonial>
@@ -110,7 +110,7 @@ export function Testimonials(): JSX.Element {
           <div className="w-full inline-flex flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_28%,_black_calc(100%-28%),transparent_100%)] group">
             <div className="flex items-start justify-center md:justify-start [&>div]:mx-3 animate-infinite-scroll-inverse group-hover:[animation-play-state:paused] [animation-delay:-7.5s]">
               {/* Items */}
-              {testimonials02.map((testimonial) => (
+              {testimonials02.map(testimonial => (
                 <Testimonial key={testimonial.name} testimonial={testimonial}>
                   {testimonial.content}
                 </Testimonial>
@@ -122,7 +122,7 @@ export function Testimonials(): JSX.Element {
               aria-hidden="true"
             >
               {/* Items */}
-              {testimonials02.map((testimonial) => (
+              {testimonials02.map(testimonial => (
                 <Testimonial key={testimonial.name} testimonial={testimonial}>
                   {testimonial.content}
                 </Testimonial>

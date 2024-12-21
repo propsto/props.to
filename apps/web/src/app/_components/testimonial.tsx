@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-interface TestimonialProps {
+type TestimonialProps = Readonly<React.PropsWithChildren> & {
   testimonial: {
     image: string;
     name: string;
@@ -8,13 +8,12 @@ interface TestimonialProps {
     link: string;
     content: string;
   };
-  children: React.ReactNode;
-}
+};
 
 export function Testimonial({
   testimonial,
   children,
-}: TestimonialProps): JSX.Element {
+}: TestimonialProps): React.ReactElement {
   return (
     <div className="rounded h-full w-[22rem] border border-transparent [background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box] p-5">
       <div className="flex items-center mb-4">

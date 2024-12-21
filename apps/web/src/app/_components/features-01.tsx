@@ -48,7 +48,7 @@ const features = [
   },
 ];
 
-export function Features01(): JSX.Element {
+export function Features01(): React.ReactElement {
   return (
     <section className="relative [background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
       <div className="py-12 md:py-20">
@@ -64,7 +64,7 @@ export function Features01(): JSX.Element {
           </div>
           <div className="mx-auto max-w-2xl lg:max-w-4xl">
             <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16">
-              {features.map((feature) => (
+              {features.map(feature => (
                 <div key={feature.name} className="relative pl-16">
                   <dt className="text-base font-semibold leading-7 text-white">
                     <div className="absolute left-0 top-0 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-300">

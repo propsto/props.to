@@ -1,6 +1,6 @@
 import { Heading, Button, Html } from "@react-email/components";
 
-export function WelcomeEmail(): JSX.Element {
+export function WelcomeEmail(): React.ReactElement {
   return (
     <Html>
       <Heading as="h1" style={{ fontFamily: "sans-serif" }}>

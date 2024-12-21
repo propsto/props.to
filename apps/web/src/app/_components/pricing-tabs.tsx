@@ -132,7 +132,7 @@ function FeatureState({
   );
 }
 
-export function PricingTabs(): JSX.Element {
+export function PricingTabs(): React.ReactElement {
   return (
     <section>
       <div className="py-12 md:py-20">
@@ -158,7 +158,7 @@ export function PricingTabs(): JSX.Element {
                       className={cn(
                         "text-gray-900 h-12 px-4 flex items-center justify-start",
                         index === 0 && "-mt-px",
-                        index % 2 === 0 && "bg-gray-100"
+                        index % 2 === 0 && "bg-gray-100",
                       )}
                     >
                       {feat[0]}
@@ -179,7 +179,7 @@ export function PricingTabs(): JSX.Element {
                           : "border-gray-300",
                         !tier.highlight &&
                           "border-r border-b border-t border-l",
-                        index !== 0 && !tier.highlight && "lg:border-l-0"
+                        index !== 0 && !tier.highlight && "lg:border-l-0",
                       )}
                     >
                       {tier.highlight ? (
@@ -203,7 +203,7 @@ export function PricingTabs(): JSX.Element {
                             "text-gray-600 h-12 flex items-center justify-center",
                             indexState === 0 && "border-t border-gray-300",
                             tier.highlight && indexState === 0 && "-mt-px",
-                            indexState % 2 === 0 && "bg-gray-100"
+                            indexState % 2 === 0 && "bg-gray-100",
                           )}
                         >
                           <span className="lg:hidden font-bold">

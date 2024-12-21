@@ -1,16 +1,34 @@
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
 }
 
 generator client {
     provider = "prisma-client-js"
 }
 
+enum Role {
+    USER
+    ADMIN
+}
+
+enum PayableResource {
+    PREMIUM_USERNAME
+    ADDITIONAL_INTEGRATION
+}
+
 model User {
     id            String          @id @default(cuid())
-    name          String?
     email         String          @unique
+    username      String          @unique
+    password      String?
+    firstName     String?
+    lastName      String?
+    role          Role            @default(USER)
+    dateOfBirth   DateTime?
+    feedbacks     Feedback[]
+    uriClaims     UriClaim[]
     emailVerified DateTime?
     image         String?
     accounts      Account[]
@@ -18,8 +36,42 @@ model User {
     // Optional for WebAuthn support
     Authenticator Authenticator[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    payments  Payment[]
+}
+
+model Integration {
+    id          BigInt       @id @default(autoincrement())
+    domain      String
+    subpath     String
+    uriSupports UriSupport[]
+}
+
+model Feedback {
+    id           BigInt   @id @default(autoincrement())
+    user         User     @relation(fields: [userId], references: [id])
+    userId       String
+    uri          String
+    feedbackText String
+    createdAt    DateTime @default(now())
+}
+
+model UriSupport {
+    id            BigInt      @id @default(autoincrement())
+    integration   Integration @relation(fields: [integrationId], references: [id])
+    integrationId BigInt
+    uri           String      @unique
+    uriClaims     UriClaim[]
+}
+
+model UriClaim {
+    id        BigInt     @id @default(autoincrement())
+    user      User       @relation(fields: [userId], references: [id])
+    userId    String     @unique
+    uri       UriSupport @relation(fields: [uriId], references: [id])
+    uriId     BigInt
+    claimedAt DateTime   @default(now())
 }
 
 model Account {
@@ -75,4 +127,23 @@ model Authenticator {
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@id([userId, credentialID])
+}
+
+model Payment {
+    id           BigInt          @id @default(autoincrement())
+    user         User            @relation(fields: [userId], references: [id])
+    userId       String
+    resourceType PayableResource
+    resourceId   BigInt?
+    amount       Float
+    paymentDate  DateTime        @default(now())
+}
+
+model PasswordResetToken {
+    id      String   @id @default(cuid())
+    email   String
+    token   String   @unique
+    expires DateTime
+
+    @@unique([email, token])
 }

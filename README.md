@@ -25,7 +25,6 @@
 &nbsp;<a href="https://resend.com" title="Using the best emailing system, Resend"><img src="https://img.shields.io/badge/Resend%20emailing-sending-success?style=flat&labelColor=000000&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjYwMCIgdmlld0JveD0iMCAwIDYwMCA2MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xODYgNDQ3LjQ3MVYxNTRIMzE4LjA2MkMzMzYuNzg4IDE1NCAzNTMuNjk3IDE1OC4wNTMgMzY4Ljc5IDE2Ni4xNThDMzg0LjE2MyAxNzQuMjYzIDM5Ni4xODEgMTg1LjQ0MyA0MDQuODQ1IDE5OS42OThDNDEzLjUxIDIxMy42NzIgNDE3Ljg0MiAyMjkuNjA0IDQxNy44NDIgMjQ3LjQ5MUM0MTcuODQyIDI2NS45MzggNDEzLjUxIDI4Mi41NjggNDA0Ljg0NSAyOTcuMzgxQzM5Ni4xODEgMzExLjkxNSAzODQuMzAyIDMyMy4zNzUgMzY5LjIwOSAzMzEuNzU5QzM1NC4xMTcgMzQwLjE0NCAzMzcuMDY3IDM0NC4zMzcgMzE4LjA2MiAzNDQuMzM3SDI1My45MTdWNDQ3LjQ3MUgxODZaTTM0OC42NjcgNDQ3LjQ3MUwyNzQuMDQxIDMxNC45OUwzNDYuOTkgMzA0LjUwOUw0MzAgNDQ3LjQ3MUgzNDguNjY3Wk0yNTMuOTE3IDI4OS44MzVIMzExLjc3M0MzMTkuMDQgMjg5LjgzNSAzMjUuMzI5IDI4OC4yOTggMzMwLjYzOSAyODUuMjIzQzMzNi4yMjkgMjgxLjg2OSAzNDAuNDIxIDI3Ny4yNTggMzQzLjIxNiAyNzEuMzg4QzM0Ni4yOTEgMjY1LjUxOSAzNDcuODI4IDI1OC44MTEgMzQ3LjgyOCAyNTEuMjY1QzM0Ny44MjggMjQzLjcxOCAzNDYuMTUxIDIzNy4xNSAzNDIuNzk3IDIzMS41NkMzMzkuNDQzIDIyNS42OTEgMzM0LjU1MiAyMjEuMjE5IDMyOC4xMjQgMjE4LjE0NEMzMjEuOTc1IDIxNS4wNyAzMTQuNDI4IDIxMy41MzMgMzA1LjQ4NCAyMTMuNTMzSDI1My45MTdWMjg5LjgzNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=&link=https://resend.com" /></a>
 </p>
 
-
 ## About this project
 
 Feedback throughout internet is a lost cause. Literally. No one knows which entity to trust. Whether you are a company, an internet figure, have social network presence or simply an employee, you can't own your feedback throughout all your public or private profiles. Until now.
@@ -40,30 +39,29 @@ Props.to **人** is the go-to open source solution to own your feedback througho
 pnpm install
 ```
 
-2. Start the db
-
-```bash
-docker compose up -d
-```
-
-3. Update env and push the schema to the db
+1. Setup your local environment (local postgres using docker and prisma)
 
 ```bash
 cp .env.example .env
-pnpm prisma db push
+pnpm dev:setup
 ```
 
-4. Start the dev server
-
-```bash
-pnpm dev:all
-```
-
-5. Run the tests
+3. Run the tests
 
 ```bash
 pnpm test
 ```
+
+4. Start the dev server for some application (web, auth, app)
+
+```bash
+pnpm dev:auth
+```
+
+5. Open the following URLs:
+   1. http://localhost:3002 -> Auth app
+   2. http://0.0.0.0:1080 -> Local email server
+   3. http://localhost:5555 -> Prisma Studio (will be opened automatically)
 
 ---
 

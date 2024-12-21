@@ -9,28 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { Quote } from "@propsto/ui/molecules/quote";
 import { useTypeWriter } from "@/hooks/type-writer";
 
-const quotes: { text: string; author?: string }[] = [
-  {
-    text: "Collect and manage feedback across all your profiles, from any platform.",
-  },
-  {
-    text: "Take control of your feedback—secure, centralized, and always with you.",
-  },
-  {
-    text: "Your feedback, your profile—easily track, manage, and showcase it anywhere.",
-  },
-  {
-    text: "One platform for feedback across all your profiles—transparent, authentic, and always accessible.",
-  },
-  {
-    text: "Own your feedback from multiple sources—keep it, share it, and grow your reputation.",
-  },
-  {
-    text: "Send and receive feedback from any URI, linked to your profiles. Own your feedback, including employer reviews.",
-  },
-];
-
-export function Hero(): JSX.Element {
+export function Hero(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <div ref={ref}>
@@ -42,7 +21,7 @@ export function Hero(): JSX.Element {
           <div className="relative max-w-4xl mx-auto">
             <div className="text-center pb-12 md:pb-16">
               <TypeWriterCTA />
-              <Quote quotes={quotes} className="mt-8 text-xl font-semibold" />
+              <Quote className="mt-8 text-xl font-semibold" />
               <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4 my-8">
                 <div>
                   <Button asChild>

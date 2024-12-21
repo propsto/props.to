@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 
-export function Footer(): JSX.Element {
+export function Footer(): React.ReactElement {
   return (
     <footer className="[background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
