@@ -1,5 +1,4 @@
 # this file is a helper to run props.to locally
-version: "3.6"
 services:
   postgres:
     image: postgres:13

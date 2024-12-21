@@ -24,10 +24,10 @@
     "bcryptjs": "2.4.3"
   },
   "devDependencies": {
-    "@prisma/client": "6.0.1",
+    "@prisma/client": "6.1.0",
     "@types/bcryptjs": "2.4.6",
     "@types/uuid": "10.0.0",
-    "prisma": "6.0.1"
+    "prisma": "6.1.0"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

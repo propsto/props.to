@@ -2,18 +2,16 @@
 
 import { put } from "@vercel/blob";
 import { updateUser } from "@propsto/data/repos";
-import {
-  type AccountFormValues,
-  type PersonalFormValues,
-} from "@components/welcome-stepper";
+import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
+import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
 
 export async function personalHandler(
-  values: Omit<PersonalFormValues, "image"> & { image?: File[] },
+  values: Omit<PersonalFormValues, "image"> & { image?: File[] | string },
   userId: string,
 ): Promise<HandleEvent<{ id: string }>> {
   const { image, dateOfBirth, ...rest } = values;
   let blob;
-  if (image) {
+  if (image && typeof image !== "string") {
     blob = await put(`avatars/${userId}`, image[0], {
       access: "public",
       contentType: image[0].type,
@@ -26,7 +24,7 @@ export async function personalHandler(
       ...(dateOfBirth
         ? { dateOfBirth: new Date(dateOfBirth).toISOString() }
         : {}),
-      image: blob?.url,
+      ...(blob ? { image: blob.url } : {}),
     },
     { id: true },
   );
@@ -35,5 +33,5 @@ export async function personalHandler(
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-function-return-type -- temp
 export async function accountHandler(values: AccountFormValues) {
-  // TODO
+  return Promise.resolve({ success: true });
 }

@@ -3,8 +3,15 @@ import { redirect } from "next/navigation";
 import { getUserByEmail } from "@propsto/data/repos";
 import { auth } from "@/server/auth";
 import { WelcomeStepper } from "@components/welcome-stepper";
+import { stepNames } from "@components/welcome-stepper/steps";
 
-export default async function WelcomePage(): Promise<React.ReactElement> {
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}): Promise<React.ReactElement> {
+  const queryStep = (await searchParams).step ?? "personal";
+  const initialStep = stepNames.includes(queryStep) ? queryStep : "personal";
   const session = await auth();
   if (!session?.user?.email) redirect("/");
   const { success, data } = await getUserByEmail(session.user.email, {
@@ -25,5 +32,5 @@ export default async function WelcomePage(): Promise<React.ReactElement> {
     data.username.length < 41
   )
     return redirect(constServer.PROPSTO_APP_URL);
-  return <WelcomeStepper user={data} />;
+  return <WelcomeStepper user={data} initialStep={initialStep} />;
 }
