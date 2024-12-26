@@ -1,6 +1,6 @@
 import { constServer } from "@propsto/constants/server";
 import { redirect } from "next/navigation";
-import { getUserByEmail } from "@propsto/data/repos";
+import { type User } from "next-auth";
 import { auth } from "@/server/auth";
 import { WelcomeStepper } from "@components/welcome-stepper";
 import { stepNames } from "@components/welcome-stepper/steps";
@@ -13,24 +13,19 @@ export default async function WelcomePage({
   const queryStep = (await searchParams).step ?? "personal";
   const initialStep = stepNames.includes(queryStep) ? queryStep : "personal";
   const session = await auth();
-  if (!session?.user?.email) redirect("/");
-  const { success, data } = await getUserByEmail(session.user.email, {
-    id: true,
-    dateOfBirth: true,
-    firstName: true,
-    lastName: true,
-    email: true,
-    image: true,
-    username: true,
-  });
-  if (!success || !data) return redirect("/error?code=InvalidSession");
+  const user = session?.user as User & { id: string; email: string };
+  if (!user.email || !user.id) {
+    redirect("/error?code=InvalidSession");
+  }
   if (
-    data.firstName &&
-    data.lastName &&
-    data.image &&
-    data.dateOfBirth &&
-    data.username.length < 41
-  )
+    user.firstName &&
+    user.lastName &&
+    user.image &&
+    user.dateOfBirth &&
+    user.username &&
+    user.username.length < 41
+  ) {
     return redirect(constServer.PROPSTO_APP_URL);
-  return <WelcomeStepper user={data} initialStep={initialStep} />;
+  }
+  return <WelcomeStepper user={user} initialStep={initialStep} />;
 }

@@ -12,7 +12,7 @@
     "db-reset": "pnpm db-nuke && pnpm db-setup",
     "db-seed": "pnpm dotenv -- prisma db seed",
     "db-setup": "pnpm db-up && pnpm db-deploy && pnpm db-seed",
-    "db-studio": "pnpm dotenv -- prisma studio",
+    "db-studio": "pnpm dotenv -- prisma studio --browser none",
     "db-up": "pnpm dotenv -- docker compose up -d || docker-compose up -d",
     "dotenv": "dotenv -e ../../.env",
     "lint": "pnpm dotenv -- prisma validate"

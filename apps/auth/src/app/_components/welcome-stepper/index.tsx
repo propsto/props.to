@@ -29,7 +29,7 @@ export function WelcomeStepper({
   user,
   initialStep,
 }: Readonly<{
-  user: Required<Omit<User, "name">>;
+  user: User & { id: string; email: string };
   initialStep: StepNames;
 }>): React.ReactElement {
   const stepper = useStepper(initialStep);

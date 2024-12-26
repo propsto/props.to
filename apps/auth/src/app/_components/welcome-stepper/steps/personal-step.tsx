@@ -192,12 +192,10 @@ export const config: Step = {
   schema: personalSchema,
 };
 
-export const defaults = (
-  user: Required<Omit<User, "name">>,
-): PersonalFormValues => ({
+export const defaults = (user: User): PersonalFormValues => ({
   firstName: user.firstName ?? "",
   lastName: user.lastName ?? "",
-  dateOfBirth: user.dateOfBirth?.toISOString().substring(0, 10),
+  dateOfBirth: new Date(user.dateOfBirth ?? "").toISOString().substring(0, 10),
   email: user.email ?? "",
   image: user.image,
 });

@@ -13,7 +13,7 @@ export function Quote({
       <div className={cn("relative z-20 mt-auto text-lg", className)}>
         <blockquote className="space-y-2">
           <p suppressHydrationWarning>
-            {quote.author ? `&ldquo;${quote.text}&rdquo;` : quote.text}
+            {quote.author ? `"${quote.text}"` : quote.text}
           </p>
           {quote.author ? (
             <p

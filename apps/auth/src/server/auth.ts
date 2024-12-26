@@ -1,5 +1,5 @@
 import NextAuth from "next-auth";
-import "next-auth/jwt";
+import { type JWT } from "next-auth/jwt";
 import Passkey from "next-auth/providers/passkey";
 import type { NextAuthConfig, User as NextAuthUser } from "next-auth";
 import { PropstoAdapter } from "@propsto/data";
@@ -49,9 +49,12 @@ const config = {
     authorized({ auth }) {
       return Boolean(auth);
     },
-    jwt: ({ token }) => {
+    jwt: ({ token, user }: { token: JWT; user?: NextAuthUser }) => {
       if (!token.email) {
-        return {};
+        return null;
+      }
+      if (user) {
+        token.user = user;
       }
       return token;
     },
@@ -91,7 +94,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth(config);
 declare module "next-auth" {
   interface User {
     id?: string;
-    name?: string | null;
     firstName?: string | null;
     lastName?: string | null;
     dateOfBirth?: Date | null;

@@ -6,6 +6,16 @@ import { v4 as uuidv4 } from "uuid";
 import { AdapterAccount } from "@auth/core/adapters";
 import { compare, hash } from "bcryptjs";
 
+export const defaultUserSelect: Prisma.UserSelect = {
+  id: true,
+  dateOfBirth: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  image: true,
+  username: true,
+};
+
 export async function createUser(data: { email: string }) {
   try {
     const dataWithUsername = { ...data, username: `user-${uuidv4()}` };
@@ -55,16 +65,7 @@ export async function getUserByEmailAndPassword({
     logger("getUserByEmailAndPassword", email, hashedPassword);
     const existingUser = await db.user.findUnique({
       where: { email: email as string },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        image: true,
-        password: true,
-        username: true,
-        dateOfBirth: true,
-      },
+      select: defaultUserSelect,
     });
     if (!existingUser) throw Error("User does not exist");
     const { password: userPassword, dateOfBirth, ...rest } = existingUser;
