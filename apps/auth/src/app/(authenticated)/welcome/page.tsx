@@ -13,8 +13,10 @@ export default async function WelcomePage({
   const queryStep = (await searchParams).step ?? "personal";
   const initialStep = stepNames.includes(queryStep) ? queryStep : "personal";
   const session = await auth();
-  const user = session?.user as User & { id: string; email: string };
-  if (!user.email || !user.id) {
+  const user = session?.user as
+    | (User & { id: string; email: string })
+    | undefined;
+  if (!user?.email || !user.id) {
     redirect("/error?code=InvalidSession");
   }
   if (
