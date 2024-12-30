@@ -31,6 +31,7 @@ export function StepComponent(): React.ReactElement {
         </label>
         <Input
           id={register("username").name}
+          {...register("username")}
           className="block w-full p-2 border rounded-md"
         />
         {errors.username ? (
