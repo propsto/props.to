@@ -6,6 +6,7 @@ import { useFormContext } from "react-hook-form";
 import { type Step } from "@stepperize/react";
 
 const accountSchema = z.object({
+  username: z.string().min(6, "User name is required"),
   cardNumber: z.string().min(16, "Card number is required"),
   expirationDate: z.string().min(5, "Expiration date is required"),
   cvv: z.string().min(3, "CVV is required"),
@@ -21,6 +22,24 @@ export function StepComponent(): React.ReactElement {
 
   return (
     <div className="space-y-4 text-start">
+      <div className="space-y-2">
+        <label
+          htmlFor={register("username").name}
+          className="block text-sm font-medium text-primary"
+        >
+          Username
+        </label>
+        <Input
+          id={register("username").name}
+          {...register("username")}
+          className="block w-full p-2 border rounded-md"
+        />
+        {errors.username ? (
+          <span className="text-sm text-destructive">
+            {errors.username.message}
+          </span>
+        ) : null}
+      </div>
       <div className="space-y-2">
         <label
           htmlFor={register("cardNumber").name}
@@ -84,6 +103,7 @@ export const config: Step = {
 };
 
 export const defaults = (): AccountFormValues => ({
+  username: "",
   cardNumber: "",
   expirationDate: "",
   cvv: "",
