@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",

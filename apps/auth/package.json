@@ -7,12 +7,13 @@
     "./server.config": "./src/server/auth.server.ts"
   },
   "scripts": {
-    "build": "next build",
+    "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
     "next-dev": "next dev --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
-    "start": "next start",
+    "next-start": "next start --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
+    "start": "pnpm dotenv -- pnpm next-start",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
