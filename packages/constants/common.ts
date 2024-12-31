@@ -5,6 +5,7 @@ export const constCommon = createEnv({
   server: {
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
     PROPSTO_APP_URL: z.string().url(),
+    AUTH_URL: z.string().url(),
   },
 
   /**

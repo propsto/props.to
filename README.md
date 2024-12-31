@@ -39,20 +39,26 @@ Props.to **人** is the go-to open source solution to own your feedback througho
 pnpm install
 ```
 
-1. Setup your local environment (local postgres using docker and prisma)
+1. Setup your local database (local postgres using docker and prisma)
 
 ```bash
 cp .env.example .env
 pnpm dev:setup
 ```
 
-3. Run the tests
+3. Setup the hosts (requires sudo/admin)
+
+```bash
+sudo pnpm setup:hosts
+```
+
+4. Run the tests
 
 ```bash
 pnpm test
 ```
 
-4. Start the dev server for some application (web, auth, app)
+5. Start the dev server for some application (web, auth, app)
 
 ```bash
 pnpm dev:auth

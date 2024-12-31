@@ -14,15 +14,16 @@
     "EMAIL_SERVER",
     "RESEND_API_KEY",
     "VERCEL_URL",
-    "PROPSTO_APP_URL"
+    "PROPSTO_APP_URL",
+    "PROPSTO_HOST"
   ],
   "tasks": {
-    "@propsto/constants#check-env": {
+    "@propsto/constants#test": {
       "outputs": []
     },
     "dev": {
       "dependsOn": [
-        "@propsto/constants#check-env"
+        "@propsto/constants#test"
       ],
       "cache": false,
       "persistent": true

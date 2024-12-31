@@ -5,7 +5,6 @@
   "scripts": {
     "build": "email build --dir templates",
     "dev": "DEBUG=@propsto:* pnpm maildev",
-    "dotenv": "dotenv -e ../../.env",
     "export": "email export",
     "lint": "eslint --fix **/*.{ts,tsx}",
     "start": "email dev --dir templates"

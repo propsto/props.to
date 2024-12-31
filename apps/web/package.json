@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "DEBUG=@propsto:* PORT=3001 next dev",
+    "dev": "pnpm dotenv -- pnpm next-dev",
+    "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
+    "next-dev": "next dev --hostname=$PROPSTO_WEB_HOSTNAME --port=$PROPSTO_WEB_PORT",
     "start": "next start",
     "type-check": "tsc --noEmit"
   },
@@ -24,6 +26,7 @@
     "@vercel/og": "*",
     "autoprefixer": "*",
     "cal-sans": "*",
+    "dotenv-cli": "*",
     "eslint": "*",
     "lucide-react": "*",
     "next": "*",

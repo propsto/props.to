@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run --filter !@propsto/email dev",
-    "dev:app": "turbo run @propsto/app#dev",
+    "dev:app": "turbo run @propsto/app#dev @propsto/auth#dev @propsto/email#dev",
     "dev:auth": "turbo run @propsto/auth#dev @propsto/email#dev @propsto/data#db-studio",
     "dev:email": "turbo run @propsto/email#dev",
     "dev:nuke": "turbo run @propsto/data#db-nuke",
@@ -14,9 +14,10 @@
     "dev:web": "turbo run @propsto/web#dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "health": "turbo run lint type-check",
-    "housekeeping": "ncu --deep && sort-package-json -i '**/node_modules' '**/package.json'",
+    "hk": "ncu --deep && sort-package-json -i '**/node_modules' '**/package.json'",
     "lint": "turbo run lint --force",
     "prepare": "husky",
+    "setup:hosts": "hostile load hosts.txt",
     "test": "turbo run test --force",
     "type-check": "turbo run type-check"
   },
@@ -27,7 +28,8 @@
     "autoprefixer": "10.4.20",
     "cal-sans": "1.0.1",
     "lucide-react": "0.469.0",
-    "next": "15.1.2",
+    "next": "15.1.3",
+    "next-auth": "beta",
     "next-themes": "0.4.4",
     "nodemailer": "6.9.16",
     "postcss": "8.4.49",
@@ -53,6 +55,7 @@
     "dotenv-cli": "8.0.0",
     "eslint": "8.57.0",
     "framer-motion": "v12.0.0-alpha.2",
+    "hostile": "1.4.0",
     "husky": "9.1.7",
     "npm-check-updates": "17.1.12",
     "prettier": "3.4.2",
@@ -64,21 +67,22 @@
     "@propsto/config": "workspace:*"
   },
   "packageManager": "pnpm@9.15.1",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
   "pnpm": {
     "overrides": {
+      "@next/eslint-plugin-next": "$@next/eslint-plugin-next",
       "@types/react": "$@types/react",
       "@types/react-dom": "$@types/react-dom",
       "@typescript-eslint/typescript-estree": "$@typescript-eslint/typescript-estree",
-      "@next/eslint-plugin-next": "$@next/eslint-plugin-next",
       "eslint": "$eslint",
       "next": "$next",
+      "next-auth": "$next-auth",
       "react": "$react",
       "react-dom": "$react-dom",
       "typescript": "$typescript"
     }
-  },
-  "engines": {
-    "node": ">=20",
-    "pnpm": ">=9"
   }
 }

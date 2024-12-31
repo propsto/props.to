@@ -4,7 +4,7 @@ import { constServer } from "@propsto/constants/server";
 import { getUserByEmail } from "@propsto/data/repos";
 import { logger } from "@propsto/logger?auth";
 import { redirect } from "next/navigation";
-import { signIn } from "@/server/auth";
+import { signIn } from "@/server/auth.server";
 import { type SigninFormType, SigninFormSchema } from "@/app/types";
 
 export async function signInAction(

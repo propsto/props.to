@@ -1,0 +1,52 @@
+{
+	"folders": [
+		{
+			"name": "root",
+			"path": ".."
+		},
+		{
+			"name": "apps/app",
+			"path": "../apps/app"
+		},
+		{
+			"name": "apps/auth",
+			"path": "../apps/auth"
+		},
+		{
+			"name": "apps/docs",
+			"path": "../apps/docs"
+		},
+		{
+			"name": "apps/web",
+			"path": "../apps/web"
+		},
+		{
+			"name": "packages/ui",
+			"path": "../packages/ui"
+		},
+		{
+			"name": "packages/email",
+			"path": "../packages/email"
+		},
+		{
+			"name": "packages/data",
+			"path": "../packages/data"
+		},
+		{
+			"name": "packages/constants",
+			"path": "../packages/constants"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"packages/": true,
+			"apps/": true
+		}
+	}
+}

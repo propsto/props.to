@@ -1,15 +1,15 @@
 import { constServer } from "@propsto/constants/server";
 import { redirect } from "next/navigation";
 import { type User } from "next-auth";
-import { auth } from "@/server/auth";
+import { auth } from "@/server/auth.server";
 import { WelcomeStepper } from "@components/welcome-stepper";
 import { stepNames } from "@components/welcome-stepper/steps";
 
 export default async function WelcomePage({
   searchParams,
-}: {
+}: Readonly<{
   searchParams: Promise<Record<string, string | undefined>>;
-}): Promise<React.ReactElement> {
+}>): Promise<React.ReactElement> {
   const queryStep = (await searchParams).step ?? "personal";
   const initialStep = stepNames.includes(queryStep) ? queryStep : "personal";
   const session = await auth();
@@ -27,7 +27,9 @@ export default async function WelcomePage({
     user.username &&
     user.username.length < 41
   ) {
-    return redirect(constServer.PROPSTO_APP_URL);
+    return redirect(
+      (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
+    );
   }
   return <WelcomeStepper user={user} initialStep={initialStep} />;
 }

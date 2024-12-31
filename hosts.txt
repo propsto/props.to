@@ -1,0 +1,3 @@
+127.0.0.1 auth.propsto.local
+127.0.0.1 app.propsto.local
+127.0.0.1 propsto.local

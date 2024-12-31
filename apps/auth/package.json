@@ -1,12 +1,17 @@
 {
   "name": "@propsto/auth",
-  "private": true,
   "description": "Authentication app for props.to",
+  "exports": {
+    ".": "./src/server/auth.edge.ts",
+    "./edge.config": "./src/server/auth.edge.ts",
+    "./server.config": "./src/server/auth.server.ts"
+  },
   "scripts": {
     "build": "next build",
-    "dev": "DEBUG=@propsto:* PORT=3002 pnpm dotenv -- next dev",
+    "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
+    "next-dev": "next dev --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
     "start": "next start",
     "type-check": "tsc --noEmit"
   },
@@ -14,8 +19,7 @@
     "@hookform/resolvers": "3.9.1",
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
-    "@stepperize/react": "4.0.1",
-    "next-auth": "5.0.0-beta.25"
+    "@stepperize/react": "4.0.1"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
@@ -32,8 +36,10 @@
     "@vercel/blob": "*",
     "@vercel/kv": "*",
     "autoprefixer": "*",
+    "dotenv-cli": "*",
     "lucide-react": "*",
     "next": "*",
+    "next-auth": "*",
     "next-themes": "*",
     "nodemailer": "*",
     "postcss": "*",

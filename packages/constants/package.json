@@ -7,10 +7,10 @@
   "author": "",
   "main": "index.ts",
   "scripts": {
-    "check-env": "pnpm dotenv -- pnpm tsx check-env.ts",
+    "check-env": "pnpm tsx check-env.ts $PROPSTO_AUTH_URL",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint --fix **/*.ts",
-    "test": "pnpm dotenv -- pnpm tsx check-env.ts"
+    "test": "pnpm dotenv -- pnpm check-env"
   },
   "dependencies": {
     "@t3-oss/env-core": "0.11.1"
@@ -22,8 +22,8 @@
     "@propsto/config": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@types/node": "*",
+    "dotenv-cli": "*",
     "tsx": "*",
-    "typescript": "*",
     "zod": "*"
   }
 }

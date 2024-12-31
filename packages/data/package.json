@@ -32,6 +32,7 @@
   "peerDependencies": {
     "@propsto/constants": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "dotenv": "*",
     "tsx": "*",
     "typescript": "*",
     "uuid": "*"

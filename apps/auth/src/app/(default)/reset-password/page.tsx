@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { ResetPasswordForm } from "@components/reset-password-form";
-import { auth } from "@/server/auth";
+import { auth } from "@/server/auth.server";
 
 const internalMessages = {
   "no-password-set": "You have not set a password for your account.",

@@ -1,5 +1,7 @@
+const baseConfig = require("@propsto/ui/tailwind.config.cjs");
+
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ["src/app/**/*.{ts,tsx}"],
-  presets: [require("@propsto/ui/tailwind.config.cjs")],
+module.exports = {
+  content: ["src/app/**/*.{ts,tsx}", ...baseConfig.content],
+  presets: [baseConfig],
 };

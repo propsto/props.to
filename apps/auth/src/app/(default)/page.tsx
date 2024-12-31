@@ -1,10 +1,19 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/server/auth";
+import { auth } from "@/server/auth.server";
 import { SigninForm } from "@components/signin-form";
 
-export default async function SigninPage(): Promise<React.ReactElement> {
+export default async function SigninPage({
+  searchParams,
+}: Readonly<{
+  searchParams: Promise<Record<string, string>>;
+}>): Promise<React.ReactElement> {
   const session = await auth();
-  if (session?.user) redirect("/welcome");
+
+  if (session?.user) {
+    const queryString = new URLSearchParams(await searchParams).toString();
+    const redirectTo = queryString ? `/welcome?${queryString}` : "/welcome";
+    redirect(redirectTo);
+  }
 
   return (
     <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">

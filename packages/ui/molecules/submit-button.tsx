@@ -1,5 +1,5 @@
 import { CheckCircle2, LoaderCircle, XCircle } from "lucide-react";
-import { ButtonProgress } from "../atoms";
+import { ButtonProgress } from "../atoms/button-progress";
 
 export interface SubmitButtonProps extends React.PropsWithChildren {
   isPending: boolean;

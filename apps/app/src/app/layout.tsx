@@ -1,8 +1,10 @@
 /* eslint-disable camelcase -- Google exports not in camelcase */
-import "./style.css";
+import "./globals.css";
 
 import { Inter, Inter_Tight } from "next/font/google";
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
+import { cn } from "@propsto/ui/utils/cn";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,17 +25,23 @@ export const metadata: Metadata = {
   description: "Open Source Feedback Platform",
 };
 
-export function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<React.PropsWithChildren>): React.ReactElement {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${inter_tight.variable} font-inter antialiased bg-white text-zinc-900 tracking-tight`}
+        className={cn(
+          inter.className,
+          inter_tight.className,
+          "font-inter antialiased bg-white text-zinc-900 tracking-tight",
+        )}
       >
-        <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip">
-          {children}
-        </div>
+        <ThemeProvider>
+          <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

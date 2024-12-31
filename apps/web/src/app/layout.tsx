@@ -4,6 +4,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Inter, Inter_Tight } from "next/font/google";
+import { cn } from "@propsto/ui/utils/cn";
 
 const calFont = localFont({
   src: "../../public/fonts/CalSans-SemiBold.ttf",
@@ -40,7 +41,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${inter_tight.variable} ${calFont.variable} font-inter antialiased bg-white text-zinc-900 tracking-tight`}
+        className={cn(
+          inter.className,
+          inter_tight.className,
+          calFont.className,
+          "font-inter antialiased bg-white text-zinc-900 tracking-tight",
+        )}
       >
         <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip bg-white/50">
           {children}

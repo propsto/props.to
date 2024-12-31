@@ -12,6 +12,7 @@ export async function personalHandler(
   const { image, dateOfBirth, ...rest } = values;
   let blob;
   if (image && typeof image !== "string") {
+    // TODO abstract to saveAvatar to let others use another methodaway from Vercel
     blob = await put(`avatars/${userId}`, image[0], {
       access: "public",
       contentType: image[0].type,
