@@ -15,7 +15,10 @@ import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
 function getEmailProvider(): EmailConfig | NodemailerConfig {
   if (constServer.EMAIL_PROVIDER === "resend") {
     logger("resend used");
-    return Resend({ apiKey: constServer.RESEND_API_KEY });
+    return Resend({
+      apiKey: constServer.RESEND_API_KEY,
+      from: constServer.EMAIL_FROM,
+    });
   }
   logger("nodemailer used");
   return NodemailerProvider({
