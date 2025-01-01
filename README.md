@@ -61,7 +61,7 @@ pnpm test
 5. Start the dev server for some application (web, auth, app)
 
 ```bash
-pnpm dev:auth
+pnpm dev:app
 ```
 
 5. Open the following URLs:

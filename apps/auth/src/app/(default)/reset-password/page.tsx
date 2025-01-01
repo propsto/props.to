@@ -23,7 +23,12 @@ export default async function ResetPasswordPage({
     await searchParams,
   );
   const session = await auth();
-  if (session?.user) redirect("/welcome");
+
+  if (session?.user) {
+    const queryString = new URLSearchParams(await searchParams).toString();
+    const redirectTo = queryString ? `/welcome?${queryString}` : "/welcome";
+    redirect(redirectTo);
+  }
 
   return (
     <div className="w-full h-full relative">

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "email build --dir templates",
-    "dev": "DEBUG=@propsto:* pnpm maildev",
+    "dev": "pnpm maildev",
     "export": "email export",
     "lint": "eslint --fix **/*.{ts,tsx}",
     "start": "email dev --dir templates"
