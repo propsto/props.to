@@ -10,6 +10,7 @@ import NodemailerProvider, {
 import Resend from "next-auth/providers/resend";
 import { constServer } from "@propsto/constants/server";
 import NextAuth from "next-auth";
+import { sendVerificationRequest } from "../lib/auth-send-request";
 import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
@@ -18,6 +19,7 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
     return Resend({
       apiKey: constServer.RESEND_API_KEY,
       from: constServer.EMAIL_FROM,
+      sendVerificationRequest,
     });
   }
   logger("nodemailer used");
