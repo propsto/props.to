@@ -57,7 +57,7 @@ export const nextAuthConfig = {
       //await sendWelcomeEmail(params); // <-- send welcome email
     },
   },
-  debug: constServer.PROPSTO_ENV !== "production",
+  debug: true,
   cookies: {
     sessionToken: {
       name: secureCookies
