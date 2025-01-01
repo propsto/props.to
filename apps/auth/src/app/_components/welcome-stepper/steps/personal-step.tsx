@@ -195,7 +195,9 @@ export const config: Step = {
 export const defaults = (user: User): PersonalFormValues => ({
   firstName: user.firstName ?? "",
   lastName: user.lastName ?? "",
-  dateOfBirth: new Date(user.dateOfBirth ?? "").toISOString().substring(0, 10),
+  dateOfBirth: user.dateOfBirth
+    ? new Date(user.dateOfBirth).toISOString().substring(0, 10)
+    : "",
   email: user.email ?? "",
   image: user.image,
 });
