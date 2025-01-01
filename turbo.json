@@ -15,7 +15,9 @@
     "RESEND_API_KEY",
     "VERCEL_URL",
     "PROPSTO_APP_URL",
-    "PROPSTO_HOST"
+    "PROPSTO_HOST",
+    "NEXTAUTH_URL",
+    "NEXTAUTH_URL_INTERNAL"
   ],
   "tasks": {
     "@propsto/constants#test": {
