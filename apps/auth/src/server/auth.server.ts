@@ -59,6 +59,8 @@ console.log({
   _session: undefined,
   // eslint-disable-next-line @typescript-eslint/no-empty-function -- debug
   _getSession: () => {},
+  nextAuthUrl: process.env.NEXTAUTH_URL,
+  vercelUrl: process.env.VERCEL_URL,
 });
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
