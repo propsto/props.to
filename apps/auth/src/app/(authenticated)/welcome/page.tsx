@@ -1,6 +1,7 @@
 import { constServer } from "@propsto/constants/server";
 import { redirect } from "next/navigation";
 import { type User } from "next-auth";
+import { canUserMoveOn } from "@/lib/post-auth-check";
 import { auth } from "@/server/auth.server";
 import { WelcomeStepper } from "@components/welcome-stepper";
 import { stepNames } from "@components/welcome-stepper/steps";
@@ -19,14 +20,7 @@ export default async function WelcomePage({
   if (!user?.email || !user.id) {
     redirect("/error?code=InvalidSession");
   }
-  if (
-    user.firstName &&
-    user.lastName &&
-    user.image &&
-    user.dateOfBirth &&
-    user.username &&
-    user.username.length < 41
-  ) {
+  if (canUserMoveOn(user)) {
     return redirect(
       (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
     );

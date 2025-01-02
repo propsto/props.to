@@ -2,9 +2,9 @@
   "name": "@propsto/auth",
   "description": "Authentication app for props.to",
   "exports": {
-    ".": "./src/server/auth.edge.ts",
     "./edge.config": "./src/server/auth.edge.ts",
-    "./server.config": "./src/server/auth.server.ts"
+    "./server.config": "./src/server/auth.server.ts",
+    "./post-auth-check": "./src/lib/post-auth-check.ts"
   },
   "scripts": {
     "build": "pnpm dotenv -- next build",
