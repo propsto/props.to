@@ -1,69 +1,8 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN', 'ORGANIZATION_ADMIN', 'GROUP_ADMIN');
 
-  - You are about to drop the column `feedbackText` on the `Feedback` table. All the data in the column will be lost.
-  - You are about to drop the column `uri` on the `Feedback` table. All the data in the column will be lost.
-  - You are about to drop the column `domain` on the `Integration` table. All the data in the column will be lost.
-  - You are about to drop the column `username` on the `User` table. All the data in the column will be lost.
-  - You are about to drop the `UriSupport` table. If the table is not empty, all the data it contains will be lost.
-  - A unique constraint covering the columns `[slugId]` on the table `User` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[id,slugId]` on the table `User` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `templateId` to the `Feedback` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updatedAt` to the `Feedback` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `hostname` to the `Integration` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `slugId` to the `Integration` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `slugId` to the `User` table without a default value. This is not possible if the table is not empty.
-
-*/
--- AlterEnum
-ALTER TYPE "PayableResource" ADD VALUE 'FEEDBACK_TEMPLATE';
-
--- AlterEnum
--- This migration adds more than one value to an enum.
--- With PostgreSQL versions 11 and earlier, this is not possible
--- in a single migration. This can be worked around by creating
--- multiple migrations, each migration adding only one value to
--- the enum.
-
-
-ALTER TYPE "Role" ADD VALUE 'ORGANIZATION_ADMIN';
-ALTER TYPE "Role" ADD VALUE 'GROUP_ADMIN';
-
--- DropForeignKey
-ALTER TABLE "Feedback" DROP CONSTRAINT "Feedback_userId_fkey";
-
--- DropForeignKey
-ALTER TABLE "UriClaim" DROP CONSTRAINT "UriClaim_uriId_fkey";
-
--- DropForeignKey
-ALTER TABLE "UriSupport" DROP CONSTRAINT "UriSupport_integrationId_fkey";
-
--- DropIndex
-DROP INDEX "User_username_key";
-
--- AlterTable
-ALTER TABLE "Feedback" DROP COLUMN "feedbackText",
-DROP COLUMN "uri",
-ADD COLUMN     "fieldsData" JSONB,
-ADD COLUMN     "groupId" TEXT,
-ADD COLUMN     "organizationId" TEXT,
-ADD COLUMN     "templateId" TEXT NOT NULL,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
-ALTER COLUMN "userId" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "Integration" DROP COLUMN "domain",
-ADD COLUMN     "hostname" TEXT NOT NULL,
-ADD COLUMN     "slugId" TEXT NOT NULL,
-ALTER COLUMN "subpath" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "username",
-ADD COLUMN     "organizationId" TEXT,
-ADD COLUMN     "slugId" TEXT NOT NULL;
-
--- DropTable
-DROP TABLE "UriSupport";
+-- CreateEnum
+CREATE TYPE "PayableResource" AS ENUM ('PREMIUM_USERNAME', 'ADDITIONAL_INTEGRATION', 'FEEDBACK_TEMPLATE');
 
 -- CreateTable
 CREATE TABLE "Organization" (
@@ -86,6 +25,25 @@ CREATE TABLE "Group" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "slugId" TEXT NOT NULL,
+    "password" TEXT,
+    "firstName" TEXT,
+    "lastName" TEXT,
+    "role" "Role" NOT NULL DEFAULT 'USER',
+    "dateOfBirth" TIMESTAMP(3),
+    "organizationId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "image" TEXT,
+    "emailVerified" TIMESTAMP(3),
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -124,6 +82,20 @@ CREATE TABLE "FeedbackTemplate" (
 );
 
 -- CreateTable
+CREATE TABLE "Feedback" (
+    "id" BIGSERIAL NOT NULL,
+    "userId" TEXT,
+    "groupId" TEXT,
+    "organizationId" TEXT,
+    "templateId" TEXT NOT NULL,
+    "fieldsData" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Feedback_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Uri" (
     "id" BIGSERIAL NOT NULL,
     "uri" TEXT NOT NULL,
@@ -132,6 +104,99 @@ CREATE TABLE "Uri" (
     "userId" TEXT,
 
     CONSTRAINT "Uri_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UriClaim" (
+    "id" BIGSERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "uriId" BIGINT NOT NULL,
+    "claimedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UriClaim_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Integration" (
+    "id" BIGSERIAL NOT NULL,
+    "hostname" TEXT NOT NULL,
+    "subpath" TEXT,
+    "slugId" TEXT NOT NULL,
+
+    CONSTRAINT "Integration_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payment" (
+    "id" BIGSERIAL NOT NULL,
+    "userId" TEXT NOT NULL,
+    "resourceType" "PayableResource" NOT NULL,
+    "resourceId" BIGINT,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "paymentDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Account_pkey" PRIMARY KEY ("provider","providerAccountId")
+);
+
+-- CreateTable
+CREATE TABLE "Session" (
+    "sessionToken" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "VerificationToken_pkey" PRIMARY KEY ("identifier","token")
+);
+
+-- CreateTable
+CREATE TABLE "Authenticator" (
+    "credentialID" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "credentialPublicKey" TEXT NOT NULL,
+    "counter" INTEGER NOT NULL,
+    "credentialDeviceType" TEXT NOT NULL,
+    "credentialBackedUp" BOOLEAN NOT NULL,
+    "transports" TEXT,
+
+    CONSTRAINT "Authenticator_pkey" PRIMARY KEY ("userId","credentialID")
+);
+
+-- CreateTable
+CREATE TABLE "PasswordResetToken" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PasswordResetToken_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -179,6 +244,15 @@ CREATE UNIQUE INDEX "Organization_id_slugId_key" ON "Organization"("id", "slugId
 CREATE UNIQUE INDEX "Group_slugId_organizationId_key" ON "Group"("slugId", "organizationId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_slugId_key" ON "User"("slugId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_id_slugId_key" ON "User"("id", "slugId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Uri_uri_key" ON "Uri"("uri");
 
 -- CreateIndex
@@ -191,6 +265,21 @@ CREATE UNIQUE INDEX "Uri_uri_userId_key" ON "Uri"("uri", "userId");
 CREATE UNIQUE INDEX "Uri_uri_integrationId_key" ON "Uri"("uri", "integrationId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "UriClaim_userId_key" ON "UriClaim"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Authenticator_credentialID_key" ON "Authenticator"("credentialID");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PasswordResetToken_token_key" ON "PasswordResetToken"("token");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PasswordResetToken_email_token_key" ON "PasswordResetToken"("email", "token");
+
+-- CreateIndex
 CREATE INDEX "_GroupToUser_B_index" ON "_GroupToUser"("B");
 
 -- CreateIndex
@@ -201,12 +290,6 @@ CREATE INDEX "_GroupTemplates_B_index" ON "_GroupTemplates"("B");
 
 -- CreateIndex
 CREATE INDEX "_UserTemplates_B_index" ON "_UserTemplates"("B");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_slugId_key" ON "User"("slugId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_id_slugId_key" ON "User"("id", "slugId");
 
 -- AddForeignKey
 ALTER TABLE "Organization" ADD CONSTRAINT "Organization_slugId_fkey" FOREIGN KEY ("slugId") REFERENCES "Slug"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -251,10 +334,25 @@ ALTER TABLE "Uri" ADD CONSTRAINT "Uri_organizationId_fkey" FOREIGN KEY ("organiz
 ALTER TABLE "Uri" ADD CONSTRAINT "Uri_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "UriClaim" ADD CONSTRAINT "UriClaim_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "UriClaim" ADD CONSTRAINT "UriClaim_uriId_fkey" FOREIGN KEY ("uriId") REFERENCES "Uri"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Integration" ADD CONSTRAINT "Integration_slugId_fkey" FOREIGN KEY ("slugId") REFERENCES "Slug"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Authenticator" ADD CONSTRAINT "Authenticator_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_GroupToUser" ADD CONSTRAINT "_GroupToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
