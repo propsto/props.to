@@ -1,5 +1,9 @@
+import dotenvExpand from "dotenv-expand";
+
+dotenvExpand.expand({ parsed: { ...process.env } });
+
 /** @type {import("next").NextConfig} */
-module.exports = {
+export default {
   images: {
     remotePatterns: [
       { hostname: "*.public.blob.vercel-storage.com" },

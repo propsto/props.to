@@ -38,6 +38,7 @@
     "@vercel/kv": "*",
     "autoprefixer": "*",
     "dotenv-cli": "*",
+    "dotenv-expand": "*",
     "lucide-react": "*",
     "next": "*",
     "next-auth": "*",
