@@ -19,6 +19,8 @@ export const constServer = createEnv({
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
   },
 
   /**

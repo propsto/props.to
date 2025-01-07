@@ -1,7 +1,10 @@
+// More config options in file://./auth.server.ts
+
 import NextAuth from "next-auth";
 import { type JWT } from "next-auth/jwt";
 import type { NextAuthConfig, User as NextAuthUser } from "next-auth";
 import { constServer } from "@propsto/constants/server";
+import { updateUser } from "@propsto/data/repos";
 
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
@@ -46,15 +49,16 @@ export const nextAuthConfig = {
   },
   events: {
     createUser(message) {
-      const params = {
-        user: {
-          name: message.user.name,
-          email: message.user.email,
-        },
-      };
-      // eslint-disable-next-line no-console -- Lala
-      console.log(params);
+      // eslint-disable-next-line no-console -- To tackle
+      console.log("next-auth > event > createUser", message);
       //await sendWelcomeEmail(params); // <-- send welcome email
+    },
+    linkAccount: async ({ user }) => {
+      if (user.id) {
+        await updateUser(user.id, {
+          emailVerified: new Date(),
+        });
+      }
     },
   },
   debug: constServer.PROPSTO_ENV !== "production",
@@ -68,7 +72,10 @@ export const nextAuthConfig = {
         sameSite: "lax", // Prevents CSRF while allowing subdomain sharing
         path: "/",
         secure: secureCookies,
-        domain: `.${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
+        domain:
+          constServer.PROPSTO_HOST === "localhost"
+            ? constServer.PROPSTO_HOST
+            : `.${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
       },
     },
   },

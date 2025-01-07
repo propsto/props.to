@@ -5,6 +5,7 @@
     ".env"
   ],
   "globalEnv": [
+    "DEBUG",
     "AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",

@@ -33,6 +33,10 @@
 			"path": "../packages/data"
 		},
 		{
+			"name": "packages/logger",
+			"path": "../packages/logger"
+		},
+		{
 			"name": "packages/constants",
 			"path": "../packages/constants"
 		}

@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Questions
-    url: https://go.props.to/discord
-    about: Ask a general question about the project on our discord community
   - name: GitHub Community Support
     url: https://github.com/orgs/propsto/discussions
     about: Please ask and answer questions here.
+  - name: GitHub Security Bug Bounty
+    url: https://bounty.github.com/
+    about: Please report security vulnerabilities here.

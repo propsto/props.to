@@ -7,6 +7,7 @@
     "db-deploy": "pnpm dotenv -- prisma migrate deploy",
     "db-generate": "pnpm dotenv -- prisma generate",
     "db-migrate": "pnpm dotenv -- prisma migrate dev",
+    "db-migrate-reset": "pnpm dotenv -- prisma migrate reset",
     "db-nuke": "pnpm dotenv -- docker compose down --volumes --remove-orphans || docker-compose down --volumes --remove-orphans",
     "db-push": "pnpm dotenv -- prisma db push --skip-generate",
     "db-reset": "pnpm db-nuke && pnpm db-setup",

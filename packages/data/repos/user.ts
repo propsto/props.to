@@ -13,14 +13,17 @@ export const defaultUserSelect: Prisma.UserSelect = {
   lastName: true,
   email: true,
   image: true,
-  username: true,
+  slug: true,
 };
 
 export async function createUser(data: { email: string }) {
   try {
-    const dataWithUsername = { ...data, username: `user-${uuidv4()}` };
-    logger("createUser", dataWithUsername);
-    const newUser = await db.user.create({ data: dataWithUsername });
+    const dataWithSlug = {
+      ...data,
+      slug: { create: { slug: `user-${uuidv4()}` } },
+    };
+    logger("createUser", dataWithSlug);
+    const newUser = await db.user.create({ data: dataWithSlug });
     return handleSuccess(newUser);
   } catch (e) {
     return handleError(e);
