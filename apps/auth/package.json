@@ -7,11 +7,9 @@
     "./post-auth-check": "./src/lib/post-auth-check.ts"
   },
   "scripts": {
-    "build": "pnpm dotenv-prod -- next build",
-    "build-dev": "pnpm dotenv -- next build",
+    "build": "pnpm dotenv -- next build",
     "dotenv-build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
-    "dotenv-prod": "dotenv -e ../../.env.production",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
     "next-dev": "next dev --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
