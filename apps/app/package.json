@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "pnpm dotenv-prod -- next build",
+    "build-dev": "pnpm dotenv -- next build",
     "dotenv-build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
+    "dotenv-prod": "dotenv -e ../../.env.production",
     "dotenv": "dotenv -e ../../.env",
     "dx": "pnpm --filter @propsto/data db-setup && pnpm dev",
     "dx:nuke": "pnpm --filter @propsto/data db-nuke && pnpm dx",
