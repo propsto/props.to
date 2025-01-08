@@ -65,11 +65,12 @@ export async function getUserByEmailAndPassword({
 }) {
   try {
     const hashedPassword = await hash(password as string, 10);
-    logger("getUserByEmailAndPassword", email, hashedPassword);
+    logger("getUserByEmailAndPassword", { email, hashedPassword });
     const existingUser = await db.user.findUnique({
       where: { email: email as string },
       select: defaultUserSelect,
     });
+    logger("getUserByEmailAndPassword", { existingUser });
     if (!existingUser) throw Error("User does not exist");
     const { password: userPassword, dateOfBirth, ...rest } = existingUser;
     if (!userPassword) throw Error("Password is not defined");
