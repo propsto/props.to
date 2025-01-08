@@ -4,5 +4,12 @@
     "AUTH_URL": "https://auth-git-$VERCEL_GIT_COMMIT_REF-propsto.vercel.app",
     "PROPSTO_HOST": "vercel.app",
     "PROPSTO_APP_URL": "https://app-git-$VERCEL_GIT_COMMIT_REF-propsto.vercel.app"
+  },
+  "build": {
+    "env": {
+      "AUTH_URL": "https://auth-git-$VERCEL_GIT_COMMIT_REF-propsto.vercel.app",
+      "PROPSTO_HOST": "vercel.app",
+      "PROPSTO_APP_URL": "https://app-git-$VERCEL_GIT_COMMIT_REF-propsto.vercel.app"
+    }
   }
 }
