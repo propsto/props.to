@@ -1,5 +1,4 @@
 import { type NextConfig } from "next";
-import { env } from "@propsto/constants/vercel";
 
 export default {
   reactStrictMode: true,
@@ -18,5 +17,4 @@ export default {
   // We run these separately in CI, so we can skip them here.
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-  env,
 } satisfies NextConfig;
