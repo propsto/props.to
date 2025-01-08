@@ -180,9 +180,6 @@ importers:
       dotenv-cli:
         specifier: '*'
         version: 8.0.0
-      dotenv-expand:
-        specifier: '*'
-        version: 12.0.1
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -282,9 +279,6 @@ importers:
       dotenv-cli:
         specifier: '*'
         version: 8.0.0
-      dotenv-expand:
-        specifier: '*'
-        version: 12.0.1
       lucide-react:
         specifier: '*'
         version: 0.468.0(react@19.0.0)
@@ -360,9 +354,6 @@ importers:
       dotenv-cli:
         specifier: '*'
         version: 8.0.0
-      dotenv-expand:
-        specifier: '*'
-        version: 12.0.1
       eslint:
         specifier: 8.57.0
         version: 8.57.0
@@ -427,6 +418,9 @@ importers:
       dotenv-cli:
         specifier: '*'
         version: 8.0.0
+      dotenv-expand:
+        specifier: '*'
+        version: 12.0.1
       tsx:
         specifier: '*'
         version: 4.19.2

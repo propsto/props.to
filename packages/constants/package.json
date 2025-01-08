@@ -23,6 +23,7 @@
     "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "dotenv-cli": "*",
+    "dotenv-expand": "*",
     "tsx": "*",
     "zod": "*"
   }
