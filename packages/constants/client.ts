@@ -1,5 +1,4 @@
 import { createEnv } from "@t3-oss/env-core";
-import { constCommon } from "./common";
 
 export const constClient = createEnv({
   client: {
@@ -17,5 +16,4 @@ export const constClient = createEnv({
    * `process.env` or `import.meta.env`.
    */
   runtimeEnv: process.env,
-  extends: [constCommon],
 });

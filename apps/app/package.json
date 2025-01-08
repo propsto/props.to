@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "pnpm dotenv -- next build",
-    "dotenv-build": "pnpm dotenv -- next build",
+    "build": "next build",
+    "dotenv-build": "pnpm dotenv -- pnpm build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "dx": "pnpm --filter @propsto/data db-setup && pnpm dev",
@@ -35,7 +35,6 @@
     "@types/react-dom": "*",
     "autoprefixer": "*",
     "dotenv-cli": "*",
-    "dotenv-expand": "*",
     "eslint": "*",
     "lucide-react": "*",
     "next": "*",

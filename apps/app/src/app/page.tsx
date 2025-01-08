@@ -16,14 +16,13 @@ import { AppSidebar } from "@propsto/ui/molecules/app-sidebar";
 import { canUserMoveOn } from "@propsto/auth/post-auth-check";
 import React from "react";
 import { redirect } from "next/navigation";
-import { constServer } from "@propsto/constants/server";
 import { auth } from "@/server/auth.server";
 
 export default async function Page(): Promise<React.ReactNode> {
   const session = await auth();
   if (session?.user) {
     if (!canUserMoveOn(session.user)) {
-      return redirect(constServer.AUTH_URL);
+      return redirect(process.env.AUTH_URL ?? "");
     }
   }
   return (

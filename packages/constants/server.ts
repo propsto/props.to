@@ -1,6 +1,5 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
-import { constCommon } from "./common";
 
 process.env.EMAIL_PROVIDER =
   process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
@@ -17,6 +16,8 @@ export const constServer = createEnv({
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
+    //PROPSTO_APP_URL: z.string().url(),
+    //AUTH_URL: z.string().url(),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
@@ -43,5 +44,4 @@ export const constServer = createEnv({
    * explicitly specify this option as true.
    */
   emptyStringAsUndefined: true,
-  extends: [constCommon],
 });

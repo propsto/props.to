@@ -14,11 +14,8 @@
     "EMAIL_FROM",
     "EMAIL_SERVER",
     "RESEND_API_KEY",
-    "VERCEL_URL",
     "PROPSTO_APP_URL",
-    "PROPSTO_HOST",
-    "NEXTAUTH_URL",
-    "NEXTAUTH_URL_INTERNAL"
+    "PROPSTO_HOST"
   ],
   "tasks": {
     "@propsto/constants#test": {
