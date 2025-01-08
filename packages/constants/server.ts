@@ -20,7 +20,7 @@ export const constServer = createEnv({
       str =>
         process.env.VERCEL_ENV === "preview" &&
         process.env.VERCEL_GIT_COMMIT_REF
-          ? `https://app-git-${process.env.VERCEL_GIT_COMMIT_REF}-propsto.vercel.app`
+          ? `https://app-git-${process.env.VERCEL_GIT_COMMIT_REF.replace("_", "")}-propsto.vercel.app`
           : str,
       z.string().url(),
     ),
@@ -28,7 +28,7 @@ export const constServer = createEnv({
       str =>
         process.env.VERCEL_ENV === "preview" &&
         process.env.VERCEL_GIT_COMMIT_REF
-          ? `https://auth-git-${process.env.VERCEL_GIT_COMMIT_REF}-propsto.vercel.app`
+          ? `https://auth-git-${process.env.VERCEL_GIT_COMMIT_REF.replace("_", "")}-propsto.vercel.app`
           : str,
       z.string().url(),
     ),
