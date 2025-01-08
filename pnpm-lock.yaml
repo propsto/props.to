@@ -150,6 +150,9 @@ importers:
       '@propsto/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
       '@propsto/data':
         specifier: workspace:*
         version: link:../../packages/data

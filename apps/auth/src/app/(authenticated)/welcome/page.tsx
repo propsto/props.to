@@ -1,3 +1,4 @@
+import { constServer } from "@propsto/constants/server";
 import { redirect } from "next/navigation";
 import { type User } from "next-auth";
 import { canUserMoveOn } from "@/lib/post-auth-check";
@@ -21,7 +22,7 @@ export default async function WelcomePage({
   }
   if (canUserMoveOn(user)) {
     return redirect(
-      (await searchParams).callbackUrl ?? process.env.PROPSTO_APP_URL ?? "",
+      (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
     );
   }
   return <WelcomeStepper user={user} initialStep={initialStep} />;

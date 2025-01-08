@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { constServer } from "@propsto/constants/server";
 import { auth } from "@/server/auth.server";
 import { SigninForm } from "@components/signin-form";
 import { canUserMoveOn } from "@/lib/post-auth-check";
@@ -13,7 +14,7 @@ export default async function SigninPage({
   if (session?.user) {
     if (canUserMoveOn(session.user)) {
       return redirect(
-        (await searchParams).callbackUrl ?? process.env.PROPSTO_APP_URL ?? "",
+        (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
       );
     }
     const queryString = new URLSearchParams(

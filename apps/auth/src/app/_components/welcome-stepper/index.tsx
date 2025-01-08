@@ -7,6 +7,7 @@ import { type z } from "zod";
 import { defineStepper } from "@stepperize/react";
 import { Button, Separator } from "@propsto/ui/atoms";
 import { Form } from "@propsto/ui/molecules";
+import { constServer } from "@propsto/constants/server";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { type User } from "next-auth";
 import {
@@ -67,7 +68,7 @@ export function WelcomeStepper({
           navigateToStep("account");
         }
       },
-      complete: () => redirect(process.env.PROPSTO_APP_URL ?? ""),
+      complete: () => redirect(constServer.PROPSTO_APP_URL),
     });
   };
 

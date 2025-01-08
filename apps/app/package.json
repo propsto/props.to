@@ -26,6 +26,7 @@
     "@playwright/test": "*",
     "@propsto/auth": "workspace:*",
     "@propsto/config": "workspace:*",
+    "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
