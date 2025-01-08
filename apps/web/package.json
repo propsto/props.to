@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "rn ../../.env.production ../../.env && pnpm dotenv -- next build",
+    "build": "pnpm dotenv-prod -- next build",
     "build-dev": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
+    "dotenv-prod": "dotenv -e ../../.env.production",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
     "next-dev": "next dev --hostname=$PROPSTO_WEB_HOSTNAME --port=$PROPSTO_WEB_PORT",
