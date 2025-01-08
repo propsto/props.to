@@ -73,9 +73,9 @@ export const nextAuthConfig = {
         path: "/",
         secure: secureCookies,
         domain:
-          constServer.PROPSTO_HOST === "localhost"
-            ? constServer.PROPSTO_HOST
-            : `.${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
+          process.env.PROPSTO_HOST === "localhost"
+            ? process.env.PROPSTO_HOST
+            : `.${process.env.PROPSTO_HOST ?? ""}`, // Use the common domain for subdomains
       },
     },
   },
