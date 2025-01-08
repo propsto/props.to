@@ -1,9 +1,5 @@
-import dotenvExpand from "dotenv-expand";
-
-dotenvExpand.expand({ parsed: { ...process.env } });
-
-/** @type {import("next").NextConfig} */
-const config = {
+import { type NextConfig } from "next";
+export default {
   reactStrictMode: true,
 
   /**
@@ -20,5 +16,4 @@ const config = {
   // We run these separately in CI, so we can skip them here.
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-};
-export default config;
+} satisfies NextConfig;

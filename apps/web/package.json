@@ -27,7 +27,6 @@
     "autoprefixer": "*",
     "cal-sans": "*",
     "dotenv-cli": "*",
-    "dotenv-expand": "*",
     "eslint": "*",
     "lucide-react": "*",
     "next": "*",

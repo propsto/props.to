@@ -1,8 +1,4 @@
-import dotenvExpand from "dotenv-expand";
-
-dotenvExpand.expand({ parsed: { ...process.env } });
-
-/** @type {import("next").NextConfig} */
+import { type NextConfig } from "next";
 export default {
   images: {
     remotePatterns: [
@@ -11,4 +7,4 @@ export default {
       { hostname: "lh3.googleusercontent.com" },
     ],
   },
-};
+} satisfies NextConfig;
