@@ -13,12 +13,12 @@
 			"path": "../apps/auth"
 		},
 		{
-			"name": "apps/docs",
-			"path": "../apps/docs"
-		},
-		{
 			"name": "apps/web",
 			"path": "../apps/web"
+		},
+		{
+			"name": "apps/docs",
+			"path": "../apps/docs"
 		},
 		{
 			"name": "packages/ui",

@@ -37,6 +37,7 @@
     "@types/react-dom": "*",
     "autoprefixer": "*",
     "dotenv-cli": "*",
+    "dotenv-expand": "*",
     "eslint": "*",
     "lucide-react": "*",
     "next": "*",
