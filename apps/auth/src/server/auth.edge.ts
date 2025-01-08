@@ -48,11 +48,6 @@ export const nextAuthConfig = {
     newUser: "/welcome",
   },
   events: {
-    createUser(message) {
-      // eslint-disable-next-line no-console -- To tackle
-      console.log("next-auth > event > createUser", message);
-      //await sendWelcomeEmail(params); // <-- send welcome email
-    },
     linkAccount: async ({ user }) => {
       if (user.id) {
         await updateUser(user.id, {
