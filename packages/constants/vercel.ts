@@ -10,8 +10,6 @@ const { parsed } = dotenvExpand.expand({
   },
 });
 
-const out = parsed?.env ?? {};
-// eslint-disable-next-line no-console -- temp
-console.log({ out });
+const out = parsed ?? {};
 
 export const env = out;
