@@ -1,7 +1,7 @@
 name: App - Vercel Preview Alias
 
 permissions:
-  issues: write
+  pull-requests: write
 
 on: [deployment_status]
 
@@ -10,12 +10,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  new_preview_url:
+  set_preview_url:
+    name: Set Custom Preview URL
     runs-on: ubuntu-latest
-    if: github.event.deployment.environment == 'Preview – app'
-    outputs:
-      result: ${{ steps.preview_url.outputs.value }}
-      pr_number: ${{steps.get_pr.outputs.pr_number}}
     steps:
       - name: Get Pull Request from Deployment Ref
         id: get_pr
@@ -36,58 +33,62 @@ jobs:
             PR_NUMBER=$(echo "$PR_DATA" | jq '.number')
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           fi
+      - name: Check if correct environment for this project
+        id: check_env
+        run: |          
+          if [ "${{ github.event.deployment.environment }}" == "Preview - app" ]; then
+            echo "correct=true" >> $GITHUB_OUTPUT
+          else
+            echo "correct=false" >> $GITHUB_OUTPUT
+          fi
       - name: Define Preview URL
         id: preview_url
+        if: github.event.deployment_status.state == 'success' && steps.check_env.outputs.correct == 'true'
         run: echo "value=app.pr-${{steps.get_pr.outputs.pr_number}}.props.host" >> $GITHUB_OUTPUT
-  vercel_alias:
-    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – app'
-    needs: new_preview_url
-    runs-on: ubuntu-latest
-    steps:
       - name: Install Vercel CLI
+        if: github.event.deployment_status.state == 'success' && steps.check_env.outputs.correct == 'true'
         run: npm install --global vercel@latest
       - name: Check if cert already exists
+        if: github.event.deployment_status.state == 'success' && steps.check_env.outputs.correct == 'true'
         id: check_cert
         run: |
           OUTPUT=$(vercel --scope ${{ vars.VERCEL_TEAM_ID }} certs ls --token ${{ secrets.VERCEL_ACCESS_TOKEN }})
           
-          if echo "$OUTPUT" | grep -q "${{needs.new_preview_url.outputs.result}}"; then
+          if echo "$OUTPUT" | grep -q "${{steps.preview_url.outputs.value}}"; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
       - name: Generate Domain Cert in Vercel
-        if: steps.check_cert.outputs.exists == 'false'
-        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue ${{needs.new_preview_url.outputs.result}} --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
+        if: github.event.deployment_status.state == 'success' && steps.check_env.outputs.correct == 'true' && steps.check_cert.outputs.exists == 'false'
+        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue ${{steps.preview_url.outputs.value}} --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel's Alias Preview URL
         id: alias-preview-url
+        if: github.event.deployment_status.state == 'success' && steps.check_env.outputs.correct == 'true'    
         uses: justincase-jp/vercel-preview-url-alias@0.2.1
         with:
           vercel_access_token: ${{ secrets.VERCEL_ACCESS_TOKEN }}
           vercel_team_id: ${{ vars.VERCEL_TEAM_ID }}
           vercel_project_id: ${{ vars.VERCEL_APP_PROJECT_ID }}
-          alias_template: ${{needs.new_preview_url.outputs.result}}
+          alias_template: ${{steps.preview_url.outputs.value}}
       - name: GitHub comment on success
+        if: steps.alias-preview-url.outcome == 'success'
         uses: actions/github-script@v6
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{needs.new_preview_url.outputs.pr_number}},
+              issue_number: ${{steps.get_pr.outputs.pr_number}},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '🚀 App preview deployment successfull at ${{steps.alias-preview-url.outputs.preview_url_alias}}'
             })
-  comment_failute:
-    if: github.event.deployment_status.state == 'failure'
-    needs: new_preview_url
-    runs-on: ubuntu-latest
-    steps:
       - name: GitHub comment on failute
+        if: github.event.deployment_status.state == 'failure' && steps.check_env.outputs.correct == 'true'     
         uses: actions/github-script@v6
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{needs.new_preview_url.outputs.pr_number}},
+              issue_number: ${{steps.get_pr.outputs.pr_number}},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '🛑 App preview deployment failed'
