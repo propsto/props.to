@@ -12,11 +12,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
-          DEPLOYMENT_REF="${{ github.event.deployment.ref }}"
-          echo "Looking for PR associated with commit $DEPLOYMENT_SHA on branch $DEPLOYMENT_REF"
+          echo "Looking for PR associated with commit $DEPLOYMENT_SHA"
 
           # Query GitHub API for PR associated with the commit and branch
-          PR_DATA=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[] | select(.head.ref == \"$DEPLOYMENT_REF\") | .")
+          PR_DATA=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[] | .")
           
           # Extract PR number if it exists
           if [ -z "$PR_DATA" ]; then
