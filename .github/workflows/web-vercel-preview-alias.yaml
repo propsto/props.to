@@ -28,7 +28,7 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Generate Domain Cert in Vercel
-        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue web.pr-${{steps.get_pr.outputs.pr_number}}.props.host
+        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue web.pr-${{steps.get_pr.outputs.pr_number}}.props.host --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel's Alias Preview URL
         if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – web'
         id: alias-preview-url
