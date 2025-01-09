@@ -68,7 +68,7 @@ export async function getUserByEmailAndPassword({
     logger("getUserByEmailAndPassword", { email, hashedPassword });
     const existingUser = await db.user.findUnique({
       where: { email: email as string },
-      select: defaultUserSelect,
+      select: { ...defaultUserSelect, password: true },
     });
     logger("getUserByEmailAndPassword", { existingUser });
     if (!existingUser) throw Error("User does not exist");
