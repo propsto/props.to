@@ -2,7 +2,8 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
     "pnpm-lock.yaml",
-    ".env"
+    ".env",
+    "node_modules/@propsto/**/*"
   ],
   "globalEnv": [
     "DEBUG",
