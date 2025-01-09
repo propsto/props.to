@@ -11,16 +11,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
           DEPLOYMENT_REF="${{ github.event.deployment.ref }}"
-          echo "Deployment Ref: $DEPLOYMENT_REF"
+          echo "Looking for PR associated with commit $DEPLOYMENT_SHA on branch $DEPLOYMENT_REF"
 
-          # Query the PR associated with the branch
-          PR_NUMBER=$(gh api repos/${{ github.repository }}/pulls --jq '.[] | select(.head.ref == env.DEPLOYMENT_REF) | .number')
-          if [ -z "$PR_NUMBER" ]; then
-            echo "No associated PR found."
+          # Query GitHub API for PR associated with the commit and branch
+          PR_DATA=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[] | select(.head.ref == \"$DEPLOYMENT_REF\") | .")
+          
+          # Extract PR number if it exists
+          if [ -z "$PR_DATA" ]; then
+            echo "No PR associated with commit $DEPLOYMENT_SHA on branch $DEPLOYMENT_REF."
             exit 1
           else
-            echo "Pull Request Number: $PR_NUMBER"
+            PR_NUMBER=$(echo "$PR_DATA" | jq '.number')
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           fi
       - name: Get Vercel's Alias Preview URL
