@@ -11,7 +11,8 @@ concurrency:
 
 jobs:
   set_preview_url:
-    name: Set Custom Preview URL
+    name: Set Custom Preview URL (web)
+    if: github.event.deployment.environment == 'Preview - web'
     runs-on: ubuntu-latest
     steps:
       - name: Get Pull Request from Deployment Ref
@@ -35,13 +36,11 @@ jobs:
           fi
       - name: Define Preview URL
         id: preview_url
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview - web'
         run: echo "value=web.pr-${{steps.get_pr.outputs.pr_number}}.props.host" >> $GITHUB_OUTPUT
       - name: Install Vercel CLI
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview - web'
         run: npm install --global vercel@latest
       - name: Check if cert already exists
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview - web'
+        if: github.event.deployment_status.state == 'success'
         id: check_cert
         run: |
           OUTPUT=$(vercel --scope ${{ vars.VERCEL_TEAM_ID }} certs ls --token ${{ secrets.VERCEL_ACCESS_TOKEN }})
@@ -52,11 +51,11 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
       - name: Generate Domain Cert in Vercel
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview - web' && steps.check_cert.outputs.exists == 'false'
+        if: github.event.deployment_status.state == 'success' && steps.check_cert.outputs.exists == 'false'
         run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue ${{steps.preview_url.outputs.value}} --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel's Alias Preview URL
         id: alias-preview-url
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview - web'    
+        if: github.event.deployment_status.state == 'success'  
         uses: justincase-jp/vercel-preview-url-alias@0.2.1
         with:
           vercel_access_token: ${{ secrets.VERCEL_ACCESS_TOKEN }}
@@ -64,7 +63,7 @@ jobs:
           vercel_project_id: ${{ vars.VERCEL_WEB_PROJECT_ID }}
           alias_template: ${{steps.preview_url.outputs.value}}
       - name: GitHub comment on success
-        if: steps.alias-preview-url.outcome == 'success'
+        if: steps.alias-preview-url.outcome == 'success' && github.event.deployment_status.state == 'success'
         uses: actions/github-script@v6
         with:
           script: |
@@ -75,7 +74,7 @@ jobs:
               body: '🚀 Web preview deployment successfull at ${{steps.alias-preview-url.outputs.preview_url_alias}}'
             })
       - name: GitHub comment on failute
-        if: github.event.deployment_status.state == 'failure' && github.event.deployment.environment == 'Preview - web'     
+        if: github.event.deployment_status.state == 'failure'   
         uses: actions/github-script@v6
         with:
           script: |
