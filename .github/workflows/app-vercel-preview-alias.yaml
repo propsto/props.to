@@ -1,5 +1,8 @@
 name: App - Vercel Preview Alias
 on: [deployment_status]
+concurrency:
+  group: deployment-${{ github.event.deployment.environment }}
+  cancel-in-progress: false
 
 jobs:
   event_test:
@@ -40,7 +43,7 @@ jobs:
           alias_template: 'app.pr-${{steps.get_pr.outputs.pr_number}}.props.host'
       - name: GitHub comment on success
         uses: actions/github-script@v6
-        if: steps.alias-preview-url.outputs.status == 'SUCCESS' && github.event.deployment_status.state == 'success'
+        if: steps.alias-preview-url.outputs.status == 'success' && github.event.deployment_status.state == 'success'
         with:
           script: |
             github.rest.issues.createComment({
