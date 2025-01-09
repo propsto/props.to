@@ -25,6 +25,10 @@ jobs:
             PR_NUMBER=$(echo "$PR_DATA" | jq '.number')
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           fi
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Generate Domain Cert in Vercel
+        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue app.pr-${{steps.get_pr.outputs.pr_number}}.props.host
       - name: Get Vercel's Alias Preview URL
         if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – app'
         id: alias-preview-url
