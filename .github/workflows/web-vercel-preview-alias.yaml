@@ -1,13 +1,14 @@
 name: Web - Vercel Preview Alias
 on: [deployment_status]
 concurrency:
-  group: deployment-${{ github.event.deployment.environment }}
+  group: deployment-${{ github.event.deployment.id }}-web
   cancel-in-progress: false
 
 jobs:
-  event_test:
-    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – web'
+  pr_number:
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.get_pr.outputs.pr_number }}
     steps:
       - name: Get Pull Request from Deployment Ref
         id: get_pr
@@ -28,37 +29,44 @@ jobs:
             PR_NUMBER=$(echo "$PR_DATA" | jq '.number')
             echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           fi
+  vercel_alias:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – web'
+    needs: pr_number
+    runs-on: ubuntu-latest
+    steps:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Generate Domain Cert in Vercel
-        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue web.pr-${{steps.get_pr.outputs.pr_number}}.props.host --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
+        run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue web.pr-${{needs.pr_number.outputs.result}}.props.host --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel's Alias Preview URL
-        if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – web'
         id: alias-preview-url
         uses: justincase-jp/vercel-preview-url-alias@0.2.1
         with:
           vercel_access_token: ${{ secrets.VERCEL_ACCESS_TOKEN }}
           vercel_team_id: ${{ vars.VERCEL_TEAM_ID }}
           vercel_project_id: ${{ vars.VERCEL_WEB_PROJECT_ID }}
-          alias_template: 'web.pr-${{steps.get_pr.outputs.pr_number}}.props.host'
+          alias_template: 'web.pr-${{needs.pr_number.outputs.result}}.props.host'
       - name: GitHub comment on success
         uses: actions/github-script@v6
-        if: steps.alias-preview-url.outputs.status == 'success' && github.event.deployment_status.state == 'success'
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{steps.get_pr.outputs.pr_number}},
+              issue_number: ${{needs.pr_number.outputs.result}},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '🚀 Web preview deployment successfull at ${{steps.alias-preview-url.outputs.preview_url_alias}}'
             })
+  comment_failute:
+    if: github.event.deployment_status.state == 'failure'
+    needs: pr_number
+    runs-on: ubuntu-latest
+    steps:
       - name: GitHub comment on failute
         uses: actions/github-script@v6
-        if: github.event.deployment_status.state == 'failure'
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{steps.get_pr.outputs.pr_number}},
+              issue_number: ${{needs.pr_number.outputs.result}},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '🛑 Web preview deployment failed'
