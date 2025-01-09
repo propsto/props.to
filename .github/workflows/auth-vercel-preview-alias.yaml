@@ -1,5 +1,8 @@
 name: Auth - Vercel Preview Alias
 
+permissions:
+  issues: write
+
 on: [deployment_status]
 
 concurrency:
