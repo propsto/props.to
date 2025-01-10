@@ -1,4 +1,4 @@
-name: App - Vercel Preview Alias
+name: Notify Deploy
 
 permissions:
   pull-requests: write
@@ -6,15 +6,19 @@ permissions:
 on: [deployment_status]
 
 concurrency:
-  group: deployment-${{ github.event.deployment.id }}-app
+  group: deployment-${{ github.event.deployment.id }}-${{ github.event.deployment.environment }}
   cancel-in-progress: false
 
 jobs:
-  set_preview_url:
-    name: Set Custom Preview URL (app)
-    if: github.event.deployment.environment == 'Preview - app'
+  notify_deploy:
+    name: Notify deploy (${{ github.event.deployment.environment }})
     runs-on: ubuntu-latest
     steps:
+      - name: Get project name
+        id: project_name
+        run: |
+          echo "value=$(echo '${{ github.event.deployment.environment }}' | rev | cut -d' ' -f1 | rev)" >> $GITHUB_OUTPUT
+          echo "value_all_caps=$(echo '${{ github.event.deployment.environment }}' | rev | cut -d' ' -f1 | rev | tr '[:lower:]' '[:upper:]')" >> $GITHUB_OUTPUT
       - name: Get Pull Request from Deployment Ref
         id: get_pr
         env:
@@ -36,7 +40,7 @@ jobs:
           fi
       - name: Define Preview URL
         id: preview_url
-        run: echo "value=app.pr-${{steps.get_pr.outputs.pr_number}}.props.host" >> $GITHUB_OUTPUT
+        run: echo "value=$${{ steps.project_name.outputs.value }}.pr-${{steps.get_pr.outputs.pr_number}}.props.host" >> $GITHUB_OUTPUT
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Check if cert already exists
@@ -60,7 +64,7 @@ jobs:
         with:
           vercel_access_token: ${{ secrets.VERCEL_ACCESS_TOKEN }}
           vercel_team_id: ${{ vars.VERCEL_TEAM_ID }}
-          vercel_project_id: ${{ vars.VERCEL_APP_PROJECT_ID }}
+          vercel_project_id: ${{ vars[format('VERCEL_{0}_PROJECT_ID', steps.project_name.outputs.value_all_caps)] }}
           alias_template: ${{steps.preview_url.outputs.value}}
       - name: GitHub comment on success
         if: steps.alias-preview-url.outcome == 'success' && github.event.deployment_status.state == 'success'
@@ -71,7 +75,7 @@ jobs:
               issue_number: ${{steps.get_pr.outputs.pr_number}},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🚀 App preview deployment successfull at ${{steps.alias-preview-url.outputs.preview_url_alias}}'
+              body: '🚀 ${{ steps.project_name.outputs.value }} preview deployment successfull at ${{steps.alias-preview-url.outputs.preview_url_alias}}'
             })
       - name: GitHub comment on failute
         if: github.event.deployment_status.state == 'failure'   
@@ -82,5 +86,5 @@ jobs:
               issue_number: ${{steps.get_pr.outputs.pr_number}},
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '🛑 App preview deployment failed'
+              body: '🛑 ${{ steps.project_name.outputs.value }} preview deployment failed'
             })
