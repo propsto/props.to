@@ -19,16 +19,18 @@ export const constServer = createEnv({
     PROPSTO_APP_URL: z.preprocess(
       str =>
         process.env.VERCEL_ENV === "preview" &&
-        process.env.VERCEL_GIT_COMMIT_REF
-          ? `https://app-git-${process.env.VERCEL_GIT_COMMIT_REF.replace("_", "")}-propsto.vercel.app`
+        process.env.VERCEL_GIT_PULL_REQUEST_ID &&
+        process.env.PROPSTO_HOST
+          ? `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
           : str,
       z.string().url(),
     ),
     AUTH_URL: z.preprocess(
       str =>
         process.env.VERCEL_ENV === "preview" &&
-        process.env.VERCEL_GIT_COMMIT_REF
-          ? `https://auth-git-${process.env.VERCEL_GIT_COMMIT_REF.replace("_", "")}-propsto.vercel.app`
+        process.env.VERCEL_GIT_PULL_REQUEST_ID &&
+        process.env.PROPSTO_HOST
+          ? `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
           : str,
       z.string().url(),
     ),

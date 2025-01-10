@@ -67,10 +67,7 @@ export const nextAuthConfig = {
         sameSite: "lax", // Prevents CSRF while allowing subdomain sharing
         path: "/",
         secure: secureCookies,
-        domain:
-          constServer.PROPSTO_HOST === "localhost"
-            ? constServer.PROPSTO_HOST
-            : `.${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
+        domain: `${constServer.PROPSTO_HOST === "localhost" ? "" : "."}${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
       },
     },
   },
