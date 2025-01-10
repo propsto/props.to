@@ -13,14 +13,17 @@ export const defaultUserSelect: Prisma.UserSelect = {
   lastName: true,
   email: true,
   image: true,
-  username: true,
+  slug: true,
 };
 
 export async function createUser(data: { email: string }) {
   try {
-    const dataWithUsername = { ...data, username: `user-${uuidv4()}` };
-    logger("createUser", dataWithUsername);
-    const newUser = await db.user.create({ data: dataWithUsername });
+    const dataWithSlug = {
+      ...data,
+      slug: { create: { slug: `user-${uuidv4()}` } },
+    };
+    logger("createUser", dataWithSlug);
+    const newUser = await db.user.create({ data: dataWithSlug });
     return handleSuccess(newUser);
   } catch (e) {
     return handleError(e);
@@ -62,11 +65,12 @@ export async function getUserByEmailAndPassword({
 }) {
   try {
     const hashedPassword = await hash(password as string, 10);
-    logger("getUserByEmailAndPassword", email, hashedPassword);
+    logger("getUserByEmailAndPassword", { email, hashedPassword });
     const existingUser = await db.user.findUnique({
       where: { email: email as string },
-      select: defaultUserSelect,
+      select: { ...defaultUserSelect, password: true },
     });
+    logger("getUserByEmailAndPassword", { existingUser });
     if (!existingUser) throw Error("User does not exist");
     const { password: userPassword, dateOfBirth, ...rest } = existingUser;
     if (!userPassword) throw Error("Password is not defined");

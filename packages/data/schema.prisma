@@ -1,79 +1,206 @@
+// Define the data source
 datasource db {
     provider  = "postgresql"
     url       = env("DATABASE_URL")
     directUrl = env("DIRECT_URL")
 }
 
+// Define the generator
 generator client {
     provider = "prisma-client-js"
 }
 
+// Enum for Role (User, Admin, Group Admin)
 enum Role {
     USER
     ADMIN
+    ORGANIZATION_ADMIN
+    GROUP_ADMIN
 }
 
+// Enum for resources that can be paid for
 enum PayableResource {
     PREMIUM_USERNAME
     ADDITIONAL_INTEGRATION
+    FEEDBACK_TEMPLATE
 }
 
+// Organization model (represents an organization, e.g., Acme Corp)
+model Organization {
+    id        String             @id @default(cuid())
+    name      String             @unique // Organization name
+    users     User[] // Users associated with the organization
+    slug      Slug               @relation(fields: [slugId], references: [id])
+    slugId    String             @unique
+    groups    Group[] // Groups within the organization (e.g., marketing team, HR)
+    feedbacks Feedback[] // Feedback related to the organization
+    templates FeedbackTemplate[] @relation(name: "OrganizationTemplates") // Templates associated with this organization
+    createdAt DateTime           @default(now())
+    updatedAt DateTime           @updatedAt
+    uris      Uri[] // URIs associated with the user for feedback
+
+    @@unique([id, slugId])
+}
+
+// Group model (represents a group within an organization, e.g., marketing team)
+model Group {
+    id             String             @id @default(cuid())
+    slug           Slug               @relation(fields: [slugId], references: [id])
+    slugId         String
+    name           String // Name of the group (e.g., marketing team)
+    organization   Organization       @relation(fields: [organizationId], references: [id])
+    organizationId String // Link to the organization this group belongs to
+    users          User[] // Users associated with the group
+    feedbacks      Feedback[] // Feedback related to the group
+    templates      FeedbackTemplate[] @relation(name: "GroupTemplates") // Templates associated with this group
+    createdAt      DateTime           @default(now())
+    updatedAt      DateTime           @updatedAt
+
+    // Relation to GroupAdmins (to identify admins of this group)
+    admins GroupAdmin[] // Relation to identify admins of this group
+
+    @@unique([slugId, organizationId])
+}
+
+// User model (user associated with an organization and potentially with groups)
 model User {
-    id            String          @id @default(cuid())
-    email         String          @unique
-    username      String          @unique
-    password      String?
-    firstName     String?
-    lastName      String?
-    role          Role            @default(USER)
-    dateOfBirth   DateTime?
-    feedbacks     Feedback[]
-    uriClaims     UriClaim[]
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    // Optional for WebAuthn support
-    Authenticator Authenticator[]
+    id             String             @id @default(cuid())
+    email          String             @unique
+    slug           Slug               @relation(fields: [slugId], references: [id])
+    slugId         String             @unique
+    password       String?
+    firstName      String?
+    lastName       String?
+    role           Role               @default(USER)
+    dateOfBirth    DateTime?
+    feedbacks      Feedback[] // Feedback received by the user
+    groups         Group[] // Groups the user belongs to
+    organization   Organization?      @relation(fields: [organizationId], references: [id]) // Organization the user belongs to
+    organizationId String?
+    templates      FeedbackTemplate[] @relation(name: "UserTemplates") // Templates associated with this user
+    createdAt      DateTime           @default(now())
+    updatedAt      DateTime           @updatedAt
+    image          String?
+    emailVerified  DateTime?
+    payments       Payment[]
+    uris           Uri[] // URIs associated with the user for feedback
+    UriClaim       UriClaim?
+    Account        Account[]
+    Session        Session[]
+    Authenticator  Authenticator[]
 
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    payments  Payment[]
+    // Relation to GroupAdmins (to check if user is an admin of any group)
+    groupAdmins GroupAdmin[] // Relation to track group admin roles
+
+    @@unique([id, slugId])
 }
 
-model Integration {
-    id          BigInt       @id @default(autoincrement())
-    domain      String
-    subpath     String
-    uriSupports UriSupport[]
+// Slug model (to store unique slugs for both users and organizations)
+model Slug {
+    id           String        @id @default(cuid())
+    slug         String // Slug for user or organization
+    user         User?
+    organization Organization?
+
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+    Group       Group[]
+    Integration Integration[]
 }
 
+// GroupAdmin model (tracks which users are admins for which groups)
+model GroupAdmin {
+    id        String   @id @default(cuid())
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String
+    group     Group    @relation(fields: [groupId], references: [id])
+    groupId   String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// FeedbackTemplate model (stores templates for feedback forms)
+model FeedbackTemplate {
+    id            String         @id @default(cuid())
+    name          String // Name of the template, e.g., "Instagram Feedback"
+    description   String? // Optional description for the template
+    price         Float? // Price for premium templates (nullable for free templates)
+    deletedAt     DateTime? // Soft delete: Date when template was deleted (nullable)
+    filePath      String // File path or URL to the template file (React component file)
+    organizations Organization[] @relation("OrganizationTemplates") // Templates associated with organizations
+    groups        Group[]        @relation("GroupTemplates") // Templates associated with groups
+    users         User[]         @relation("UserTemplates") // Templates associated with users
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    Feedback      Feedback[]
+}
+
+// Feedback model (feedback related to a user, group, or organization)
 model Feedback {
-    id           BigInt   @id @default(autoincrement())
-    user         User     @relation(fields: [userId], references: [id])
-    userId       String
-    uri          String
-    feedbackText String
-    createdAt    DateTime @default(now())
+    id             BigInt           @id @default(autoincrement())
+    user           User?            @relation(fields: [userId], references: [id])
+    userId         String?
+    group          Group?           @relation(fields: [groupId], references: [id])
+    groupId        String?
+    organization   Organization?    @relation(fields: [organizationId], references: [id])
+    organizationId String?
+    template       FeedbackTemplate @relation(fields: [templateId], references: [id]) // Link to the template
+    templateId     String // Link to the feedback template used for this feedback
+
+    fieldsData Json? // Store the actual responses as JSON (e.g., answers to the feedback fields)
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
 }
 
-model UriSupport {
-    id            BigInt      @id @default(autoincrement())
-    integration   Integration @relation(fields: [integrationId], references: [id])
-    integrationId BigInt
-    uri           String      @unique
-    uriClaims     UriClaim[]
+// Uri model (for integrating external URIs, like Instagram, email, etc.)
+model Uri {
+    id             BigInt        @id @default(autoincrement())
+    uri            String        @unique
+    integrationId  BigInt?
+    integration    Integration?  @relation(fields: [integrationId], references: [id])
+    uriClaims      UriClaim[] // Claims associated with this URI (e.g., feedback provided via this URI)
+    organization   Organization? @relation(fields: [organizationId], references: [id]) // Reference to the organization (optional)
+    organizationId String? // Reference to the organization (optional)
+    user           User?         @relation(fields: [userId], references: [id]) // Reference to the user (optional)
+    userId         String? // Reference to the user (optional)
+
+    @@unique([uri, organizationId])
+    @@unique([uri, userId])
+    @@unique([uri, integrationId])
 }
 
+// UriClaim model (for claiming feedback from external sources)
 model UriClaim {
-    id        BigInt     @id @default(autoincrement())
-    user      User       @relation(fields: [userId], references: [id])
-    userId    String     @unique
-    uri       UriSupport @relation(fields: [uriId], references: [id])
+    id        BigInt   @id @default(autoincrement())
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String   @unique
+    uri       Uri      @relation(fields: [uriId], references: [id])
     uriId     BigInt
-    claimedAt DateTime   @default(now())
+    claimedAt DateTime @default(now())
 }
 
+// Integration model (defining external integrations like Instagram, email, etc.)
+model Integration {
+    id       BigInt  @id @default(autoincrement())
+    hostname String
+    subpath  String?
+    uris     Uri[]
+    slug     Slug?   @relation(fields: [slugId], references: [id])
+    slugId   String
+}
+
+// Payment model (tracking payments related to subscriptions)
+model Payment {
+    id           BigInt          @id @default(autoincrement())
+    user         User            @relation(fields: [userId], references: [id])
+    userId       String
+    resourceType PayableResource
+    resourceId   BigInt?
+    amount       Float
+    paymentDate  DateTime        @default(now())
+}
+
+// Account model (linked to external integrations like social media or email accounts)
 model Account {
     userId            String
     type              String
@@ -95,6 +222,7 @@ model Account {
     @@id([provider, providerAccountId])
 }
 
+// Session model (for managing user login sessions)
 model Session {
     sessionToken String   @unique
     userId       String
@@ -105,6 +233,7 @@ model Session {
     updatedAt DateTime @updatedAt
 }
 
+// VerificationToken model (used for verifying email or login)
 model VerificationToken {
     identifier String
     token      String
@@ -113,7 +242,7 @@ model VerificationToken {
     @@id([identifier, token])
 }
 
-// Optional for WebAuthn support
+// Authenticator model (optional for WebAuthn support)
 model Authenticator {
     credentialID         String  @unique
     userId               String
@@ -129,16 +258,7 @@ model Authenticator {
     @@id([userId, credentialID])
 }
 
-model Payment {
-    id           BigInt          @id @default(autoincrement())
-    user         User            @relation(fields: [userId], references: [id])
-    userId       String
-    resourceType PayableResource
-    resourceId   BigInt?
-    amount       Float
-    paymentDate  DateTime        @default(now())
-}
-
+// Manage password reset tokens to allow users to access that functionality
 model PasswordResetToken {
     id      String   @id @default(cuid())
     email   String

@@ -7,5 +7,8 @@ if (typeof process === "undefined" || typeof window !== "undefined") {
 
 export const logger = (function internalDebug() {
   const parsed = import.meta.url.split(/%3F|\?/);
-  return debug(`@propsto:${parsed.length > 1 ? parsed[1] : "logger"}`);
+  const logger = debug(`@propsto:${parsed.length > 1 ? parsed[1] : "logger"}`);
+  // eslint-disable-next-line no-console -- setting up logger
+  logger.log = console.info.bind(console);
+  return logger;
 })();

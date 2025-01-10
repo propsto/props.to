@@ -6,7 +6,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "DEBUG=@propsto:* turbo run --filter !@propsto/email dev",
-    "dev:app": "DEBUG=@propsto:* turbo run @propsto/app#dev @propsto/auth#dev @propsto/email#dev",
+    "dev:app": "DEBUG=@propsto:* turbo run @propsto/app#dev @propsto/auth#dev @propsto/email#dev @propsto/data#db-studio",
     "dev:auth": "DEBUG=@propsto:* turbo run @propsto/auth#dev @propsto/email#dev @propsto/data#db-studio",
     "dev:email": "DEBUG=@propsto:* turbo run @propsto/email#dev",
     "dev:nuke": "turbo run @propsto/data#db-nuke",
@@ -66,7 +66,7 @@
   "peerDependencies": {
     "@propsto/config": "workspace:*"
   },
-  "packageManager": "pnpm@9.15.1",
+  "packageManager": "pnpm@9.15.3",
   "engines": {
     "node": ">=20",
     "pnpm": ">=9"

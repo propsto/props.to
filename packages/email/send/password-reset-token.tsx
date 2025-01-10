@@ -1,4 +1,3 @@
-import { constServer } from "@propsto/constants/server";
 import { PasswordChanged, PasswordResetTokenEmail } from "../templates";
 import type { Email, HandleEmailEvent } from "../types";
 import { handleError } from "../utils/error-handling";
@@ -10,7 +9,7 @@ export async function sendPasswordResetEmail(
   token: string,
 ): Promise<HandleEmailEvent> {
   try {
-    const resetLink = `${constServer.AUTH_URL}/new-password?token=${token}`;
+    const resetLink = `${process.env.AUTH_URL ?? ""}/new-password?token=${token}`;
     const sent = await send(
       email,
       "Reset your password",

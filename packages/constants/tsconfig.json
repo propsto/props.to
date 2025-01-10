@@ -1,4 +1,4 @@
 {
   "extends": "@propsto/config/tsconfig/plain-library.json",
-  "include": ["./server.ts", "./client.ts", "./other.ts", "./check-env.ts"]
+  "include": ["./*.ts"]
 }

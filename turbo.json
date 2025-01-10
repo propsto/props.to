@@ -5,6 +5,7 @@
     ".env"
   ],
   "globalEnv": [
+    "DEBUG",
     "AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",
@@ -13,11 +14,8 @@
     "EMAIL_FROM",
     "EMAIL_SERVER",
     "RESEND_API_KEY",
-    "VERCEL_URL",
     "PROPSTO_APP_URL",
-    "PROPSTO_HOST",
-    "NEXTAUTH_URL",
-    "NEXTAUTH_URL_INTERNAL"
+    "PROPSTO_HOST"
   ],
   "tasks": {
     "@propsto/constants#test": {
@@ -35,6 +33,12 @@
         "^db-deploy",
         "^db-generate",
         "^check-env"
+      ],
+      "inputs": [
+        "**/*",
+        "!node_modules/**",
+        "!dist/**",
+        "node_modules/@propsto/**/*"
       ],
       "outputs": [
         ".next/**",

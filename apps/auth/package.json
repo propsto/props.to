@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "pnpm dotenv -- next build",
+    "dotenv-build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",

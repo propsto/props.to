@@ -1,9 +1,10 @@
-/** @type {import("next").NextConfig} */
-const config = {
+import { type NextConfig } from "next";
+
+export default {
   reactStrictMode: true,
 
   /**
-   * If you have the "experimental: { appDir: true }" setting enabled, then you
+   * If you have the "experimental: \{ appDir: true \}" setting enabled, then you
    * must comment the below `i18n` config out.
    *
    * @see https://github.com/vercel/next.js/issues/41980
@@ -16,5 +17,4 @@ const config = {
   // We run these separately in CI, so we can skip them here.
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
-};
-export default config;
+} satisfies NextConfig;
