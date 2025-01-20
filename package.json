@@ -21,7 +21,8 @@
     "test": "turbo run test --force",
     "type-check": "turbo run type-check",
     "setup:e2e": "pnpm exec playwright install",
-    "test:e2e": "turbo run e2e --concurrency=1"
+    "test:e2e": "turbo run e2e --concurrency=1",
+    "postinstall": "pnpm --filter @propsto/data db-generate"
   },
   "dependencies": {
     "@upstash/ratelimit": "2.0.5",
