@@ -4,7 +4,7 @@ import { type EmailConfig } from "next-auth/providers/email";
 import { logger } from "@propsto/logger?authConfig";
 import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
 import Passkey from "next-auth/providers/passkey";
-import { PropstoAdapter } from "@propsto/data";
+import { PropstoAdapter, Role } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
 import NodemailerProvider, {
   type NodemailerConfig,
@@ -46,13 +46,42 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
           },
         },
         checks: ["none"],
-        profile: (profile: GoogleProfile) => {
+        profile: async (profile: GoogleProfile, tokens) => {
+          if (!profile.hd || profile.hd !== "props.host")
+            throw Error("Google Hosted Domain not allowed");
+          let adminData: Record<string, string> | null = null;
+          try {
+            if (tokens.access_token) {
+              const response = await fetch(
+                `https://admin.googleapis.com/admin/directory/v1/users/${profile.email}`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${tokens.access_token}`,
+                    Accept: "application/json",
+                  },
+                },
+              );
+
+              if (!response.ok) {
+                throw new Error(
+                  `Error fetching admin data: ${response.statusText}`,
+                );
+              }
+
+              adminData = (await response.json()) as Record<string, string>;
+            }
+          } catch (error) {
+            logger("Error fetching admin directory data:", error);
+          }
+
           return {
             firstName: profile.given_name,
             lastName: profile.family_name,
             email: profile.email,
             /*emailVerified: profile.email_verified ? new Date() : null, << DOESN'T WORK, events.linkAccount takes care of this */
             image: profile.picture,
+            role: adminData?.isAdmin ? Role.ORGANIZATION_ADMIN : Role.USER,
           };
         },
       }),
@@ -75,7 +104,10 @@ export const nextAuthConfig = {
       },
       authorize: async ({ email, password }) => {
         if (!email || !password) return null;
-        const user = await getUserByEmailAndPassword({ email, password });
+        const user = await getUserByEmailAndPassword({
+          email: email as string,
+          password: password as string,
+        });
         if (user.data) return user.data;
         return null;
       },
@@ -83,4 +115,10 @@ export const nextAuthConfig = {
   ],
 };
 
-export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut,
+  unstable_update: updateSession,
+} = NextAuth(nextAuthConfig);

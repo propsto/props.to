@@ -1,14 +1,15 @@
 "use server";
 
 import { put } from "@vercel/blob";
-import { updateUser } from "@propsto/data/repos";
+import { type BasicUserData, updateUser } from "@propsto/data/repos";
 import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
+import { updateSession } from "./auth.server";
 
 export async function personalHandler(
   values: Omit<PersonalFormValues, "image"> & { image?: File[] | string },
   userId: string,
-): Promise<HandleEvent<{ id: string }>> {
+): Promise<HandleEvent<BasicUserData | null | undefined>> {
   const { image, dateOfBirth, ...rest } = values;
   let blob;
   if (image && typeof image !== "string") {
@@ -18,17 +19,14 @@ export async function personalHandler(
       contentType: image[0].type,
     });
   }
-  const userUpdated = await updateUser(
-    userId,
-    {
-      ...rest,
-      ...(dateOfBirth
-        ? { dateOfBirth: new Date(dateOfBirth).toISOString() }
-        : {}),
-      ...(blob ? { image: blob.url } : {}),
-    },
-    { id: true },
-  );
+  const userUpdated = await updateUser(userId, {
+    ...rest,
+    ...(dateOfBirth
+      ? { dateOfBirth: new Date(dateOfBirth).toISOString() }
+      : {}),
+    ...(blob ? { image: blob.url } : {}),
+  });
+  if (userUpdated.data) await updateSession({ user: userUpdated.data });
   return userUpdated;
 }
 

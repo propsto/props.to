@@ -23,7 +23,7 @@ export async function signInAction(
     };
   }
 
-  const user = await getUserByEmail(data.email, { password: true });
+  const user = await getUserByEmail(data.email, ["password"]);
   if (!user.data) {
     logger("signInAction > no user found");
     return { success: false, message: "No user found" };
@@ -38,7 +38,7 @@ export async function signInAction(
       const out = {
         code: "password-set",
       };
-      logger("signInAction > password set");
+      logger("signInAction > password already set");
       return out;
     }
     return redirect(`/reset-password?code=no-password-set&email=${data.email}`);

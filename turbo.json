@@ -30,19 +30,11 @@
     },
     "build": {
       "dependsOn": [
-        "^db-deploy",
-        "^db-generate",
-        "^check-env"
-      ],
-      "inputs": [
-        "**/*",
-        "!node_modules/**",
-        "!dist/**",
-        "node_modules/@propsto/**/*"
+        "^build"
       ],
       "outputs": [
-        ".next/**",
-        "!.next/cache/**"
+        "dist/**",
+        ".next/**"
       ]
     },
     "db-setup": {
@@ -55,7 +47,22 @@
       "cache": false
     },
     "lint": {},
-    "test": {},
-    "type-check": {}
+    "start": {
+      "persistent": true,
+      "cache": false
+    },
+    "type-check": {},
+    "e2e": {
+      "dependsOn": [
+        "//#setup:e2e",
+        "^build"
+      ],
+      "outputs": [],
+      "passThroughEnv": [
+        "PLAYWRIGHT_*",
+        "PROPSTO_*"
+      ]
+    },
+    "//#setup:e2e": {}
   }
 }

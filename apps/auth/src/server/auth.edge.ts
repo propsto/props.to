@@ -2,9 +2,16 @@
 
 import NextAuth from "next-auth";
 import { type JWT } from "next-auth/jwt";
-import type { NextAuthConfig, User as NextAuthUser } from "next-auth";
+import type {
+  Account,
+  NextAuthConfig,
+  User as NextAuthUser,
+  Profile,
+} from "next-auth";
+import type { AdapterUser } from "next-auth/adapters";
 import { constServer } from "@propsto/constants/server";
 import { updateUser } from "@propsto/data/repos";
+import { logger } from "@propsto/logger?auth";
 
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
@@ -14,12 +21,29 @@ export const nextAuthConfig = {
     authorized({ auth }) {
       return Boolean(auth);
     },
-    jwt: ({ token, user }: { token: JWT; user?: NextAuthUser }) => {
+    jwt: ({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: JWT;
+      user?: NextAuthUser | AdapterUser;
+      account: Account | null;
+      profile?: Profile;
+      trigger?: "signIn" | "signUp" | "update";
+      isNewUser?: boolean;
+      session?: { user: Record<string, string> };
+    }) => {
       if (!token.email) {
         return null;
       }
       if (user) {
         token.user = user;
+      }
+      if (trigger === "update" && session) {
+        logger("authConfig:jwt:update", session.user);
+        token.user = session.user;
       }
       return token;
     },
@@ -49,6 +73,7 @@ export const nextAuthConfig = {
   },
   events: {
     linkAccount: async ({ user }) => {
+      logger("authConfig:events:linkAccount", { user });
       if (user.id) {
         await updateUser(user.id, {
           emailVerified: new Date(),
@@ -73,7 +98,13 @@ export const nextAuthConfig = {
   },
 } satisfies NextAuthConfig;
 
-export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut,
+  unstable_update: updateSession,
+} = NextAuth(nextAuthConfig);
 
 declare module "next-auth" {
   interface User {

@@ -7,4 +7,10 @@ export const nextAuthConfig = {
   pages: {},
 } satisfies NextAuthConfig;
 
-export const { handlers, auth, signIn, signOut } = NextAuth(nextAuthConfig);
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut,
+  unstable_update: updateSession,
+} = NextAuth(nextAuthConfig);

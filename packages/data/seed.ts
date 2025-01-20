@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -19,7 +20,9 @@ async function main() {
       createdAt: new Date(),
       updatedAt: new Date(),
       image: "https://avatars.githubusercontent.com/u/1?v=4",
-      slugId: mikeSlug.id, // Connect slug to user
+      dateOfBirth: new Date("1985-11-03"),
+      slugId: mikeSlug.id,
+      password: await hash("P4ssw0rd", 10),
     },
   });
 
@@ -46,7 +49,7 @@ async function main() {
     },
   });
 
-  const bob = await prisma.user.create({
+  await prisma.user.create({
     data: {
       email: "bob.jones@acme.com",
       firstName: "Bob",

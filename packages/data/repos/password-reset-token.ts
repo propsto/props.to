@@ -59,11 +59,7 @@ export const setPasswordByToken = async (token: string, password: string) => {
     if (!tokenDetails.data) throw Error("Invalid token details");
     const user = await getUserByEmail(tokenDetails.data.email);
     if (!user.data) throw Error("Invalid user");
-    const updatedUser = await updateUser(
-      user.data.id,
-      { password },
-      { email: true },
-    );
+    const updatedUser = await updateUser(user.data.id, { password });
     if (!updatedUser.data) throw Error("Couldn't update password");
     deletePasswordResetToken(tokenDetails.data.id);
     return handleSuccess(updatedUser.data);

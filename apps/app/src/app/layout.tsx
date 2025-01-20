@@ -21,7 +21,7 @@ const inter_tight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
-  title: "Props.to",
+  title: "Props.to - Application",
   description: "Open Source Feedback Platform",
 };
 

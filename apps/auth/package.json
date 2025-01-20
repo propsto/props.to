@@ -7,15 +7,14 @@
     "./post-auth-check": "./src/lib/post-auth-check.ts"
   },
   "scripts": {
+    "start": "pnpm dotenv -- pnpm next-start",
     "build": "pnpm dotenv -- next build",
-    "dotenv-build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
-    "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
     "next-dev": "next dev --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
     "next-start": "next start --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
-    "start": "pnpm dotenv -- pnpm next-start",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "dotenv": "dotenv -e ../../.env"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.1",

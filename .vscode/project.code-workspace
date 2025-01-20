@@ -39,6 +39,18 @@
 		{
 			"name": "packages/constants",
 			"path": "../packages/constants"
+		},
+		{
+			"name": "packages/config",
+			"path": "../packages/config"
+		},
+		{
+			"name": "e2e/auth",
+			"path": "../e2e/auth"
+		},
+		{
+			"name": "e2e/app",
+			"path": "../e2e/app"
 		}
 	],
 	"settings": {
