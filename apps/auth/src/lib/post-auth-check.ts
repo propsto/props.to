@@ -1,4 +1,5 @@
 import { type User } from "next-auth";
+import { logger } from "@propsto/logger?auth";
 
 /* 
   Once the user logs in, we want to check if they need to go over
@@ -8,7 +9,7 @@ import { type User } from "next-auth";
   was moved here for convenience
 */
 export function canUserMoveOn(user: User): boolean {
-  return Boolean(
+  const result = Boolean(
     user.firstName &&
       user.lastName &&
       user.image &&
@@ -16,4 +17,6 @@ export function canUserMoveOn(user: User): boolean {
       user.username &&
       user.username.length < 41, // username is autoassigned at first, we need the user to choose one before moving on
   );
+  logger("canUserMoveOn", { user, result });
+  return result;
 }

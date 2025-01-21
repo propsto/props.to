@@ -27,18 +27,17 @@ import {
   getAuthenticator,
   listAuthenticatorsByUserId,
   updateAuthenticatorCounter,
-  defaultUserSelect,
 } from "./repos";
 
 export function PropstoAdapter(): Adapter {
   return {
     async createUser({ id: _id, ...data }) {
       const result = await createUser(data);
-      return result.data!;
+      return result.data as AdapterUser;
     },
     async getUser(id) {
       const result = await getUser({ id });
-      return result.data;
+      return result.data as AdapterUser;
     },
     async getUserByEmail(email) {
       const result = await getUserByEmail(email);
@@ -46,10 +45,10 @@ export function PropstoAdapter(): Adapter {
     },
     async getUserByAccount(providerAccountId) {
       const result = await getUserByAccount(providerAccountId);
-      return (result?.data?.user as AdapterUser) ?? null;
+      return (result?.data as AdapterUser) ?? null;
     },
     async updateUser({ id, ...data }) {
-      const result = await updateUser(id, data, defaultUserSelect);
+      const result = await updateUser(id, data);
       return result.data as AdapterUser;
     },
     async deleteUser(id) {

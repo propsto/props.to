@@ -3,25 +3,81 @@ import { db, Prisma } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
-import { AdapterAccount } from "@auth/core/adapters";
 import { compare, hash } from "bcryptjs";
+import { User } from "@prisma/client";
 
-export const defaultUserSelect: Prisma.UserSelect = {
-  id: true,
-  dateOfBirth: true,
-  firstName: true,
-  lastName: true,
-  email: true,
-  image: true,
-  username: true,
-};
+export type BasicUserData = Prisma.UserGetPayload<{
+  select: {
+    id: true;
+    firstName: true;
+    lastName: true;
+    email: true;
+    image: true;
+    dateOfBirth: true;
+    emailVerified: true;
+    role: true;
+  };
+}>;
+
+type UserMapperArgs =
+  | Prisma.UserGetPayload<{
+      include: {
+        slug: true;
+        organization: { include: { slug: true } };
+      };
+    }>
+  | null
+  | undefined;
+
+type UserMapperReturnType =
+  | (BasicUserData & {
+      username?: string;
+      organization?: string;
+    })
+  | null
+  | undefined;
+
+function userMapper(
+  userData?: UserMapperArgs,
+  addOns?: (keyof User)[],
+): UserMapperReturnType {
+  if (userData) {
+    return {
+      id: userData.id,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      image: userData.image,
+      role: userData.role,
+      emailVerified: userData.emailVerified,
+      dateOfBirth: userData.dateOfBirth || null,
+      username: userData.slug?.slug,
+      organization: userData.organization?.slug?.slug,
+      ...(addOns
+        ? Object.fromEntries(addOns.map(key => [key, userData[key]]))
+        : {}),
+    };
+  }
+  return null;
+}
+
+const userInclude = Prisma.validator<Prisma.UserInclude>()({
+  slug: true,
+  organization: { include: { slug: true } },
+});
 
 export async function createUser(data: { email: string }) {
   try {
-    const dataWithUsername = { ...data, username: `user-${uuidv4()}` };
-    logger("createUser", dataWithUsername);
-    const newUser = await db.user.create({ data: dataWithUsername });
-    return handleSuccess(newUser);
+    const dataWithSlug = {
+      ...data,
+      slug: { create: { slug: `user-${uuidv4()}` } },
+    };
+    logger("createUser", dataWithSlug);
+    const newUser = await db.user.create({
+      data: dataWithSlug,
+      include: userInclude,
+    });
+    return handleSuccess(userMapper(newUser));
   } catch (e) {
     return handleError(e);
   }
@@ -30,24 +86,31 @@ export async function createUser(data: { email: string }) {
 export async function getUser(data: { id: string }) {
   try {
     logger("getUser", data);
-    const existingUser = await db.user.findUnique({ where: data });
-    return handleSuccess(existingUser);
+    const existingUser = await db.user.findUnique({
+      where: data,
+      include: userInclude,
+    });
+    return handleSuccess(userMapper(existingUser));
   } catch (e) {
     return handleError(e);
   }
 }
 
-export async function getUserByEmail(
+export async function getUserByEmail<T extends (keyof User)[]>(
   email: string,
-  select?: Parameters<typeof db.user.findUnique>[0]["select"],
-) {
+  addOns?: T,
+): Promise<HandleEvent<UserMapperReturnType & Pick<User, T[number]>>> {
   try {
     logger("getUserByEmail", email);
     const existingUser = await db.user.findUnique({
       where: { email },
-      select,
+      include: userInclude,
     });
-    return handleSuccess(existingUser);
+
+    const result = userMapper(existingUser, addOns);
+    return handleSuccess(
+      result as UserMapperReturnType & Pick<User, T[number]>,
+    );
   } catch (e) {
     return handleError(e);
   }
@@ -57,62 +120,60 @@ export async function getUserByEmailAndPassword({
   email,
   password,
 }: {
-  email: unknown;
-  password: unknown;
+  email: string;
+  password: string;
 }) {
   try {
-    const hashedPassword = await hash(password as string, 10);
-    logger("getUserByEmailAndPassword", email, hashedPassword);
+    logger("getUserByEmailAndPassword", { email });
     const existingUser = await db.user.findUnique({
-      where: { email: email as string },
-      select: defaultUserSelect,
+      where: { email },
+      include: userInclude,
     });
-    if (!existingUser) throw Error("User does not exist");
-    const { password: userPassword, dateOfBirth, ...rest } = existingUser;
-    if (!userPassword) throw Error("Password is not defined");
-    const comparePassword = await compare(password as string, userPassword);
-    if (!comparePassword) throw Error("Password is not correct");
-    return handleSuccess({
-      ...rest,
-      dateOfBirth: dateOfBirth && new Date(dateOfBirth),
-    });
+    if (!existingUser) throw new Error("User does not exist");
+    const isPasswordValid = await compare(password, existingUser.password!);
+    if (!isPasswordValid) throw new Error("Invalid password");
+    return handleSuccess(userMapper(existingUser));
   } catch (e) {
     return handleError(e);
   }
 }
 
-export async function getUserByAccount(
-  providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">,
-) {
+export async function getUserByAccount(providerAccountId: {
+  provider: string;
+  providerAccountId: string;
+}) {
   try {
-    logger("getUserByAccount", { data: { providerAccountId } });
+    logger("getUserByAccount", providerAccountId);
     const existingUser = await db.account.findUnique({
       where: { provider_providerAccountId: providerAccountId },
-      select: { user: true },
+      include: {
+        user: {
+          include: userInclude,
+        },
+      },
     });
-    return handleSuccess(existingUser);
+    return handleSuccess(userMapper(existingUser?.user));
   } catch (e) {
     return handleError(e);
   }
 }
 
-export async function updateUser<T extends Prisma.UserSelect>(
+export async function updateUser(
   id: string,
   data: Prisma.UserUncheckedUpdateInput,
-  select: T = { id: true } as T,
 ) {
   try {
-    const { password, ...noPasswordParams } = data;
-    logger("updateUser", { id, noPasswordParams });
+    const { password, ...updateData } = data;
+    logger("updateUser", { id, updateData });
     const updatedUser = await db.user.update({
       where: { id },
       data: {
-        ...noPasswordParams,
-        ...(password ? { password: await hash(password as string, 10) } : {}),
+        ...updateData,
+        ...(password && { password: await hash(password as string, 10) }),
       },
-      select,
+      include: userInclude,
     });
-    return handleSuccess(updatedUser);
+    return handleSuccess(userMapper(updatedUser));
   } catch (e) {
     return handleError(e);
   }
@@ -121,8 +182,11 @@ export async function updateUser<T extends Prisma.UserSelect>(
 export async function deleteUser(id: string) {
   try {
     logger("deleteUser", { id });
-    const deletedUser = await db.user.delete({ where: { id } });
-    return handleSuccess(deletedUser);
+    const deletedUser = await db.user.delete({
+      where: { id },
+      include: userInclude,
+    });
+    return handleSuccess(userMapper(deletedUser));
   } catch (e) {
     return handleError(e);
   }

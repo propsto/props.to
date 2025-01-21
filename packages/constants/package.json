@@ -7,7 +7,7 @@
   "author": "",
   "main": "index.ts",
   "scripts": {
-    "check-env": "pnpm tsx check-env.ts $PROPSTO_AUTH_URL",
+    "check-env": "pnpm tsx check-env.ts",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint --fix **/*.ts",
     "test": "pnpm dotenv -- pnpm check-env"

@@ -7,6 +7,7 @@
     "db-deploy": "pnpm dotenv -- prisma migrate deploy",
     "db-generate": "pnpm dotenv -- prisma generate",
     "db-migrate": "pnpm dotenv -- prisma migrate dev",
+    "db-migrate-reset": "pnpm dotenv -- prisma migrate reset",
     "db-nuke": "pnpm dotenv -- docker compose down --volumes --remove-orphans || docker-compose down --volumes --remove-orphans",
     "db-push": "pnpm dotenv -- prisma db push --skip-generate",
     "db-reset": "pnpm db-nuke && pnpm db-setup",
@@ -24,10 +25,10 @@
     "bcryptjs": "2.4.3"
   },
   "devDependencies": {
-    "@prisma/client": "6.1.0",
+    "@prisma/client": "6.2.1",
     "@types/bcryptjs": "2.4.6",
     "@types/uuid": "10.0.0",
-    "prisma": "6.1.0"
+    "prisma": "6.2.1"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

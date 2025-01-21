@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
-import { constCommon } from "@propsto/constants/common";
+import { constServer } from "@propsto/constants/server";
 
 export function GET(): ImageResponse {
   const url =
-    constCommon.PROPSTO_ENV === "production"
+    constServer.PROPSTO_ENV === "production"
       ? `https://props.to`
       : `http://localhost:3001`;
   const calSans = fs.readFileSync(

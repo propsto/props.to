@@ -13,12 +13,12 @@
 			"path": "../apps/auth"
 		},
 		{
-			"name": "apps/docs",
-			"path": "../apps/docs"
-		},
-		{
 			"name": "apps/web",
 			"path": "../apps/web"
+		},
+		{
+			"name": "apps/docs",
+			"path": "../apps/docs"
 		},
 		{
 			"name": "packages/ui",
@@ -33,8 +33,24 @@
 			"path": "../packages/data"
 		},
 		{
+			"name": "packages/logger",
+			"path": "../packages/logger"
+		},
+		{
 			"name": "packages/constants",
 			"path": "../packages/constants"
+		},
+		{
+			"name": "packages/config",
+			"path": "../packages/config"
+		},
+		{
+			"name": "e2e/auth",
+			"path": "../e2e/auth"
+		},
+		{
+			"name": "e2e/app",
+			"path": "../e2e/app"
 		}
 	],
 	"settings": {

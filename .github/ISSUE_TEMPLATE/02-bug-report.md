@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Report any issues with the platform
-title: ""
+title: "[Bug] "
 labels: bug
 assignees: ""
 ---

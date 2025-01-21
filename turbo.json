@@ -5,6 +5,7 @@
     ".env"
   ],
   "globalEnv": [
+    "DEBUG",
     "AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",
@@ -13,11 +14,8 @@
     "EMAIL_FROM",
     "EMAIL_SERVER",
     "RESEND_API_KEY",
-    "VERCEL_URL",
     "PROPSTO_APP_URL",
-    "PROPSTO_HOST",
-    "NEXTAUTH_URL",
-    "NEXTAUTH_URL_INTERNAL"
+    "PROPSTO_HOST"
   ],
   "tasks": {
     "@propsto/constants#test": {
@@ -32,13 +30,11 @@
     },
     "build": {
       "dependsOn": [
-        "^db-deploy",
-        "^db-generate",
-        "^check-env"
+        "^build"
       ],
       "outputs": [
-        ".next/**",
-        "!.next/cache/**"
+        "dist/**",
+        ".next/**"
       ]
     },
     "db-setup": {
@@ -51,7 +47,22 @@
       "cache": false
     },
     "lint": {},
-    "test": {},
-    "type-check": {}
+    "start": {
+      "persistent": true,
+      "cache": false
+    },
+    "type-check": {},
+    "e2e": {
+      "dependsOn": [
+        "//#setup:e2e",
+        "^build"
+      ],
+      "outputs": [],
+      "passThroughEnv": [
+        "PLAYWRIGHT_*",
+        "PROPSTO_*"
+      ]
+    },
+    "//#setup:e2e": {}
   }
 }

@@ -23,7 +23,7 @@ export async function passwordResetAction(
     };
   }
 
-  const user = await getUserByEmail(data.email, { password: true });
+  const user = await getUserByEmail(data.email);
   if (!user.data) {
     logger("passwordResetAction > no user found");
     return { success: false, message: "No user found" };
