@@ -27,12 +27,12 @@ export async function requestEarlyAccess(
   }
   formData.set(
     "xnQsjsdp",
-    "5205582e0022d842036f9e00dd829d2759c77e1712eb531d8cd132bc9dd1d5a0",
+    "5128a9641e517652964df40309b05c91468fb8ab1a3b02232ddea9b3a7519da9",
   );
   formData.set("zc_gad", "");
   formData.set(
     "xmIwtLD",
-    "83d980870da6bef654a33c1ba4b767eb4ef63d64f7112614f01cd1f05f8e64de12a55a73d48e636f790f19756bf64c93",
+    "fbf925364d33434ade5766869ffa4f7e583e20b8a02e896fc3923dfdd98de205b588819d1a73f144da99f40896b2af9d",
   );
   formData.set("actionType", "TGVhZHM=");
   formData.set("returnURL", "null");
