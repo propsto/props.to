@@ -129,9 +129,9 @@ export async function getUserByEmailAndPassword({
       where: { email },
       include: userInclude,
     });
-    if (!existingUser) throw new Error("User does not exist");
+    if (!existingUser) throw new Error("user-invalid");
     const isPasswordValid = await compare(password, existingUser.password!);
-    if (!isPasswordValid) throw new Error("Invalid password");
+    if (!isPasswordValid) throw new Error("password-invalid");
     return handleSuccess(userMapper(existingUser));
   } catch (e) {
     return handleError(e);

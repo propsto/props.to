@@ -11,10 +11,14 @@ import NodemailerProvider, {
 } from "next-auth/providers/nodemailer";
 import Resend from "next-auth/providers/resend";
 import { constServer } from "@propsto/constants/server";
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import { type OAuthConfig } from "next-auth/providers";
 import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
+
+class CustomError extends CredentialsSignin {
+  code = "custom";
+}
 
 function getEmailProvider(): EmailConfig | NodemailerConfig {
   if (constServer.EMAIL_PROVIDER === "resend") {
@@ -104,11 +108,12 @@ export const nextAuthConfig = {
       },
       authorize: async ({ email, password }) => {
         if (!email || !password) return null;
-        const user = await getUserByEmailAndPassword({
+        const result = await getUserByEmailAndPassword({
           email: email as string,
           password: password as string,
         });
-        if (user.data) return user.data;
+        if (result.data) return result.data;
+        if (result.error) throw new CustomError(result.error);
         return null;
       },
     }),

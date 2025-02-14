@@ -14,5 +14,6 @@ export function handleError(e: any): HandleErrorEvent {
     logger("handleError", e.message);
     return { success: false, data: null, error: e.message };
   }
+  logger("handleError", e.message);
   return { success: false, data: null, error: "Unexpected error" };
 }

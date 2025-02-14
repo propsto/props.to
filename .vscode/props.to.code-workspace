@@ -1,0 +1,65 @@
+{
+	"folders": [
+		{
+			"name": "✨ props.to",
+			"path": ".."
+		},
+		{
+			"name": "🚀 @propsto/app",
+			"path": "../apps/app"
+		},
+		{
+			"name": "🚀 @propsto/auth",
+			"path": "../apps/auth"
+		},
+		{
+			"name": "🚀 @propsto/web",
+			"path": "../apps/web"
+		},
+		{
+			"name": "🧪 @propsto/e2e-app",
+			"path": "../e2e/app"
+		},
+		{
+			"name": "🧪 @propsto/e2e-auth",
+			"path": "../e2e/auth"
+		},
+		{
+			"name": "📦 @propsto/config",
+			"path": "../packages/config"
+		},
+		{
+			"name": "📦 @propsto/constants",
+			"path": "../packages/constants"
+		},
+		{
+			"name": "📦 @propsto/data",
+			"path": "../packages/data"
+		},
+		{
+			"name": "📦 @propsto/email",
+			"path": "../packages/email"
+		},
+		{
+			"name": "📦 @propsto/logger",
+			"path": "../packages/logger"
+		},
+		{
+			"name": "📦 @propsto/ui",
+			"path": "../packages/ui"
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"**/.git": true,
+			"**/.svn": true,
+			"**/.hg": true,
+			"**/CVS": true,
+			"**/.DS_Store": true,
+			"**/Thumbs.db": true,
+			"packages/": true,
+			"apps/": true,
+			"e2e/": true
+		}
+	}
+}

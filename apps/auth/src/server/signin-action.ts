@@ -49,5 +49,23 @@ export async function signInAction(
     provider = "resend";
   }
   logger("signInAction > signIn", provider);
-  await signIn(provider, data);
+  let result;
+  try {
+    result = (await signIn(provider, {
+      ...data,
+      redirect: false,
+    })) as unknown;
+  } catch (e) {
+    if (e instanceof Error) {
+      if (e.message.includes("password-invalid")) {
+        const out = {
+          success: false,
+          message: "Wrong credentials!",
+        };
+        logger("signInAction > error", e, out);
+        return out;
+      }
+    }
+  }
+  redirect(result as string);
 }
