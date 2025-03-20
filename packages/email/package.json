@@ -10,9 +10,9 @@
     "start": "email dev --dir templates"
   },
   "dependencies": {
-    "@react-email/components": "0.0.31",
-    "react-email": "3.0.4",
-    "resend": "4.0.1"
+    "@react-email/components": "0.0.34",
+    "react-email": "3.0.7",
+    "resend": "4.1.2"
   },
   "devDependencies": {
     "maildev": "2.2.1"
