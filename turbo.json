@@ -18,6 +18,10 @@
     "PROPSTO_HOST"
   ],
   "tasks": {
+    "@propsto/email#dev": {
+      "outputs": [],
+      "persistent": true
+    },
     "@propsto/constants#test": {
       "outputs": []
     },
