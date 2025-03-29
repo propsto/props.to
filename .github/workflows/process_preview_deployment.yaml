@@ -3,7 +3,12 @@ name: Process preview deployment
 permissions:
   pull-requests: write
 
-on: [deployment_status]
+on:
+  deployment_status:
+  pull_request:
+    paths:
+      - "apps/**"
+      - "packages/**"
 
 concurrency:
   group: deployment-${{ github.event.deployment.id }}-${{ github.event.deployment.environment }}
@@ -31,7 +36,7 @@ jobs:
 
           # Query GitHub API for PR associated with the commit and branch
           PR_DATA=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[] | .")
-          
+
           # Extract PR number if it exists
           if [ -z "$PR_DATA" ]; then
             echo "No PR associated with commit $DEPLOYMENT_SHA on branch $DEPLOYMENT_REF."
@@ -50,7 +55,7 @@ jobs:
         id: check_cert
         run: |
           OUTPUT=$(vercel --scope ${{ vars.VERCEL_TEAM_ID }} certs ls --token ${{ secrets.VERCEL_ACCESS_TOKEN }})
-          
+
           if echo "$OUTPUT" | grep -q "${{steps.preview_url.outputs.value}}"; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
@@ -61,7 +66,7 @@ jobs:
         run: vercel --scope ${{ vars.VERCEL_TEAM_ID }} cert issue ${{steps.preview_url.outputs.value}} --token ${{ secrets.VERCEL_ACCESS_TOKEN }}
       - name: Get Vercel's Alias Preview URL
         id: alias-preview-url
-        if: github.event.deployment_status.state == 'success'  
+        if: github.event.deployment_status.state == 'success'
         uses: justincase-jp/vercel-preview-url-alias@0.2.1
         with:
           vercel_access_token: ${{ secrets.VERCEL_ACCESS_TOKEN }}
@@ -80,7 +85,7 @@ jobs:
               body: '🚀 ${{ steps.project_name.outputs.title }} preview deployment successfull at https://${{steps.alias-preview-url.outputs.preview_url_alias}}'
             })
       - name: GitHub comment on failute
-        if: github.event.deployment_status.state == 'failure'   
+        if: github.event.deployment_status.state == 'failure'
         uses: actions/github-script@v6
         with:
           script: |
