@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "pnpm dotenv -- pnpm next-start",
     "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
+    "dotenv": "dotenv -e ../../.env",
     "lint": "next lint",
     "next-dev": "next dev --hostname=$PROPSTO_APP_HOSTNAME --port=$PROPSTO_APP_PORT",
     "next-start": "next start --hostname=$PROPSTO_APP_HOSTNAME --port=$PROPSTO_APP_PORT",
+    "start": "pnpm dotenv -- pnpm next-start",
     "test:unit": "vitest run --passWithNoTests",
     "test:unit:watch": "vitest",
-    "type-check": "tsc --noEmit",
-    "dotenv": "dotenv -e ../../.env"
+    "type-check": "tsc --noEmit"
   },
   "peerDependencies": {
     "@propsto/auth": "workspace:*",

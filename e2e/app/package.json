@@ -11,8 +11,8 @@
     "dotenv": "dotenv -e ../../.env"
   },
   "dependencies": {
-    "@propsto/auth": "workspace:*",
-    "@propsto/app": "workspace:*"
+    "@propsto/app": "workspace:*",
+    "@propsto/auth": "workspace:*"
   },
   "devDependencies": {
     "npm-run-all": "4.1.5"

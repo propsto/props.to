@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Heading, Button, Html } from "@react-email/components";
 
 export function WelcomeEmail(): React.ReactElement {
@@ -20,3 +21,5 @@ export function WelcomeEmail(): React.ReactElement {
     </Html>
   );
 }
+
+export default WelcomeEmail;

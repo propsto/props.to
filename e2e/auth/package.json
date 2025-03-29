@@ -2,11 +2,11 @@
   "name": "@propsto/e2e-auth",
   "version": "1.0.0",
   "scripts": {
-    "pw-test": "playwright test",
-    "test:ci": "pnpm dotenv -- pw-test --reporter=line",
-    "ssat": "start-test 'cd ../../apps/auth && pnpm start' $AUTH_URL 'pnpm pw-test'",
+    "dotenv": "dotenv -e ../../.env",
     "e2e": "pnpm dotenv -- pnpm ssat",
-    "dotenv": "dotenv -e ../../.env"
+    "pw-test": "playwright test",
+    "ssat": "start-test 'cd ../../apps/auth && pnpm start' $AUTH_URL 'pnpm pw-test'",
+    "test:ci": "pnpm dotenv -- pw-test --reporter=line"
   },
   "dependencies": {
     "@propsto/auth": "workspace:*"

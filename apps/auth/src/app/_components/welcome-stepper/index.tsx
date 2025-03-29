@@ -36,6 +36,7 @@ export function WelcomeStepper({
   const router = useRouter();
   const pathname = usePathname();
   const form = useForm<z.infer<typeof stepper.current.schema>>({
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- stepperize does not register schema */
     resolver: zodResolver(stepper.current.schema),
     defaultValues: formDefaults[stepper.current.id](user),
   });

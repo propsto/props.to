@@ -1,4 +1,4 @@
-const baseConfig = require("@propsto/ui/tailwind.config.cjs");
+import baseConfig from "@propsto/ui/tailwind.config.mjs";
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

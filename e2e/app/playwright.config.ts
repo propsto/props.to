@@ -17,7 +17,7 @@ export default defineConfig({
     {
       name: "app",
       use: {
-        storageState: path.resolve(__dirname, "../auth/fixtures/user.json"),
+        storageState: path.resolve("./../auth/fixtures/user.json"),
       },
       dependencies: ["setup"],
     },
