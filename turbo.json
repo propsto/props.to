@@ -18,7 +18,7 @@
     "PROPSTO_HOST"
   ],
   "tasks": {
-    "@propsto/email#dev": {
+    "@propsto/email#maildev": {
       "outputs": [],
       "persistent": true
     },
