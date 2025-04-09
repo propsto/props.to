@@ -1,3 +1,5 @@
+import * as React from "react";
+
 export function PasswordResetTokenEmail(resetLink: string): React.ReactElement {
   return (
     <p>
@@ -5,3 +7,5 @@ export function PasswordResetTokenEmail(resetLink: string): React.ReactElement {
     </p>
   );
 }
+
+export default PasswordResetTokenEmail;

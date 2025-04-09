@@ -1,4 +1,4 @@
-import { PasswordChanged, PasswordResetTokenEmail } from "../templates";
+import { PasswordChangedEmail, PasswordResetTokenEmail } from "../templates";
 import type { Email, HandleEmailEvent } from "../types";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
@@ -26,7 +26,7 @@ export async function sendPasswordChanged(
   email: Email,
 ): Promise<HandleEmailEvent> {
   try {
-    const sent = await send(email, "Password changed", PasswordChanged);
+    const sent = await send(email, "Password changed", PasswordChangedEmail);
     return handleSuccess(sent);
   } catch (e) {
     return handleError(e);

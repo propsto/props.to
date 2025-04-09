@@ -1,4 +1,11 @@
 packages:
-  - "apps/*"
-  - "packages/*"
-  - "e2e/*"
+  - apps/*
+  - packages/*
+  - e2e/*
+onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - cbor-extract
+  - esbuild
+  - prisma
+  - sharp

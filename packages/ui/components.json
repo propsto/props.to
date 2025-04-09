@@ -5,7 +5,7 @@
   "tsx": true,
   "iconLibrary": "lucide",
   "tailwind": {
-    "config": "tailwind.config.cjs",
+    "config": "tailwind.config.mts",
     "css": "./base.css",
     "baseColor": "slate",
     "cssVariables": true,

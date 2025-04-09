@@ -27,6 +27,7 @@ export function FormInputError({
   type,
   style,
   onChange,
+  defaultValue,
   ...rest
 }: FormInputErrorProps): React.ReactElement {
   return (
@@ -46,6 +47,7 @@ export function FormInputError({
         id={controlName.toLowerCase()}
         name={controlName}
         onChange={onChange}
+        defaultValue={defaultValue}
         placeholder={placeholder ?? controlName}
         type={type}
       />
