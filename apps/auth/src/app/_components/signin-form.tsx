@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@propsto/ui/utils/cn";
+import { cn } from "@propsto/ui/lib/utils";
 import { Button } from "@propsto/ui/atoms";
 import { signIn } from "next-auth/webauthn";
 import { startTransition, useEffect, useState } from "react";

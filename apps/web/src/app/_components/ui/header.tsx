@@ -12,7 +12,13 @@ export function Header(): React.ReactElement {
             <div className="shrink-0 mr-4">
               {/* Logo */}
               <Link className="" href="/">
-                <Image src="/props.to.png" width={32} height={32} alt="Logo" />
+                <Image
+                  src="/logo-color.png"
+                  width={32}
+                  height={32}
+                  alt="Logo"
+                  className="rounded-sm"
+                />
               </Link>
             </div>
 
@@ -29,9 +35,7 @@ export function Header(): React.ReactElement {
                 </li>
                 <li className="ml-1">
                   <Button asChild variant="ghost" size="sm">
-                    <Link href="https://github.com/propsto/props.to">
-                      Contribute
-                    </Link>
+                    <Link href="https://git.new/propsto">Contribute</Link>
                   </Button>
                 </li>
               </ul>

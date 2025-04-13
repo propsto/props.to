@@ -47,9 +47,7 @@ export function Cta(): React.ReactElement {
               </div>
               <div>
                 <Button asChild variant="outline">
-                  <Link href="https://github.com/propsto/props.to">
-                    Contribute
-                  </Link>
+                  <Link href="https://git.new/propsto">Contribute</Link>
                 </Button>
               </div>
             </div>

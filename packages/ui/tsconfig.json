@@ -1,5 +1,8 @@
 {
   "extends": "@propsto/config/tsconfig/react-library.json",
+  "compilerOptions": {"paths": {
+    "~/*": ["./*"],
+  }},
   "include": [
     "react.d.ts",
     "**/*.ts",

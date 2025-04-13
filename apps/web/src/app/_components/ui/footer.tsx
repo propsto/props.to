@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export function Footer(): React.ReactElement {
   return (
-    <footer className="[background:linear-gradient(#323237,#323237)_padding-box,linear-gradient(120deg,theme(colors.zinc.700),theme(colors.zinc.700),theme(colors.zinc.700))_border-box]">
+    <footer className="triangle-color-gradient">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top area: Blocks */}
         <div className="py-8 md:py-12">
@@ -15,19 +15,25 @@ export function Footer(): React.ReactElement {
                 className="flex items-center justify-center w-8 h-8"
                 href="/"
               >
-                <Image src="/props.to.png" width={24} height={24} alt="Logo" />
+                <Image
+                  src="/logo-color.png"
+                  width={24}
+                  height={24}
+                  className="rounded-sm"
+                  alt="Logo"
+                />
               </Link>
             </div>
-            <div className="grow text-sm text-zinc-200 max-w-[25rem] text-center">
+            <div className="grow text-sm text-zinc-900 max-w-[25rem] text-center">
               The symbol <b>人</b> in Asia means &quot;human&quot; representing
               the concept of humanity. It&apos;s also the ASCII version of emoji
               🙏 commonly used to express gratefulness.
             </div>
             {/* Social links */}
-            <ul className="flex space-x-4 mt-4 mb-1">
+            <ul className="flex space-x-4 mt-4 mb-1 text-zinc-900 hover:text-zinc-600">
               <li>
                 <a
-                  className="flex justify-center items-center text-zinc-200 hover:text-zinc-500 transition"
+                  className="flex justify-center items-center transition"
                   href="https://x.com/PropsDotTo"
                   aria-label="X"
                 >
@@ -43,7 +49,7 @@ export function Footer(): React.ReactElement {
               </li>
               <li>
                 <a
-                  className="flex justify-center items-center text-zinc-200 hover:text-zinc-500 transition"
+                  className="flex justify-center items-center transition"
                   href="https://github.com/propsto/props.to"
                   aria-label="GitHub"
                 >

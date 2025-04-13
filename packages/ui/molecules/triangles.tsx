@@ -30,7 +30,14 @@ export function Triangles({
   const [maxTileX, setMaxTileX] = useState(0);
   const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();
-  const types = ["one", "two", "three"];
+  const colors = [
+    "40 91% 97%",
+    "0 0% 91%",
+    "336 73% 96%",
+    "244 75% 97%",
+    "137 100% 28%, 0.04",
+    "167 76% 95%",
+  ];
   useEffect(() => {
     const [width, height] = parentRef?.current
       ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
@@ -46,17 +53,18 @@ export function Triangles({
         ["--triangle-size" as string]: `${triangleVariants({ size })}px`,
       }}
     >
-      {...Array.from(
-        { length: maxTileX },
-        (x, i): React.ReactNode =>
-          Array.from({ length: maxTileY }, (y, j): React.ReactNode => {
-            return (
-              <div
-                className={`triangle ${types[Math.floor(Math.random() * 3)]}`}
-                key={`${i.toString()}${j.toString()}`}
-              />
-            );
-          }),
+      {...Array.from({ length: maxTileX }, (x, i) =>
+        Array.from({ length: maxTileY }, (y, j) => {
+          const shapeType = ["one", "two", "three"][
+            Math.floor(Math.random() * 3)
+          ];
+          return (
+            <div
+              className={`triangle ${shapeType} color-${Math.floor(Math.random() * colors.length).toString()}`}
+              key={`${i.toString()}-${j.toString()}`}
+            />
+          );
+        }),
       )}
     </div>
   );

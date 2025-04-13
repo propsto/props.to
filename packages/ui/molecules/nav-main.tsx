@@ -1,18 +1,24 @@
 "use client";
 
-import { type LucideIcon } from "lucide-react";
+import { ChevronRight, type LucideIcon } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../atoms/collapsible";
 import {
   SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "../atoms/sidebar";
 
 export function NavMain({
   items,
-}: Readonly<{
+}: {
   items: {
     title: string;
     url: string;
@@ -23,29 +29,58 @@ export function NavMain({
       url: string;
     }[];
   }[];
-}>): React.ReactNode {
+}): React.JSX.Element {
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {items.map(item => (
-          <SidebarGroup key={item.title}>
-            <SidebarGroupLabel className="space-x-1 text-sm">
-              {item.icon ? <item.icon /> : null}
-              <span>{item.title}</span>
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items?.map(subItem => (
-                  <SidebarMenuItem key={subItem.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={subItem.url}>{subItem.title}</a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {items.map(item => {
+          const hasSubItems = item.items && item.items.length > 0;
+
+          if (!hasSubItems) {
+            return (
+              <SidebarMenuSubItem key={item.title}>
+                <SidebarMenuSubButton asChild>
+                  <a href={item.url}>
+                    {item.icon ? <item.icon className="mr-2" /> : null}
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            );
+          }
+
+          return (
+            <Collapsible
+              key={item.title}
+              asChild
+              defaultOpen={item.isActive}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip={item.title}>
+                    {item.icon ? <item.icon /> : null}
+                    <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {item.items?.map(subItem => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton asChild>
+                          <a href={subItem.url}>
+                            <span>{subItem.title}</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );
