@@ -1,5 +1,5 @@
 import { type VariantProps, cva } from "class-variance-authority";
-import { cn } from "../utils/cn";
+import { cn } from "../lib/utils";
 
 export type LogoVariantProps = VariantProps<typeof logoVariants>;
 const logoVariants = cva("", {

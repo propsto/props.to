@@ -4,7 +4,7 @@ import "./globals.css";
 import { Inter, Inter_Tight } from "next/font/google";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
-import { cn } from "@propsto/ui/utils/cn";
+import { cn } from "@propsto/ui/lib/utils";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,7 +34,7 @@ export default function RootLayout({
         className={cn(
           inter.className,
           inter_tight.className,
-          "font-inter antialiased bg-white text-zinc-900 tracking-tight",
+          "font-inter antialiased bg-sidebar text-primary tracking-tight",
         )}
       >
         <ThemeProvider>

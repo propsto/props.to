@@ -1,6 +1,6 @@
 import { type ChangeEventHandler, type CSSProperties } from "react";
+import { cn } from "../lib/utils";
 import { Input, Label } from "../atoms";
-import { cn } from "../utils/cn";
 
 type FormInputErrorProps = {
   result: PropstoFormState<Record<string, string | null>>;

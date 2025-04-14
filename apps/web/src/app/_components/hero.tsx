@@ -19,7 +19,11 @@ export function Hero(): React.ReactElement {
         {/* Section content */}
         <div className="px-4 sm:px-6">
           <div className="relative max-w-4xl mx-auto">
-            <div className="text-center pb-12 md:pb-16">
+            <div className="text-center mb-12 md:mb-16">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-12 pt-4">
+                Open source
+                <br /> feedback infrastructure.
+              </h1>
               <TypeWriterCTA />
               <Quote className="mt-8 text-xl font-semibold" />
               <div className="max-w-xs mx-auto sm:max-w-none sm:inline-flex sm:justify-center space-y-4 sm:space-y-0 sm:space-x-4 my-8">
@@ -32,9 +36,7 @@ export function Hero(): React.ReactElement {
                 </div>
                 <div>
                   <Button asChild variant="outline">
-                    <Link href="https://github.com/propsto/props.to">
-                      Contribute
-                    </Link>
+                    <Link href="https://git.new/propsto">Contribute</Link>
                   </Button>
                 </div>
               </div>
@@ -49,10 +51,8 @@ export function Hero(): React.ReactElement {
 function TypeWriterCTA(): React.ReactNode {
   const [showNotice, setShowNotice] = useState(false);
   const placeholderText = useTypeWriter([
-    "https://youtube.com/mrbeast",
-    "john.doe@company.com",
-    "company/john.doe",
-    "https://x.com/elonmusk",
+    "john.doe@acme.com",
+    "acme/john.doe",
     "type any URI here!",
   ]);
   return (
@@ -67,16 +67,16 @@ function TypeWriterCTA(): React.ReactNode {
           </p>
         </>
       ) : (
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-black flex flex-col md:flex-row items-center gap-1 flex-wrap justify-center">
+        <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold flex flex-col md:flex-row items-center gap-1 flex-wrap justify-center ml-5">
           props.to/
           <Input
             placeholder={placeholderText}
             type="text"
-            className="peer text-2xl focus:placeholder:text-white md:placeholder:text-3xl lg:placeholder:text-5xl placeholder:text-2xl font-sans placeholder:font-sans w-[80%] md:w-[70%] md:min-w-[70%] inline-block bg-white h-10 md:h-14 lg:h-16 font-extralight rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-3xl lg:text-5xl sm:leading-6"
+            className="peer text-2xl focus:placeholder:text-white md:placeholder:text-3xl lg:placeholder:text-4xl placeholder:text-2xl font-sans placeholder:font-sans w-[47%] md:w-[37%] md:min-w-[37%] inline-block bg-white h-10 md:h-12 lg:h-14 font-extralight rounded-md border-0 py-1 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-2xl lg:text-4xl sm:leading-6"
           />
           <Button
             variant="default"
-            className="peer-focus:visible active:visible hover:visible invisible md:text-xl h-10 md:h-14 lg:h-16"
+            className="peer-focus:visible active:visible hover:visible invisible md:text-xl h-10 md:h-12 lg:h-14"
             onClick={() => {
               setShowNotice(true);
             }}

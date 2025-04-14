@@ -12,10 +12,10 @@
     "prefix": ""
   },
   "aliases": {
-    "components": "@/molecules",
-    "utils": "@/utils",
-    "ui": "@/atoms",
-    "hooks": "@/hooks",
-    "lib": "@/lib"
+    "components": "~/molecules",
+    "utils": "~/lib/utils",
+    "ui": "~/atoms",
+    "hooks": "~/hooks",
+    "lib": "~/lib"
   }
 }

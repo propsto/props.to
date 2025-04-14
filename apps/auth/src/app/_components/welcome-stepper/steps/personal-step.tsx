@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import React, { useCallback, useState } from "react";
-import { generatePreview } from "@propsto/ui/utils/preview";
+import { generatePreview } from "@propsto/ui/lib/preview";
 import Image from "next/image";
 import { useController, useFormContext } from "react-hook-form";
 import { Input, Label } from "@propsto/ui/atoms";

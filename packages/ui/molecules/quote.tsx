@@ -1,5 +1,5 @@
 import { constOther } from "@propsto/constants/other";
-import { cn } from "../utils/cn";
+import { cn } from "../lib/utils";
 
 export function Quote({
   className,

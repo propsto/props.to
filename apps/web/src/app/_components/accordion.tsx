@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { cn } from "@propsto/ui/utils/cn";
+import { cn } from "@propsto/ui/lib/utils";
 
 type AccordionpProps = Readonly<React.PropsWithChildren> & {
   title: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@propsto/ui/utils/cn";
+import { cn } from "@propsto/ui/lib/utils";
 import { useResetableActionState } from "@propsto/ui/hooks/use-resetable-action-state";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
 import { passwordResetAction } from "@/server/password-reset-action";

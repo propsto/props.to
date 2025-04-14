@@ -4,7 +4,7 @@
   border-bottom-width: var(--triangle-size);
   border-left-width: 0;
   transform-origin: calc(var(--triangle-size) / 2) 0px;
-  border-right-color: hsl(var(--primary) / 0.1);
+  border-right-color: currentColor;
   border-bottom-color: transparent;
   border-left-color: transparent;
 }
@@ -14,9 +14,10 @@
   border-right-width: 0;
   border-bottom-width: var(--triangle-size);
   border-left-width: var(--triangle-size);
-  transform-origin: calc(var(--triangle-size) / 2) calc(var(--triangle-size) / 2);
+  transform-origin: calc(var(--triangle-size) / 2)
+    calc(var(--triangle-size) / 2);
   border-right-color: transparent;
-  border-bottom-color: hsl(var(--primary) / 0.08);
+  border-bottom-color: currentColor;
   border-left-color: transparent;
 }
 
@@ -28,5 +29,74 @@
   transform-origin: 0px calc(var(--triangle-size) / 2);
   border-right-color: transparent;
   border-bottom-color: transparent;
-  border-left-color: hsl(var(--primary) / 0.04);
+  border-left-color: currentColor;
+}
+
+:root {
+  --triangle-color-0: 40 91% 97% / 0.7;
+  --triangle-color-1: 0 0% 91% / 0.7;
+  --triangle-color-2: 336 73% 96% / 0.7;
+  --triangle-color-3: 244 75% 97% / 0.7;
+  --triangle-color-4: 137 100% 28% / 0.09;
+  --triangle-color-5: 167 76% 95% / 0.7;
+}
+
+[data-theme="dark"] {
+  --triangle-color-0: 40 100% 30% / 0.1;
+  --triangle-color-1: 0 0% 65% / 0.1;
+  --triangle-color-2: 336 70% 40% / 0.1;
+  --triangle-color-3: 244 70% 50% / 0.1;
+  --triangle-color-4: 137 80% 50% / 0.1;
+  --triangle-color-5: 167 70% 40% / 0.1;
+}
+
+.color-0 {
+  color: hsla(var(--triangle-color-0));
+}
+.color-1 {
+  color: hsla(var(--triangle-color-1));
+}
+.color-2 {
+  color: hsla(var(--triangle-color-2));
+}
+.color-3 {
+  color: hsla(var(--triangle-color-3));
+}
+.color-4 {
+  color: hsla(var(--triangle-color-4));
+}
+.color-5 {
+  color: hsla(var(--triangle-color-5));
+}
+
+.bg-triangle-0 {
+  background-color: hsla(var(--triangle-color-0));
+}
+.bg-triangle-1 {
+  background-color: hsla(var(--triangle-color-1));
+}
+.bg-triangle-2 {
+  background-color: hsla(var(--triangle-color-2));
+}
+.bg-triangle-3 {
+  background-color: hsla(var(--triangle-color-3));
+}
+.bg-triangle-4 {
+  background-color: hsla(var(--triangle-color-4));
+}
+.bg-triangle-5 {
+  background-color: hsla(var(--triangle-color-5));
+}
+
+.triangle-color-gradient {
+  background: #fefaf0;
+  background: linear-gradient(
+    90deg,
+    hsla(var(--triangle-color-0)) 0%,
+    hsla(var(--triangle-color-1)) 20%,
+    hsla(var(--triangle-color-2)) 40%,
+    hsla(var(--triangle-color-3)) 60%,
+    hsla(var(--triangle-color-4)) 80%,
+    hsla(var(--triangle-color-5)) 100%
+  );
 }

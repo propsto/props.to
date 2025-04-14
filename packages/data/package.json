@@ -19,16 +19,16 @@
     "lint": "pnpm dotenv -- prisma validate"
   },
   "dependencies": {
+    "@prisma/client": "6.6.0",
     "@auth/core": "0.38.0",
     "@auth/prisma-adapter": "2.8.0",
     "@prisma/extension-accelerate": "1.2.2",
     "bcryptjs": "3.0.2"
   },
   "devDependencies": {
-    "@prisma/client": "6.5.0",
     "@types/bcryptjs": "3.0.0",
     "@types/uuid": "10.0.0",
-    "prisma": "6.5.0"
+    "prisma": "6.6.0"
   },
   "peerDependencies": {
     "@propsto/constants": "workspace:*",

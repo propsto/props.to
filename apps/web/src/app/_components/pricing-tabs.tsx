@@ -1,8 +1,13 @@
 "use client";
 
-import { cn } from "@propsto/ui/utils/cn";
+import { cn } from "@propsto/ui/lib/utils";
 import { CheckCircle2, CircleDollarSign, X } from "lucide-react";
-import { Tooltip } from "./tooltip";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@propsto/ui/atoms";
 
 interface Tier {
   price: string;
@@ -62,11 +67,11 @@ const features: FeatureItem[] = [
       "yes",
       [
         "no",
-        "No third-party props.to is thought to be integrated in this tier",
+        "No third-party props.to is thought<br/> to be integrated in this tier",
       ],
       [
         "no",
-        "No third-party props.to is thought to be integrated in this tier",
+        "No third-party props.to is thought<br/> to be integrated in this tier",
       ],
     ],
   ],
@@ -77,11 +82,11 @@ const features: FeatureItem[] = [
       "yes",
       [
         "no",
-        "Personal feedback from social networks only allowed outside organizations",
+        "Personal feedback from social networks<br/> only allowed outside organizations",
       ],
       [
         "no",
-        "Personal feedback from social networks only allowed outside organizations",
+        "Personal feedback from social networks<br/> only allowed outside organizations",
       ],
     ],
   ],
@@ -113,19 +118,27 @@ function FeatureState({
         <X className={cn("size-5", recursion ? "mb-px" : "mb-0.5")} />
       )}
       {state === "paid" && (
-        <Tooltip content="Extra fee" id={`paid${id}`} className="no-underline">
-          <div className="flex border-b border-dotted border-gray-500">
-            <CircleDollarSign className="size-5 text-gray-600 mb-0.5" />
-            <span className="text-sm">*</span>
-          </div>
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="flex border-b border-dotted border-gray-500">
+              <CircleDollarSign className="size-5 text-gray-600 mb-0.5" />
+              <span className="text-sm">*</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>Extra fee</TooltipContent>
         </Tooltip>
       )}
       {typeof state === "object" ? (
-        <Tooltip content={state[1]} id={`other${id}`} className="no-underline">
-          <div className="flex border-b border-dotted border-gray-500">
-            <FeatureState state={state[0]} id={`recursion${id}`} recursion />
-            <span className="text-sm">*</span>
-          </div>
+        <Tooltip>
+          <TooltipTrigger>
+            <div className="flex border-b border-dotted border-gray-500">
+              <FeatureState state={state[0]} id={`recursion${id}`} recursion />
+              <span className="text-sm">*</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div dangerouslySetInnerHTML={{ __html: state[1] }} />
+          </TooltipContent>
         </Tooltip>
       ) : null}
     </>
@@ -135,99 +148,98 @@ function FeatureState({
 export function PricingTabs(): React.ReactElement {
   return (
     <section>
-      <div className="py-12 md:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="relative max-w-3xl mx-auto text-center">
-            <h2 className="font-cal text-3xl md:text-4xl font-bold text-zinc-900 mb-4">
-              There&apos;s a plan for everyone
-            </h2>
-            <p className="text-lg text-zinc-500">
-              Start claiming your received feedback. Upgrade to get extra
-              features and buy a license to get them in a self-hosted props.to.
+      <TooltipProvider delayDuration={0}>
+        <div className="py-12 md:py-16">
+          <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
+            <p className="text-center text-base [line-height:1.75rem] font-semibold text-zinc-600">
+              Feedback, your way.
             </p>
-          </div>
+            <h2 className="mx-auto mt-2 max-w-lg text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
+              Choose your own feedback experience
+            </h2>
 
-          {/* Pricing tabs component */}
-          <section className="text-gray-700 body-font">
-            <div className="container px-5 py-24 mx-auto flex flex-wrap">
-              <div className="lg:w-1/4 mt-48 hidden lg:block">
-                <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
-                  {features.map((feat, index) => (
-                    <p
-                      key={`feature${index.toString()}`}
-                      className={cn(
-                        "text-gray-900 h-12 px-4 flex items-center justify-start",
-                        index === 0 && "-mt-px",
-                        index % 2 === 0 && "bg-gray-100",
-                      )}
-                    >
-                      {feat[0]}
-                    </p>
-                  ))}
+            {/* Pricing tabs component */}
+            <section className="text-gray-700 body-font">
+              <div className="container px-5 pt-24 mx-auto flex flex-wrap">
+                <div className="lg:w-1/4 mt-48 hidden lg:block">
+                  <div className="mt-px border-t border-gray-300 border-b border-l rounded-tl-xl rounded-bl-xl overflow-hidden">
+                    {features.map((feat, index) => (
+                      <p
+                        key={`feature${index.toString()}`}
+                        className={cn(
+                          "text-gray-900 h-12 px-4 flex items-center justify-start",
+                          index === 0 && "-mt-px",
+                          `bg-triangle-${(index % 6).toString()}`,
+                        )}
+                      >
+                        {feat[0]}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex lg:w-3/4 w-full flex-wrap rounded-xl">
+                  {Object.keys(tiers).map((tierKey, index) => {
+                    const tier = tiers[tierKey];
+                    return (
+                      <div
+                        key={`tier${index.toString()}`}
+                        className={cn(
+                          "lg:w-1/3 w-full rounded-xl mb-10",
+                          tier.highlight
+                            ? "border-2 border-gray-800 relative"
+                            : "border-gray-300",
+                          !tier.highlight &&
+                            "border-r border-b border-t border-l",
+                          index !== 0 && !tier.highlight && "lg:border-l-0",
+                        )}
+                      >
+                        {tier.highlight ? (
+                          <span className="bg-gray-800 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl-lg rounded-tr-lg">
+                            {tier.highlight}
+                          </span>
+                        ) : null}
+                        <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
+                          <h3 className="tracking-widest">{tierKey}</h3>
+                          <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
+                            {tier.price}
+                          </h2>
+                          <span className="text-sm text-gray-600">
+                            {tier.priceSubtitle}
+                          </span>
+                        </div>
+                        {features.map((featState, indexState) => (
+                          <div
+                            key={`featState${indexState.toString()}`}
+                            className={cn(
+                              "text-gray-600 h-12 flex items-center justify-center",
+                              indexState === 0 && "border-t border-gray-300",
+                              tier.highlight && indexState === 0 && "-mt-px",
+                              `bg-triangle-${(indexState % 6).toString()}`,
+                            )}
+                          >
+                            <span className="lg:hidden font-bold">
+                              {featState[0]}&nbsp;
+                            </span>
+                            <FeatureState
+                              state={featState[1][index]}
+                              id={featState[0]}
+                            />
+                          </div>
+                        ))}
+                        <div className="p-6 text-center border-t border-gray-300">
+                          <p className="text-xs text-gray-500 mt-3">
+                            {tier.footer}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
-              <div className="flex lg:w-3/4 w-full flex-wrap rounded-lg">
-                {Object.keys(tiers).map((tierKey, index) => {
-                  const tier = tiers[tierKey];
-                  return (
-                    <div
-                      key={`tier${index.toString()}`}
-                      className={cn(
-                        "lg:w-1/3 w-full rounded-lg mb-10",
-                        tier.highlight
-                          ? "border-2 border-gray-800 relative"
-                          : "border-gray-300",
-                        !tier.highlight &&
-                          "border-r border-b border-t border-l",
-                        index !== 0 && !tier.highlight && "lg:border-l-0",
-                      )}
-                    >
-                      {tier.highlight ? (
-                        <span className="bg-gray-800 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl rounded-tr">
-                          {tier.highlight}
-                        </span>
-                      ) : null}
-                      <div className="px-2 text-center h-48 flex flex-col items-center justify-center">
-                        <h3 className="tracking-widest">{tierKey}</h3>
-                        <h2 className="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                          {tier.price}
-                        </h2>
-                        <span className="text-sm text-gray-600">
-                          {tier.priceSubtitle}
-                        </span>
-                      </div>
-                      {features.map((featState, indexState) => (
-                        <div
-                          key={`featState${indexState.toString()}`}
-                          className={cn(
-                            "text-gray-600 h-12 flex items-center justify-center",
-                            indexState === 0 && "border-t border-gray-300",
-                            tier.highlight && indexState === 0 && "-mt-px",
-                            indexState % 2 === 0 && "bg-gray-100",
-                          )}
-                        >
-                          <span className="lg:hidden font-bold">
-                            {featState[0]}&nbsp;
-                          </span>
-                          <FeatureState
-                            state={featState[1][index]}
-                            id={featState[0]}
-                          />
-                        </div>
-                      ))}
-                      <div className="p-6 text-center border-t border-gray-300">
-                        <p className="text-xs text-gray-500 mt-3">
-                          {tier.footer}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
-      </div>
+      </TooltipProvider>
     </section>
   );
 }
