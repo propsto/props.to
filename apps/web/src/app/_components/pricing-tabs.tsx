@@ -67,26 +67,26 @@ const features: FeatureItem[] = [
       "yes",
       [
         "no",
-        "No third-party props.to is thought<br/> to be integrated in this tier",
+        "No third-party props.to is thought<br/> to be integrated in this tier.",
       ],
       [
         "no",
-        "No third-party props.to is thought<br/> to be integrated in this tier",
+        "No third-party props.to is thought<br/> to be integrated in this tier.",
       ],
     ],
   ],
   ["API access", ["paid", "yes", "yes"]],
   [
-    "Single social network integration",
+    "Social network integrations",
     [
-      "yes",
+      "paid",
       [
         "no",
-        "Personal feedback from social networks<br/> only allowed outside organizations",
+        "Feedback from social networks<br/> only allowed outside organizations.",
       ],
       [
         "no",
-        "Personal feedback from social networks<br/> only allowed outside organizations",
+        "Feedback from social networks<br/> only allowed outside organizations.",
       ],
     ],
   ],
@@ -125,7 +125,7 @@ function FeatureState({
               <span className="text-sm">*</span>
             </div>
           </TooltipTrigger>
-          <TooltipContent>Extra fee</TooltipContent>
+          <TooltipContent>Paid add-on</TooltipContent>
         </Tooltip>
       )}
       {typeof state === "object" ? (
