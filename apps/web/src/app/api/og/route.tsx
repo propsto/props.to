@@ -28,7 +28,7 @@ export function GET(): ImageResponse {
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: "white",
-          backgroundImage: `url("${url}/triangles.png")`,
+          backgroundImage: `url("${url}/triangles.jpg")`,
           backgroundSize: "100% 100%",
           backgroundRepeat: "repeat",
         }}
@@ -70,7 +70,7 @@ export function GET(): ImageResponse {
               backgroundColor: "white",
             }}
           >
-            https://any.address.you.want.com
+            john.doe@acme.com
             <div
               style={{
                 width: "3px",
@@ -88,7 +88,7 @@ export function GET(): ImageResponse {
             marginTop: "-1rem",
           }}
         >
-          Open Source Feedback Platform
+          Open Source Feedback Infrastructure
         </h3>
       </div>
     ),

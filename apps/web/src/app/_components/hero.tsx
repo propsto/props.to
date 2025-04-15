@@ -53,6 +53,7 @@ function TypeWriterCTA(): React.ReactNode {
   const placeholderText = useTypeWriter([
     "john.doe@acme.com",
     "acme/john.doe",
+    "acme/townhall-2025",
     "type any URI here!",
   ]);
   return (
@@ -72,7 +73,7 @@ function TypeWriterCTA(): React.ReactNode {
           <Input
             placeholder={placeholderText}
             type="text"
-            className="peer text-2xl focus:placeholder:text-white md:placeholder:text-3xl lg:placeholder:text-4xl placeholder:text-2xl font-sans placeholder:font-sans w-[60%] md:w-[37%] md:min-w-[37%] inline-block bg-white h-10 md:h-12 lg:h-14 font-extralight rounded-md border-0 py-1 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-2xl lg:text-4xl sm:leading-6"
+            className="peer text-2xl focus:placeholder:text-white md:placeholder:text-3xl lg:placeholder:text-4xl placeholder:text-2xl font-sans placeholder:font-sans min-w-[14.5rem] w-[60%] md:w-[40%] md:min-w-[40%] inline-block bg-white h-10 md:h-12 lg:h-14 font-extralight rounded-md border-0 py-1 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-800 focus:ring-2 focus:ring-inset focus:ring-gray-600 md:text-2xl lg:text-4xl sm:leading-6"
           />
           <Button
             variant="default"

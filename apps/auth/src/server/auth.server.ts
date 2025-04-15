@@ -37,6 +37,10 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
   });
 }
 
+const allowedDomains: string[] = (
+  constServer.GOOGLE_ALLOWED_HOSTED_DOMAINS ?? ""
+).split(",");
+
 function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
   if (constServer.GOOGLE_CLIENT_ID && constServer.GOOGLE_CLIENT_SECRET) {
     return [
@@ -51,8 +55,9 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
         },
         checks: ["none"],
         profile: async (profile: GoogleProfile, tokens) => {
-          if (!profile.hd || profile.hd !== "props.host")
+          if (!profile.hd || !allowedDomains.includes(profile.hd)) {
             throw Error("Google Hosted Domain not allowed");
+          }
           let adminData: Record<string, string> | null = null;
           try {
             if (tokens.access_token) {

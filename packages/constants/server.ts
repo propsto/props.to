@@ -38,6 +38,7 @@ export const constServer = createEnv({
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_ALLOWED_HOSTED_DOMAINS: z.string().optional(),
   },
 
   /**

@@ -15,7 +15,10 @@
     "EMAIL_SERVER",
     "RESEND_API_KEY",
     "PROPSTO_APP_URL",
-    "PROPSTO_HOST"
+    "PROPSTO_HOST",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GOOGLE_ALLOWED_HOSTED_DOMAINS"
   ],
   "tasks": {
     "@propsto/email#maildev": {
