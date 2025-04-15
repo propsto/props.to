@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- og image */
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
@@ -17,6 +18,7 @@ export function GET(): ImageResponse {
   const interSemiBold = fs.readFileSync(
     path.resolve("./public/fonts/Inter-SemiBold.ttf"),
   );
+
   return new ImageResponse(
     (
       <div
@@ -33,6 +35,15 @@ export function GET(): ImageResponse {
           backgroundRepeat: "repeat",
         }}
       >
+        <img
+          src={`${url}/logo-color-sm.png`}
+          alt="Logo"
+          width={100}
+          height={100}
+          style={{
+            borderRadius: 20,
+          }}
+        />
         <div
           style={{
             display: "flex",
