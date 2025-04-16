@@ -36,3 +36,10 @@ const errorCodes: Record<string, string> = {
 } as const;
 
 export const constOther = { quotes, errorCodes };
+
+export const examplePropsToInput = [
+  "john.doe@acme.com",
+  "acme/john.doe",
+  `acme/townhall-${new Date().getFullYear().toString()}`,
+  "type any URI here!",
+];

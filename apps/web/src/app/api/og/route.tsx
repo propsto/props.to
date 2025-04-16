@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { constServer } from "@propsto/constants/server";
+import { examplePropsToInput } from "@propsto/constants/other";
 
 export function GET(): ImageResponse {
   const url =
@@ -81,7 +82,11 @@ export function GET(): ImageResponse {
               backgroundColor: "white",
             }}
           >
-            john.doe@acme.com
+            {
+              examplePropsToInput[
+                Math.floor(Math.random() * examplePropsToInput.length)
+              ]
+            }
             <div
               style={{
                 width: "3px",

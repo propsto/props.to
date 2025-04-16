@@ -7,32 +7,30 @@ export const useTypeWriter = (
   const [text, setText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
+  const [showCursor, setShowCursor] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout>(null);
+  const cursorRef = useRef<NodeJS.Timeout>(null);
+
   useEffect(() => {
     const handleTyping = (): void => {
       const current = wordIndex % words.length;
       const fullTxt = words[current];
 
-      let updatedText = text;
-      if (isDeleting) {
-        updatedText = fullTxt.substring(0, text.length - 1);
-      } else {
-        updatedText = fullTxt.substring(0, text.length + 1);
-      }
+      const updatedText = isDeleting
+        ? fullTxt.substring(0, text.length - 1)
+        : fullTxt.substring(0, text.length + 1);
 
       setText(updatedText);
 
-      if (intervalRef.current) {
-        if (!isDeleting && text === fullTxt) {
-          clearInterval(intervalRef.current);
-          setTimeout(() => {
-            setIsDeleting(true);
-          }, wait);
-        } else if (isDeleting && text === "") {
-          clearInterval(intervalRef.current);
-          setIsDeleting(false);
-          setWordIndex(prevIndex => (prevIndex + 1) % words.length);
-        }
+      if (!isDeleting && updatedText === fullTxt) {
+        intervalRef.current && clearInterval(intervalRef.current);
+        setTimeout(() => {
+          setIsDeleting(true);
+        }, wait);
+      } else if (isDeleting && updatedText === "") {
+        intervalRef.current && clearInterval(intervalRef.current);
+        setIsDeleting(false);
+        setWordIndex(i => (i + 1) % words.length);
       }
     };
 
@@ -41,12 +39,15 @@ export const useTypeWriter = (
       isDeleting ? speed / 2 : speed,
     );
 
+    cursorRef.current = setInterval(() => {
+      setShowCursor(prev => !prev);
+    }, 500);
+
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      intervalRef.current && clearInterval(intervalRef.current);
+      cursorRef.current && clearInterval(cursorRef.current);
     };
   }, [text, isDeleting, wordIndex, words, wait, speed]);
 
-  return text;
+  return showCursor ? `${text}|` : text;
 };
