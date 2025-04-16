@@ -58,9 +58,10 @@ function TypeWriterCTA(): React.ReactNode {
         <>
           <h2 className="text-5xl font-black">Thank you for your interest!</h2>
           <p className="mt-4 text-2xl">
-            We are still developing this platform. But be sure to request early
+            We’re actively building this open source feedback infrastructure.
             <br />
-            access to be able to use it when the time comes!
+            Request early access to be among the first to try it when it’s
+            ready!
           </p>
         </>
       ) : (
@@ -73,7 +74,7 @@ function TypeWriterCTA(): React.ReactNode {
           />
           <Button
             variant="default"
-            className="peer-focus:visible active:visible hover:visible invisible md:text-xl h-10 md:h-12 lg:h-14"
+            className="peer-focus:visible active:visible hover:visible invisible md:text-xl  h-10 md:h-11 lg:h-[3rem]"
             onClick={() => {
               setShowNotice(true);
             }}
