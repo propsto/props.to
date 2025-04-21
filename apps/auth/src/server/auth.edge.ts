@@ -29,7 +29,7 @@ export const nextAuthConfig = {
     }: {
       token: JWT;
       user?: NextAuthUser | AdapterUser;
-      account: Account | null;
+      account?: Account | null;
       profile?: Profile;
       trigger?: "signIn" | "signUp" | "update";
       isNewUser?: boolean;

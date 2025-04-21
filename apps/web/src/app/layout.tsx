@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Inter, Inter_Tight } from "next/font/google";
 import { cn } from "@propsto/ui/lib/utils";
+import { Analytics } from "@vercel/analytics/react";
 
 const calFont = localFont({
   src: "../../public/fonts/CalSans-SemiBold.ttf",
@@ -29,7 +30,7 @@ const inter_tight = Inter_Tight({
 
 export const metadata: Metadata = {
   title: "Props.to",
-  description: "Open Source Feedback Platform",
+  description: "Open Source Feedback Infrastructure",
   openGraph: {
     images: ["https://props.to/api/og"],
   },
@@ -50,6 +51,7 @@ export default function RootLayout({
       >
         <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip bg-white/50">
           {children}
+          <Analytics />
         </div>
       </body>
     </html>

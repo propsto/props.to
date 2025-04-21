@@ -1,9 +1,9 @@
-<div align="center"><img src="https://github.com/propsto/props.to/blob/main/apps/web/public/props.to.png?raw=true" width="100" alt="" /></div>
+<div align="center"><img src="https://github.com/propsto/props.to/blob/main/apps/web/public/logo-color.png?raw=true" style="border-radius: 25px;" width="100" alt="" /></div>
 <h1 align="center" style="margin: 0;">Props.to</h1>
 
 <p align="center" style="margin-top: 20px">
   <p align="center">
-  Open Source Feedback Platform
+  Open Source Feedback Infrastructure
   <br>
     <a href="https://props.to"><strong>Learn more »</strong></a>
     <br />

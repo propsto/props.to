@@ -22,7 +22,7 @@ const inter_tight = Inter_Tight({
 
 export const metadata: Metadata = {
   title: "Props.to - Application",
-  description: "Open Source Feedback Platform",
+  description: "Open Source Feedback Infrastructure",
 };
 
 export default function RootLayout({

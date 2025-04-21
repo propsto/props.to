@@ -145,7 +145,7 @@ export default function BentoGrid(): React.JSX.Element {
                     Feedback is just the beginning.
                   </p>
                   <p className="mt-2 max-w-lg text-sm [line-height:1.5rem] text-gray-600 max-lg:text-center">
-                    Most platforms stop at collecting feedback. Props.to lets
+                    Most solutions stop at collecting feedback. Props.to lets
                     you follow up, clarify, and continue the conversation.
                   </p>
                 </div>

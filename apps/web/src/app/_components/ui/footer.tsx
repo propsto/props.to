@@ -26,7 +26,7 @@ export function Footer(): React.ReactElement {
             </div>
             <div className="grow text-sm text-zinc-900 max-w-[25rem] text-center">
               The symbol <b>人</b>, meaning &quot;human&quot; in several Asian
-              languages, reflects the platform’s focus on humanity. It also
+              languages, reflects the solution&apos;s focus on humanity. It also
               resembles the 🙏 emoji, often used to express gratitude.
             </div>
             {/* Social links */}

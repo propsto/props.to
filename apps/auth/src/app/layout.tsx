@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Props.to - Authenticate",
-  description: "Open Source Feedback Platform",
+  description: "Open Source Feedback Infrastructure",
 };
 
 export default function RootLayout({

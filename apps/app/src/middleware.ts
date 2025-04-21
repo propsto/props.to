@@ -10,7 +10,7 @@ export default function middleware(request: NextRequest): Response {
       return NextResponse.redirect(newUrl.href);
     }
     return NextResponse.next();
-  })(request, {}) as Response;
+  })(request, { params: {} }) as Response;
 }
 
 export const config = {
