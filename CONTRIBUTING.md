@@ -83,7 +83,7 @@ To develop locally:
    git checkout -b MY_BRANCH_NAME
    ```
 
-3. Install yarn:
+3. Install pnpm:
 
    ```sh
    npm install -g pnpm
@@ -98,7 +98,7 @@ To develop locally:
 5. Set up your `.env` file:
 
    - Duplicate `.env.example` to `.env`.
-   - Use `openssl rand -base64 32` to generate a key and add it under `NEXTAUTH_SECRET` in the `.env` file.
+   - Use `openssl rand -base64 32` to generate a key and add it under `AUTH_SECRET` in the `.env` file.
 
 6. Setup Node
    If your Node version does not meet the project's requirements as instructed by the docs, "nvm" (Node Version Manager) allows using Node at the version required by the project:

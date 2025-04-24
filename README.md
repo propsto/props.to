@@ -27,11 +27,17 @@
 
 ## About this project
 
-Feedback throughout internet is a lost cause. Literally. No one knows which entity to trust. Whether you are a company, an internet figure, have social network presence or simply an employee, you can't own your feedback throughout all your public or private profiles. Until now.
+Feedback across the internet is fragmented — and often lost. Whether you’re a company, public figure, content creator, or employee, there’s no reliable way to consolidate and control your feedback across all your public and private profiles. Until now.
 
-Props.to **人** is the go-to open source solution to own your feedback throughout all your connected profiles. Anyone could send you feedback even without your knowledge and then claim it by connecting your feedbacked profile to your account. Most importantly, you will be able to retain Props.to private feedback by your employer and choose to publish it in your Props.to public profile. You might change your job, but the feedback remains, allowing you to build more realistic and humane internet presence through Props.to.
+Props.to 人 is the open source infrastructure for feedback ownership. It lets you collect, verify, and publish feedback across all your connected profiles — on your terms. Feedback can be sent to any profile, even before it’s claimed. Once linked to your account, that feedback becomes yours to manage.
 
-## Getting Started
+Most importantly, Props.to bridges the gap between private and public feedback. For example, if your employer shares private feedback through Props.to, you can choose to make it public — even if you change jobs. Your reputation follows you, helping you build a more authentic, enduring presence online.
+
+## Self-hosting
+
+Soon.
+
+## Getting Started Contributing
 
 1. Install dependencies
 
