@@ -7,15 +7,13 @@ import { cn } from "../lib/utils";
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
-export type ChartConfig = {
-  [k in string]: {
+export type ChartConfig = Record<string, {
     label?: React.ReactNode;
     icon?: React.ComponentType;
   } & (
     | { color?: string; theme?: never }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
-  );
-};
+  )>;
 
 interface ChartContextProps {
   config: ChartConfig;
@@ -111,6 +109,21 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+interface ChartTooltipContentProps extends React.ComponentProps<"div"> {
+  active?: boolean;
+  payload?: any[];
+  label?: any;
+  labelFormatter?: any;
+  labelClassName?: string;
+  formatter?: any;
+  color?: string;
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  nameKey?: string;
+  labelKey?: string;
+}
+
 function ChartTooltipContent({
   active,
   payload,
@@ -125,14 +138,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-  React.ComponentProps<"div"> & {
-    hideLabel?: boolean;
-    hideIndicator?: boolean;
-    indicator?: "line" | "dot" | "dashed";
-    nameKey?: string;
-    labelKey?: string;
-  }): React.JSX.Element | null {
+}: ChartTooltipContentProps): React.JSX.Element | null {
   const { config } = useChart();
 
   const tooltipLabel = React.useMemo(() => {
@@ -145,7 +151,7 @@ function ChartTooltipContent({
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
-        ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- works
+        ?  
           (config[label]?.label ?? label)
         : itemConfig?.label;
 
@@ -202,7 +208,7 @@ function ChartTooltipContent({
               )}
             >
               {formatter && item.value !== undefined && item.name ? (
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- needed
+                 
                 formatter(item.value, item.name, item, index, item.payload)
               ) : (
                 <>
@@ -260,17 +266,20 @@ function ChartTooltipContent({
 
 const ChartLegend = RechartsPrimitive.Legend;
 
+interface ChartLegendContentProps extends React.ComponentProps<"div"> {
+  hideIcon?: boolean;
+  nameKey?: string;
+  payload?: any[];
+  verticalAlign?: "top" | "bottom";
+}
+
 function ChartLegendContent({
   className,
   hideIcon = false,
   payload,
   verticalAlign = "bottom",
   nameKey,
-}: React.ComponentProps<"div"> &
-  Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-    hideIcon?: boolean;
-    nameKey?: string;
-  }): React.JSX.Element | null {
+}: ChartLegendContentProps): React.JSX.Element | null {
   const { config } = useChart();
 
   if (!payload?.length) {
@@ -291,7 +300,7 @@ function ChartLegendContent({
 
         return (
           <div
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- needed
+             
             key={item.value}
             className={cn(
               "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3",

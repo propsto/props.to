@@ -1,9 +1,8 @@
-/* eslint-disable camelcase -- Google exports without camelcase */
 import "@propsto/ui/base.css";
 import "./globals.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Inter, Inter_Tight } from "next/font/google";
+import { Inter, Inter_Tight as InterTight } from "next/font/google";
 import { cn } from "@propsto/ui/lib/utils";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -20,7 +19,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const inter_tight = Inter_Tight({
+const interTight = InterTight({
   weight: ["500", "600", "700"],
   style: ["normal", "italic"],
   subsets: ["latin"],
@@ -44,7 +43,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          inter_tight.className,
+          interTight.className,
           calFont.className,
           "font-inter antialiased bg-white text-zinc-900 tracking-tight",
         )}

@@ -23,12 +23,16 @@ export const useTypeWriter = (
       setText(updatedText);
 
       if (!isDeleting && updatedText === fullTxt) {
-        intervalRef.current && clearInterval(intervalRef.current);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
         setTimeout(() => {
           setIsDeleting(true);
         }, wait);
       } else if (isDeleting && updatedText === "") {
-        intervalRef.current && clearInterval(intervalRef.current);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
         setIsDeleting(false);
         setWordIndex(i => (i + 1) % words.length);
       }
@@ -44,8 +48,12 @@ export const useTypeWriter = (
     }, 500);
 
     return () => {
-      intervalRef.current && clearInterval(intervalRef.current);
-      cursorRef.current && clearInterval(cursorRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (cursorRef.current) {
+        clearInterval(cursorRef.current);
+      }
     };
   }, [text, isDeleting, wordIndex, words, wait, speed]);
 

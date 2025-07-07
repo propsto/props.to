@@ -3,7 +3,7 @@
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-function Toaster({ ...props }: ToasterProps) {
+function Toaster({ ...props }: ToasterProps): React.ReactElement {
   const { theme = "system" } = useTheme();
 
   return (

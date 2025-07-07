@@ -8,7 +8,7 @@
     "test": "DEBUG=* node test.mjs"
   },
   "dependencies": {
-    "debug": "4.4.0"
+    "debug": "4.4.1"
   },
   "devDependencies": {
     "@types/debug": "4.1.12"

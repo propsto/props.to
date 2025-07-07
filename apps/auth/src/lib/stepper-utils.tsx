@@ -6,7 +6,7 @@ interface StepModule {
   name: string;
   module: {
     StepComponent: React.FC;
-    defaults: (param: any) => Record<string, string | undefined | null>;
+    defaults: (param: any) => any; // More flexible type to handle nested objects
     config: Step;
   };
 }
@@ -22,7 +22,7 @@ export const createStepComponents = (
 // Utility function to generate form defaults
 export const createFormDefaults = (
   steps: StepModule[],
-): Record<string, (param: any) => Record<string, string | undefined | null>> =>
+): Record<string, (param: any) => any> => // More flexible return type
   Object.fromEntries(steps.map(({ name, module }) => [name, module.defaults]));
 
 // Utility function to generate config array
