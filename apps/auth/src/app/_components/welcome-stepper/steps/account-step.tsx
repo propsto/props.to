@@ -47,27 +47,48 @@ export function StepComponent(): React.ReactElement {
     formState: { errors },
   } = useFormContext<AccountFormValues>();
 
-  const { field: profileVisibilityField } = useController<AccountFormValues, "privacySettings.profileVisibility">({
+  const { field: profileVisibilityField } = useController<
+    AccountFormValues,
+    "privacySettings.profileVisibility"
+  >({
     name: "privacySettings.profileVisibility",
   });
 
-  const { field: emailNotificationsField } = useController<AccountFormValues, "notificationPreferences.emailNotifications">({
+  const { field: emailNotificationsField } = useController<
+    AccountFormValues,
+    "notificationPreferences.emailNotifications"
+  >({
     name: "notificationPreferences.emailNotifications",
   });
-  const { field: feedbackAlertsField } = useController<AccountFormValues, "notificationPreferences.feedbackAlerts">({
+  const { field: feedbackAlertsField } = useController<
+    AccountFormValues,
+    "notificationPreferences.feedbackAlerts"
+  >({
     name: "notificationPreferences.feedbackAlerts",
   });
-  const { field: weeklyDigestField } = useController<AccountFormValues, "notificationPreferences.weeklyDigest">({
+  const { field: weeklyDigestField } = useController<
+    AccountFormValues,
+    "notificationPreferences.weeklyDigest"
+  >({
     name: "notificationPreferences.weeklyDigest",
   });
-  const { field: marketingEmailsField } = useController<AccountFormValues, "notificationPreferences.marketingEmails">({
+  const { field: marketingEmailsField } = useController<
+    AccountFormValues,
+    "notificationPreferences.marketingEmails"
+  >({
     name: "notificationPreferences.marketingEmails",
   });
 
-  const { field: allowFeedbackField } = useController<AccountFormValues, "privacySettings.allowFeedbackFromAnyone">({
+  const { field: allowFeedbackField } = useController<
+    AccountFormValues,
+    "privacySettings.allowFeedbackFromAnyone"
+  >({
     name: "privacySettings.allowFeedbackFromAnyone",
   });
-  const { field: showEmailField } = useController<AccountFormValues, "privacySettings.showEmailInProfile">({
+  const { field: showEmailField } = useController<
+    AccountFormValues,
+    "privacySettings.showEmailInProfile"
+  >({
     name: "privacySettings.showEmailInProfile",
   });
 

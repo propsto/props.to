@@ -15,9 +15,11 @@ export function StepComponent(): React.ReactElement {
       <div className="flex justify-center">
         <CheckCircle className="h-16 w-16 text-green-500" />
       </div>
-      
+
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-primary">Welcome to Props.to!</h2>
+        <h2 className="text-2xl font-bold text-primary">
+          Welcome to Props.to!
+        </h2>
         <p className="text-muted-foreground">
           Your account has been successfully set up with your preferences.
         </p>
@@ -35,9 +37,10 @@ export function StepComponent(): React.ReactElement {
 
       <div className="space-y-2">
         <p className="text-sm text-muted-foreground">
-          You can always update these settings later in your account preferences.
+          You can always update these settings later in your account
+          preferences.
         </p>
-        <Button 
+        <Button
           onClick={() => {
             window.location.href = "/dashboard";
           }}

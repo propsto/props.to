@@ -27,27 +27,32 @@ export type OrganizationFeedbackSettings = {
 // Create or update organization default user settings
 export async function upsertOrganizationDefaultUserSettings(
   organizationId: string,
-  settings: OrganizationDefaultUserSettings
+  settings: OrganizationDefaultUserSettings,
 ) {
   try {
-    logger("upsertOrganizationDefaultUserSettings", { organizationId, settings });
-    
+    logger("upsertOrganizationDefaultUserSettings", {
+      organizationId,
+      settings,
+    });
+
     const result = await db.organizationDefaultUserSettings.upsert({
       where: { organizationId },
       update: {
         defaultProfileVisibility: settings.defaultProfileVisibility,
         allowExternalFeedback: settings.allowExternalFeedback,
-        requireApprovalForPublicProfiles: settings.requireApprovalForPublicProfiles,
+        requireApprovalForPublicProfiles:
+          settings.requireApprovalForPublicProfiles,
         updatedAt: new Date(),
       },
       create: {
         organizationId,
         defaultProfileVisibility: settings.defaultProfileVisibility,
         allowExternalFeedback: settings.allowExternalFeedback,
-        requireApprovalForPublicProfiles: settings.requireApprovalForPublicProfiles,
+        requireApprovalForPublicProfiles:
+          settings.requireApprovalForPublicProfiles,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -57,11 +62,11 @@ export async function upsertOrganizationDefaultUserSettings(
 // Create or update organization general settings
 export async function upsertOrganizationSettings(
   organizationId: string,
-  settings: OrganizationGeneralSettings
+  settings: OrganizationGeneralSettings,
 ) {
   try {
     logger("upsertOrganizationSettings", { organizationId, settings });
-    
+
     const result = await db.organizationSettings.upsert({
       where: { organizationId },
       update: {
@@ -79,7 +84,7 @@ export async function upsertOrganizationSettings(
         enableSSOIntegration: settings.enableSSOIntegration,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -89,11 +94,11 @@ export async function upsertOrganizationSettings(
 // Create or update organization feedback settings
 export async function upsertOrganizationFeedbackSettings(
   organizationId: string,
-  settings: OrganizationFeedbackSettings
+  settings: OrganizationFeedbackSettings,
 ) {
   try {
     logger("upsertOrganizationFeedbackSettings", { organizationId, settings });
-    
+
     const result = await db.organizationFeedbackSettings.upsert({
       where: { organizationId },
       update: {
@@ -111,7 +116,7 @@ export async function upsertOrganizationFeedbackSettings(
         autoApproveInternalFeedback: settings.autoApproveInternalFeedback,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -122,7 +127,7 @@ export async function upsertOrganizationFeedbackSettings(
 export async function getOrganizationSettings(organizationId: string) {
   try {
     logger("getOrganizationSettings", { organizationId });
-    
+
     const organization = await db.organization.findUnique({
       where: { id: organizationId },
       include: {
@@ -132,11 +137,11 @@ export async function getOrganizationSettings(organizationId: string) {
         feedbackSettings: true,
       },
     });
-    
+
     if (!organization) {
       throw new Error("Organization not found");
     }
-    
+
     return handleSuccess({
       organization,
       defaultUserSettings: organization.defaultUserSettings,
@@ -149,14 +154,16 @@ export async function getOrganizationSettings(organizationId: string) {
 }
 
 // Get organization default user settings
-export async function getOrganizationDefaultUserSettings(organizationId: string) {
+export async function getOrganizationDefaultUserSettings(
+  organizationId: string,
+) {
   try {
     logger("getOrganizationDefaultUserSettings", { organizationId });
-    
+
     const settings = await db.organizationDefaultUserSettings.findUnique({
       where: { organizationId },
     });
-    
+
     return handleSuccess(settings);
   } catch (e) {
     return handleError(e);
@@ -167,11 +174,11 @@ export async function getOrganizationDefaultUserSettings(organizationId: string)
 export async function getOrganizationGeneralSettings(organizationId: string) {
   try {
     logger("getOrganizationGeneralSettings", { organizationId });
-    
+
     const settings = await db.organizationSettings.findUnique({
       where: { organizationId },
     });
-    
+
     return handleSuccess(settings);
   } catch (e) {
     return handleError(e);
@@ -179,14 +186,16 @@ export async function getOrganizationGeneralSettings(organizationId: string) {
 }
 
 // Get organization feedback settings
-export async function getOrganizationFeedbackSettingsData(organizationId: string) {
+export async function getOrganizationFeedbackSettingsData(
+  organizationId: string,
+) {
   try {
     logger("getOrganizationFeedbackSettingsData", { organizationId });
-    
+
     const settings = await db.organizationFeedbackSettings.findUnique({
       where: { organizationId },
     });
-    
+
     return handleSuccess(settings);
   } catch (e) {
     return handleError(e);

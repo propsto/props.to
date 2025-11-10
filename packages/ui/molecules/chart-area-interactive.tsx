@@ -133,7 +133,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function ChartAreaInteractive() {
+export function ChartAreaInteractive(): React.JSX.Element {
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("30d");
 
@@ -245,8 +245,8 @@ export function ChartAreaInteractive() {
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
-              tickFormatter={(value: any) => {
-                const date = new Date(value as string);
+              tickFormatter={(value: string | number) => {
+                const date = new Date(String(value));
                 return date.toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
@@ -257,15 +257,12 @@ export function ChartAreaInteractive() {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value: any) => {
-                    return new Date(value as string).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "short",
-                        day: "numeric",
-                      },
-                    );
-                  }}
+                  labelFormatter={(value: string | number) =>
+                    new Date(String(value)).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  }
                   indicator="dot"
                 />
               }

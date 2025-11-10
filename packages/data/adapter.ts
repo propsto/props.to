@@ -41,14 +41,18 @@ export function PropstoAdapter(): Adapter {
     },
     async getUserByEmail(email) {
       const result = await getUserByEmail(email);
-      return result.data;
+      return result.data ?? null;
     },
     async getUserByAccount(providerAccountId) {
       const result = await getUserByAccount(providerAccountId);
       return (result?.data as AdapterUser) ?? null;
     },
     async updateUser({ id, ...data }) {
-      const result = await updateUser(id, data);
+      const result = await updateUser(id, {
+        ...data,
+        // Remove role from the update as it's not part of the AdapterUser type
+        role: undefined,
+      });
       return result.data as AdapterUser;
     },
     async deleteUser(id) {
@@ -108,7 +112,7 @@ export function PropstoAdapter(): Adapter {
     },
     async getAccount(providerAccountId, provider) {
       const result = await getAccount(providerAccountId, provider);
-      return result.data;
+      return result?.data || null;
     },
     async createAuthenticator(authenticator) {
       const result = await createAuthenticator(authenticator);
@@ -116,7 +120,7 @@ export function PropstoAdapter(): Adapter {
     },
     async getAuthenticator(credentialID) {
       const result = await getAuthenticator(credentialID);
-      return result.data;
+      return result.data ?? null;
     },
     async listAuthenticatorsByUserId(userId) {
       const result = await listAuthenticatorsByUserId(userId);

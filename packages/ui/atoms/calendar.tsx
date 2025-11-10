@@ -5,8 +5,13 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
 } from "lucide-react";
-import { type DayButton, DayPicker, getDefaultClassNames } from "react-day-picker";
+import {
+  type DayButton,
+  DayPicker,
+  getDefaultClassNames,
+} from "react-day-picker";
 import { cn } from "../lib/utils";
 import { Button, buttonVariants } from "./button";
 
@@ -16,7 +21,11 @@ interface CalendarRootProps extends React.HTMLAttributes<HTMLDivElement> {
   rootRef?: React.Ref<HTMLDivElement>;
 }
 
-function CalendarRoot({ className, rootRef, ...props }: CalendarRootProps): React.ReactElement {
+function CalendarRoot({
+  className,
+  rootRef,
+  ...props
+}: CalendarRootProps): React.ReactElement {
   return (
     <div
       data-slot="calendar"
@@ -26,38 +35,40 @@ function CalendarRoot({ className, rootRef, ...props }: CalendarRootProps): Reac
     />
   );
 }
-
 interface CalendarChevronProps extends React.HTMLAttributes<SVGElement> {
   className?: string;
-  orientation?: "left" | "right" | "down";
+  orientation?: "left" | "right" | "down" | "up";
 }
 
-function CalendarChevron({ className, orientation, ...props }: CalendarChevronProps): React.ReactElement {
+function CalendarChevron({
+  className,
+  orientation,
+  ...props
+}: CalendarChevronProps): React.ReactElement {
   if (orientation === "left") {
-    return (
-      <ChevronLeftIcon className={cn("size-4", className)} {...props} />
-    );
+    return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
   }
 
   if (orientation === "right") {
-    return (
-      <ChevronRightIcon
-        className={cn("size-4", className)}
-        {...props}
-      />
-    );
+    return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
   }
 
-  return (
-    <ChevronDownIcon className={cn("size-4", className)} {...props} />
-  );
+  if (orientation === "up") {
+    return <ChevronUpIcon className={cn("size-4", className)} {...props} />;
+  }
+
+  return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
 }
 
-interface CalendarWeekNumberProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+interface CalendarWeekNumberProps
+  extends React.TdHTMLAttributes<HTMLTableCellElement> {
   children?: React.ReactNode;
 }
 
-function CalendarWeekNumber({ children, ...props }: CalendarWeekNumberProps): React.ReactElement {
+function CalendarWeekNumber({
+  children,
+  ...props
+}: CalendarWeekNumberProps): React.ReactElement {
   return (
     <td {...props}>
       <div className="flex size-[--cell-size] items-center justify-center text-center">
@@ -209,9 +220,9 @@ function CalendarDayButton({
       size="icon"
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end ? !modifiers.range_middle : null
+        modifiers.selected && !modifiers.range_start && !modifiers.range_end
+          ? !modifiers.range_middle
+          : null
       }
       data-range-start={modifiers.range_start}
       data-range-end={modifiers.range_end}

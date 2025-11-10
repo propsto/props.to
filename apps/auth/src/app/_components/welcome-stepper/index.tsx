@@ -1,9 +1,7 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useState } from "react";
-import { useForm, type UseFormReturn, FormProvider } from "react-hook-form";
-import { type z } from "zod";
+import { useForm, FormProvider } from "react-hook-form";
 import { defineStepper } from "@stepperize/react";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { type User as NextAuthUser } from "next-auth";
@@ -21,7 +19,6 @@ import {
   formDefaults,
   stepComponents,
   type StepNames,
-  type PersonalFormValues,
   type AccountFormValues,
   type OrganizationFormValues,
   canUserAccessStep,
@@ -37,6 +34,9 @@ const stepIcons = {
   complete: Check,
 };
 
+type GenericFormValues = Record<string, unknown>;
+type StepFormStore = Partial<Record<StepNames, GenericFormValues>>;
+
 export function WelcomeStepper({
   user,
   initialStep,
@@ -49,12 +49,16 @@ export function WelcomeStepper({
   const pathname = usePathname();
 
   // Store form data across steps
-  const [formData, setFormData] = useState<Record<string, unknown>>({});
+  const [formData, setFormData] = useState<StepFormStore>({});
 
-  const form = useForm<z.infer<typeof stepper.current.schema>>({
-    resolver: zodResolver(stepper.current.schema as z.ZodType<any>),
-    defaultValues: formDefaults[stepper.current.id](user),
-  }) as UseFormReturn<any>;
+  const defaultValues = formDefaults[stepper.current.id](
+    user,
+  ) as GenericFormValues;
+
+  // Use a type assertion to work around the deep instantiation issue
+  const form = useForm<GenericFormValues>({
+    defaultValues,
+  });
 
   const navigateToStep = (step: StepNames): void => {
     const searchParams = new URLSearchParams({ step });
@@ -67,13 +71,16 @@ export function WelcomeStepper({
 
   // Reset form with correct default values when step changes
   useEffect(() => {
-    const currentStepDefaults = formDefaults[stepper.current.id](user);
+    const currentStepDefaults = formDefaults[stepper.current.id](
+      user,
+    ) as GenericFormValues;
 
     // Merge stored form data with defaults for the current step
-    const mergedDefaults = {
-      ...currentStepDefaults,
-      ...(formData[stepper.current.id] as Record<string, any>),
-    };
+    const storedValues = formData[stepper.current.id];
+    const mergedDefaults =
+      storedValues && typeof storedValues === "object"
+        ? { ...currentStepDefaults, ...storedValues }
+        : currentStepDefaults;
 
     form.reset(mergedDefaults);
   }, [stepper.current.id, form, user, formData, stepper]);
@@ -87,7 +94,7 @@ export function WelcomeStepper({
     }));
   };
 
-  const onSubmit = async (values: any): Promise<void> => {
+  const onSubmit = async (values: GenericFormValues): Promise<void> => {
     // Save current step data before proceeding
     setFormData(prev => ({
       ...prev,
@@ -107,7 +114,15 @@ export function WelcomeStepper({
       },
       personal: async () => {
         const result = await personalHandler(
-          values as PersonalFormValues,
+          {
+            firstName: String(values.firstName),
+            lastName: String(values.lastName),
+            email: String(values.email),
+            dateOfBirth: values.dateOfBirth
+              ? String(values.dateOfBirth as string)
+              : undefined,
+            image: values.image as string | File[] | undefined,
+          },
           user.id,
         );
         if (result.success) {

@@ -30,7 +30,10 @@ export const stepNames = allSteps.map(step => step.name);
 export type StepNames = (typeof allSteps)[number]["name"];
 
 // Function to check if user can access a specific step
-export function canUserAccessStep(user: User & { role?: string }, stepName: string): boolean {
+export function canUserAccessStep(
+  user: User & { role?: string },
+  stepName: string,
+): boolean {
   switch (stepName) {
     case "personal":
     case "account":
@@ -44,7 +47,10 @@ export function canUserAccessStep(user: User & { role?: string }, stepName: stri
 }
 
 // Function to get the next step for a user after completing current step
-export function getNextStepForUser(user: User & { role?: string }, currentStep: string): string {
+export function getNextStepForUser(
+  user: User & { role?: string },
+  currentStep: string,
+): string {
   switch (currentStep) {
     case "personal":
       return "account";
@@ -59,6 +65,9 @@ export function getNextStepForUser(user: User & { role?: string }, currentStep: 
 }
 
 // Function to check if a step should be skipped for the user
-export function shouldSkipStep(user: User & { role?: string }, stepName: string): boolean {
+export function shouldSkipStep(
+  user: User & { role?: string },
+  stepName: string,
+): boolean {
   return stepName === "organization" && user.role !== "ORGANIZATION_ADMIN";
 }

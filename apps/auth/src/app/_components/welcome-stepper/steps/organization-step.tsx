@@ -62,41 +62,74 @@ export function StepComponent(): React.ReactElement {
   const organizationName = watch("organizationName");
 
   // Default user settings controllers
-  const { field: defaultProfileVisibilityField } = useController<OrganizationFormValues, "defaultUserSettings.defaultProfileVisibility">({
+  const { field: defaultProfileVisibilityField } = useController<
+    OrganizationFormValues,
+    "defaultUserSettings.defaultProfileVisibility"
+  >({
     name: "defaultUserSettings.defaultProfileVisibility",
   });
-  const { field: allowExternalFeedbackField } = useController<OrganizationFormValues, "defaultUserSettings.allowExternalFeedback">({
+  const { field: allowExternalFeedbackField } = useController<
+    OrganizationFormValues,
+    "defaultUserSettings.allowExternalFeedback"
+  >({
     name: "defaultUserSettings.allowExternalFeedback",
   });
-  const { field: requireApprovalField } = useController<OrganizationFormValues, "defaultUserSettings.requireApprovalForPublicProfiles">({
+  const { field: requireApprovalField } = useController<
+    OrganizationFormValues,
+    "defaultUserSettings.requireApprovalForPublicProfiles"
+  >({
     name: "defaultUserSettings.requireApprovalForPublicProfiles",
   });
 
   // Organization settings controllers
-  const { field: allowUserInvitesField } = useController<OrganizationFormValues, "organizationSettings.allowUserInvites">({
+  const { field: allowUserInvitesField } = useController<
+    OrganizationFormValues,
+    "organizationSettings.allowUserInvites"
+  >({
     name: "organizationSettings.allowUserInvites",
   });
-  const { field: enableGroupManagementField } = useController<OrganizationFormValues, "organizationSettings.enableGroupManagement">({
+  const { field: enableGroupManagementField } = useController<
+    OrganizationFormValues,
+    "organizationSettings.enableGroupManagement"
+  >({
     name: "organizationSettings.enableGroupManagement",
   });
-  const { field: requireEmailVerificationField } = useController<OrganizationFormValues, "organizationSettings.requireEmailVerification">({
+  const { field: requireEmailVerificationField } = useController<
+    OrganizationFormValues,
+    "organizationSettings.requireEmailVerification"
+  >({
     name: "organizationSettings.requireEmailVerification",
   });
-  const { field: enableSSOField } = useController<OrganizationFormValues, "organizationSettings.enableSSOIntegration">({
+  const { field: enableSSOField } = useController<
+    OrganizationFormValues,
+    "organizationSettings.enableSSOIntegration"
+  >({
     name: "organizationSettings.enableSSOIntegration",
   });
 
   // Feedback settings controllers
-  const { field: enableOrgFeedbackField } = useController<OrganizationFormValues, "feedbackSettings.enableOrganizationFeedback">({
+  const { field: enableOrgFeedbackField } = useController<
+    OrganizationFormValues,
+    "feedbackSettings.enableOrganizationFeedback"
+  >({
     name: "feedbackSettings.enableOrganizationFeedback",
   });
-  const { field: allowAnonymousField } = useController<OrganizationFormValues, "feedbackSettings.allowAnonymousFeedback">({
+  const { field: allowAnonymousField } = useController<
+    OrganizationFormValues,
+    "feedbackSettings.allowAnonymousFeedback"
+  >({
     name: "feedbackSettings.allowAnonymousFeedback",
   });
-  const { field: enableModerationField } = useController<OrganizationFormValues, "feedbackSettings.enableFeedbackModeration">({
+  const { field: enableModerationField } = useController<
+    OrganizationFormValues,
+    "feedbackSettings.enableFeedbackModeration"
+  >({
     name: "feedbackSettings.enableFeedbackModeration",
   });
-  const { field: autoApproveInternalField } = useController<OrganizationFormValues, "feedbackSettings.autoApproveInternalFeedback">({
+  const { field: autoApproveInternalField } = useController<
+    OrganizationFormValues,
+    "feedbackSettings.autoApproveInternalFeedback"
+  >({
     name: "feedbackSettings.autoApproveInternalFeedback",
   });
 

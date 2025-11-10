@@ -1,29 +1,29 @@
 // Example: Improved Dashboard with React Server Components and shadcn/ui
 // This demonstrates best practices for data fetching and component composition
 
-import { Suspense } from 'react'
-import { auth } from '@propsto/auth/server.config'
-import { db } from '@propsto/data'
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
+import { Suspense } from "react";
+import { auth } from "@propsto/auth/server.config";
+import { db } from "@propsto/data";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
   CardTitle,
   Skeleton,
   Badge,
   Button,
-  Separator
-} from '@propsto/ui/atoms'
-import { 
-  SiteHeader, 
-  DataTable, 
-  ChartAreaInteractive 
-} from '@propsto/ui/molecules'
-import { SidebarProvider, SidebarInset } from '@propsto/ui/atoms/sidebar'
-import { AppSidebar } from '@propsto/ui/molecules/app-sidebar'
-import { TrendingUp, Users, MessageSquare, Star } from 'lucide-react'
-import { cache } from 'react'
+  Separator,
+} from "@propsto/ui/atoms";
+import {
+  SiteHeader,
+  DataTable,
+  ChartAreaInteractive,
+} from "@propsto/ui/molecules";
+import { SidebarProvider, SidebarInset } from "@propsto/ui/atoms/sidebar";
+import { AppSidebar } from "@propsto/ui/molecules/app-sidebar";
+import { TrendingUp, Users, MessageSquare, Star } from "lucide-react";
+import { cache } from "react";
 
 // Cached data fetching functions for RSC
 const getDashboardStats = cache(async (userId: string) => {
@@ -34,79 +34,86 @@ const getDashboardStats = cache(async (userId: string) => {
         select: {
           feedbacks: true,
           organizations: true,
-        }
+        },
       },
       feedbacks: {
         select: {
           rating: true,
           createdAt: true,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 100, // For trend calculation
-      }
-    }
-  })
+      },
+    },
+  });
 
-  if (!stats) throw new Error('User not found')
+  if (!stats) throw new Error("User not found");
 
-  const totalFeedbacks = stats._count.feedbacks
-  const totalOrganizations = stats._count.organizations
-  const averageRating = stats.feedbacks.length > 0 
-    ? stats.feedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / stats.feedbacks.length
-    : 0
+  const totalFeedbacks = stats._count.feedbacks;
+  const totalOrganizations = stats._count.organizations;
+  const averageRating =
+    stats.feedbacks.length > 0
+      ? stats.feedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) /
+        stats.feedbacks.length
+      : 0;
 
   // Calculate trend (last 30 days vs previous 30 days)
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const sixtyDaysAgo = new Date()
-  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
-  const recentFeedbacks = stats.feedbacks.filter(f => f.createdAt > thirtyDaysAgo).length
-  const previousFeedbacks = stats.feedbacks.filter(f => 
-    f.createdAt > sixtyDaysAgo && f.createdAt <= thirtyDaysAgo
-  ).length
+  const recentFeedbacks = stats.feedbacks.filter(
+    f => f.createdAt > thirtyDaysAgo,
+  ).length;
+  const previousFeedbacks = stats.feedbacks.filter(
+    f => f.createdAt > sixtyDaysAgo && f.createdAt <= thirtyDaysAgo,
+  ).length;
 
-  const trend = previousFeedbacks > 0 
-    ? ((recentFeedbacks - previousFeedbacks) / previousFeedbacks) * 100
-    : recentFeedbacks > 0 ? 100 : 0
+  const trend =
+    previousFeedbacks > 0
+      ? ((recentFeedbacks - previousFeedbacks) / previousFeedbacks) * 100
+      : recentFeedbacks > 0
+        ? 100
+        : 0;
 
   return {
     totalFeedbacks,
     totalOrganizations,
     averageRating,
     trend,
-    recentFeedbacks
-  }
-})
+    recentFeedbacks,
+  };
+});
 
 const getRecentFeedbacks = cache(async (userId: string) => {
   return await db.feedback.findMany({
     where: {
-      author: { id: userId }
+      author: { id: userId },
     },
     include: {
       author: {
         select: {
           name: true,
           email: true,
-          image: true
-        }
+          image: true,
+        },
       },
       organization: {
         select: {
           name: true,
-          slug: { select: { value: true } }
-        }
-      }
+          slug: { select: { value: true } },
+        },
+      },
     },
-    orderBy: { createdAt: 'desc' },
-    take: 10
-  })
-})
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+});
 
 // Stats Cards Component (Server Component)
 async function StatsCards({ userId }: { userId: string }) {
-  const stats = await getDashboardStats(userId)
+  const stats = await getDashboardStats(userId);
 
   const statItems = [
     {
@@ -114,48 +121,47 @@ async function StatsCards({ userId }: { userId: string }) {
       value: stats.totalFeedbacks.toString(),
       description: `${stats.recentFeedbacks} this month`,
       icon: MessageSquare,
-      trend: stats.trend
+      trend: stats.trend,
     },
     {
       title: "Organizations",
       value: stats.totalOrganizations.toString(),
       description: "Active organizations",
-      icon: Users
+      icon: Users,
     },
     {
       title: "Average Rating",
       value: stats.averageRating.toFixed(1),
       description: "Out of 5 stars",
-      icon: Star
+      icon: Star,
     },
     {
       title: "Growth",
-      value: `${stats.trend > 0 ? '+' : ''}${stats.trend.toFixed(1)}%`,
+      value: `${stats.trend > 0 ? "+" : ""}${stats.trend.toFixed(1)}%`,
       description: "vs last month",
       icon: TrendingUp,
-      trend: stats.trend
-    }
-  ]
+      trend: stats.trend,
+    },
+  ];
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {statItems.map((item, index) => (
         <Card key={index}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {item.title}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
             <item.icon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{item.value}</div>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               {item.trend !== undefined && (
-                <Badge 
+                <Badge
                   variant={item.trend >= 0 ? "default" : "destructive"}
                   className="text-xs"
                 >
-                  {item.trend >= 0 ? '+' : ''}{item.trend.toFixed(1)}%
+                  {item.trend >= 0 ? "+" : ""}
+                  {item.trend.toFixed(1)}%
                 </Badge>
               )}
               {item.description}
@@ -164,20 +170,18 @@ async function StatsCards({ userId }: { userId: string }) {
         </Card>
       ))}
     </div>
-  )
+  );
 }
 
 // Recent Feedback Component (Server Component)
 async function RecentFeedback({ userId }: { userId: string }) {
-  const feedbacks = await getRecentFeedbacks(userId)
+  const feedbacks = await getRecentFeedbacks(userId);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Recent Feedback</CardTitle>
-        <CardDescription>
-          Your latest feedback submissions
-        </CardDescription>
+        <CardDescription>Your latest feedback submissions</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -189,16 +193,19 @@ async function RecentFeedback({ userId }: { userId: string }) {
                     {feedback.title}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {feedback.organization?.name} • {feedback.createdAt.toLocaleDateString()}
+                    {feedback.organization?.name} •{" "}
+                    {feedback.createdAt.toLocaleDateString()}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {feedback.rating && (
-                    <Badge variant="outline">
-                      {feedback.rating}/5 ⭐
-                    </Badge>
+                    <Badge variant="outline">{feedback.rating}/5 ⭐</Badge>
                   )}
-                  <Badge variant={feedback.status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                  <Badge
+                    variant={
+                      feedback.status === "PUBLISHED" ? "default" : "secondary"
+                    }
+                  >
                     {feedback.status}
                   </Badge>
                 </div>
@@ -214,7 +221,7 @@ async function RecentFeedback({ userId }: { userId: string }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Loading Components
@@ -234,7 +241,7 @@ function StatsCardsSkeleton() {
         </Card>
       ))}
     </div>
-  )
+  );
 }
 
 function RecentFeedbackSkeleton() {
@@ -261,15 +268,15 @@ function RecentFeedbackSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 // Main Dashboard Page (Server Component)
 export default async function ImprovedDashboardPage() {
-  const session = await auth()
-  
+  const session = await auth();
+
   if (!session?.user) {
-    throw new Error('Unauthorized')
+    throw new Error("Unauthorized");
   }
 
   return (
@@ -279,7 +286,6 @@ export default async function ImprovedDashboardPage() {
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-6 p-6">
-            
             {/* Stats Section with Suspense */}
             <Suspense fallback={<StatsCardsSkeleton />}>
               <StatsCards userId={session.user.id} />
@@ -311,9 +317,7 @@ export default async function ImprovedDashboardPage() {
                       Manage and view all your feedback submissions
                     </CardDescription>
                   </div>
-                  <Button>
-                    Create Feedback
-                  </Button>
+                  <Button>Create Feedback</Button>
                 </CardHeader>
                 <CardContent>
                   {/* This would be replaced with actual data */}
@@ -321,12 +325,11 @@ export default async function ImprovedDashboardPage() {
                 </CardContent>
               </Card>
             </Suspense>
-
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
 
 // Error Boundary for the page
@@ -334,22 +337,21 @@ export function ErrorBoundary({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold">Something went wrong!</h2>
         <p className="text-muted-foreground max-w-md">
-          {error.message || 'An unexpected error occurred while loading the dashboard.'}
+          {error.message ||
+            "An unexpected error occurred while loading the dashboard."}
         </p>
       </div>
-      <Button onClick={reset}>
-        Try again
-      </Button>
+      <Button onClick={reset}>Try again</Button>
     </div>
-  )
+  );
 }
 
 // Loading page
@@ -371,5 +373,5 @@ export function Loading() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

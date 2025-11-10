@@ -13,7 +13,7 @@ export default async function WelcomePage({
   const user = session?.user as
     | (User & { id: string; email: string })
     | undefined;
-    
+
   if (!user?.email || !user.id) {
     redirect("/error?code=InvalidSession");
   }
@@ -26,6 +26,6 @@ export default async function WelcomePage({
       (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
     );
   }*/
-  
+
   return <WelcomeStepper user={user} initialStep={initialStep} />;
 }

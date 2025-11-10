@@ -11,10 +11,10 @@ export function handleError(e: unknown): HandleErrorEvent {
     if (e.name === "rate_limit_exceeded") {
       return {
         success: false,
-        data: null,
+        data: undefined,
         error: "Contact your admin, emails can't be sent.",
       };
     }
   }
-  return { success: false, data: null, error: "Unexpected error" };
+  return { success: false, data: undefined, error: "Unexpected error" };
 }

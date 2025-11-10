@@ -14,7 +14,7 @@ const personalSchema = z.object({
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().email(),
   dateOfBirth: z.string().optional(),
-  image: z.any().optional(), // Simplified for now to avoid validation issues
+  image: z.unknown().optional(),
 });
 
 export type PersonalFormValues = z.infer<typeof personalSchema>;
@@ -25,15 +25,18 @@ export function StepComponent(): React.ReactElement {
     formState: { errors },
     watch,
   } = useFormContext<PersonalFormValues>();
-  const { field: imageField } = useController<PersonalFormValues, "image">({ name: "image" });
-  const imageValue = imageField.value as string | null;
+  const { field: imageField } = useController<PersonalFormValues, "image">({
+    name: "image",
+  });
+  const imageValue =
+    typeof imageField.value === "string" ? imageField.value : null;
   const [preview, setPreview] = useState<string | ArrayBuffer | null>(
     imageValue ?? null,
   );
 
   // Watch for changes in the image field to update preview
   const watchedImage = watch("image");
-  
+
   useEffect(() => {
     if (typeof watchedImage === "string" && watchedImage) {
       setPreview(watchedImage);
@@ -158,7 +161,9 @@ export function StepComponent(): React.ReactElement {
             />
             {errors.image?.message ? (
               <span className="text-sm text-destructive">
-                {typeof errors.image.message === 'string' ? errors.image.message : 'Invalid image'}
+                {typeof errors.image.message === "string"
+                  ? errors.image.message
+                  : "Invalid image"}
               </span>
             ) : null}
           </div>

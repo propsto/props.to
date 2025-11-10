@@ -25,11 +25,11 @@ export type AccountSettings = {
 // Create or update notification preferences
 export async function upsertNotificationPreferences(
   userId: string,
-  preferences: NotificationPreferences
+  preferences: NotificationPreferences,
 ) {
   try {
     logger("upsertNotificationPreferences", { userId, preferences });
-    
+
     const result = await db.userNotificationPreferences.upsert({
       where: { userId },
       update: {
@@ -47,7 +47,7 @@ export async function upsertNotificationPreferences(
         marketingEmails: preferences.marketingEmails,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -57,11 +57,11 @@ export async function upsertNotificationPreferences(
 // Create or update privacy settings
 export async function upsertPrivacySettings(
   userId: string,
-  settings: PrivacySettings
+  settings: PrivacySettings,
 ) {
   try {
     logger("upsertPrivacySettings", { userId, settings });
-    
+
     const result = await db.userPrivacySettings.upsert({
       where: { userId },
       update: {
@@ -77,7 +77,7 @@ export async function upsertPrivacySettings(
         showEmailInProfile: settings.showEmailInProfile,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -87,11 +87,11 @@ export async function upsertPrivacySettings(
 // Create or update account settings
 export async function upsertAccountSettings(
   userId: string,
-  settings: AccountSettings
+  settings: AccountSettings,
 ) {
   try {
     logger("upsertAccountSettings", { userId, settings });
-    
+
     const result = await db.userAccountSettings.upsert({
       where: { userId },
       update: {
@@ -105,7 +105,7 @@ export async function upsertAccountSettings(
         organizationName: settings.organizationName,
       },
     });
-    
+
     return handleSuccess(result);
   } catch (e) {
     return handleError(e);
@@ -116,7 +116,7 @@ export async function upsertAccountSettings(
 export async function getUserPreferences(userId: string) {
   try {
     logger("getUserPreferences", { userId });
-    
+
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
@@ -125,11 +125,11 @@ export async function getUserPreferences(userId: string) {
         accountSettings: true,
       },
     });
-    
+
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     return handleSuccess({
       notificationPreferences: user.notificationPreferences,
       privacySettings: user.privacySettings,
@@ -144,11 +144,11 @@ export async function getUserPreferences(userId: string) {
 export async function getNotificationPreferences(userId: string) {
   try {
     logger("getNotificationPreferences", { userId });
-    
+
     const preferences = await db.userNotificationPreferences.findUnique({
       where: { userId },
     });
-    
+
     return handleSuccess(preferences);
   } catch (e) {
     return handleError(e);
@@ -159,11 +159,11 @@ export async function getNotificationPreferences(userId: string) {
 export async function getPrivacySettings(userId: string) {
   try {
     logger("getPrivacySettings", { userId });
-    
+
     const settings = await db.userPrivacySettings.findUnique({
       where: { userId },
     });
-    
+
     return handleSuccess(settings);
   } catch (e) {
     return handleError(e);
@@ -174,11 +174,11 @@ export async function getPrivacySettings(userId: string) {
 export async function getAccountSettings(userId: string) {
   try {
     logger("getAccountSettings", { userId });
-    
+
     const settings = await db.userAccountSettings.findUnique({
       where: { userId },
     });
-    
+
     return handleSuccess(settings);
   } catch (e) {
     return handleError(e);
