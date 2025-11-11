@@ -16,8 +16,11 @@ export const constServer = createEnv({
       .string()
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
-    PROPSTO_APP_URL: z.string().url(),
-    AUTH_URL: z.string().url(),
+    PROPSTO_APP_URL: z.preprocess(
+      _ => process.env.PROPSTO_APP_URL,
+      z.string().url(),
+    ),
+    AUTH_URL: z.preprocess(_ => process.env.AUTH_URL, z.string().url()),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
