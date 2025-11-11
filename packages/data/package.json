@@ -38,8 +38,5 @@
     "tsx": "*",
     "typescript": "*",
     "uuid": "*"
-  },
-  "prisma": {
-    "seed": "tsx ./seed.ts"
   }
 }
