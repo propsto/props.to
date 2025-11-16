@@ -17,23 +17,10 @@ export const constServer = createEnv({
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
     PROPSTO_APP_URL: z.preprocess(
-      str =>
-        process.env.VERCEL_ENV === "preview" &&
-        process.env.VERCEL_GIT_PULL_REQUEST_ID &&
-        process.env.PROPSTO_HOST
-          ? `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
-          : str,
+      _ => process.env.PROPSTO_APP_URL,
       z.string().url(),
     ),
-    AUTH_URL: z.preprocess(
-      str =>
-        process.env.VERCEL_ENV === "preview" &&
-        process.env.VERCEL_GIT_PULL_REQUEST_ID &&
-        process.env.PROPSTO_HOST
-          ? `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
-          : str,
-      z.string().url(),
-    ),
+    AUTH_URL: z.preprocess(_ => process.env.AUTH_URL, z.string().url()),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),

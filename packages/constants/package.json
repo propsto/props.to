@@ -13,7 +13,7 @@
     "test": "pnpm dotenv -- pnpm check-env"
   },
   "dependencies": {
-    "@t3-oss/env-core": "0.12.0"
+    "@t3-oss/env-core": "0.13.8"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",

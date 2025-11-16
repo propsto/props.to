@@ -4,7 +4,7 @@ export function FAQs(): React.ReactNode {
   const faqs = [
     {
       title: "Can I use props.to for free?",
-      text: "Yes! props.to is open source and always free to use, whether you’re collecting feedback for yourself or your team. Other features are optionally paid.",
+      text: "Yes! props.to is open source and always free to use, whether you’re collecting feedback for yourself or your team. Other features are optional and usually paid.",
     },
     {
       title: "Can I self-host props.to?",

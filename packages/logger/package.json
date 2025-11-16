@@ -4,16 +4,20 @@
   "private": true,
   "main": "index.mjs",
   "scripts": {
-    "lint": "eslint --fix **/*.{js,mjs}",
-    "test": "DEBUG=* node test.mjs"
+    "lint": "eslint --fix **/*.{js,mjs,ts}",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "manual": "DEBUG=* node test.mjs"
   },
   "dependencies": {
-    "debug": "4.4.0"
+    "debug": "4.4.1"
   },
   "devDependencies": {
     "@types/debug": "4.1.12"
   },
   "peerDependencies": {
-    "typescript": "*"
+    "@propsto/config": "workspace:*",
+    "typescript": "*",
+    "vitest": "*"
   }
 }

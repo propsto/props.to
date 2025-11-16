@@ -18,7 +18,7 @@ export default function Layout({
       <div className="lg:p-8 lg:h-screen">
         <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
           <Triangles size="small" />
-          <Logo className="mr-2 z-20" size="large" />
+          <Logo className="mr-2 z-20" size="lg" />
           Props.to
         </div>
         {children}

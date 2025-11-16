@@ -1,7 +1,6 @@
-/* eslint-disable camelcase -- Google exports not in camelcase */
 import "./globals.css";
 
-import { Inter, Inter_Tight } from "next/font/google";
+import { Inter, Inter_Tight as InterTight } from "next/font/google";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { cn } from "@propsto/ui/lib/utils";
@@ -12,7 +11,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const inter_tight = Inter_Tight({
+const interTight = InterTight({
   weight: ["500", "600", "700"],
   style: ["normal", "italic"],
   subsets: ["latin"],
@@ -33,7 +32,7 @@ export default function RootLayout({
       <body
         className={cn(
           inter.className,
-          inter_tight.className,
+          interTight.className,
           "font-inter antialiased bg-sidebar text-primary tracking-tight",
         )}
       >

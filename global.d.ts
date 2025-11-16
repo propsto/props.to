@@ -19,12 +19,12 @@ declare global {
   type HandleSuccessEvent<T> = {
     success: true;
     data: T;
-    error: null;
+    error?: undefined;
   };
 
   type HandleErrorEvent = {
     success: false;
-    data: null;
+    data?: undefined;
     error: string;
   };
 

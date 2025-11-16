@@ -43,7 +43,7 @@ export default function ThemeToggle(): React.ReactElement | null {
   return (
     <button
       type="button"
-      className="fixed bottom-4 right-6 lg:right-4"
+      className="fixed bottom-4 right-6 lg:right-4 z-50"
       title={`Switch to ${nextValue}${nextValue === "system" ? systemDarkText : ""} theme`}
       onClick={() => {
         setTheme(nextValue);

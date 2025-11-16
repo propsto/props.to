@@ -96,7 +96,6 @@ To develop locally:
    ```
 
 5. Set up your `.env` file:
-
    - Duplicate `.env.example` to `.env`.
    - Use `openssl rand -base64 32` to generate a key and add it under `AUTH_SECRET` in the `.env` file.
 
@@ -193,7 +192,6 @@ git push origin <your-branch-name> --force
 If `pnpm-lock.yml` was committed a while ago and there have been several commits since, you can use the following steps to revert just the `pnpm-lock.yml` changes without impacting the subsequent changes:
 
 1. **Checkout a Previous Version**:
-
    - Find the commit hash before the `pnpm-lock.yml` was unintentionally committed. You can do this by viewing the Git log:
      ```bash
      git log pnpm-lock.yml
@@ -204,7 +202,6 @@ If `pnpm-lock.yml` was committed a while ago and there have been several commits
      ```
 
 2. **Commit the Reverted Version**:
-
    - After checking out the previous version of the `pnpm-lock.yml`, commit this change:
      ```bash
      git commit -m "Revert pnpm-lock.yml to its state before unintended changes"

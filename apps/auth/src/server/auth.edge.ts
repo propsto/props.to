@@ -115,5 +115,6 @@ declare module "next-auth" {
     username?: string;
     email?: string | null;
     image?: string | null;
+    role?: string;
   }
 }

@@ -1,44 +1,63 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { type z } from "zod";
+import React, { useEffect, useState } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { defineStepper } from "@stepperize/react";
-import { Button, Separator } from "@propsto/ui/atoms";
-import { Form } from "@propsto/ui/molecules";
-import { constServer } from "@propsto/constants/server";
 import { redirect, usePathname, useRouter } from "next/navigation";
-import { type User } from "next-auth";
+import { type User as NextAuthUser } from "next-auth";
+import { Button, Separator, Card } from "@propsto/ui/atoms";
+import { User, Cog, Building2, Check } from "lucide-react";
+import { constServer } from "@propsto/constants/server";
+import { cn } from "@propsto/ui/lib/utils";
 import {
   accountHandler,
   personalHandler,
+  organizationHandler,
 } from "@/server/welcome-stepper-action";
 import {
   config,
   formDefaults,
   stepComponents,
   type StepNames,
-  type PersonalFormValues,
   type AccountFormValues,
+  type OrganizationFormValues,
+  canUserAccessStep,
+  getNextStepForUser,
 } from "./steps";
 
-const { useStepper, steps } = defineStepper(...config);
+const { useStepper } = defineStepper(...config);
+
+const stepIcons = {
+  account: Cog,
+  personal: User,
+  organization: Building2,
+  complete: Check,
+};
+
+type GenericFormValues = Record<string, unknown>;
+type StepFormStore = Partial<Record<StepNames, GenericFormValues>>;
 
 export function WelcomeStepper({
   user,
   initialStep,
 }: Readonly<{
-  user: User & { id: string; email: string };
+  user: NextAuthUser & { id: string; email: string };
   initialStep: StepNames;
 }>): React.ReactElement {
   const stepper = useStepper(initialStep);
   const router = useRouter();
   const pathname = usePathname();
-  const form = useForm<z.infer<typeof stepper.current.schema>>({
-    /* eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- stepperize does not register schema */
-    resolver: zodResolver(stepper.current.schema),
-    defaultValues: formDefaults[stepper.current.id](user),
+
+  // Store form data across steps
+  const [formData, setFormData] = useState<StepFormStore>({});
+
+  const defaultValues = formDefaults[stepper.current.id](
+    user,
+  ) as GenericFormValues;
+
+  // Use a type assertion to work around the deep instantiation issue
+  const form = useForm<GenericFormValues>({
+    defaultValues,
   });
 
   const navigateToStep = (step: StepNames): void => {
@@ -50,31 +69,95 @@ export function WelcomeStepper({
     stepper.goTo(initialStep);
   }, [initialStep, stepper]);
 
-  const onSubmit = async (
-    values: z.infer<typeof stepper.current.schema>,
-  ): Promise<void> => {
+  // Reset form with correct default values when step changes
+  useEffect(() => {
+    const currentStepDefaults = formDefaults[stepper.current.id](
+      user,
+    ) as GenericFormValues;
+
+    // Merge stored form data with defaults for the current step
+    const storedValues = formData[stepper.current.id];
+    const mergedDefaults =
+      storedValues && typeof storedValues === "object"
+        ? { ...currentStepDefaults, ...storedValues }
+        : currentStepDefaults;
+
+    form.reset(mergedDefaults);
+  }, [stepper.current.id, form, user, formData, stepper]);
+
+  // Save form data when navigating away from a step
+  const saveCurrentStepData = (): void => {
+    const currentValues = form.getValues();
+    setFormData(prev => ({
+      ...prev,
+      [stepper.current.id]: currentValues,
+    }));
+  };
+
+  const onSubmit = async (values: GenericFormValues): Promise<void> => {
+    // Save current step data before proceeding
+    setFormData(prev => ({
+      ...prev,
+      [stepper.current.id]: values,
+    }));
+
     await stepper.switch({
       account: async () => {
-        const result = await accountHandler(values as AccountFormValues);
+        const result = await accountHandler(
+          values as AccountFormValues,
+          user.id,
+        );
         if (result.success) {
-          navigateToStep("complete");
+          const nextStep = getNextStepForUser(user, "account");
+          navigateToStep(nextStep);
         }
       },
       personal: async () => {
         const result = await personalHandler(
-          values as PersonalFormValues,
+          {
+            firstName: String(values.firstName),
+            lastName: String(values.lastName),
+            email: String(values.email),
+            dateOfBirth: values.dateOfBirth
+              ? String(values.dateOfBirth as string)
+              : undefined,
+            image: values.image as string | File[] | undefined,
+          },
           user.id,
         );
         if (result.success) {
-          navigateToStep("account");
+          const nextStep = getNextStepForUser(user, "personal");
+          navigateToStep(nextStep);
+        }
+      },
+      organization: async () => {
+        const result = await organizationHandler(
+          values as OrganizationFormValues,
+          user.id,
+        );
+        if (result.success) {
+          const nextStep = getNextStepForUser(user, "organization");
+          navigateToStep(nextStep);
         }
       },
       complete: () => redirect(constServer.PROPSTO_APP_URL),
     });
   };
 
+  const handleStepClick = (stepId: StepNames): void => {
+    // Check if user can access this step
+    if (!canUserAccessStep(user, stepId)) {
+      return; // Don't allow navigation to restricted steps
+    }
+
+    // Save current form data before switching
+    saveCurrentStepData();
+    stepper.goTo(stepId);
+    navigateToStep(stepId);
+  };
+
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form
         onSubmit={event => void form.handleSubmit(onSubmit)(event)}
         className="space-y-6 p-6 border rounded-lg lg:w-3/4"
@@ -85,43 +168,61 @@ export function WelcomeStepper({
             <p>Lets setup your account to start sending and receiving props.</p>
           </div>
         </div>
-        <nav aria-label="Account setup steps" className="group my-4">
-          <ol className="flex items-center justify-between gap-2">
-            {stepper.all.map((step, index, array) => (
-              <React.Fragment key={step.id}>
-                <li className="flex items-center gap-4 flex-shrink-0">
-                  <Button
-                    type="button"
-                    role="tab"
-                    variant={
-                      index <= stepper.current.index ? "default" : "secondary"
-                    }
-                    aria-current={
-                      stepper.current.id === step.id ? "step" : undefined
-                    }
-                    aria-posinset={index + 1}
-                    aria-setsize={steps.length}
-                    aria-selected={stepper.current.id === step.id}
-                    className="flex size-10 items-center justify-center rounded-full"
-                    onClick={() => {
-                      stepper.goTo(step.id);
-                    }}
-                  >
-                    {index + 1}
-                  </Button>
-                  <span className="text-sm font-medium">{step.label}</span>
-                </li>
-                {index < array.length - 1 && (
-                  <Separator
-                    className={`flex-1 ${
-                      index < stepper.current.index ? "bg-primary" : "bg-muted"
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </ol>
-        </nav>
+
+        {/* Enhanced Step Navigation */}
+        <Card className="p-4">
+          <nav aria-label="Account setup steps" className="group">
+            <ol className="flex items-center justify-between gap-2">
+              {stepper.all.map((step, index, array) => {
+                const StepIcon = stepIcons[step.id as keyof typeof stepIcons];
+                return (
+                  <React.Fragment key={step.id}>
+                    <li className="flex flex-col items-center gap-2 flex-shrink-0">
+                      {/* Step Button with Enhanced Styling */}
+                      <Button
+                        type="button"
+                        role="tab"
+                        size="lg"
+                        variant={
+                          stepper.current.id === step.id ? "default" : "outline"
+                        }
+                        aria-current={
+                          stepper.current.id === step.id ? "step" : undefined
+                        }
+                        aria-posinset={index + 1}
+                        aria-setsize={stepper.all.length}
+                        aria-selected={stepper.current.id === step.id}
+                        className={cn(
+                          "relative flex size-12 items-center justify-center rounded-full transition-all duration-200",
+                        )}
+                        onClick={() => {
+                          handleStepClick(step.id);
+                        }}
+                      >
+                        <span>
+                          <StepIcon className="size-5" />
+                        </span>
+                      </Button>
+
+                      {/* Step Label with Status Badge */}
+                      <div className="flex flex-col items-center gap-1">
+                        <span className="text-sm font-medium transition-colors text-primary">
+                          {step.label}
+                        </span>
+                      </div>
+                    </li>
+
+                    {/* Enhanced Separator */}
+                    {index < array.length - 1 && (
+                      <Separator className="flex-1 h-0.5 bg-primary" />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </ol>
+          </nav>
+        </Card>
+
         <div className="space-y-4">
           {stepper.switch(stepComponents)}
           {!stepper.isLast ? (
@@ -142,6 +243,6 @@ export function WelcomeStepper({
           )}
         </div>
       </form>
-    </Form>
+    </FormProvider>
   );
 }

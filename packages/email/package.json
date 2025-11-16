@@ -11,9 +11,9 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@react-email/components": "0.0.34",
-    "react-email": "3.0.7",
-    "resend": "4.2.0"
+    "@react-email/components": "0.1.1",
+    "react-email": "4.0.17",
+    "resend": "4.6.0"
   },
   "devDependencies": {
     "maildev": "2.2.1"

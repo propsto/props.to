@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@propsto/ui/atoms/button";
+import { Logo } from "@propsto/ui/atoms";
 
 export function Header(): React.ReactElement {
   return (
@@ -12,13 +12,7 @@ export function Header(): React.ReactElement {
             <div className="shrink-0 mr-4">
               {/* Logo */}
               <Link className="" href="/">
-                <Image
-                  src="/logo-color.png"
-                  width={32}
-                  height={32}
-                  alt="Logo"
-                  className="rounded-sm"
-                />
+                <Logo size="xl" />
               </Link>
             </div>
 

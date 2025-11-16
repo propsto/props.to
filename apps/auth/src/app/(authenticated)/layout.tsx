@@ -17,7 +17,7 @@ export default function Layout({
       <div className="lg:col-span-2 overflow-y-auto">
         <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
           <Triangles size="small" />
-          <Logo className="mr-2 z-20" size="large" />
+          <Logo className="mr-2 z-20" size="lg" />
           Props.to
         </div>
         <div className="min-h-full flex flex-col justify-center items-center py-5">

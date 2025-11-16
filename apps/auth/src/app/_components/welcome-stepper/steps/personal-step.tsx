@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { generatePreview } from "@propsto/ui/lib/preview";
 import Image from "next/image";
 import { useController, useFormContext } from "react-hook-form";
@@ -9,42 +9,12 @@ import { Input, Label } from "@propsto/ui/atoms";
 import { type User } from "next-auth";
 import { type Step } from "@stepperize/react";
 
-const MAX_FILE_SIZE = 2000000;
-
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
-
 const personalSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().email(),
-  dateOfBirth: z.string().date().nullish(),
-  image: (typeof window === "undefined"
-    ? z.any()
-    : z.instanceof(FileList).or(z.string())
-  )
-    .refine((value: File[] | undefined) => {
-      if (typeof value === "string") {
-        return true;
-      }
-      return value?.length === 1;
-    }, "Image is required.")
-    .refine((value: File[] | undefined) => {
-      if (typeof value === "string") {
-        return true;
-      }
-      return value?.[0] && value[0]?.size <= MAX_FILE_SIZE;
-    }, `Max file size is 5MB.`)
-    .refine((value: File[] | undefined) => {
-      if (typeof value === "string") {
-        return true;
-      }
-      return value?.[0] && ACCEPTED_IMAGE_TYPES.includes(value[0]?.type);
-    }, ".jpg, .jpeg, .png and .webp files are accepted."),
+  dateOfBirth: z.string().optional(),
+  image: z.unknown().optional(),
 });
 
 export type PersonalFormValues = z.infer<typeof personalSchema>;
@@ -53,12 +23,27 @@ export function StepComponent(): React.ReactElement {
   const {
     register,
     formState: { errors },
+    watch,
   } = useFormContext<PersonalFormValues>();
-  const { field: imageField } = useController({ name: "image" });
-  const imageValue = imageField.value as string | null;
+  const { field: imageField } = useController<PersonalFormValues, "image">({
+    name: "image",
+  });
+  const imageValue =
+    typeof imageField.value === "string" ? imageField.value : null;
   const [preview, setPreview] = useState<string | ArrayBuffer | null>(
     imageValue ?? null,
   );
+
+  // Watch for changes in the image field to update preview
+  const watchedImage = watch("image");
+
+  useEffect(() => {
+    if (typeof watchedImage === "string" && watchedImage) {
+      setPreview(watchedImage);
+    } else if (!watchedImage) {
+      setPreview(null);
+    }
+  }, [watchedImage]);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,12 +118,12 @@ export function StepComponent(): React.ReactElement {
         ) : null}
       </div>
       <div className="space-y-2">
-        <label
+        <Label
           htmlFor={register("dateOfBirth").name}
           className="block text-sm font-medium text-primary"
         >
           Date of birth
-        </label>
+        </Label>
         <Input
           id={register("dateOfBirth").name}
           {...register("dateOfBirth")}
@@ -152,12 +137,12 @@ export function StepComponent(): React.ReactElement {
         ) : null}
       </div>
       <div className="space-y-2">
-        <label
+        <Label
           htmlFor={register("image").name}
           className="block text-sm font-medium text-primary"
         >
-          Avatar
-        </label>
+          Avatar (Optional)
+        </Label>
         <div className="flex flex-row space-x-5 items-center">
           <Image
             width="96"
@@ -174,9 +159,11 @@ export function StepComponent(): React.ReactElement {
               onChange={handleChange}
               className="block w-full p-2 border rounded-md"
             />
-            {errors.image ? (
+            {errors.image?.message ? (
               <span className="text-sm text-destructive">
-                {String(errors.image.message)}
+                {typeof errors.image.message === "string"
+                  ? errors.image.message
+                  : "Invalid image"}
               </span>
             ) : null}
           </div>
@@ -199,5 +186,5 @@ export const defaults = (user: User): PersonalFormValues => ({
     ? new Date(user.dateOfBirth).toISOString().substring(0, 10)
     : "",
   email: user.email ?? "",
-  image: user.image,
+  image: user.image ?? undefined,
 });

@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element -- og image */
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { constServer } from "@propsto/constants/server";
 import { examplePropsToInput } from "@propsto/constants/other";
+import Image from "next/image";
 
 export function GET(): ImageResponse {
   const url =
@@ -36,7 +36,7 @@ export function GET(): ImageResponse {
           backgroundRepeat: "repeat",
         }}
       >
-        <img
+        <Image
           src={`${url}/logo-color-sm.png`}
           alt="Logo"
           width={100}

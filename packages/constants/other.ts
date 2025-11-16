@@ -43,3 +43,18 @@ export const examplePropsToInput = [
   `acme/townhall-${new Date().getFullYear().toString()}`,
   "type any URI here!",
 ];
+
+export const vercelPreviewEnvVars = {
+  AUTH_URL:
+    process.env.VERCEL_ENV === "preview" &&
+    process.env.VERCEL_GIT_PULL_REQUEST_ID &&
+    process.env.PROPSTO_HOST
+      ? `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
+      : process.env.AUTH_URL,
+  PROPSTO_APP_URL:
+    process.env.VERCEL_ENV === "preview" &&
+    process.env.VERCEL_GIT_PULL_REQUEST_ID &&
+    process.env.PROPSTO_HOST
+      ? `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
+      : process.env.PROPSTO_APP_URL,
+};
