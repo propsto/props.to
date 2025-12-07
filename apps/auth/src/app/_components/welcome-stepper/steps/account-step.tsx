@@ -27,8 +27,8 @@ const accountSchema = z.object({
   notificationPreferences: z.object({
     emailNotifications: z.boolean().default(true),
     feedbackAlerts: z.boolean().default(true),
-    weeklyDigest: z.boolean().default(false),
-    marketingEmails: z.boolean().default(false),
+    weeklyDigest: z.boolean().default(true),
+    marketingEmails: z.boolean().default(true),
   }),
   privacySettings: z.object({
     profileVisibility: z
@@ -240,8 +240,8 @@ export const defaults = (_user?: User): AccountFormValues => ({
   notificationPreferences: {
     emailNotifications: true,
     feedbackAlerts: true,
-    weeklyDigest: false,
-    marketingEmails: false,
+    weeklyDigest: true,
+    marketingEmails: true,
   },
   privacySettings: {
     profileVisibility: "public",

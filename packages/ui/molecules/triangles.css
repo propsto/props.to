@@ -34,20 +34,32 @@
 
 :root {
   --triangle-color-0: 40 91% 97% / 0.7;
+  --triangle-color-0-hex: #ffd978;
   --triangle-color-1: 0 0% 91% / 0.7;
+  --triangle-color-1-hex: #ff7f7f;
   --triangle-color-2: 336 73% 96% / 0.7;
+  --triangle-color-2-hex: #ff64a2;
   --triangle-color-3: 244 75% 97% / 0.7;
+  --triangle-color-3-hex: #f2f2fd;
   --triangle-color-4: 137 100% 28% / 0.09;
+  --triangle-color-4-hex: #a6fcbe;
   --triangle-color-5: 167 76% 95% / 0.7;
+  --triangle-color-5-hex: #6ffadc;
 }
 
 [data-theme="dark"] {
   --triangle-color-0: 40 100% 30% / 0.1;
+  --triangle-color-0-hex: #996600;
   --triangle-color-1: 0 0% 65% / 0.1;
+  --triangle-color-1-hex: #a6a6a6;
   --triangle-color-2: 336 70% 40% / 0.1;
+  --triangle-color-2-hex: #ad1f58;
   --triangle-color-3: 244 70% 50% / 0.1;
+  --triangle-color-3-hex: #3226d9;
   --triangle-color-4: 137 80% 50% / 0.1;
+  --triangle-color-4-hex: #19e653;
   --triangle-color-5: 167 70% 40% / 0.1;
+  --triangle-color-5-hex: #1fad8e;
 }
 
 .color-0 {

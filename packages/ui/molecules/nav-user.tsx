@@ -8,6 +8,7 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react";
+import { constClient } from "@propsto/constants/client";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -97,9 +98,11 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
+            <DropdownMenuItem asChild>
+              <a href={`${constClient.NEXT_PUBLIC_AUTH_URL}/api/auth/signout`}>
+                <LogOut />
+                Log out
+              </a>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

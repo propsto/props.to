@@ -37,7 +37,7 @@ export async function OrganizationSettingsDisplay({
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            {settingsResult.error || "No settings found"}
+            {settingsResult.error ?? "No settings found"}
           </p>
         </CardContent>
       </Card>
