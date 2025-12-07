@@ -16,20 +16,21 @@
     "db-studio": "pnpm dotenv -- prisma studio --browser none",
     "db-up": "pnpm dotenv -- docker compose up -d || docker-compose up -d",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "pnpm dotenv -- prisma validate"
+    "lint": "pnpm dotenv -- prisma validate",
+    "postinstall": "pnpm db-generate"
   },
   "dependencies": {
     "@auth/core": "0.41.1",
     "@auth/prisma-adapter": "2.11.1",
-    "@prisma/adapter-pg": "7.0.1",
-    "@prisma/client": "7.0.1",
+    "@prisma/adapter-pg": "7.1.0",
+    "@prisma/client": "7.1.0",
     "@prisma/extension-accelerate": "2.0.1",
     "bcryptjs": "3.0.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "3.0.0",
     "@types/uuid": "10.0.0",
-    "prisma": "7.0.1"
+    "prisma": "7.1.0"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",
