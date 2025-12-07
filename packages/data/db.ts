@@ -1,8 +1,10 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient() /*.$extends({
+  const adapter = new PrismaPg({ connectionString: constServer.DATABASE_URL });
+  return new PrismaClient({ adapter }) /*.$extends({
     result: {
       user: {
         name: {

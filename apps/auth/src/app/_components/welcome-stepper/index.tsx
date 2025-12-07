@@ -6,9 +6,20 @@ import { defineStepper } from "@stepperize/react";
 import { redirect, usePathname, useRouter } from "next/navigation";
 import { type User as NextAuthUser } from "next-auth";
 import { Button, Separator, Card } from "@propsto/ui/atoms";
-import { User, Cog, Building2, Check } from "lucide-react";
+import {
+  Building2Icon,
+  CogIcon,
+  UserIcon,
+  CheckIcon,
+  ArrowRightIcon,
+} from "lucide-react";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
+import {
+  applyHandleEventToForm,
+  type FormLike,
+} from "@propsto/ui/lib/form-result";
+import { constClient } from "@propsto/constants/client";
 import {
   accountHandler,
   personalHandler,
@@ -23,15 +34,16 @@ import {
   type OrganizationFormValues,
   canUserAccessStep,
   getNextStepForUser,
+  type PersonalFormValues,
 } from "./steps";
 
 const { useStepper } = defineStepper(...config);
 
 const stepIcons = {
-  account: Cog,
-  personal: User,
-  organization: Building2,
-  complete: Check,
+  account: CogIcon,
+  personal: UserIcon,
+  organization: Building2Icon,
+  complete: CheckIcon,
 };
 
 type GenericFormValues = Record<string, unknown>;
@@ -110,6 +122,12 @@ export function WelcomeStepper({
         if (result.success) {
           const nextStep = getNextStepForUser(user, "account");
           navigateToStep(nextStep);
+        } else {
+          applyHandleEventToForm<AccountFormValues>(
+            form as unknown as FormLike<AccountFormValues>,
+            result,
+            ["username"],
+          );
         }
       },
       personal: async () => {
@@ -128,6 +146,12 @@ export function WelcomeStepper({
         if (result.success) {
           const nextStep = getNextStepForUser(user, "personal");
           navigateToStep(nextStep);
+        } else {
+          applyHandleEventToForm<PersonalFormValues>(
+            form as unknown as FormLike<PersonalFormValues>,
+            result,
+            ["firstName", "lastName", "email", "dateOfBirth", "image"],
+          );
         }
       },
       organization: async () => {
@@ -138,6 +162,18 @@ export function WelcomeStepper({
         if (result.success) {
           const nextStep = getNextStepForUser(user, "organization");
           navigateToStep(nextStep);
+        } else {
+          applyHandleEventToForm<OrganizationFormValues>(
+            form as unknown as FormLike<OrganizationFormValues>,
+            result,
+            [
+              "organizationName",
+              "organizationSlug",
+              "defaultUserSettings.defaultProfileVisibility",
+              "organizationSettings.allowUserInvites",
+              "feedbackSettings.enableOrganizationFeedback",
+            ],
+          );
         }
       },
       complete: () => redirect(constServer.PROPSTO_APP_URL),
@@ -162,14 +198,6 @@ export function WelcomeStepper({
         onSubmit={event => void form.handleSubmit(onSubmit)(event)}
         className="space-y-6 p-6 border rounded-lg lg:w-3/4"
       >
-        <div className="flex">
-          <div className="flex flex-col">
-            <h2 className="text-lg font-medium">Welcome!</h2>
-            <p>Lets setup your account to start sending and receiving props.</p>
-          </div>
-        </div>
-
-        {/* Enhanced Step Navigation */}
         <Card className="p-4">
           <nav aria-label="Account setup steps" className="group">
             <ol className="flex items-center justify-between gap-2">
@@ -178,7 +206,6 @@ export function WelcomeStepper({
                 return (
                   <React.Fragment key={step.id}>
                     <li className="flex flex-col items-center gap-2 flex-shrink-0">
-                      {/* Step Button with Enhanced Styling */}
                       <Button
                         type="button"
                         role="tab"
@@ -239,7 +266,20 @@ export function WelcomeStepper({
               <Button type="submit">Next</Button>
             </div>
           ) : (
-            <Button onClick={stepper.reset}>Reset</Button>
+            <div className="flex flex-row justify-between">
+              <Button variant="secondary" onClick={stepper.reset}>
+                Reset
+              </Button>
+              <Button
+                onClick={() => {
+                  window.location.href =
+                    constClient.NEXT_PUBLIC_PROPSTO_APP_URL;
+                }}
+                className="self-end"
+              >
+                Go to Dashboard <ArrowRightIcon className="size-4 ml-2" />
+              </Button>
+            </div>
           )}
         </div>
       </form>

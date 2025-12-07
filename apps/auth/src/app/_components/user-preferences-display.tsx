@@ -28,7 +28,7 @@ export async function UserPreferencesDisplay({
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            {preferencesResult.error || "No preferences found"}
+            {preferencesResult.error ?? "No preferences found"}
           </p>
         </CardContent>
       </Card>

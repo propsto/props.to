@@ -1,6 +1,7 @@
 "use server";
 
-import { put } from "@vercel/blob";
+import { put, type PutBlobResult } from "@vercel/blob";
+import { z } from "zod";
 import { logger } from "@propsto/logger";
 import {
   type BasicUserData,
@@ -17,23 +18,83 @@ import { type AccountFormValues } from "@components/welcome-stepper/steps/accoun
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
 import { updateSession } from "./auth.server";
 
+const personalServerSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required"),
+  lastName: z.string().trim().min(1, "Last name is required"),
+  email: z.string().email(),
+  dateOfBirth: z.string().optional(),
+  image: z.unknown().optional(),
+});
+
+const isFileArray = (value: unknown): value is File[] =>
+  Array.isArray(value) && value.every(item => item instanceof File);
+
+const accountServerSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must be less than 30 characters")
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      "Username can only contain letters, numbers, underscores, and hyphens",
+    ),
+  notificationPreferences: z.object({
+    emailNotifications: z.boolean(),
+    feedbackAlerts: z.boolean(),
+    weeklyDigest: z.boolean(),
+    marketingEmails: z.boolean(),
+  }),
+  privacySettings: z.object({
+    profileVisibility: z.enum(["public", "private", "organization"]),
+    allowFeedbackFromAnyone: z.boolean(),
+    showEmailInProfile: z.boolean(),
+  }),
+});
+
 export async function personalHandler(
   values: Omit<PersonalFormValues, "image"> & { image?: File[] | string },
   userId: string,
-): Promise<HandleEvent<BasicUserData | null | undefined>> {
-  const { image, dateOfBirth, ...rest } = values;
-  let blob;
-  if (Array.isArray(image) && image.length > 0) {
-    // TODO abstract to saveAvatar to let others use another methodaway from Vercel
-    blob = await put(`avatars/${userId}`, image[0], {
+): Promise<
+  HandleEvent<
+    BasicUserData | null | undefined,
+    Omit<PersonalFormValues, "image"> & { image?: File[] | string }
+  >
+> {
+  const parsed = personalServerSchema.safeParse(values);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Please correct the highlighted fields",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { image, dateOfBirth, ...rest } = parsed.data;
+  const trimmedDateOfBirth = dateOfBirth?.trim();
+  if (trimmedDateOfBirth && Number.isNaN(Date.parse(trimmedDateOfBirth))) {
+    return {
+      success: false,
+      error: "Invalid date of birth",
+      fieldErrors: {
+        dateOfBirth: ["Invalid date of birth"],
+      },
+    };
+  }
+
+  let blob: PutBlobResult | undefined;
+  if (isFileArray(image) && image.length > 0) {
+    const [file] = image;
+    // TODO abstract to saveAvatar to let others use another method away from Vercel
+    blob = await put(`avatars/${userId}`, file, {
       access: "public",
-      contentType: image[0].type,
+      contentType: file.type,
     });
   }
   const userUpdated = await updateUser(userId, {
     ...rest,
-    ...(dateOfBirth
-      ? { dateOfBirth: new Date(dateOfBirth).toISOString() }
+    ...(trimmedDateOfBirth
+      ? { dateOfBirth: new Date(trimmedDateOfBirth).toISOString() }
       : {}),
     ...(blob ? { image: blob.url } : {}),
   });
@@ -44,10 +105,19 @@ export async function personalHandler(
 export async function accountHandler(
   values: AccountFormValues,
   userId: string,
-): Promise<HandleEvent<BasicUserData | null | undefined>> {
+): Promise<HandleEvent<BasicUserData | null | undefined, AccountFormValues>> {
   try {
+    const parsed = accountServerSchema.safeParse(values);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: "Please correct the highlighted fields",
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      };
+    }
+
     // Extract the account settings from the form values (no role - it's auto-detected)
-    const { username, notificationPreferences, privacySettings } = values;
+    const { username, notificationPreferences, privacySettings } = parsed.data;
 
     // Update the user's slug with the new username if provided
     const trimmedUsername = username.trim();
@@ -65,6 +135,9 @@ export async function accountHandler(
         return {
           success: false,
           error: "User or slug not found",
+          fieldErrors: {
+            username: ["User or slug not found"],
+          },
         };
       }
 
@@ -80,6 +153,9 @@ export async function accountHandler(
         return {
           success: false,
           error: "Username is already taken",
+          fieldErrors: {
+            username: ["Username is already taken"],
+          },
         };
       }
 
@@ -151,7 +227,9 @@ export async function accountHandler(
 export async function organizationHandler(
   values: OrganizationFormValues,
   userId: string,
-): Promise<HandleEvent<BasicUserData | null | undefined>> {
+): Promise<
+  HandleEvent<BasicUserData | null | undefined, OrganizationFormValues>
+> {
   try {
     const {
       organizationName,
@@ -174,6 +252,9 @@ export async function organizationHandler(
       return {
         success: false,
         error: "Organization slug is already taken",
+        fieldErrors: {
+          organizationSlug: ["Organization slug is already taken"],
+        },
       };
     }
 

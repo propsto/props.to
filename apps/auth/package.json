@@ -20,7 +20,8 @@
     "@hookform/resolvers": "4.1.3",
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
-    "@stepperize/react": "4.2.0"
+    "@stepperize/react": "4.2.0",
+    "react-confetti": "6.4.0"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*",

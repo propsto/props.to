@@ -33,7 +33,7 @@
     "autoprefixer": "10.4.21",
     "cal-sans": "1.0.1",
     "lucide-react": "0.525.0",
-    "next": "15.3.5",
+    "next": "15.3.6",
     "next-auth": "beta",
     "next-themes": "0.4.6",
     "nodemailer": "7.0.10",
@@ -71,8 +71,8 @@
     "sort-package-json": "3.4.0",
     "start-server-and-test": "2.0.12",
     "tsx": "4.20.3",
-    "turbo": "2.6.0",
-    "vitest": "3.2.4"
+    "turbo": "2.6.3",
+    "vitest": "4.0.9"
   },
   "peerDependencies": {
     "@propsto/config": "workspace:*"
@@ -94,6 +94,7 @@
       "eslint-plugin-import": "$eslint-plugin-import",
       "eslint-plugin-react": "$eslint-plugin-react",
       "eslint-plugin-react-hooks": "$eslint-plugin-react-hooks",
+      "lucide-react": "$lucide-react",
       "next": "$next",
       "next-auth": "$next-auth",
       "nodemailer": "$nodemailer",

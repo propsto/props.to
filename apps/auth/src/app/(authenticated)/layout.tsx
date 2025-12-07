@@ -14,7 +14,7 @@ export default function Layout({
 }: Readonly<React.PropsWithChildren>): React.ReactNode {
   return (
     <div className="grid lg:grid-cols-3 h-screen">
-      <div className="lg:col-span-2 overflow-y-auto">
+      <div className="lg:col-span-2 overflow-y-auto" id="main-content">
         <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
           <Triangles size="small" />
           <Logo className="mr-2 z-20" size="lg" />

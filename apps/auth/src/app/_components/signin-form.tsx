@@ -2,7 +2,8 @@
 
 import { cn } from "@propsto/ui/lib/utils";
 import { Button } from "@propsto/ui/atoms";
-import { signIn } from "next-auth/webauthn";
+import { signIn as webAuthSignIn } from "next-auth/webauthn";
+import { signIn } from "next-auth/react";
 import { startTransition, useEffect, useState } from "react";
 import { useResetableActionState } from "@propsto/ui/hooks/use-resetable-action-state";
 import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
@@ -80,7 +81,7 @@ export function SigninForm({
           variant="outline"
           type="button"
           onClick={() => {
-            void signIn("passkey");
+            void webAuthSignIn("passkey");
           }}
           disabled={isPending}
         >

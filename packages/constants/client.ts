@@ -1,19 +1,24 @@
 import { createEnv } from "@t3-oss/env-core";
+import { z } from "zod";
 
 export const constClient = createEnv({
   client: {
-    // Nothing here yet
+    NEXT_PUBLIC_AUTH_URL: z.string().url(),
+    NEXT_PUBLIC_PROPSTO_APP_URL: z.string().url(),
   },
 
   /**
    * The prefix that client-side variables must have. This is enforced both at
    * a type-level and at runtime.
    */
-  clientPrefix: "PUBLIC_",
+  clientPrefix: "NEXT_PUBLIC_",
 
   /**
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: process.env,
+  runtimeEnv: {
+    NEXT_PUBLIC_AUTH_URL: process.env.NEXT_PUBLIC_AUTH_URL,
+    NEXT_PUBLIC_PROPSTO_APP_URL: process.env.NEXT_PUBLIC_PROPSTO_APP_URL,
+  },
 });

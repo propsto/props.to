@@ -1,19 +1,18 @@
 // Define the data source
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // Define the generator
 generator client {
-  provider = "prisma-client-js"
+  provider   = "prisma-client-js"
+  engineType = "client"
 }
 
 // Enum for Role (User, Admin, Group Admin)
 enum Role {
   USER
-  ADMIN
+  PROPSTO_ADMIN
   ORGANIZATION_ADMIN
   GROUP_ADMIN
 }
@@ -43,7 +42,7 @@ model Organization {
   id        String             @id @default(cuid())
   name      String             @unique // Organization name
   users     User[] // Users associated with the organization
-  slug      Slug               @relation(fields: [slugId], references: [id])
+  slug      Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
   slugId    String             @unique
   groups    Group[] // Groups within the organization (e.g., marketing team, HR)
   feedbacks Feedback[] // Feedback related to the organization
@@ -63,7 +62,7 @@ model Organization {
 // Group model (represents a group within an organization, e.g., marketing team)
 model Group {
   id             String             @id @default(cuid())
-  slug           Slug               @relation(fields: [slugId], references: [id])
+  slug           Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
   slugId         String
   name           String // Name of the group (e.g., marketing team)
   organization   Organization       @relation(fields: [organizationId], references: [id])
@@ -84,7 +83,7 @@ model Group {
 model User {
   id             String             @id @default(cuid())
   email          String             @unique
-  slug           Slug               @relation(fields: [slugId], references: [id])
+  slug           Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
   slugId         String             @unique
   password       String?
   firstName      String?
@@ -122,13 +121,12 @@ model User {
 model Slug {
   id           String        @id @default(cuid())
   slug         String // Slug for user or organization
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   user         User?
   organization Organization?
-
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  Group       Group[]
-  Integration Integration[]
+  group        Group[]
+  integration  Integration[]
 }
 
 // GroupAdmin model (tracks which users are admins for which groups)
@@ -208,7 +206,7 @@ model Integration {
   hostname String
   subpath  String?
   uris     Uri[]
-  slug     Slug?   @relation(fields: [slugId], references: [id])
+  slug     Slug?   @relation(fields: [slugId], references: [id], onDelete: Cascade)
   slugId   String
 }
 

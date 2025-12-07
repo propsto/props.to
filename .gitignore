@@ -46,3 +46,6 @@ yarn-error.log*
 e2e-report
 e2e-results
 .auth
+
+# prisma
+/packages/data/generated/

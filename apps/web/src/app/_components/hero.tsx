@@ -74,13 +74,13 @@ function TypeWriterCTA(): React.ReactNode {
           />
           <Button
             variant="default"
-            className="peer-focus:visible active:visible hover:visible invisible md:text-xl  h-10 md:h-11 lg:h-[3rem]"
+            className="peer-focus:visible active:visible hover:visible invisible md:text-xl h-10 md:h-11 lg:h-[3rem]"
             onClick={() => {
               setShowNotice(true);
             }}
           >
             Go&nbsp;
-            <ArrowRight className="md:size-6 size-4" />
+            <ArrowRight className="md:size-6 size-4" aria-hidden="false" />
           </Button>
         </h2>
       )}

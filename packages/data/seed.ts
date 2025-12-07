@@ -1,16 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   // Create root user (Mike Ryan)
-  const mikeSlug = await prisma.slug.create({
-    data: {
-      slug: "mikeryan",
-    },
-  });
-
   const mike = await prisma.user.create({
     data: {
       email: "mike.ryan@gmail.com",
@@ -21,8 +17,12 @@ async function main() {
       updatedAt: new Date(),
       image: "https://avatars.githubusercontent.com/u/1?v=4",
       dateOfBirth: new Date("1985-11-03"),
-      slugId: mikeSlug.id,
       password: await hash("P4ssw0rd", 10),
+      slug: {
+        create: {
+          slug: "mikeryan",
+        },
+      },
     },
   });
 
@@ -36,69 +36,65 @@ async function main() {
   const acme = await prisma.organization.create({
     data: {
       name: "Acme Inc.",
-      slugId: acmeSlug.id, // Connect slug to organization
+      slug: { connect: { id: acmeSlug.id } },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   });
 
   // Create Org Admin (Bob Jones)
-  const bobSlug = await prisma.slug.create({
-    data: {
-      slug: "bob.jones",
-    },
-  });
-
   await prisma.user.create({
     data: {
       email: "bob.jones@acme.com",
       firstName: "Bob",
       lastName: "Jones",
       role: "ORGANIZATION_ADMIN",
-      organizationId: acme.id, // Connect to organization
       createdAt: new Date(),
       updatedAt: new Date(),
-      slugId: bobSlug.id, // Connect slug to user
+      slug: {
+        create: {
+          slug: "bob.jones",
+        },
+      },
+      organization: {
+        connect: { id: acme.id },
+      },
     },
   });
 
   // Create Org User 1 (John Doe)
-  const johnSlug = await prisma.slug.create({
-    data: {
-      slug: "john.doe",
-    },
-  });
-
   const john = await prisma.user.create({
     data: {
       email: "john.doe@acme.com",
       firstName: "John",
       lastName: "Doe",
       role: "USER",
-      organizationId: acme.id, // Connect to organization
+      organization: { connect: { id: acme.id } },
       createdAt: new Date(),
       updatedAt: new Date(),
-      slugId: johnSlug.id, // Connect slug to user
+      slug: {
+        create: {
+          slug: "john.doe",
+        },
+      },
     },
   });
 
   // Create Org User 2 (Jane Smith)
-  const janeSlug = await prisma.slug.create({
-    data: {
-      slug: "jane.smith",
-    },
-  });
-
   const jane = await prisma.user.create({
     data: {
       email: "jane.smith@acme.com",
       firstName: "Jane",
       lastName: "Smith",
       role: "USER",
-      organizationId: acme.id, // Connect to organization
+      organization: { connect: { id: acme.id } },
       createdAt: new Date(),
       updatedAt: new Date(),
-      slugId: janeSlug.id, // Connect slug to user
+      slug: {
+        create: {
+          slug: "jane.smith",
+        },
+      },
     },
   });
 
@@ -112,8 +108,8 @@ async function main() {
   const marketingGroup = await prisma.group.create({
     data: {
       name: "Marketing",
-      organizationId: acme.id, // Connect to organization
-      slugId: marketingSlug.id, // Connect slug to group
+      organization: { connect: { id: acme.id } },
+      slug: { connect: { id: marketingSlug.id } },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -122,8 +118,8 @@ async function main() {
   // Assign John as admin to Marketing Group
   await prisma.groupAdmin.create({
     data: {
-      userId: john.id,
-      groupId: marketingGroup.id, // Connect group
+      user: { connect: { id: john.id } },
+      group: { connect: { id: marketingGroup.id } },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -168,15 +164,15 @@ async function main() {
   const mikeInstagramUri = await prisma.uri.create({
     data: {
       uri: "https://instagram.com/mike.ryan",
-      userId: mike.id,
+      user: { connect: { id: mike.id } },
     },
   });
 
   // Create UriClaim for Mike Ryan
   await prisma.uriClaim.create({
     data: {
-      userId: mike.id,
-      uriId: mikeInstagramUri.id,
+      user: { connect: { id: mike.id } },
+      uri: { connect: { id: mikeInstagramUri.id } },
       claimedAt: new Date(),
     },
   });

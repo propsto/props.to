@@ -1,1 +1,4 @@
-pnpm lint && pnpm type-check && pnpm format
+pnpm format
+git add -A
+
+pnpm lint && pnpm type-check

@@ -22,11 +22,14 @@ declare global {
     error?: undefined;
   };
 
-  type HandleErrorEvent = {
+  type HandleErrorEvent<T = unknown> = {
     success: false;
     data?: undefined;
-    error: string;
+    error?: string;
+    fieldErrors?: SchemaToErrors<T>;
   };
 
-  type HandleEvent<T> = HandleSuccessEvent<T> | HandleErrorEvent;
+  type HandleEvent<T, E = unknown> =
+    | HandleSuccessEvent<T>
+    | HandleErrorEvent<E>;
 }
