@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from "./generated/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 import { PrismaPg } from "@prisma/adapter-pg";
 

@@ -4,7 +4,7 @@ import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
 import { compare, hash } from "bcryptjs";
-import { User } from "../generated/client";
+import { User } from "@prisma/client";
 
 export type BasicUserData = Prisma.UserGetPayload<{
   select: {
@@ -61,10 +61,10 @@ function userMapper(
   return null;
 }
 
-const userInclude = {
+const userInclude = Prisma.validator<Prisma.UserInclude>()({
   slug: true,
   organization: { include: { slug: true } },
-} satisfies Prisma.UserInclude;
+});
 
 export async function createUser(data: { email: string }) {
   try {

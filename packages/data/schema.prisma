@@ -5,8 +5,8 @@ datasource db {
 
 // Define the generator
 generator client {
-  provider = "prisma-client"
-  output   = "./generated"
+  provider   = "prisma-client-js"
+  engineType = "client"
 }
 
 // Enum for Role (User, Admin, Group Admin)

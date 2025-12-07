@@ -1,8 +1,6 @@
 import { vercelPreviewEnvVars } from "@propsto/constants/other";
 import { type NextConfig } from "next";
 
-console.log(">>>", { vercelPreviewEnvVars });
-
 export default {
   env: {
     ...vercelPreviewEnvVars,
