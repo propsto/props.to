@@ -1,1 +1,3 @@
-module.exports = require("@propsto/config/eslint/next");
+import base from "@propsto/config/eslint/next.js";
+
+export default [...base];

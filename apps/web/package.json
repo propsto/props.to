@@ -2,6 +2,7 @@
   "name": "@propsto/web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",

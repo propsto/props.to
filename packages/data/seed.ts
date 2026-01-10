@@ -9,7 +9,7 @@ async function main() {
   // Create root user (Mike Ryan)
   const mike = await prisma.user.create({
     data: {
-      email: "mike.ryan@gmail.com",
+      email: "mike.ryan@example.com",
       firstName: "Mike",
       lastName: "Ryan",
       role: "USER",

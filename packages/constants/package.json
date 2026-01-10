@@ -5,6 +5,7 @@
   "keywords": [],
   "license": "ISC",
   "author": "",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "check-env": "pnpm tsx check-env.ts",

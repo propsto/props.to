@@ -25,9 +25,7 @@ const typescriptConfigs = compat
  */
 
 module.exports = defineConfig([
-  ...compat.extends(
-    "plugin:import/recommended",
-  ),
+  ...compat.extends("plugin:import/recommended"),
   ...typescriptConfigs,
   globalIgnores(["node_modules/**", "dist/**"]),
   {
@@ -40,6 +38,9 @@ module.exports = defineConfig([
           project,
         },
       },
+    },
+    rules: {
+      "import/no-default-export": "off",
     },
   },
   {
