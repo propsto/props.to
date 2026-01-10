@@ -2,11 +2,12 @@
   "name": "@propsto/email",
   "version": "0.0.19",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "email dev --dir templates",
     "email-build": "email build --dir templates",
     "export": "email export --dir templates",
-    "lint": "eslint --fix **/*.{ts,tsx}",
+    "lint": "eslint",
     "maildev": "pnpm exec maildev",
     "type-check": "tsc --noEmit"
   },

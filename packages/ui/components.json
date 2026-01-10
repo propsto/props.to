@@ -3,7 +3,6 @@
   "style": "default",
   "rsc": true,
   "tsx": true,
-  "iconLibrary": "lucide",
   "tailwind": {
     "config": "tailwind.config.mts",
     "css": "./base.css",
@@ -11,11 +10,15 @@
     "cssVariables": true,
     "prefix": ""
   },
+  "iconLibrary": "lucide",
   "aliases": {
-    "components": "../molecules",
-    "utils": "../lib/utils",
-    "ui": "../atoms",
-    "hooks": "../hooks",
-    "lib": "../lib"
+    "components": "@/molecules",
+    "utils": "@/lib/utils",
+    "ui": "@/atoms",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {
+    "@magicui": "https://magicui.design/r/{name}.json"
   }
 }

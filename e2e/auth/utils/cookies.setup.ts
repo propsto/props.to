@@ -4,7 +4,6 @@ import { test } from "@playwright/test";
 import { signInByPassword } from "./auth-methods";
 
 const userJson = path.resolve(__dirname, "../fixtures/user.json");
-console.log({ userJson });
 
 test("password authenticate", async ({ page, baseURL }) => {
   await page.goto(baseURL ?? "");

@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- informative */
 import "./client.js";
 import "./server.js";
 import "./other.js";

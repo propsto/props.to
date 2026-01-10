@@ -57,5 +57,5 @@ export const useTypeWriter = (
     };
   }, [text, isDeleting, wordIndex, words, wait, speed]);
 
-  return showCursor ? `${text}|` : text;
+  return showCursor ? `${text}|` : text + " ";
 };

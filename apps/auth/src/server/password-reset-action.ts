@@ -3,11 +3,13 @@
 import { deletePasswordResetToken, getUserByEmail } from "@propsto/data/repos";
 import { generatePasswordResetToken } from "@propsto/data/utils/password-reset-token";
 import { sendPasswordResetEmail } from "@propsto/email";
-import { logger } from "@propsto/logger?auth";
+import { createLogger } from "@propsto/logger";
 import {
   type ResetPasswordFormType,
   resetPasswordFormSchema,
 } from "@/app/types";
+
+const logger = createLogger("auth");
 
 export async function passwordResetAction(
   prevState: PropstoFormState<ResetPasswordFormType>,

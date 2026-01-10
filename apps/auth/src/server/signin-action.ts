@@ -2,10 +2,12 @@
 
 import { constServer } from "@propsto/constants/server";
 import { getUserByEmail } from "@propsto/data/repos";
-import { logger } from "@propsto/logger?auth";
+import { createLogger } from "@propsto/logger";
 import { redirect } from "next/navigation";
 import { signIn } from "@/server/auth.server";
 import { type SigninFormType, SigninFormSchema } from "@/app/types";
+
+const logger = createLogger("auth");
 
 export async function signInAction(
   prevState: PropstoFormState<SigninFormType>,

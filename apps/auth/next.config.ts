@@ -12,8 +12,4 @@ export default {
       { hostname: "lh3.googleusercontent.com" },
     ],
   },
-  eslint: {
-    // Disable the warning about Next.js plugin not being detected
-    ignoreDuringBuilds: false,
-  },
 } satisfies NextConfig;

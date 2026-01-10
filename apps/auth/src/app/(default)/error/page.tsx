@@ -1,5 +1,5 @@
 import { constOther } from "@propsto/constants/other";
-import { Button } from "@propsto/ui/atoms";
+import { Button } from "@propsto/ui/atoms/button";
 import { TriangleAlert } from "lucide-react";
 import Link from "next/link";
 

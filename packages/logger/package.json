@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "main": "index.mjs",
+  "type": "module",
   "scripts": {
-    "lint": "eslint --fix **/*.{js,mjs,ts}",
+    "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
     "manual": "DEBUG=* node test.mjs"

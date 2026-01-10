@@ -1,5 +1,7 @@
 import { type User } from "next-auth";
-import { logger } from "@propsto/logger?auth";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("auth");
 
 /* 
   Once the user logs in, we want to check if they need to go over

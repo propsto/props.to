@@ -1,10 +1,12 @@
 "use server";
 
-import { logger } from "@propsto/logger?web";
+import { createLogger } from "@propsto/logger";
 import {
   type RequestEarlyAccessFormType,
   RequestEarlyAccessFormSchema,
 } from "./types";
+
+const logger = createLogger("web");
 
 export async function requestEarlyAccess(
   prevState: PropstoFormState<RequestEarlyAccessFormType>,

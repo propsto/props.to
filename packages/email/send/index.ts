@@ -1,6 +1,6 @@
 import type { CreateEmailResponse } from "resend";
 import { Resend } from "resend";
-import { logger } from "@propsto/logger?email";
+import { createLogger } from "@propsto/logger";
 import { constServer } from "@propsto/constants/server";
 import { createTransport } from "nodemailer";
 import { render } from "@react-email/components";
@@ -12,6 +12,8 @@ import type {
   NoArguments,
   Email,
 } from "../types";
+
+const logger = createLogger("email");
 
 export async function send<T extends EmailTemplateNames>(
   email: Email,

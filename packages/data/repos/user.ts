@@ -1,10 +1,12 @@
-import { logger } from "@propsto/logger?data";
+import { createLogger } from "@propsto/logger";
 import { db, Prisma } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
 import { compare, hash } from "bcryptjs";
 import { User } from "@prisma/client";
+
+const logger = createLogger("data");
 
 export type BasicUserData = Prisma.UserGetPayload<{
   select: {

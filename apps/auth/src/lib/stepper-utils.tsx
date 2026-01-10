@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- needed for partially unknown dynamic types */
 import { type Step } from "@stepperize/react";
 import { type JSX } from "react";
 

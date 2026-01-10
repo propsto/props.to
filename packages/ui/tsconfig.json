@@ -1,12 +1,10 @@
 {
   "extends": "@propsto/config/tsconfig/react-library.json",
-  "compilerOptions": {"paths": {
-    "~/*": ["./*"],
-  }},
-  "include": [
-    "react.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-  ],
-  "exclude": ["node_modules"]
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js"],
+  "exclude": ["dist", "build", "node_modules"]
 }

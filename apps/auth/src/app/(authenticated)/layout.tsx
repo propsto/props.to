@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Triangles } from "@propsto/ui/molecules";
-import { Logo } from "@propsto/ui/atoms";
+import { SpeechBubbles } from "@propsto/ui/molecules/speech-bubbles";
+import { Logo } from "@propsto/ui/atoms/logo";
 import { SideSection } from "@components/side-section";
 
 const DynamicThemeToggle = dynamic(() => import("@components/theme-toogle"), {
@@ -16,7 +16,7 @@ export default function Layout({
     <div className="grid lg:grid-cols-3 h-screen">
       <div className="lg:col-span-2 overflow-y-auto" id="main-content">
         <div className="flex lg:!hidden mb-5 h-12 overflow-hidden justify-center relative items-center text-2xl font-medium font-cal tracking-wider">
-          <Triangles size="small" />
+          <SpeechBubbles />
           <Logo className="mr-2 z-20" size="lg" />
           Props.to
         </div>

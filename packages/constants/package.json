@@ -9,7 +9,7 @@
   "scripts": {
     "check-env": "pnpm tsx check-env.ts",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "eslint --fix **/*.ts",
+    "lint": "eslint",
     "test": "pnpm dotenv -- pnpm check-env"
   },
   "dependencies": {

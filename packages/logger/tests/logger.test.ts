@@ -1,4 +1,35 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
+import type { Debugger } from "debug";
+
+interface LoggerModule {
+  createLogger: (scope?: string) => Debugger;
+  logger: Debugger;
+  resolveLoggerScope: (url?: string) => string;
+}
+
+const isLoggerModule = (value: unknown): value is LoggerModule => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return (
+    typeof record.resolveLoggerScope === "function" &&
+    typeof record.createLogger === "function" &&
+    typeof record.logger === "function"
+  );
+};
+
+const loadLoggerModule = async (): Promise<LoggerModule> => {
+  const moduleValue = await import("../index.mjs");
+
+  if (!isLoggerModule(moduleValue)) {
+    throw new Error("Unexpected logger module shape.");
+  }
+
+  return moduleValue;
+};
 
 const collectLogs = (): {
   logs: string[];
@@ -54,8 +85,7 @@ describe("@propsto/logger", () => {
         resolveLoggerScope,
         createLogger,
         logger: defaultLogger,
-        // @ts-expect-error TS cannot infer dynamic imports
-      } = await import("../index.mjs");
+      } = await loadLoggerModule();
 
       expect(defaultLogger.namespace).toBe("@propsto:logger");
 
@@ -94,8 +124,7 @@ describe("@propsto/logger", () => {
     process.env.DEBUG = "@propsto:*";
 
     try {
-      // @ts-expect-error TS cannot infer dynamic imports
-      const { createLogger } = await import("../index.mjs");
+      const { createLogger } = await loadLoggerModule();
       const base = createLogger("custom");
 
       expect(base.namespace).toBe("@propsto:custom");

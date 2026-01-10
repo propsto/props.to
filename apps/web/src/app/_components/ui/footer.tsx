@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export function Footer(): React.ReactElement {
   return (
-    <footer className="triangle-color-gradient">
+    <footer className="bubble-color-gradient">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         {/* Top area: Blocks */}
         <div className="py-8 md:py-12">

@@ -2,7 +2,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import tailwindAnimation from "tailwindcss-animate";
-import tailwindForms from "@tailwindcss/forms"
+import tailwindForms from "@tailwindcss/forms";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,11 +11,9 @@ const __dirname = path.dirname(__filename);
 export default {
   darkMode: ["selector", '[data-theme="dark"]', "class"],
   content: ["atoms", "molecules", "organisms", "hooks", "utils"].flatMap(
-    (entity) => path.join(__dirname, `${entity}/**/*.{ts,tsx}`)
+    entity => path.join(__dirname, `${entity}/**/*.{ts,tsx}`),
   ),
-  safelist: [
-    'font-cal', 'font-sans'
-  ],
+  safelist: ["font-cal", "font-sans"],
   theme: {
     container: {
       center: true,
@@ -25,8 +23,24 @@ export default {
       },
     },
     fontFamily: {
-      cal: ['"Cal Sans"', "ui-serif", "Georgia", "Cambria", "times new roman", "Times", "serif"],
-      sans: ["ui-sans-serif", "system-ui", "sans-serif", '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"']
+      cal: [
+        '"Cal Sans"',
+        "ui-serif",
+        "Georgia",
+        "Cambria",
+        "times new roman",
+        "Times",
+        "serif",
+      ],
+      sans: [
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+        '"Noto Color Emoji"',
+      ],
     },
     extend: {
       colors: {
@@ -63,16 +77,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-				sidebar: {
-  				DEFAULT: "hsl(var(--sidebar-background))",
-  				foreground: "hsl(var(--sidebar-foreground))",
-  				primary: "hsl(var(--sidebar-primary))",
-  				"primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-  				accent: "hsl(var(--sidebar-accent))",
-  				"accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-  				border: "hsl(var(--sidebar-border))",
-  				ring: "hsl(var(--sidebar-ring))"
-  			}
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -95,12 +109,12 @@ export default {
         },
         grow: {
           from: {
-            transform: "scale(0)"
+            transform: "scale(0)",
           },
           to: {
-            transform: "scale(1)"
-          }
-        }
+            transform: "scale(1)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
