@@ -1,25 +1,18 @@
-const { FlatCompat } = require("@eslint/eslintrc");
-const js = require("@eslint/js");
 const { defineConfig, globalIgnores } = require("eslint/config");
 const importPlugin = require("eslint-plugin-import");
 const localRules = require("./local-rules");
+const nextPlugin = require("@next/eslint-plugin-next");
 const reactPlugin = require("eslint-plugin-react");
+const reactHooksPlugin = require("eslint-plugin-react-hooks");
 const tsPlugin = require("@typescript-eslint/eslint-plugin");
 const tsParser = require("@typescript-eslint/parser");
 const { resolve } = require("node:path");
 
 const project = resolve(process.cwd(), "tsconfig.json");
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-const nextVitals = compat.extends(
-  "plugin:react/recommended",
-  "plugin:react-hooks/recommended",
-  "plugin:@next/next/recommended",
-  "plugin:@next/next/core-web-vitals",
-);
+const reactRecommended = reactPlugin.configs.flat.recommended;
+const reactHooksRecommended = reactHooksPlugin.configs.recommended;
+const nextRecommended = nextPlugin.configs.recommended;
+const nextCoreWebVitals = nextPlugin.configs["core-web-vitals"];
 
 /*
  * This is a custom ESLint configuration for use with
@@ -27,7 +20,15 @@ const nextVitals = compat.extends(
  */
 
 module.exports = defineConfig([
-  ...nextVitals,
+  reactRecommended,
+  {
+    plugins: {
+      "react-hooks": reactHooksPlugin,
+    },
+    rules: reactHooksRecommended.rules,
+  },
+  nextRecommended,
+  nextCoreWebVitals,
   // Override default ignores of eslint-config-next.
   globalIgnores([
     ".next/**",

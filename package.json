@@ -12,6 +12,7 @@
     "dev:nuke": "turbo run @propsto/data#db-nuke",
     "dev:setup": "turbo run @propsto/data#db-setup",
     "dev:web": "DEBUG=@propsto:* turbo run @propsto/web#dev",
+    "e2e": "turbo run e2e --concurrency=1",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "health": "turbo run lint type-check",
     "hk": "ncu --deep && sort-package-json -i '**/node_modules' '**/package.json'",
@@ -21,7 +22,6 @@
     "setup:e2e": "pnpm exec playwright install",
     "setup:hosts": "hostile load hosts.txt",
     "test": "turbo run test",
-    "e2e": "turbo run e2e --concurrency=1",
     "type-check": "turbo run type-check"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "zod": "4.2.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "15.3.5",
+    "@next/eslint-plugin-next": "16.1.1",
     "@playwright/test": "1.53.2",
     "@trivago/prettier-plugin-sort-imports": "5.2.2",
     "@types/node": "24.0.10",
@@ -58,8 +58,8 @@
     "@typescript-eslint/eslint-plugin": "8.35.1",
     "@typescript-eslint/parser": "8.35.1",
     "@typescript-eslint/typescript-estree": "8.35.1",
-    "browserslist": "4.28.1",
     "baseline-browser-mapping": "2.9.14",
+    "browserslist": "4.28.1",
     "dotenv-cli": "8.0.0",
     "eslint": "9.30.1",
     "eslint-plugin-import": "2.31.0",
@@ -85,6 +85,15 @@
     "pnpm": ">=9"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "cbor-extract",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ],
     "overrides": {
       "@next/eslint-plugin-next": "$@next/eslint-plugin-next",
       "@types/react": "$@types/react",
@@ -92,8 +101,8 @@
       "@typescript-eslint/eslint-plugin": "$@typescript-eslint/eslint-plugin",
       "@typescript-eslint/parser": "$@typescript-eslint/parser",
       "@typescript-eslint/typescript-estree": "$@typescript-eslint/typescript-estree",
-      "browserslist": "$browserslist",
       "baseline-browser-mapping": "$baseline-browser-mapping",
+      "browserslist": "$browserslist",
       "eslint": "$eslint",
       "eslint-plugin-import": "$eslint-plugin-import",
       "eslint-plugin-react": "$eslint-plugin-react",
@@ -105,15 +114,6 @@
       "react": "$react",
       "react-dom": "$react-dom",
       "typescript": "$typescript"
-    },
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "cbor-extract",
-      "esbuild",
-      "prisma",
-      "sharp",
-      "unrs-resolver"
-    ]
+    }
   }
 }

@@ -42,6 +42,10 @@
       "dependsOn": [
         "^build"
       ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "packages/ui/**"
+      ],
       "outputs": [
         "dist/**",
         ".next/**"

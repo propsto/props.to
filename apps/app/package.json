@@ -15,13 +15,15 @@
     "test:unit:watch": "vitest",
     "type-check": "tsc --noEmit"
   },
-  "peerDependencies": {
+  "dependencies": {
     "@propsto/auth": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/logger": "workspace:*",
-    "@propsto/ui": "workspace:*",
+    "@propsto/ui": "workspace:*"
+  },
+  "peerDependencies": {
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
