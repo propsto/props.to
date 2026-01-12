@@ -358,7 +358,7 @@ export function DataTable({
 }: {
   readonly data: readonly z.infer<typeof schema>[];
 }): React.JSX.Element {
-  const [data, setData] = React.useState(() => initialData);
+  const [data, setData] = React.useState(() => [...initialData]);
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -383,7 +383,7 @@ export function DataTable({
   );
 
   const table = useReactTable({
-    data: [...data],
+    data,
     columns,
     state: {
       sorting,

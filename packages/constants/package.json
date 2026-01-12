@@ -5,19 +5,20 @@
   "keywords": [],
   "license": "ISC",
   "author": "",
+  "type": "module",
   "main": "index.ts",
   "scripts": {
     "check-env": "pnpm tsx check-env.ts",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "eslint --fix **/*.ts",
+    "lint": "eslint",
     "test": "pnpm dotenv -- pnpm check-env"
   },
   "dependencies": {
+    "@propsto/config": "workspace:*",
+    "@propsto/logger": "workspace:*",
     "@t3-oss/env-core": "0.13.8"
   },
   "peerDependencies": {
-    "@propsto/config": "workspace:*",
-    "@propsto/logger": "workspace:*",
     "@types/node": "*",
     "dotenv-cli": "*",
     "tsx": "*",

@@ -1,5 +1,7 @@
 import { type ErrorResponse } from "resend";
-import { logger } from "@propsto/logger?email";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("email");
 
 function isErrorResponse(error: unknown): error is ErrorResponse {
   return typeof error === "object" && error !== null && "message" in error;

@@ -1,12 +1,5 @@
 {
   "extends": "@propsto/config/tsconfig/react-library.json",
-  "include": [
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "dist",
-    "build",
-    "node_modules"
-  ],
+  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js"],
+  "exclude": ["dist", "build", "node_modules"]
 }

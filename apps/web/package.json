@@ -2,24 +2,25 @@
   "name": "@propsto/web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "next lint",
+    "lint": "eslint",
     "next-dev": "next dev --hostname=$PROPSTO_WEB_HOSTNAME --port=$PROPSTO_WEB_PORT",
     "start": "next start",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@vercel/analytics": "1.5.0"
-  },
-  "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@vercel/analytics": "1.5.0"
+  },
+  "peerDependencies": {
     "@types/node": "*",
     "@types/react": "*",
     "@types/react-dom": "*",

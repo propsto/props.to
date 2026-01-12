@@ -1,5 +1,7 @@
 import { Prisma } from "../db";
-import { logger } from "@propsto/logger?data";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("data");
 
 export function handleError(e: any): HandleErrorEvent {
   if (e instanceof Prisma.PrismaClientKnownRequestError) {

@@ -3,5 +3,6 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "tailwindCSS.experimental.configFile": "packages/ui/tailwind.config.mts"
 }

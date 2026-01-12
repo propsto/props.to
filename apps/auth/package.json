@@ -10,7 +10,7 @@
     "build": "pnpm dotenv -- next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "next lint",
+    "lint": "eslint .",
     "next-dev": "next dev --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
     "next-start": "next start --hostname=$PROPSTO_AUTH_HOSTNAME --port=$PROPSTO_AUTH_PORT",
     "start": "pnpm dotenv -- pnpm next-start",
@@ -18,18 +18,18 @@
   },
   "dependencies": {
     "@hookform/resolvers": "4.1.3",
-    "@simplewebauthn/browser": "9.0.1",
-    "@simplewebauthn/server": "9.0.2",
-    "@stepperize/react": "4.2.0",
-    "react-confetti": "6.4.0"
-  },
-  "peerDependencies": {
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/email": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@simplewebauthn/browser": "9.0.1",
+    "@simplewebauthn/server": "9.0.2",
+    "@stepperize/react": "4.2.0",
+    "react-confetti": "6.4.0"
+  },
+  "peerDependencies": {
     "@types/node": "*",
     "@types/nodemailer": "*",
     "@types/react": "*",
@@ -38,6 +38,7 @@
     "@vercel/blob": "*",
     "@vercel/kv": "*",
     "autoprefixer": "*",
+    "browserslist": "*",
     "dotenv-cli": "*",
     "lucide-react": "*",
     "next": "*",

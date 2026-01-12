@@ -64,7 +64,7 @@ export function FAQs(): React.ReactNode {
                   className={cn(
                     "p-5 border border-black/5 shadow-md",
                     cornerClasses,
-                    `bg-triangle-${(index % 6).toString()}`,
+                    `bubble-bg-${(index % 6).toString()}`,
                   )}
                 >
                   <dt className="text-base/7 font-semibold text-gray-900">

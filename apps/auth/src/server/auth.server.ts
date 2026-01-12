@@ -1,7 +1,7 @@
 // More config options in file://./auth.edge.ts
 
 import { type EmailConfig } from "next-auth/providers/email";
-import { logger } from "@propsto/logger?authConfig";
+import { createLogger } from "@propsto/logger";
 import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
 import Passkey from "next-auth/providers/passkey";
 import { PropstoAdapter, Role } from "@propsto/data";
@@ -16,6 +16,7 @@ import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import { type OAuthConfig } from "next-auth/providers";
 import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
 
+const logger = createLogger("authConfig");
 class CustomError extends CredentialsSignin {
   code = "custom";
 }

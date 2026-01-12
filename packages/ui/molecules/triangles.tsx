@@ -30,14 +30,6 @@ export function Triangles({
   const [maxTileX, setMaxTileX] = useState(0);
   const [maxTileY, setMaxTileY] = useState(0);
   const [deviceWidth, deviceHeight] = useDeviceSize();
-  const colors = [
-    "40 91% 97%",
-    "0 0% 91%",
-    "336 73% 96%",
-    "244 75% 97%",
-    "137 100% 28%, 0.04",
-    "167 76% 95%",
-  ];
   useEffect(() => {
     const [width, height] = parentRef?.current
       ? [parentRef.current.offsetWidth, parentRef.current.offsetHeight]
@@ -60,7 +52,7 @@ export function Triangles({
           ];
           return (
             <div
-              className={`triangle ${shapeType} color-${Math.floor(Math.random() * colors.length).toString()}`}
+              className={`triangle ${shapeType} color-${Math.floor(Math.random() * 6).toString()}`}
               key={`${i.toString()}-${j.toString()}`}
             />
           );

@@ -1,7 +1,9 @@
-import { logger } from "@propsto/logger?data";
+import { createLogger } from "@propsto/logger";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
+
+const logger = createLogger("data");
 
 export async function createVerificationToken(tokenData: any) {
   try {

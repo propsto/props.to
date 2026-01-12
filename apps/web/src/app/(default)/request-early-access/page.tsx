@@ -1,9 +1,17 @@
 "use client";
 
 import { useRef } from "react";
-import { Triangles } from "@propsto/ui/molecules/triangles";
+import dynamic from "next/dynamic";
 import { Form } from "./form";
 import { Community } from "./community";
+
+const SpeechBubbles = dynamic(
+  () =>
+    import("@propsto/ui/molecules/speech-bubbles").then(
+      mod => mod.SpeechBubbles,
+    ),
+  { ssr: false },
+);
 
 export default function RequestEarlyAccess(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
@@ -13,7 +21,7 @@ export default function RequestEarlyAccess(): React.ReactElement {
         ref={ref}
         className="relative overflow-hidden before:absolute before:inset-0 before:h-80 before:pointer-events-none before:bg-gradient-to-b before:from-zinc-100 before:-z-10"
       >
-        <Triangles parentRef={ref} />
+        <SpeechBubbles />
         <div className="pt-28 pb-12 md:pt-32 md:pb-20">
           <div className="px-4 sm:px-6">
             {/* Page header */}

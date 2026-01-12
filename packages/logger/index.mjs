@@ -1,4 +1,3 @@
-/* eslint-disable no-console -- informative */
 import debug from "debug";
 
 const DEFAULT_SCOPE = "logger";
@@ -23,9 +22,7 @@ const createConsoleLogger = namespace => {
   consoleLogger.enabled = true;
   consoleLogger.extend = suffix => {
     if (!suffix) return createConsoleLogger(namespace);
-    const sanitizedSuffix = suffix.startsWith(":")
-      ? suffix.slice(1)
-      : suffix;
+    const sanitizedSuffix = suffix.startsWith(":") ? suffix.slice(1) : suffix;
     return createConsoleLogger(`${namespace}:${sanitizedSuffix}`);
   };
   consoleLogger.destroy = () => {};

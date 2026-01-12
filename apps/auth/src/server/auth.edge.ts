@@ -11,8 +11,9 @@ import type {
 import type { AdapterUser } from "next-auth/adapters";
 import { constServer } from "@propsto/constants/server";
 import { updateUser } from "@propsto/data/repos";
-import { logger } from "@propsto/logger?auth";
+import { createLogger } from "@propsto/logger";
 
+const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
 export const nextAuthConfig = {

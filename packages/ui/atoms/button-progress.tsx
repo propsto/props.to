@@ -45,4 +45,4 @@ const ButtonProgress = React.forwardRef<HTMLButtonElement, ButtonProgressProps>(
 );
 ButtonProgress.displayName = "ButtonProgress";
 
-export { ButtonProgress, buttonVariants };
+export { ButtonProgress };

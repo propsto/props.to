@@ -1,8 +1,10 @@
-import { logger } from "@propsto/logger?data";
+import { createLogger } from "@propsto/logger";
 import { db, Prisma } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { getUserByEmail, updateUser } from "./user";
+
+const logger = createLogger("data");
 
 export const getPasswordResetTokenByToken = async (token: string) => {
   try {

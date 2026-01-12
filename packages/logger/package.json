@@ -2,21 +2,22 @@
   "name": "@propsto/logger",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "main": "index.mjs",
   "scripts": {
-    "lint": "eslint --fix **/*.{js,mjs,ts}",
+    "lint": "eslint",
+    "manual": "DEBUG=* node test.mjs",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "manual": "DEBUG=* node test.mjs"
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@propsto/config": "workspace:*",
     "debug": "4.4.1"
   },
   "devDependencies": {
     "@types/debug": "4.1.12"
   },
   "peerDependencies": {
-    "@propsto/config": "workspace:*",
     "typescript": "*",
     "vitest": "*"
   }

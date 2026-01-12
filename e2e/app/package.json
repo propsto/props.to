@@ -2,13 +2,13 @@
   "name": "@propsto/e2e-app",
   "version": "1.0.0",
   "scripts": {
+    "dotenv": "dotenv -e ../../.env",
+    "e2e": "pnpm dotenv -- pnpm ssat",
     "pw-test": "playwright test",
-    "test:ci": "pnpm dotenv -- pw-test --reporter=line",
+    "ssat": "start-test 'run-p start:app start:auth' $PROPSTO_APP_URL 'pnpm pw-test'",
     "start:app": "cd ../../apps/app && pnpm start",
     "start:auth": "cd ../../apps/auth && pnpm start",
-    "ssat": "start-test 'run-p start:app start:auth' $PROPSTO_APP_URL 'pnpm pw-test'",
-    "e2e": "pnpm dotenv -- pnpm ssat",
-    "dotenv": "dotenv -e ../../.env"
+    "test:ci": "pnpm dotenv -- pw-test --reporter=line"
   },
   "dependencies": {
     "@propsto/app": "workspace:*",

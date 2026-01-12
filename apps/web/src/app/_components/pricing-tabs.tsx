@@ -25,12 +25,12 @@ const tiers: Record<string, Tier> = {
   },
   ORGANIZATION: {
     price: "TBD",
-    priceSubtitle: "a.k.a. hosted (company.props.to)",
+    priceSubtitle: "a.k.a. hosted instance (company.props.to)",
     footer: "This will come as the first expansion of the MVP.",
   },
   ENTERPRISE: {
     price: "TBD",
-    priceSubtitle: "a.k.a hosted/self-hosted license",
+    priceSubtitle: "a.k.a self-hosted license",
     footer:
       "After the first expansion, this should not be that much additional work.",
   },
@@ -151,12 +151,19 @@ export function PricingTabs(): React.ReactElement {
       <TooltipProvider delayDuration={0}>
         <div className="py-12 md:py-16">
           <div className="mx-auto max-w-2xl px-6 lg:max-w-7xl lg:px-8">
-            <p className="text-center text-base [line-height:1.75rem] font-semibold text-zinc-600">
-              Feedback, your way.
+            <p className="text-center text-base [line-height:1.75rem] font-semibold text-zinc-600 uppercase">
+              Pricing
             </p>
-            <h2 className="mx-auto mt-2 max-w-lg text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
-              Choose your own feedback experience
+            <h2 className="mx-auto mt-2 mb-4 text-center text-4xl font-semibold tracking-tight text-balance text-gray-950 sm:text-5xl">
+              Choose your own feedback experience.
             </h2>
+
+            <div className="mx-auto max-w-3xl space-y-6 text-center text-lg leading-relaxed text-muted-foreground md:text-xl">
+              <p className="text-foreground/90">
+                Not everyone needs continuous feedback. Props.to adapts to
+                different working styles.
+              </p>
+            </div>
 
             {/* Pricing tabs component */}
             <section className="text-gray-700 body-font">
@@ -169,7 +176,7 @@ export function PricingTabs(): React.ReactElement {
                         className={cn(
                           "text-gray-900 h-12 px-4 flex items-center justify-start",
                           index === 0 && "-mt-px",
-                          `bg-triangle-${(index % 6).toString()}`,
+                          `bubble-bg-${(index % 6).toString()}`,
                         )}
                       >
                         {feat[0]}
@@ -214,7 +221,7 @@ export function PricingTabs(): React.ReactElement {
                               "text-gray-600 h-12 flex items-center justify-center",
                               indexState === 0 && "border-t border-gray-300",
                               tier.highlight && indexState === 0 && "-mt-px",
-                              `bg-triangle-${(indexState % 6).toString()}`,
+                              `bubble-bg-${(indexState % 6).toString()}`,
                             )}
                           >
                             <span className="lg:hidden font-bold">

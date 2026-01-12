@@ -2,10 +2,12 @@
 
 import { setPasswordByToken } from "@propsto/data/repos";
 import { sendPasswordChanged } from "@propsto/email";
-import { logger } from "@propsto/logger?auth";
+import { createLogger } from "@propsto/logger";
 import { redirect } from "next/navigation";
 import { type NewPasswordFormType, newPasswordFormSchema } from "@/app/types";
 import { isPasswordValid } from "@/lib/is-password-valid";
+
+const logger = createLogger("auth");
 
 export async function newPasswordAction(
   prevState: PropstoFormState<NewPasswordFormType>,

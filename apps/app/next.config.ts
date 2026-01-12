@@ -6,7 +6,5 @@ export default {
     ...vercelPreviewEnvVars,
   },
   reactStrictMode: true,
-  // We run these separately in CI, so we can skip them here.
-  eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 } satisfies NextConfig;

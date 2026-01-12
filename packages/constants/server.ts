@@ -1,5 +1,6 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
+import { vercelPreviewEnvVars } from "./other";
 
 process.env.EMAIL_PROVIDER =
   process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
@@ -17,10 +18,13 @@ export const constServer = createEnv({
       .min(1, "Run `openssl rand -base64 32` to set an AUTH_SECRET"),
     PROPSTO_ENV: z.enum(["development", "test", "production"]),
     PROPSTO_APP_URL: z.preprocess(
-      _ => process.env.PROPSTO_APP_URL,
+      () => vercelPreviewEnvVars.PROPSTO_APP_URL,
       z.string().url(),
     ),
-    AUTH_URL: z.preprocess(_ => process.env.AUTH_URL, z.string().url()),
+    AUTH_URL: z.preprocess(
+      () => vercelPreviewEnvVars.AUTH_URL,
+      z.string().url(),
+    ),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
