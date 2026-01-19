@@ -9,12 +9,17 @@ generator client {
   engineType = "client"
 }
 
-// Enum for Role (User, Admin, Group Admin)
+// Enum for Role (User, Platform Admin)
 enum Role {
   USER
   PROPSTO_ADMIN
-  ORGANIZATION_ADMIN
-  GROUP_ADMIN
+}
+
+// Enum for organization-specific roles
+enum OrganizationRole {
+  OWNER  // Created the org, full control
+  ADMIN  // Can manage org settings
+  MEMBER // Regular member
 }
 
 // Enum for resources that can be paid for
@@ -37,19 +42,27 @@ enum AccountType {
   ORGANIZATION
 }
 
+// Enum for slug scope (determines namespace for uniqueness)
+enum SlugScope {
+  GLOBAL       // Top-level namespace: personal users, organizations
+  ORGANIZATION // Scoped within an organization: org members, groups
+}
+
 // Organization model (represents an organization, e.g., Acme Corp)
 model Organization {
-  id        String             @id @default(cuid())
-  name      String             @unique // Organization name
-  users     User[] // Users associated with the organization
-  slug      Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
-  slugId    String             @unique
-  groups    Group[] // Groups within the organization (e.g., marketing team, HR)
-  feedbacks Feedback[] // Feedback related to the organization
-  templates FeedbackTemplate[] @relation(name: "OrganizationTemplates") // Templates associated with this organization
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  uris      Uri[] // URIs associated with the user for feedback
+  id           String               @id @default(cuid())
+  name         String               @unique // Organization name
+  hostedDomain String?              @unique // Google Workspace domain (e.g., "acme.com")
+  members      OrganizationMember[] // Users associated with the organization via junction table
+  slug         Slug                 @relation("OrganizationSlug", fields: [slugId], references: [id], onDelete: Cascade)
+  slugId       String               @unique
+  scopedSlugs  Slug[]               @relation("ScopedSlugs") // Slugs scoped to this organization (members, groups)
+  groups       Group[] // Groups within the organization (e.g., marketing team, HR)
+  feedbacks    Feedback[] // Feedback related to the organization
+  templates    FeedbackTemplate[]   @relation(name: "OrganizationTemplates") // Templates associated with this organization
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  uris         Uri[] // URIs associated with the user for feedback
 
   // Organization settings relations
   defaultUserSettings  OrganizationDefaultUserSettings?
@@ -57,6 +70,19 @@ model Organization {
   feedbackSettings     OrganizationFeedbackSettings?
 
   @@unique([id, slugId])
+}
+
+// OrganizationMember model (junction table for multi-org user membership)
+model OrganizationMember {
+  id             String           @id @default(cuid())
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  role           OrganizationRole @default(MEMBER)
+  joinedAt       DateTime         @default(now())
+
+  @@unique([userId, organizationId])
 }
 
 // Group model (represents a group within an organization, e.g., marketing team)
@@ -79,32 +105,33 @@ model Group {
   @@unique([slugId, organizationId])
 }
 
-// User model (user associated with an organization and potentially with groups)
+// User model (user with personal account, can belong to multiple organizations)
 model User {
-  id             String             @id @default(cuid())
-  email          String             @unique
-  slug           Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
-  slugId         String             @unique
-  password       String?
-  firstName      String?
-  lastName       String?
-  role           Role               @default(USER)
-  dateOfBirth    DateTime?
-  feedbacks      Feedback[] // Feedback received by the user
-  groups         Group[] // Groups the user belongs to
-  organization   Organization?      @relation(fields: [organizationId], references: [id]) // Organization the user belongs to
-  organizationId String?
-  templates      FeedbackTemplate[] @relation(name: "UserTemplates") // Templates associated with this user
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  image          String?
-  emailVerified  DateTime?
-  payments       Payment[]
-  uris           Uri[] // URIs associated with the user for feedback
-  UriClaim       UriClaim?
-  Account        Account[]
-  Session        Session[]
-  Authenticator  Authenticator[]
+  id            String               @id @default(cuid())
+  email         String               @unique
+  slug          Slug                 @relation(fields: [slugId], references: [id], onDelete: Cascade)
+  slugId        String               @unique
+  password      String?
+  firstName     String?
+  lastName      String?
+  role                   Role                 @default(USER)
+  hostedDomain           String? // Google Workspace domain from OAuth (e.g., "acme.com")
+  isGoogleWorkspaceAdmin Boolean              @default(false) // Whether user is a Google Workspace admin (checked on OAuth login)
+  dateOfBirth            DateTime?
+  feedbacks     Feedback[] // Feedback received by the user
+  groups        Group[] // Groups the user belongs to
+  organizations OrganizationMember[] // Organizations the user belongs to (multi-org support)
+  templates     FeedbackTemplate[]   @relation(name: "UserTemplates") // Templates associated with this user
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  image         String?
+  emailVerified DateTime?
+  payments      Payment[]
+  uris          Uri[] // URIs associated with the user for feedback
+  UriClaim      UriClaim?
+  Account       Account[]
+  Session       Session[]
+  Authenticator Authenticator[]
 
   // User preferences and settings relations
   notificationPreferences UserNotificationPreferences?
@@ -119,14 +146,21 @@ model User {
 
 // Slug model (to store unique slugs for both users and organizations)
 model Slug {
-  id           String        @id @default(cuid())
-  slug         String // Slug for user or organization
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  user         User?
-  organization Organization?
-  group        Group[]
-  integration  Integration[]
+  id             String        @id @default(cuid())
+  slug           String // Slug for user or organization
+  scope          SlugScope     @default(GLOBAL) // Determines namespace for uniqueness
+  scopedToOrg    Organization? @relation("ScopedSlugs", fields: [scopedToOrgId], references: [id], onDelete: Cascade)
+  scopedToOrgId  String? // The organization this slug is scoped to (null for GLOBAL)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User?
+  organization   Organization? @relation("OrganizationSlug")
+  group          Group[]
+  integration    Integration[]
+
+  // Slug uniqueness is scoped: GLOBAL slugs are globally unique,
+  // ORGANIZATION slugs are unique within their organization
+  @@unique([slug, scope, scopedToOrgId])
 }
 
 // GroupAdmin model (tracks which users are admins for which groups)

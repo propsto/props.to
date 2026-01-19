@@ -6,3 +6,4 @@ export * from "./authenticator";
 export * from "./password-reset-token";
 export * from "./user-preferences";
 export * from "./organization-settings";
+export * from "./organization";

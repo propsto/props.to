@@ -29,10 +29,29 @@ import {
   updateAuthenticatorCounter,
 } from "./repos";
 
+// Extended user data from Google provider includes extra fields
+type CreateUserInput = AdapterUser & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
 export function PropstoAdapter(): Adapter {
   return {
-    async createUser({ id: _id, ...data }) {
-      const result = await createUser(data);
+    async createUser(inputData) {
+      // Cast to extended type to access Google-specific fields
+      const {
+        id: _id,
+        hostedDomain,
+        isGoogleWorkspaceAdmin,
+        ...data
+      } = inputData as CreateUserInput;
+
+      // Extract hostedDomain and isGoogleWorkspaceAdmin from the data and pass to createUser
+      const result = await createUser({
+        ...data,
+        hostedDomain: hostedDomain ?? undefined,
+        isGoogleWorkspaceAdmin: isGoogleWorkspaceAdmin ?? false,
+      });
       return result.data as AdapterUser;
     },
     async getUser(id) {

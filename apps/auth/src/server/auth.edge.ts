@@ -10,7 +10,7 @@ import type {
 } from "next-auth";
 import type { AdapterUser } from "next-auth/adapters";
 import { constServer } from "@propsto/constants/server";
-import { updateUser } from "@propsto/data/repos";
+import { updateUser, getUser } from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("auth");
@@ -22,9 +22,53 @@ export const nextAuthConfig = {
     authorized({ auth }) {
       return Boolean(auth);
     },
-    jwt: ({
+    async signIn({ user, account, profile }) {
+      // For Google OAuth, update the user's isGoogleWorkspaceAdmin on each sign-in
+      // This ensures the value is fresh since admin status can change
+      if (account?.provider === "google" && user.id && profile) {
+        const googleProfile = profile as { hd?: string; email?: string };
+
+        // Check if user is a Google Workspace admin using the access token
+        let isGoogleWorkspaceAdmin = false;
+        try {
+          if (account.access_token && googleProfile.hd && googleProfile.email) {
+            const response = await fetch(
+              `https://admin.googleapis.com/admin/directory/v1/users/${googleProfile.email}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${account.access_token}`,
+                  Accept: "application/json",
+                },
+              },
+            );
+
+            if (response.ok) {
+              const adminData = (await response.json()) as Record<
+                string,
+                unknown
+              >;
+              isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+            }
+          }
+        } catch (error) {
+          logger(
+            "signIn: Error checking Google Workspace admin status:",
+            error,
+          );
+        }
+
+        await updateUser(user.id, {
+          isGoogleWorkspaceAdmin,
+          hostedDomain: googleProfile.hd,
+        });
+      }
+      return true;
+    },
+    async jwt({
       token,
       user,
+      account,
       trigger,
       session,
     }: {
@@ -35,12 +79,23 @@ export const nextAuthConfig = {
       trigger?: "signIn" | "signUp" | "update";
       isNewUser?: boolean;
       session?: { user: Record<string, string> };
-    }) => {
+    }) {
       if (!token.email) {
         return null;
       }
       if (user) {
-        token.user = user;
+        // For Google OAuth sign-in, fetch the updated user from DB
+        // (signIn callback has already updated isGoogleWorkspaceAdmin)
+        if (account?.provider === "google" && user.id) {
+          const updatedUser = await getUser({ id: user.id });
+          if (updatedUser.data) {
+            token.user = updatedUser.data;
+          } else {
+            token.user = user;
+          }
+        } else {
+          token.user = user;
+        }
       }
       if (trigger === "update" && session) {
         logger("authConfig:jwt:update", session.user);
@@ -108,6 +163,13 @@ export const {
 } = NextAuth(nextAuthConfig);
 
 declare module "next-auth" {
+  interface OrganizationMembership {
+    organizationId: string;
+    organizationSlug: string;
+    organizationName: string;
+    role: string;
+  }
+
   interface User {
     id?: string;
     firstName?: string | null;
@@ -117,5 +179,8 @@ declare module "next-auth" {
     email?: string | null;
     image?: string | null;
     role?: string;
+    hostedDomain?: string | null;
+    isGoogleWorkspaceAdmin?: boolean;
+    organizations?: OrganizationMembership[];
   }
 }

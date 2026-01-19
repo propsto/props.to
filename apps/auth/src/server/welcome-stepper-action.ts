@@ -12,7 +12,11 @@ import {
   upsertOrganizationDefaultUserSettings,
   upsertOrganizationSettings,
   upsertOrganizationFeedbackSettings,
+  addOrganizationMember,
+  getUser,
+  getOrganizationByHostedDomain,
 } from "@propsto/data/repos";
+import { type OrganizationJoinFormValues } from "@components/welcome-stepper/steps/organization-join-step";
 import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
@@ -22,7 +26,7 @@ const personalServerSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().email(),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
   image: z.unknown().optional(),
 });
 
@@ -125,10 +129,15 @@ export async function accountHandler(
     if (trimmedUsername) {
       const { db } = await import("@propsto/data/db");
 
-      // Get the current user with slug information
+      // Get the current user with slug and organization membership info
       const currentUser = await db.user.findUnique({
         where: { id: userId },
-        include: { slug: true },
+        include: {
+          slug: true,
+          organizations: {
+            include: { organization: true },
+          },
+        },
       });
 
       if (!currentUser?.slug) {
@@ -141,29 +150,49 @@ export async function accountHandler(
         };
       }
 
-      // Check if username is already taken
-      const existingSlug = await db.slug.findFirst({
-        where: {
-          slug: trimmedUsername.toLowerCase(),
-          id: { not: currentUser.slug.id }, // Exclude current user's slug
-        },
-      });
+      // Determine if user is an organization user with locked username
+      const isOrgUser = Boolean(currentUser.hostedDomain);
 
-      if (existingSlug) {
-        return {
-          success: false,
-          error: "Username is already taken",
-          fieldErrors: {
-            username: ["Username is already taken"],
+      // For organization users, their username is locked to their email prefix
+      // and will be updated when they join/create an organization (in org handlers)
+      // Skip the collision check and slug update here for org users
+      if (isOrgUser) {
+        logger(
+          "info: Skipping username update for org user - will be handled in organization step %o",
+          { userId, hostedDomain: currentUser.hostedDomain },
+        );
+      } else {
+        // Personal users: check against GLOBAL scope slugs only
+        // (personal accounts share namespace with organizations at top level)
+        const existingSlug = await db.slug.findFirst({
+          where: {
+            slug: trimmedUsername.toLowerCase(),
+            scope: "GLOBAL",
+            scopedToOrgId: null,
+            id: { not: currentUser.slug.id }, // Exclude current user's slug
           },
-        };
-      }
+        });
 
-      // Update the user's slug with the new username
-      await db.slug.update({
-        where: { id: currentUser.slug.id },
-        data: { slug: trimmedUsername.toLowerCase() },
-      });
+        if (existingSlug) {
+          return {
+            success: false,
+            error: "Username is already taken",
+            fieldErrors: {
+              username: ["Username is already taken"],
+            },
+          };
+        }
+
+        // Update the user's slug with the new username (GLOBAL scope for personal users)
+        await db.slug.update({
+          where: { id: currentUser.slug.id },
+          data: {
+            slug: trimmedUsername.toLowerCase(),
+            scope: "GLOBAL",
+            scopedToOrgId: null,
+          },
+        });
+      }
     }
 
     // Get current user data (role is already set by auth flow)
@@ -234,6 +263,7 @@ export async function organizationHandler(
     const {
       organizationName,
       organizationSlug,
+      hostedDomain,
       defaultUserSettings,
       organizationSettings,
       feedbackSettings,
@@ -241,10 +271,13 @@ export async function organizationHandler(
 
     const { db } = await import("@propsto/data/db");
 
-    // Check if organization slug is already taken
+    // Check if organization slug is already taken in the GLOBAL namespace
+    // (organizations and personal users share the top-level namespace)
     const existingOrgSlug = await db.slug.findFirst({
       where: {
         slug: organizationSlug.toLowerCase(),
+        scope: "GLOBAL",
+        scopedToOrgId: null,
       },
     });
 
@@ -258,13 +291,38 @@ export async function organizationHandler(
       };
     }
 
-    // Create organization with slug
+    // Check if hostedDomain is already associated with another organization
+    if (hostedDomain) {
+      const existingOrgWithDomain = await db.organization.findFirst({
+        where: {
+          hostedDomain,
+        },
+      });
+
+      if (existingOrgWithDomain) {
+        return {
+          success: false,
+          error: "An organization for this domain already exists",
+          fieldErrors: {
+            organizationName: [
+              "An organization for this domain already exists",
+            ],
+          },
+        };
+      }
+    }
+
+    // Create organization with slug and hosted domain
+    // Organization slugs are in the GLOBAL namespace (top-level URLs like props.to/acme)
     const organization = await db.organization.create({
       data: {
         name: organizationName,
+        hostedDomain: hostedDomain ?? null,
         slug: {
           create: {
             slug: organizationSlug.toLowerCase(),
+            scope: "GLOBAL",
+            scopedToOrgId: null,
           },
         },
       },
@@ -273,10 +331,51 @@ export async function organizationHandler(
       },
     });
 
-    // Update user to be linked to the organization
-    const userUpdated = await updateUser(userId, {
+    // Add user as organization owner
+    await addOrganizationMember({
+      userId,
       organizationId: organization.id,
+      role: "OWNER",
     });
+
+    // Get the user to find their slug and email
+    const currentUser = await db.user.findUnique({
+      where: { id: userId },
+      include: { slug: true },
+    });
+
+    if (currentUser?.slug) {
+      // Update the user's slug to be scoped to the new organization
+      // Username is derived from their email prefix
+      const emailUsername = currentUser.email
+        .split("@")[0]
+        ?.toLowerCase()
+        .replace(/[^a-z0-9_-]/g, "");
+
+      // Check for collision within the org scope (shouldn't happen for new org, but be safe)
+      const existingSlug = await db.slug.findFirst({
+        where: {
+          slug: emailUsername,
+          scope: "ORGANIZATION",
+          scopedToOrgId: organization.id,
+          id: { not: currentUser.slug.id },
+        },
+      });
+
+      if (!existingSlug && emailUsername) {
+        await db.slug.update({
+          where: { id: currentUser.slug.id },
+          data: {
+            slug: emailUsername,
+            scope: "ORGANIZATION",
+            scopedToOrgId: organization.id,
+          },
+        });
+      }
+    }
+
+    // Get updated user data
+    const userUpdated = await getUser({ id: userId });
 
     // Store organization-specific account settings
     const accountResult = await upsertAccountSettings(userId, {
@@ -377,6 +476,124 @@ export async function organizationHandler(
         error instanceof Error
           ? error.message
           : "Failed to create organization",
+    };
+  }
+}
+
+export async function organizationJoinHandler(
+  _values: OrganizationJoinFormValues,
+  userId: string,
+  hostedDomain: string,
+  isGoogleWorkspaceAdmin: boolean,
+): Promise<
+  HandleEvent<BasicUserData | null | undefined, OrganizationJoinFormValues>
+> {
+  try {
+    if (!hostedDomain) {
+      return {
+        success: false,
+        error: "No hosted domain provided",
+      };
+    }
+
+    // Find the organization by hosted domain
+    const orgResult = await getOrganizationByHostedDomain(hostedDomain);
+
+    if (!orgResult.success || !orgResult.data) {
+      return {
+        success: false,
+        error: "Organization not found for your domain",
+      };
+    }
+
+    const organization = orgResult.data;
+
+    // Determine the role based on Google Workspace admin status
+    const role = isGoogleWorkspaceAdmin ? "ADMIN" : "MEMBER";
+
+    // Add user to the organization
+    const memberResult = await addOrganizationMember({
+      userId,
+      organizationId: organization.id,
+      role,
+    });
+
+    if (!memberResult.success) {
+      return {
+        success: false,
+        error: memberResult.error ?? "Failed to join organization",
+      };
+    }
+
+    const { db } = await import("@propsto/data/db");
+
+    // Get the user to find their slug and email
+    const currentUser = await db.user.findUnique({
+      where: { id: userId },
+      include: { slug: true },
+    });
+
+    if (currentUser?.slug) {
+      // Update the user's slug to be scoped to the organization
+      // Username is derived from their email prefix
+      const emailUsername = currentUser.email
+        .split("@")[0]
+        ?.toLowerCase()
+        .replace(/[^a-z0-9_-]/g, "");
+
+      // Check for collision within the org scope
+      const existingSlug = await db.slug.findFirst({
+        where: {
+          slug: emailUsername,
+          scope: "ORGANIZATION",
+          scopedToOrgId: organization.id,
+          id: { not: currentUser.slug.id },
+        },
+      });
+
+      if (existingSlug) {
+        // Username collision within org - this shouldn't happen with email-based usernames
+        // but handle gracefully by keeping the auto-generated slug
+        logger("warn: Username collision for org user %o", {
+          userId,
+          emailUsername,
+          organizationId: organization.id,
+        });
+      } else if (emailUsername) {
+        await db.slug.update({
+          where: { id: currentUser.slug.id },
+          data: {
+            slug: emailUsername,
+            scope: "ORGANIZATION",
+            scopedToOrgId: organization.id,
+          },
+        });
+      }
+    }
+
+    // Get updated user data
+    const userUpdated = await getUser({ id: userId });
+
+    // Log successful organization join
+    logger("info: Successfully joined organization %o", {
+      organizationId: organization.id,
+      organizationName: organization.name,
+      userId,
+      role,
+    });
+
+    // Update session with new user data
+    if (userUpdated.data) {
+      await updateSession({ user: userUpdated.data });
+    }
+
+    return userUpdated;
+  } catch (error) {
+    logger("error: Organization join handler error %o", { error });
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to join organization",
     };
   }
 }

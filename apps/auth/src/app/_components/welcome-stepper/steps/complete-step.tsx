@@ -39,12 +39,12 @@ export function StepComponent(): React.ReactElement {
           numberOfPieces={250}
           colors={((): string[] => {
             return cssVarsToHexArray([
-              "--bubble-color-0-hex",
-              "--bubble-color-1-hex",
-              "--bubble-color-2-hex",
-              "--bubble-color-3-hex",
-              "--bubble-color-4-hex",
-              "--bubble-color-5-hex",
+              "--bubble-color-0-hex-full",
+              "--bubble-color-1-hex-full",
+              "--bubble-color-2-hex-full",
+              "--bubble-color-3-hex-full",
+              "--bubble-color-4-hex-full",
+              "--bubble-color-5-hex-full",
             ]);
           })()}
         />
