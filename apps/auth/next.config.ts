@@ -5,6 +5,9 @@ export default {
   env: {
     ...vercelPreviewEnvVars,
   },
+  experimental: {
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+  },
   images: {
     remotePatterns: [
       { hostname: "*.public.blob.vercel-storage.com" },

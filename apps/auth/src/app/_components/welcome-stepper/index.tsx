@@ -24,6 +24,7 @@ import {
   accountHandler,
   personalHandler,
   organizationHandler,
+  organizationJoinHandler,
 } from "@/server/welcome-stepper-action";
 import {
   config,
@@ -32,29 +33,48 @@ import {
   type StepNames,
   type AccountFormValues,
   type OrganizationFormValues,
+  type OrganizationJoinFormValues,
+  type OrganizationStatus,
   canUserAccessStep,
   getNextStepForUser,
+  getVisibleSteps,
   type PersonalFormValues,
 } from "./steps";
+import { StepComponent as AccountStepComponent } from "./steps/account-step";
+import { StepComponent as OrganizationStepComponent } from "./steps/organization-step";
+import { StepComponent as OrganizationJoinStepComponent } from "./steps/organization-join-step";
+import { StepComponent as PendingOrganizationStepComponent } from "./steps/pending-organization-step";
 
 const { useStepper } = defineStepper(...config);
 
-const stepIcons = {
+const stepIcons: Record<string, typeof CogIcon> = {
   account: CogIcon,
   personal: UserIcon,
   organization: Building2Icon,
+  "organization-join": Building2Icon,
+  "pending-organization": Building2Icon,
   complete: CheckIcon,
 };
 
 type GenericFormValues = Record<string, unknown>;
 type StepFormStore = Partial<Record<StepNames, GenericFormValues>>;
 
+// Extended user type with Google Workspace fields
+type WelcomeUser = NextAuthUser & {
+  id: string;
+  email: string;
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
 export function WelcomeStepper({
   user,
   initialStep,
+  orgStatus,
 }: Readonly<{
-  user: NextAuthUser & { id: string; email: string };
+  user: WelcomeUser;
   initialStep: StepNames;
+  orgStatus: OrganizationStatus;
 }>): React.ReactElement {
   const stepper = useStepper(initialStep);
   const router = useRouter();
@@ -120,7 +140,7 @@ export function WelcomeStepper({
           user.id,
         );
         if (result.success) {
-          const nextStep = getNextStepForUser(user, "account");
+          const nextStep = getNextStepForUser(user, "account", orgStatus);
           navigateToStep(nextStep);
         } else {
           applyHandleEventToForm<AccountFormValues>(
@@ -136,15 +156,13 @@ export function WelcomeStepper({
             firstName: String(values.firstName),
             lastName: String(values.lastName),
             email: String(values.email),
-            dateOfBirth: values.dateOfBirth
-              ? String(values.dateOfBirth as string)
-              : undefined,
+            dateOfBirth: String(values.dateOfBirth ?? ""),
             image: values.image as string | File[] | undefined,
           },
           user.id,
         );
         if (result.success) {
-          const nextStep = getNextStepForUser(user, "personal");
+          const nextStep = getNextStepForUser(user, "personal", orgStatus);
           navigateToStep(nextStep);
         } else {
           applyHandleEventToForm<PersonalFormValues>(
@@ -160,7 +178,7 @@ export function WelcomeStepper({
           user.id,
         );
         if (result.success) {
-          const nextStep = getNextStepForUser(user, "organization");
+          const nextStep = getNextStepForUser(user, "organization", orgStatus);
           navigateToStep(nextStep);
         } else {
           applyHandleEventToForm<OrganizationFormValues>(
@@ -176,13 +194,41 @@ export function WelcomeStepper({
           );
         }
       },
+      "organization-join": async () => {
+        const result = await organizationJoinHandler(
+          values as OrganizationJoinFormValues,
+          user.id,
+          user.hostedDomain ?? "",
+          user.isGoogleWorkspaceAdmin ?? false,
+        );
+        if (result.success) {
+          const nextStep = getNextStepForUser(
+            user,
+            "organization-join",
+            orgStatus,
+          );
+          navigateToStep(nextStep);
+        } else {
+          // Organization join has minimal form validation
+          form.setError("root", { message: result.error });
+        }
+      },
+      "pending-organization": async () => {
+        // No server action needed - just navigate to complete
+        const nextStep = getNextStepForUser(
+          user,
+          "pending-organization",
+          orgStatus,
+        );
+        navigateToStep(nextStep);
+      },
       complete: () => redirect(constServer.PROPSTO_APP_URL),
     });
   };
 
   const handleStepClick = (stepId: StepNames): void => {
     // Check if user can access this step
-    if (!canUserAccessStep(user, stepId)) {
+    if (!canUserAccessStep(user, stepId, orgStatus)) {
       return; // Don't allow navigation to restricted steps
     }
 
@@ -190,6 +236,35 @@ export function WelcomeStepper({
     saveCurrentStepData();
     stepper.goTo(stepId);
     navigateToStep(stepId);
+  };
+
+  // Get only the steps visible for this user
+  const visibleSteps = getVisibleSteps(user, orgStatus);
+  const visibleStepConfigs = stepper.all.filter(step =>
+    visibleSteps.includes(step.id),
+  );
+
+  // Create step components with user-specific props
+  const stepComponentsWithProps = {
+    ...stepComponents,
+    account: () => (
+      <AccountStepComponent
+        hostedDomain={user.hostedDomain}
+        email={user.email}
+      />
+    ),
+    organization: () => (
+      <OrganizationStepComponent hostedDomain={user.hostedDomain} />
+    ),
+    "organization-join": () => (
+      <OrganizationJoinStepComponent
+        hostedDomain={user.hostedDomain}
+        isGoogleWorkspaceAdmin={user.isGoogleWorkspaceAdmin}
+      />
+    ),
+    "pending-organization": () => (
+      <PendingOrganizationStepComponent hostedDomain={user.hostedDomain} />
+    ),
   };
 
   return (
@@ -201,8 +276,8 @@ export function WelcomeStepper({
         <Card className="p-4">
           <nav aria-label="Account setup steps" className="group">
             <ol className="flex items-center justify-between gap-2">
-              {stepper.all.map((step, index, array) => {
-                const StepIcon = stepIcons[step.id as keyof typeof stepIcons];
+              {visibleStepConfigs.map((step, index, array) => {
+                const StepIcon = stepIcons[step.id] ?? CogIcon;
                 return (
                   <React.Fragment key={step.id}>
                     <li className="flex flex-col items-center gap-2 flex-shrink-0">
@@ -251,7 +326,7 @@ export function WelcomeStepper({
         </Card>
 
         <div className="space-y-4">
-          {stepper.switch(stepComponents)}
+          {stepper.switch(stepComponentsWithProps)}
           {!stepper.isLast ? (
             <div className="flex justify-end gap-4">
               <Button
@@ -266,10 +341,7 @@ export function WelcomeStepper({
               <Button type="submit">Next</Button>
             </div>
           ) : (
-            <div className="flex flex-row justify-between">
-              <Button variant="secondary" onClick={stepper.reset}>
-                Reset
-              </Button>
+            <div className="flex flex-row justify-end">
               <Button
                 onClick={() => {
                   window.location.href =

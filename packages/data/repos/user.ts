@@ -18,6 +18,8 @@ export type BasicUserData = Prisma.UserGetPayload<{
     dateOfBirth: true;
     emailVerified: true;
     role: true;
+    hostedDomain: true;
+    isGoogleWorkspaceAdmin: true;
   };
 }>;
 
@@ -25,16 +27,27 @@ type UserMapperArgs =
   | Prisma.UserGetPayload<{
       include: {
         slug: true;
-        organization: { include: { slug: true } };
+        organizations: {
+          include: {
+            organization: { include: { slug: true } };
+          };
+        };
       };
     }>
   | null
   | undefined;
 
+type OrganizationMembership = {
+  organizationId: string;
+  organizationSlug: string;
+  organizationName: string;
+  role: string;
+};
+
 type UserMapperReturnType =
   | (BasicUserData & {
       username?: string;
-      organization?: string;
+      organizations?: OrganizationMembership[];
     })
   | null
   | undefined;
@@ -53,8 +66,15 @@ function userMapper(
       role: userData.role,
       emailVerified: userData.emailVerified,
       dateOfBirth: userData.dateOfBirth || null,
+      hostedDomain: userData.hostedDomain,
+      isGoogleWorkspaceAdmin: userData.isGoogleWorkspaceAdmin,
       username: userData.slug?.slug,
-      organization: userData.organization?.slug?.slug,
+      organizations: userData.organizations?.map(m => ({
+        organizationId: m.organizationId,
+        organizationSlug: m.organization.slug?.slug ?? "",
+        organizationName: m.organization.name,
+        role: m.role,
+      })),
       ...(addOns
         ? Object.fromEntries(addOns.map(key => [key, userData[key]]))
         : {}),
@@ -65,13 +85,23 @@ function userMapper(
 
 const userInclude = Prisma.validator<Prisma.UserInclude>()({
   slug: true,
-  organization: { include: { slug: true } },
+  organizations: {
+    include: {
+      organization: { include: { slug: true } },
+    },
+  },
 });
 
-export async function createUser(data: { email: string }) {
+export async function createUser(data: {
+  email: string;
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+}) {
   try {
     const dataWithSlug = {
-      ...data,
+      email: data.email,
+      hostedDomain: data.hostedDomain,
+      isGoogleWorkspaceAdmin: data.isGoogleWorkspaceAdmin ?? false,
       slug: { create: { slug: `user-${uuidv4()}` } },
     };
     logger("createUser", dataWithSlug);

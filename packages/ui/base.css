@@ -148,3 +148,11 @@
 .animate-float-fast {
   animation: float-fast 12s ease-in-out infinite;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-slow,
+  .animate-float-medium,
+  .animate-float-fast {
+    animation: none;
+  }
+}

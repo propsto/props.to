@@ -54,7 +54,7 @@ export function SigninForm({
               isPending={isPending}
               result={result}
               type="password"
-              autocomplete="off"
+              autocomplete="current-password"
             />
           ) : null}
           <input type="hidden" name="signInMethod" value={signInMethod} />
@@ -101,6 +101,7 @@ export function SigninForm({
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 48 48"
             className="size-4"
+            aria-hidden="true"
           >
             <path
               fill="#EA4335"

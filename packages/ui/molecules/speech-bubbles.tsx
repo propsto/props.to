@@ -1,4 +1,4 @@
-import type { CSSProperties, JSX } from "react";
+import { useMemo, type CSSProperties, type JSX } from "react";
 import "./speech-bubbles.css";
 
 const BUBBLE_COUNT = 16;
@@ -21,10 +21,15 @@ const clamp = (value: number, min: number, max: number): number =>
 
 type BubbleStyle = CSSProperties & Record<string, string | number | undefined>;
 
-export function SpeechBubbles(): JSX.Element {
+interface SpeechBubblesProps {
+  scale?: number;
+}
+
+// Pre-compute static bubble configurations (positions determined at module load)
+const BUBBLE_CONFIGS = (() => {
   const columns = Math.max(3, Math.ceil(Math.sqrt(BUBBLE_COUNT)));
   const rows = Math.ceil(BUBBLE_COUNT / columns);
-  const bubbles = Array.from({ length: BUBBLE_COUNT }, (_, index) => {
+  return Array.from({ length: BUBBLE_COUNT }, (_, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
     const jitterX = (Math.random() - 0.5) * 18;
@@ -33,36 +38,59 @@ export function SpeechBubbles(): JSX.Element {
     const baseY = ((row + 0.5) / rows) * 100;
     const x = clamp(baseX + jitterX, 6, 94);
     const y = clamp(baseY + jitterY, 8, 92);
-    const useRight = x > 55;
-    const useBottom = y > 55;
-
-    const sizePreset = SIZE_PRESETS[index % SIZE_PRESETS.length];
-    const animationClass = ANIMATIONS[index % ANIMATIONS.length];
-    const colorIndex = index % COLOR_COUNT;
-    const tailEdgeOffset = Math.round(sizePreset.width * 0.24);
-    const bubbleColor = `var(--bubble-color-${String(colorIndex)}-hex)`;
-
-    const bubbleStyle: BubbleStyle = {
-      width: `${String(sizePreset.width)}px`,
-      height: `${String(sizePreset.height)}px`,
-      left: useRight ? undefined : `${String(x)}%`,
-      right: useRight ? `${String(100 - x)}%` : undefined,
-      top: useBottom ? undefined : `${String(y)}%`,
-      bottom: useBottom ? `${String(100 - y)}%` : undefined,
-      "--tail-size": `${String(sizePreset.tailSize)}px`,
-      "--tail-bottom": `${String(sizePreset.tailOffset)}px`,
-      "--tail-left": useRight ? undefined : `${String(tailEdgeOffset)}px`,
-      "--tail-right": useRight ? `${String(tailEdgeOffset)}px` : undefined,
-      "--tail-color": bubbleColor,
-      backgroundColor: bubbleColor,
-    };
-
     return {
-      key: index,
-      className: `speech-bubble ${sizePreset.kind}-bubble ${animationClass}`,
-      style: bubbleStyle,
+      index,
+      x,
+      y,
+      useRight: x > 55,
+      useBottom: y > 55,
+      sizePreset: SIZE_PRESETS[index % SIZE_PRESETS.length],
+      animationClass: ANIMATIONS[index % ANIMATIONS.length],
+      colorIndex: index % COLOR_COUNT,
     };
   });
+})();
+
+export function SpeechBubbles({ scale = 1 }: SpeechBubblesProps): JSX.Element {
+  const bubbles = useMemo(
+    () =>
+      BUBBLE_CONFIGS.map(config => {
+        const scaledWidth = Math.round(config.sizePreset.width * scale);
+        const scaledHeight = Math.round(config.sizePreset.height * scale);
+        const scaledTailSize = Math.round(config.sizePreset.tailSize * scale);
+        const scaledTailOffset = Math.round(
+          config.sizePreset.tailOffset * scale,
+        );
+        const tailEdgeOffset = Math.round(scaledWidth * 0.24);
+        const bubbleColor = `var(--bubble-color-${String(config.colorIndex)}-hex)`;
+
+        const bubbleStyle: BubbleStyle = {
+          width: `${String(scaledWidth)}px`,
+          height: `${String(scaledHeight)}px`,
+          left: config.useRight ? undefined : `${String(config.x)}%`,
+          right: config.useRight ? `${String(100 - config.x)}%` : undefined,
+          top: config.useBottom ? undefined : `${String(config.y)}%`,
+          bottom: config.useBottom ? `${String(100 - config.y)}%` : undefined,
+          "--tail-size": `${String(scaledTailSize)}px`,
+          "--tail-bottom": `${String(scaledTailOffset)}px`,
+          "--tail-left": config.useRight
+            ? undefined
+            : `${String(tailEdgeOffset)}px`,
+          "--tail-right": config.useRight
+            ? `${String(tailEdgeOffset)}px`
+            : undefined,
+          "--tail-color": bubbleColor,
+          backgroundColor: bubbleColor,
+        };
+
+        return {
+          key: config.index,
+          className: `speech-bubble ${config.sizePreset.kind}-bubble ${config.animationClass}`,
+          style: bubbleStyle,
+        };
+      }),
+    [scale],
+  );
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">

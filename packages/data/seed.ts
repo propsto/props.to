@@ -6,7 +6,21 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create root user (Mike Ryan)
+  // Clean up existing data in reverse dependency order
+  await prisma.uriClaim.deleteMany();
+  await prisma.uri.deleteMany();
+  await prisma.integration.deleteMany();
+  await prisma.groupAdmin.deleteMany();
+  await prisma.group.deleteMany();
+  await prisma.organizationMember.deleteMany();
+  await prisma.feedbackTemplate.deleteMany();
+  await prisma.slug.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.organization.deleteMany();
+
+  console.log("Cleared existing seed data.");
+
+  // Create root user (Mike Ryan) - personal account with GLOBAL scope slug
   const mike = await prisma.user.create({
     data: {
       email: "mike.ryan@example.com",
@@ -21,95 +35,132 @@ async function main() {
       slug: {
         create: {
           slug: "mikeryan",
+          scope: "GLOBAL",
+          scopedToOrgId: null,
         },
       },
     },
   });
 
-  // Create Organization (Acme Inc.)
-  const acmeSlug = await prisma.slug.create({
-    data: {
-      slug: "acme",
-    },
-  });
-
+  // Create Organization (Acme Inc.) with GLOBAL scope slug
   const acme = await prisma.organization.create({
     data: {
       name: "Acme Inc.",
-      slug: { connect: { id: acmeSlug.id } },
+      hostedDomain: "acme.com",
+      slug: {
+        create: {
+          slug: "acme",
+          scope: "GLOBAL",
+          scopedToOrgId: null,
+        },
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   });
 
-  // Create Org Admin (Bob Jones)
-  await prisma.user.create({
+  // Create Org Admin (Bob Jones) - org user with ORGANIZATION scope slug
+  const bob = await prisma.user.create({
     data: {
       email: "bob.jones@acme.com",
       firstName: "Bob",
       lastName: "Jones",
-      role: "ORGANIZATION_ADMIN",
+      role: "USER",
+      hostedDomain: "acme.com",
       createdAt: new Date(),
       updatedAt: new Date(),
       slug: {
         create: {
           slug: "bob.jones",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
         },
-      },
-      organization: {
-        connect: { id: acme.id },
       },
     },
   });
 
-  // Create Org User 1 (John Doe)
+  // Add Bob as ADMIN of the organization
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: bob.id } },
+      organization: { connect: { id: acme.id } },
+      role: "ADMIN",
+      joinedAt: new Date(),
+    },
+  });
+
+  // Create Org User 1 (John Doe) - org user with ORGANIZATION scope slug
   const john = await prisma.user.create({
     data: {
       email: "john.doe@acme.com",
       firstName: "John",
       lastName: "Doe",
       role: "USER",
-      organization: { connect: { id: acme.id } },
+      hostedDomain: "acme.com",
       createdAt: new Date(),
       updatedAt: new Date(),
       slug: {
         create: {
           slug: "john.doe",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
         },
       },
     },
   });
 
-  // Create Org User 2 (Jane Smith)
+  // Add John as MEMBER of the organization
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: john.id } },
+      organization: { connect: { id: acme.id } },
+      role: "MEMBER",
+      joinedAt: new Date(),
+    },
+  });
+
+  // Create Org User 2 (Jane Smith) - org user with ORGANIZATION scope slug
   const jane = await prisma.user.create({
     data: {
       email: "jane.smith@acme.com",
       firstName: "Jane",
       lastName: "Smith",
       role: "USER",
-      organization: { connect: { id: acme.id } },
+      hostedDomain: "acme.com",
       createdAt: new Date(),
       updatedAt: new Date(),
       slug: {
         create: {
           slug: "jane.smith",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
         },
       },
     },
   });
 
-  // Create Marketing Group with its slug, admins and users
-  const marketingSlug = await prisma.slug.create({
+  // Add Jane as MEMBER of the organization
+  await prisma.organizationMember.create({
     data: {
-      slug: "marketing",
+      user: { connect: { id: jane.id } },
+      organization: { connect: { id: acme.id } },
+      role: "MEMBER",
+      joinedAt: new Date(),
     },
   });
 
+  // Create Marketing Group with ORGANIZATION scope slug
   const marketingGroup = await prisma.group.create({
     data: {
       name: "Marketing",
       organization: { connect: { id: acme.id } },
-      slug: { connect: { id: marketingSlug.id } },
+      slug: {
+        create: {
+          slug: "marketing",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
+        },
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -177,7 +228,7 @@ async function main() {
     },
   });
 
-  // Create Integration and Uri for Mike Ryan (Instagram)
+  // Create Integration and Uri for Mike Ryan (Instagram) with GLOBAL scope
   await prisma.integration.create({
     data: {
       hostname: "instagram.com",
@@ -189,6 +240,8 @@ async function main() {
       slug: {
         create: {
           slug: "instagram",
+          scope: "GLOBAL",
+          scopedToOrgId: null,
         },
       },
     },

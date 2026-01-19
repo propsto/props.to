@@ -1,15 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { SpeechBubbles } from "@propsto/ui/molecules/speech-bubbles";
 import { Button } from "@propsto/ui/atoms/button";
-import { useTypeWriter } from "@/hooks/type-writer";
-
-const colorIndex = Math.floor(Math.random() * 6);
 
 export function Hero(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
+  const [colorIndex] = useState(() => Math.floor(Math.random() * 6));
   return (
     <div ref={ref} className="relative min-h-screen">
       <SpeechBubbles />
@@ -22,7 +20,7 @@ export function Hero(): React.ReactElement {
               <div className="mb-8 inline-block">
                 <span
                   style={{
-                    backgroundColor: `var(--bubble-color-${colorIndex}-hex)`,
+                    backgroundColor: `var(--bubble-color-${String(colorIndex)}-hex)`,
                   }}
                   className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold text-primary font-sans uppercase"
                 >
@@ -38,7 +36,7 @@ export function Hero(): React.ReactElement {
               {/* Subheadline */}
               <h2
                 style={{
-                  color: `var(--bubble-color-${colorIndex}-hex)`,
+                  color: `var(--bubble-color-${String(colorIndex)}-hex)`,
                   filter: "brightness(0.5)",
                 }}
                 className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 lg:mb-6"
@@ -73,23 +71,5 @@ export function Hero(): React.ReactElement {
         </div>
       </div>
     </div>
-  );
-}
-
-function TypeWriterCTA(): React.ReactNode {
-  const placeholderText = useTypeWriter([
-    "A personal feedback link you control for teams, clients, and communities.",
-    "One link to collect feedback when context is still fresh.",
-  ]);
-  return (
-    <h2
-      style={{
-        color: `var(--bubble-color-${colorIndex}-hex)`,
-        filter: "brightness(0.5)",
-      }}
-      className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-4 lg:mb-6"
-    >
-      &nbsp;{placeholderText}
-    </h2>
   );
 }

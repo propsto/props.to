@@ -9,16 +9,14 @@ export default async function SigninPage({
 }: Readonly<{
   searchParams: Promise<Record<string, string | undefined>>;
 }>): Promise<React.ReactElement> {
-  const session = await auth();
+  const [session, params] = await Promise.all([auth(), searchParams]);
 
   if (session?.user) {
     if (canUserMoveOn(session.user)) {
-      return redirect(
-        (await searchParams).callbackUrl ?? constServer.PROPSTO_APP_URL,
-      );
+      return redirect(params.callbackUrl ?? constServer.PROPSTO_APP_URL);
     }
     const queryString = new URLSearchParams(
-      (await searchParams) as Record<string, string>,
+      params as Record<string, string>,
     ).toString();
     const redirectTo = queryString ? `/welcome?${queryString}` : "/welcome";
     redirect(redirectTo);

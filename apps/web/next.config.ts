@@ -6,6 +6,7 @@ export default {
     ...vercelPreviewEnvVars,
   },
   experimental: {
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
     serverActions: {},
   },
 } satisfies NextConfig;

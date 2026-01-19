@@ -14,7 +14,6 @@ export function canUserMoveOn(user: User): boolean {
   const result = Boolean(
     user.firstName &&
       user.lastName &&
-      user.image &&
       user.dateOfBirth &&
       user.username &&
       user.username.length < 41, // username is autoassigned at first, we need the user to choose one before moving on
