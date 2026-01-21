@@ -1,9 +1,19 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { CheckCircle } from "lucide-react";
 import { resolveSlug, resolveOrgSlug } from "@propsto/data/repos";
 import {
   getFeedbackLinkBySlug,
   getUserFeedbackLinks,
 } from "@propsto/data/repos";
+import { Button } from "@propsto/ui/atoms/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@propsto/ui/atoms/card";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { UserProfileHeader } from "./_components/user-profile-header";
 
@@ -16,6 +26,7 @@ interface PublicPageProps {
  * - /<username> - User profile page
  * - /<username>/<linkSlug> - Personal feedback link
  * - /<orgSlug>/<username>/<linkSlug> - Organization feedback link
+ * - /...path/thanks - Thank you page after feedback submission
  */
 export default async function PublicPage({
   params,
@@ -24,6 +35,11 @@ export default async function PublicPage({
 
   if (!slug || slug.length === 0) {
     notFound();
+  }
+
+  // Check if this is a "thanks" page (last segment is "thanks")
+  if (slug[slug.length - 1] === "thanks") {
+    return <ThankYouPage />;
   }
 
   // Handle based on number of segments
@@ -43,6 +59,35 @@ export default async function PublicPage({
   }
 
   notFound();
+}
+
+function ThankYouPage(): React.ReactNode {
+  return (
+    <div className="max-w-md mx-auto">
+      <Card className="text-center">
+        <CardHeader>
+          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100">
+            <CheckCircle className="size-8 text-green-600" />
+          </div>
+          <CardTitle className="text-2xl">Thank You!</CardTitle>
+          <CardDescription>
+            Your feedback has been submitted successfully
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Your feedback helps people grow and improve. Thank you for taking
+            the time to share your thoughts.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button asChild variant="outline">
+              <Link href="/">Learn More About Props.to</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 async function handleProfilePage(
