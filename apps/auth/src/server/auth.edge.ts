@@ -196,6 +196,18 @@ export const nextAuthConfig = {
       // Allows callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
 
+      // Allow redirects to any subdomain of PROPSTO_HOST (for preview environments)
+      // This enables the OAuth proxy pattern where callbacks go through stable auth
+      // and then redirect back to preview environments
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.hostname.endsWith(constServer.PROPSTO_HOST)) {
+          return url;
+        }
+      } catch {
+        // Invalid URL, fall through to default
+      }
+
       return baseUrl;
     },
   },

@@ -51,6 +51,14 @@ export const vercelPreviewEnvVars = {
     process.env.PROPSTO_HOST
       ? `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
       : process.env.AUTH_URL,
+
+  // OAuth proxy URL - stable auth domain for Google OAuth callbacks
+  // Auth.js uses this to encode the preview URL in the OAuth state parameter
+  AUTH_REDIRECT_PROXY_URL:
+    process.env.VERCEL_ENV === "preview" && process.env.PROPSTO_HOST
+      ? `https://auth.${process.env.PROPSTO_HOST}/api/auth`
+      : undefined,
+
   PROPSTO_APP_URL:
     process.env.VERCEL_ENV === "preview" &&
     process.env.VERCEL_GIT_PULL_REQUEST_ID &&
