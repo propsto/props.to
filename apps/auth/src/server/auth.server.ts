@@ -16,6 +16,12 @@ import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
 import { type OAuthConfig } from "next-auth/providers";
 import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
 
+// Set AUTH_REDIRECT_PROXY_URL on process.env for Auth.js to read
+// This enables OAuth proxy pattern for preview environments
+if (constServer.AUTH_REDIRECT_PROXY_URL) {
+  process.env.AUTH_REDIRECT_PROXY_URL = constServer.AUTH_REDIRECT_PROXY_URL;
+}
+
 const logger = createLogger("authConfig");
 class CustomError extends CredentialsSignin {
   code = "custom";
