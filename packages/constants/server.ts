@@ -32,6 +32,8 @@ export const constServer = createEnv({
       z.string().url().optional(),
     ),
     PROPSTO_HOST: z.string(),
+    // Optional: Override host for OAuth proxy URL (e.g., "props.to" for previews to use auth.props.to)
+    AUTH_PROXY_HOST: z.string().optional(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
