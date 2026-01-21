@@ -66,7 +66,13 @@ export const nextAuthConfig = {
       // and then redirect back to preview environments
       try {
         const urlObj = new URL(url);
-        if (urlObj.hostname.endsWith(constServer.PROPSTO_HOST)) {
+        const hostname = urlObj.hostname;
+        // Allow redirects to PROPSTO_HOST (e.g., props.to) and preview host (props.build)
+        // Production auth.props.to needs to redirect back to preview *.props.build URLs
+        if (
+          hostname.endsWith(constServer.PROPSTO_HOST) ||
+          hostname.endsWith("props.build")
+        ) {
           return url;
         }
       } catch {
