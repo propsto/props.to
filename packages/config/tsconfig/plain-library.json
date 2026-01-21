@@ -11,13 +11,13 @@
     "noEmit": true,
     "types": [
       "@propsto/logger",
-      "../../global.d.ts",
       "node"
     ]
   },
   "include": [
     "/**/*.ts",
-    "*.ts"
+    "*.ts",
+    "../../global.d.ts"
   ],
   "exclude": [
     "./node_modules"

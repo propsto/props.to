@@ -33,6 +33,11 @@ const errorCodes: Record<string, string> = {
   InvalidNewPassordToken: "The provided token is invalid.",
   RateLimitBlocked: "Your request was blocked by our rate limiter.",
   InvalidSession: "Your session is not valid, please signout to continue.",
+  OAuthAccountNotLinked:
+    "An account with this email already exists. Please verify your identity to link your Google account.",
+  AccountLinkingExpired:
+    "Your account linking session has expired. Please try signing in with Google again.",
+  AccountLinkingFailed: "Failed to link your Google account. Please try again.",
 } as const;
 
 export const constOther = { quotes, errorCodes };
@@ -43,6 +48,125 @@ export const examplePropsToInput = [
   `acme/townhall-${new Date().getFullYear().toString()}`,
   "type any URI here!",
 ];
+
+/**
+ * Reserved slugs that cannot be used as usernames or organization names.
+ * These match routes in the web app and common reserved paths.
+ */
+export const reservedSlugs = [
+  // Current web routes
+  "request-early-access",
+  "api",
+
+  // Common marketing pages (current or future)
+  "about",
+  "pricing",
+  "blog",
+  "docs",
+  "help",
+  "support",
+  "contact",
+  "careers",
+  "press",
+  "partners",
+  "enterprise",
+  "features",
+  "integrations",
+  "changelog",
+  "roadmap",
+  "status",
+
+  // Legal pages
+  "privacy",
+  "terms",
+  "cookies",
+  "gdpr",
+  "security",
+  "compliance",
+
+  // Auth/account related
+  "login",
+  "signin",
+  "signup",
+  "register",
+  "logout",
+  "signout",
+  "auth",
+  "account",
+  "settings",
+  "profile",
+  "dashboard",
+  "admin",
+  "app",
+
+  // Common reserved words
+  "www",
+  "mail",
+  "email",
+  "ftp",
+  "cdn",
+  "assets",
+  "static",
+  "images",
+  "img",
+  "css",
+  "js",
+  "fonts",
+  "media",
+  "downloads",
+  "files",
+
+  // Props.to specific
+  "props",
+  "propsto",
+  "feedback",
+  "templates",
+  "links",
+  "goals",
+  "reports",
+  "organizations",
+  "teams",
+  "groups",
+  "users",
+  "members",
+
+  // Misc reserved
+  "null",
+  "undefined",
+  "true",
+  "false",
+  "new",
+  "edit",
+  "delete",
+  "create",
+  "update",
+  "search",
+  "explore",
+  "trending",
+  "popular",
+  "recent",
+  "all",
+  "me",
+  "my",
+  "you",
+  "home",
+  "index",
+  "root",
+  "system",
+  "internal",
+  "test",
+  "demo",
+  "example",
+] as const;
+
+export type ReservedSlug = (typeof reservedSlugs)[number];
+
+/**
+ * Check if a slug is reserved
+ */
+export function isReservedSlug(slug: string): boolean {
+  return reservedSlugs.includes(slug.toLowerCase() as ReservedSlug);
+}
 
 export const vercelPreviewEnvVars = {
   AUTH_URL:

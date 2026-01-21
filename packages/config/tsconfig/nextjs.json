@@ -11,31 +11,12 @@
     "incremental": true,
     "allowJs": true,
     "jsx": "preserve",
-    "types": [
-      "@propsto/logger",
-      "../../global.d.ts"
-    ],
     "lib": [
       "DOM",
       "DOM.Iterable"
-    ],
-    "paths": {
-      "@components/*": [
-        "./src/app/_components/*"
-      ],
-      "@/*": [
-        "./src/*"
-      ],
-      "@root/*": [
-        "../../*"
-      ]
-    }
+    ]
   },
   "include": [
-    "src",
-    "next-env.d.ts",
-  ],
-  "exclude": [
-    "node_modules"
+    "../../../global.d.ts"
   ]
 }

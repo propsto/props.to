@@ -10,10 +10,16 @@ async function main() {
   await prisma.uriClaim.deleteMany();
   await prisma.uri.deleteMany();
   await prisma.integration.deleteMany();
+  await prisma.goal.deleteMany();
+  await prisma.feedback.deleteMany();
+  await prisma.feedbackLink.deleteMany();
+  await prisma.feedbackRequest.deleteMany();
+  await prisma.templateField.deleteMany();
   await prisma.groupAdmin.deleteMany();
   await prisma.group.deleteMany();
   await prisma.organizationMember.deleteMany();
   await prisma.feedbackTemplate.deleteMany();
+  await prisma.templateCategory.deleteMany();
   await prisma.slug.deleteMany();
   await prisma.user.deleteMany();
   await prisma.organization.deleteMany();
@@ -188,27 +194,343 @@ async function main() {
     },
   });
 
-  // Create Feedback Template (Default)
-  const feedbackTemplate = await prisma.feedbackTemplate.create({
+  // Create Template Categories
+  const recognitionCategory = await prisma.templateCategory.create({
     data: {
-      name: "Default",
-      description: "A default feedback template for users.",
-      price: 0,
-      filePath: "@propsto/templates/feedback/default",
+      name: "Recognition",
+      description: "Templates for giving recognition and props",
+      icon: "trophy",
+    },
+  });
+
+  const reviewCategory = await prisma.templateCategory.create({
+    data: {
+      name: "Performance Reviews",
+      description: "Templates for structured feedback and reviews",
+      icon: "clipboard",
+    },
+  });
+
+  // Create Default Templates
+
+  // 1. Simple Props / Recognition Template
+  const propsTemplate = await prisma.feedbackTemplate.create({
+    data: {
+      name: "Quick Props",
+      description: "A simple template for giving quick recognition and props.",
+      feedbackType: "RECOGNITION",
+      isPublic: true,
+      isDefault: true,
+      categoryId: recognitionCategory.id,
+      fields: {
+        create: [
+          {
+            label: "What do you appreciate about this person?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Share what they did well...",
+            helpText: "Be specific about their actions and impact",
+            order: 0,
+          },
+          {
+            label: "What values did they demonstrate?",
+            type: "SELECT",
+            required: false,
+            options: [
+              "Collaboration",
+              "Innovation",
+              "Leadership",
+              "Integrity",
+              "Excellence",
+              "Customer Focus",
+            ],
+            helpText: "Select the value that best fits",
+            order: 1,
+          },
+        ],
+      },
       createdAt: new Date(),
       updatedAt: new Date(),
     },
   });
 
-  // Associate Template to Root User (Mike Ryan)
+  // 2. 360° Feedback Template
+  const threeSixtyTemplate = await prisma.feedbackTemplate.create({
+    data: {
+      name: "360° Feedback",
+      description:
+        "Comprehensive feedback template for all-around performance insights.",
+      feedbackType: "THREE_SIXTY",
+      isPublic: true,
+      isDefault: true,
+      categoryId: reviewCategory.id,
+      fields: {
+        create: [
+          {
+            label: "How would you rate their overall performance?",
+            type: "RATING",
+            required: true,
+            helpText: "1 = Needs Improvement, 5 = Exceptional",
+            order: 0,
+          },
+          {
+            label: "What are their key strengths?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Describe their strongest areas...",
+            order: 1,
+          },
+          {
+            label: "What areas could they improve?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Provide constructive feedback...",
+            order: 2,
+          },
+          {
+            label: "How well do they communicate?",
+            type: "SCALE",
+            required: true,
+            helpText: "1 = Poor, 10 = Excellent",
+            order: 3,
+          },
+          {
+            label: "How well do they collaborate with others?",
+            type: "SCALE",
+            required: true,
+            helpText: "1 = Poor, 10 = Excellent",
+            order: 4,
+          },
+          {
+            label: "Any additional comments?",
+            type: "TEXTAREA",
+            required: false,
+            placeholder: "Share any other thoughts...",
+            order: 5,
+          },
+        ],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // 3. Anonymous Feedback Template
+  const anonymousTemplate = await prisma.feedbackTemplate.create({
+    data: {
+      name: "Anonymous Feedback",
+      description: "Share honest feedback anonymously.",
+      feedbackType: "ANONYMOUS",
+      isPublic: true,
+      isDefault: true,
+      categoryId: reviewCategory.id,
+      fields: {
+        create: [
+          {
+            label: "What feedback would you like to share?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Your identity will remain anonymous...",
+            order: 0,
+          },
+          {
+            label: "Category",
+            type: "SELECT",
+            required: true,
+            options: [
+              "Work Quality",
+              "Communication",
+              "Leadership",
+              "Teamwork",
+              "Other",
+            ],
+            order: 1,
+          },
+          {
+            label: "How important is this feedback?",
+            type: "RADIO",
+            required: true,
+            options: ["Critical", "High", "Medium", "Low"],
+            order: 2,
+          },
+        ],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // 4. Leadership Feedback Template
+  const leadershipTemplate = await prisma.feedbackTemplate.create({
+    data: {
+      name: "Leadership Feedback",
+      description: "Provide feedback on leadership effectiveness.",
+      feedbackType: "MANAGER_FEEDBACK",
+      isPublic: true,
+      isDefault: true,
+      categoryId: reviewCategory.id,
+      fields: {
+        create: [
+          {
+            label: "How would you rate their leadership?",
+            type: "RATING",
+            required: true,
+            helpText: "1 = Needs Improvement, 5 = Exceptional",
+            order: 0,
+          },
+          {
+            label: "Do they provide clear direction?",
+            type: "SCALE",
+            required: true,
+            helpText: "1 = Never, 10 = Always",
+            order: 1,
+          },
+          {
+            label: "Do they support your professional growth?",
+            type: "SCALE",
+            required: true,
+            helpText: "1 = Never, 10 = Always",
+            order: 2,
+          },
+          {
+            label: "What do they do well as a leader?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Share specific examples...",
+            order: 3,
+          },
+          {
+            label: "How could they improve as a leader?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Provide constructive suggestions...",
+            order: 4,
+          },
+        ],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // 5. Peer Review Template
+  const peerReviewTemplate = await prisma.feedbackTemplate.create({
+    data: {
+      name: "Peer Review",
+      description: "Template for peer-to-peer feedback.",
+      feedbackType: "PEER_REVIEW",
+      isPublic: true,
+      isDefault: true,
+      categoryId: reviewCategory.id,
+      fields: {
+        create: [
+          {
+            label: "How was it working with this person?",
+            type: "TEXTAREA",
+            required: true,
+            placeholder: "Describe your collaboration experience...",
+            order: 0,
+          },
+          {
+            label: "Would you want to work with them again?",
+            type: "RADIO",
+            required: true,
+            options: ["Definitely", "Probably", "Maybe", "Probably Not"],
+            order: 1,
+          },
+          {
+            label: "Overall rating of collaboration",
+            type: "RATING",
+            required: true,
+            helpText: "1 = Difficult, 5 = Excellent",
+            order: 2,
+          },
+          {
+            label: "Any specific feedback?",
+            type: "TEXTAREA",
+            required: false,
+            placeholder: "Additional thoughts...",
+            order: 3,
+          },
+        ],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  // Associate Templates to Root User (Mike Ryan)
   await prisma.user.update({
     where: {
       id: mike.id,
     },
     data: {
       templates: {
-        connect: { id: feedbackTemplate.id },
+        connect: [{ id: propsTemplate.id }, { id: threeSixtyTemplate.id }],
       },
+    },
+  });
+
+  // Create sample feedback links for Mike
+  await prisma.feedbackLink.create({
+    data: {
+      name: "Give me Props",
+      slug: "mike-props",
+      userId: mike.id,
+      templateId: propsTemplate.id,
+      feedbackType: "RECOGNITION",
+      visibility: "PRIVATE",
+      isActive: true,
+    },
+  });
+
+  // Create sample feedback for Mike from Jane
+  await prisma.feedback.create({
+    data: {
+      userId: mike.id,
+      submitterId: jane.id,
+      submitterEmail: jane.email!,
+      feedbackType: "RECOGNITION",
+      visibility: "PRIVATE",
+      status: "APPROVED",
+      templateId: propsTemplate.id,
+      fieldsData: {
+        "What do you appreciate about this person?":
+          "Mike always goes above and beyond to help the team succeed. His technical expertise is invaluable!",
+        "What values did they demonstrate?": "Excellence",
+      },
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    },
+  });
+
+  // Create sample feedback for Mike from John
+  await prisma.feedback.create({
+    data: {
+      userId: mike.id,
+      submitterId: john.id,
+      submitterEmail: john.email!,
+      feedbackType: "RECOGNITION",
+      visibility: "PRIVATE",
+      status: "APPROVED",
+      templateId: propsTemplate.id,
+      fieldsData: {
+        "What do you appreciate about this person?":
+          "Great collaboration on the marketing project. Really appreciated the quick turnaround on deliverables.",
+        "What values did they demonstrate?": "Collaboration",
+      },
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    },
+  });
+
+  // Create a goal for Mike
+  await prisma.goal.create({
+    data: {
+      userId: mike.id,
+      title: "Improve public speaking skills",
+      description: "Get better at presenting to large audiences",
+      status: "IN_PROGRESS",
+      progress: 30,
+      targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
     },
   });
 
