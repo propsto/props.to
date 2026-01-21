@@ -10,7 +10,13 @@ import type {
 } from "next-auth";
 import type { AdapterUser } from "next-auth/adapters";
 import { constServer } from "@propsto/constants/server";
-import { updateUser, getUser } from "@propsto/data/repos";
+import {
+  updateUser,
+  getUser,
+  getUserByEmail,
+  getUserByAccount,
+  createPendingAccountLink,
+} from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("auth");
@@ -23,45 +29,119 @@ export const nextAuthConfig = {
       return Boolean(auth);
     },
     async signIn({ user, account, profile }) {
-      // For Google OAuth, update the user's isGoogleWorkspaceAdmin on each sign-in
-      // This ensures the value is fresh since admin status can change
-      if (account?.provider === "google" && user.id && profile) {
+      // Handle Google OAuth sign-in
+      if (account?.provider === "google" && profile) {
         const googleProfile = profile as { hd?: string; email?: string };
+        const email = googleProfile.email;
 
-        // Check if user is a Google Workspace admin using the access token
-        let isGoogleWorkspaceAdmin = false;
-        try {
-          if (account.access_token && googleProfile.hd && googleProfile.email) {
-            const response = await fetch(
-              `https://admin.googleapis.com/admin/directory/v1/users/${googleProfile.email}`,
-              {
-                method: "GET",
-                headers: {
-                  Authorization: `Bearer ${account.access_token}`,
-                  Accept: "application/json",
-                },
-              },
-            );
-
-            if (response.ok) {
-              const adminData = (await response.json()) as Record<
-                string,
-                unknown
-              >;
-              isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
-            }
-          }
-        } catch (error) {
-          logger(
-            "signIn: Error checking Google Workspace admin status:",
-            error,
-          );
+        if (!email) {
+          return false;
         }
 
-        await updateUser(user.id, {
-          isGoogleWorkspaceAdmin,
-          hostedDomain: googleProfile.hd,
+        // Check if user with this email already exists
+        const existingUser = await getUserByEmail(email);
+
+        // Check if a Google account is already linked to this user
+        const existingGoogleAccount = await getUserByAccount({
+          provider: "google",
+          providerAccountId: account.providerAccountId,
         });
+
+        // If user exists but Google account is NOT linked, initiate account linking flow
+        // This handles the "future-proofing" scenario where a Google Workspace user
+        // already has a personal account created via email/password
+        if (existingUser.data && !existingGoogleAccount?.data) {
+          logger("signIn: Existing user needs account linking", {
+            email,
+            hasExistingUser: true,
+            hasLinkedGoogle: false,
+          });
+
+          // Check Google Workspace admin status for the pending link data
+          let isGoogleWorkspaceAdmin = false;
+          try {
+            if (account.access_token && googleProfile.hd) {
+              const response = await fetch(
+                `https://admin.googleapis.com/admin/directory/v1/users/${email}`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${account.access_token}`,
+                    Accept: "application/json",
+                  },
+                },
+              );
+
+              if (response.ok) {
+                const adminData = (await response.json()) as Record<
+                  string,
+                  unknown
+                >;
+                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              }
+            }
+          } catch (error) {
+            logger("signIn: Error checking admin status for linking:", error);
+          }
+
+          // Create pending account link with OAuth data
+          const pendingLink = await createPendingAccountLink({
+            email,
+            provider: "google",
+            providerAccountId: account.providerAccountId,
+            accessToken: account.access_token,
+            refreshToken: account.refresh_token,
+            expiresAt: account.expires_at,
+            hostedDomain: googleProfile.hd,
+            isGoogleWorkspaceAdmin,
+          });
+
+          if (pendingLink.success && pendingLink.data) {
+            // Redirect to account linking flow instead of completing sign-in
+            return `/welcome?step=link-account&token=${pendingLink.data.token}`;
+          }
+
+          // If pending link creation failed, redirect to error page
+          return `/error?code=AccountLinkingFailed`;
+        }
+
+        // For existing users with linked Google account OR new users,
+        // update Google Workspace data on each sign-in
+        if (user.id) {
+          let isGoogleWorkspaceAdmin = false;
+          try {
+            if (account.access_token && googleProfile.hd) {
+              const response = await fetch(
+                `https://admin.googleapis.com/admin/directory/v1/users/${email}`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${account.access_token}`,
+                    Accept: "application/json",
+                  },
+                },
+              );
+
+              if (response.ok) {
+                const adminData = (await response.json()) as Record<
+                  string,
+                  unknown
+                >;
+                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              }
+            }
+          } catch (error) {
+            logger(
+              "signIn: Error checking Google Workspace admin status:",
+              error,
+            );
+          }
+
+          await updateUser(user.id, {
+            isGoogleWorkspaceAdmin,
+            hostedDomain: googleProfile.hd,
+          });
+        }
       }
       return true;
     },
@@ -181,6 +261,7 @@ declare module "next-auth" {
     role?: string;
     hostedDomain?: string | null;
     isGoogleWorkspaceAdmin?: boolean;
+    onboardingCompletedAt?: Date | null;
     organizations?: OrganizationMembership[];
   }
 }

@@ -15,12 +15,18 @@ import {
   addOrganizationMember,
   getUser,
   getOrganizationByHostedDomain,
+  getPendingAccountLink,
+  consumePendingAccountLink,
+  linkAccount,
+  getUserByEmail,
+  verifyUserPassword,
 } from "@propsto/data/repos";
 import { type OrganizationJoinFormValues } from "@components/welcome-stepper/steps/organization-join-step";
 import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
-import { updateSession } from "./auth.server";
+import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
+import { updateSession, signIn } from "./auth.server";
 
 const personalServerSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
@@ -123,21 +129,17 @@ export async function accountHandler(
     // Extract the account settings from the form values (no role - it's auto-detected)
     const { username, notificationPreferences, privacySettings } = parsed.data;
 
-    // Update the user's slug with the new username if provided
+    // Update the user's PERSONAL slug with the new username
+    // This is separate from organization-scoped slugs
     const trimmedUsername = username.trim();
 
     if (trimmedUsername) {
       const { db } = await import("@propsto/data/db");
 
-      // Get the current user with slug and organization membership info
+      // Get the current user with their personal slug
       const currentUser = await db.user.findUnique({
         where: { id: userId },
-        include: {
-          slug: true,
-          organizations: {
-            include: { organization: true },
-          },
-        },
+        include: { slug: true },
       });
 
       if (!currentUser?.slug) {
@@ -150,49 +152,36 @@ export async function accountHandler(
         };
       }
 
-      // Determine if user is an organization user with locked username
-      const isOrgUser = Boolean(currentUser.hostedDomain);
+      // Check for collision in GLOBAL scope (personal usernames + org slugs)
+      const existingSlug = await db.slug.findFirst({
+        where: {
+          slug: trimmedUsername.toLowerCase(),
+          scope: "GLOBAL",
+          scopedToOrgId: null,
+          id: { not: currentUser.slug.id }, // Exclude current user's slug
+        },
+      });
 
-      // For organization users, their username is locked to their email prefix
-      // and will be updated when they join/create an organization (in org handlers)
-      // Skip the collision check and slug update here for org users
-      if (isOrgUser) {
-        logger(
-          "info: Skipping username update for org user - will be handled in organization step %o",
-          { userId, hostedDomain: currentUser.hostedDomain },
-        );
-      } else {
-        // Personal users: check against GLOBAL scope slugs only
-        // (personal accounts share namespace with organizations at top level)
-        const existingSlug = await db.slug.findFirst({
-          where: {
-            slug: trimmedUsername.toLowerCase(),
-            scope: "GLOBAL",
-            scopedToOrgId: null,
-            id: { not: currentUser.slug.id }, // Exclude current user's slug
+      if (existingSlug) {
+        return {
+          success: false,
+          error: "Username is already taken",
+          fieldErrors: {
+            username: ["Username is already taken"],
           },
-        });
-
-        if (existingSlug) {
-          return {
-            success: false,
-            error: "Username is already taken",
-            fieldErrors: {
-              username: ["Username is already taken"],
-            },
-          };
-        }
-
-        // Update the user's slug with the new username (GLOBAL scope for personal users)
-        await db.slug.update({
-          where: { id: currentUser.slug.id },
-          data: {
-            slug: trimmedUsername.toLowerCase(),
-            scope: "GLOBAL",
-            scopedToOrgId: null,
-          },
-        });
+        };
       }
+
+      // Update the user's PERSONAL slug (GLOBAL scope)
+      // Organization-scoped slugs are handled separately in org handlers
+      await db.slug.update({
+        where: { id: currentUser.slug.id },
+        data: {
+          slug: trimmedUsername.toLowerCase(),
+          scope: "GLOBAL",
+          scopedToOrgId: null,
+        },
+      });
     }
 
     // Get current user data (role is already set by auth flow)
@@ -338,39 +327,40 @@ export async function organizationHandler(
       role: "OWNER",
     });
 
-    // Get the user to find their slug and email
+    // Get the user to find their email for org slug
     const currentUser = await db.user.findUnique({
       where: { id: userId },
-      include: { slug: true },
     });
 
-    if (currentUser?.slug) {
-      // Update the user's slug to be scoped to the new organization
-      // Username is derived from their email prefix
+    if (currentUser) {
+      // Create a SEPARATE org-scoped slug for the user (their username within this org)
+      // This is independent from their personal (GLOBAL) slug
       const emailUsername = currentUser.email
         .split("@")[0]
         ?.toLowerCase()
         .replace(/[^a-z0-9_-]/g, "");
 
-      // Check for collision within the org scope (shouldn't happen for new org, but be safe)
-      const existingSlug = await db.slug.findFirst({
-        where: {
-          slug: emailUsername,
-          scope: "ORGANIZATION",
-          scopedToOrgId: organization.id,
-          id: { not: currentUser.slug.id },
-        },
-      });
-
-      if (!existingSlug && emailUsername) {
-        await db.slug.update({
-          where: { id: currentUser.slug.id },
-          data: {
+      if (emailUsername) {
+        // Check for collision within the org scope (shouldn't happen for new org, but be safe)
+        const existingOrgUserSlug = await db.slug.findFirst({
+          where: {
             slug: emailUsername,
             scope: "ORGANIZATION",
             scopedToOrgId: organization.id,
           },
         });
+
+        if (!existingOrgUserSlug) {
+          // Create org-scoped slug for user
+          await db.slug.create({
+            data: {
+              slug: emailUsername,
+              scope: "ORGANIZATION",
+              scopedToOrgId: organization.id,
+              orgSlugOwnerId: userId,
+            },
+          });
+        }
       }
     }
 
@@ -527,47 +517,73 @@ export async function organizationJoinHandler(
 
     const { db } = await import("@propsto/data/db");
 
-    // Get the user to find their slug and email
+    // Get the user to find their email for org slug
     const currentUser = await db.user.findUnique({
       where: { id: userId },
-      include: { slug: true },
     });
 
-    if (currentUser?.slug) {
-      // Update the user's slug to be scoped to the organization
-      // Username is derived from their email prefix
+    if (currentUser) {
+      // Create a SEPARATE org-scoped slug for the user (their username within this org)
+      // This is independent from their personal (GLOBAL) slug
       const emailUsername = currentUser.email
         .split("@")[0]
         ?.toLowerCase()
         .replace(/[^a-z0-9_-]/g, "");
 
-      // Check for collision within the org scope
-      const existingSlug = await db.slug.findFirst({
-        where: {
-          slug: emailUsername,
-          scope: "ORGANIZATION",
-          scopedToOrgId: organization.id,
-          id: { not: currentUser.slug.id },
-        },
-      });
-
-      if (existingSlug) {
-        // Username collision within org - this shouldn't happen with email-based usernames
-        // but handle gracefully by keeping the auto-generated slug
-        logger("warn: Username collision for org user %o", {
-          userId,
-          emailUsername,
-          organizationId: organization.id,
-        });
-      } else if (emailUsername) {
-        await db.slug.update({
-          where: { id: currentUser.slug.id },
-          data: {
+      if (emailUsername) {
+        // Check for collision within the org scope
+        const existingOrgUserSlug = await db.slug.findFirst({
+          where: {
             slug: emailUsername,
             scope: "ORGANIZATION",
             scopedToOrgId: organization.id,
           },
         });
+
+        if (existingOrgUserSlug) {
+          // Username collision within org - this shouldn't happen with email-based usernames
+          // but handle gracefully by adding a suffix
+          logger("warn: Username collision for org user, adding suffix %o", {
+            userId,
+            emailUsername,
+            organizationId: organization.id,
+          });
+
+          // Try with a numeric suffix
+          let suffix = 1;
+          let uniqueSlug = `${emailUsername}${suffix}`;
+          while (
+            await db.slug.findFirst({
+              where: {
+                slug: uniqueSlug,
+                scope: "ORGANIZATION",
+                scopedToOrgId: organization.id,
+              },
+            })
+          ) {
+            suffix++;
+            uniqueSlug = `${emailUsername}${suffix}`;
+          }
+
+          await db.slug.create({
+            data: {
+              slug: uniqueSlug,
+              scope: "ORGANIZATION",
+              scopedToOrgId: organization.id,
+              orgSlugOwnerId: userId,
+            },
+          });
+        } else {
+          // Create org-scoped slug for user
+          await db.slug.create({
+            data: {
+              slug: emailUsername,
+              scope: "ORGANIZATION",
+              scopedToOrgId: organization.id,
+              orgSlugOwnerId: userId,
+            },
+          });
+        }
       }
     }
 
@@ -594,6 +610,181 @@ export async function organizationJoinHandler(
       success: false,
       error:
         error instanceof Error ? error.message : "Failed to join organization",
+    };
+  }
+}
+
+const linkAccountServerSchema = z.object({
+  verificationMethod: z.enum(["password", "magic-link"]),
+  password: z.string().optional(),
+});
+
+export async function linkAccountHandler(
+  values: LinkAccountFormValues,
+  pendingLinkToken: string,
+  email: string,
+): Promise<
+  HandleEvent<BasicUserData | null | undefined, LinkAccountFormValues>
+> {
+  try {
+    const parsed = linkAccountServerSchema.safeParse(values);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: "Please correct the highlighted fields",
+        fieldErrors: parsed.error.flatten().fieldErrors,
+      };
+    }
+
+    const { verificationMethod, password } = parsed.data;
+
+    // Retrieve pending link data
+    const pendingLink = await getPendingAccountLink(pendingLinkToken);
+    if (!pendingLink.success || !pendingLink.data) {
+      return {
+        success: false,
+        error:
+          "Your account linking session has expired. Please try signing in with Google again.",
+      };
+    }
+
+    const pendingData = pendingLink.data;
+
+    // Verify the email matches
+    if (pendingData.email !== email) {
+      return {
+        success: false,
+        error: "Email mismatch. Please start over.",
+      };
+    }
+
+    // Get the existing user
+    const existingUser = await getUserByEmail(pendingData.email, ["password"]);
+    if (!existingUser.data) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
+
+    if (verificationMethod === "password") {
+      // Verify password using the data package function
+      const passwordResult = await verifyUserPassword({
+        email: pendingData.email,
+        password: password ?? "",
+      });
+
+      if (!passwordResult.success || !passwordResult.data) {
+        // Check if user has no password set
+        if (!existingUser.data.password) {
+          return {
+            success: false,
+            error:
+              "This account doesn't have a password. Please use magic link verification.",
+          };
+        }
+        return {
+          success: false,
+          error: "Incorrect password",
+          fieldErrors: {
+            password: ["Incorrect password"],
+          },
+        };
+      }
+    } else {
+      // Magic link verification
+      // Send magic link with callback to complete linking
+      await signIn("email", {
+        email: pendingData.email,
+        redirect: false,
+        callbackUrl: `/welcome?step=link-account&token=${pendingLinkToken}&verified=true`,
+      });
+
+      // Return success with null data to indicate magic link was sent
+      // The UI should check for null data and show the "check your email" message
+      return {
+        success: true,
+        data: null,
+      };
+    }
+
+    // Password verification successful - link the OAuth account
+    const linkResult = await linkAccount({
+      userId: existingUser.data.id!,
+      type: "oauth",
+      provider: pendingData.provider,
+      providerAccountId: pendingData.providerAccountId,
+      access_token: pendingData.accessToken ?? undefined,
+      refresh_token: pendingData.refreshToken ?? undefined,
+      expires_at: pendingData.expiresAt ?? undefined,
+    });
+
+    if (!linkResult.success) {
+      return {
+        success: false,
+        error: "Failed to link account. Please try again.",
+      };
+    }
+
+    // Update user with Google Workspace data
+    const userUpdated = await updateUser(existingUser.data.id!, {
+      emailVerified: new Date(),
+      hostedDomain: pendingData.hostedDomain,
+      isGoogleWorkspaceAdmin: pendingData.isGoogleWorkspaceAdmin ?? false,
+    });
+
+    // Consume the pending link token
+    await consumePendingAccountLink(pendingLinkToken);
+
+    // Log successful account linking
+    logger("info: Successfully linked Google account %o", {
+      userId: existingUser.data.id,
+      provider: pendingData.provider,
+      hostedDomain: pendingData.hostedDomain,
+    });
+
+    // Update session with new user data
+    if (userUpdated.data) {
+      await updateSession({ user: userUpdated.data });
+    }
+
+    return userUpdated;
+  } catch (error) {
+    logger("error: Link account handler error %o", { error });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to link account",
+    };
+  }
+}
+
+/**
+ * Handler for the complete step
+ * Marks the user's onboarding as complete by setting onboardingCompletedAt
+ */
+export async function completeHandler(
+  userId: string,
+): Promise<HandleEvent<BasicUserData | null | undefined, object>> {
+  try {
+    const userUpdated = await updateUser(userId, {
+      onboardingCompletedAt: new Date(),
+    });
+
+    if (userUpdated.data) {
+      await updateSession({ user: userUpdated.data });
+    }
+
+    logger("info: Onboarding completed for user %s", userId);
+
+    return userUpdated;
+  } catch (error) {
+    logger("error: Complete handler error %o", { error });
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to complete onboarding",
     };
   }
 }

@@ -12,6 +12,7 @@ import {
   UserIcon,
   CheckIcon,
   ArrowRightIcon,
+  LinkIcon,
 } from "lucide-react";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
@@ -25,6 +26,7 @@ import {
   personalHandler,
   organizationHandler,
   organizationJoinHandler,
+  linkAccountHandler,
 } from "@/server/welcome-stepper-action";
 import {
   config,
@@ -35,11 +37,14 @@ import {
   type OrganizationFormValues,
   type OrganizationJoinFormValues,
   type OrganizationStatus,
+  type LinkAccountStatus,
+  type LinkAccountFormValues,
   canUserAccessStep,
   getNextStepForUser,
   getVisibleSteps,
   type PersonalFormValues,
 } from "./steps";
+import { StepComponent as LinkAccountStepComponent } from "./steps/link-account-step";
 import { StepComponent as AccountStepComponent } from "./steps/account-step";
 import { StepComponent as OrganizationStepComponent } from "./steps/organization-step";
 import { StepComponent as OrganizationJoinStepComponent } from "./steps/organization-join-step";
@@ -48,6 +53,7 @@ import { StepComponent as PendingOrganizationStepComponent } from "./steps/pendi
 const { useStepper } = defineStepper(...config);
 
 const stepIcons: Record<string, typeof CogIcon> = {
+  "link-account": LinkIcon,
   account: CogIcon,
   personal: UserIcon,
   organization: Building2Icon,
@@ -59,22 +65,25 @@ const stepIcons: Record<string, typeof CogIcon> = {
 type GenericFormValues = Record<string, unknown>;
 type StepFormStore = Partial<Record<StepNames, GenericFormValues>>;
 
-// Extended user type with Google Workspace fields
+// Extended user type with Google Workspace fields and account linking
 type WelcomeUser = NextAuthUser & {
   id: string;
   email: string;
   hostedDomain?: string | null;
   isGoogleWorkspaceAdmin?: boolean;
+  pendingLinkToken?: string | null;
 };
 
 export function WelcomeStepper({
   user,
   initialStep,
   orgStatus,
+  linkStatus = "none",
 }: Readonly<{
   user: WelcomeUser;
   initialStep: StepNames;
   orgStatus: OrganizationStatus;
+  linkStatus?: LinkAccountStatus;
 }>): React.ReactElement {
   const stepper = useStepper(initialStep);
   const router = useRouter();
@@ -134,6 +143,38 @@ export function WelcomeStepper({
     }));
 
     await stepper.switch({
+      "link-account": async () => {
+        const result = await linkAccountHandler(
+          values as LinkAccountFormValues,
+          user.pendingLinkToken ?? "",
+          user.email,
+        );
+        if (result.success) {
+          if (result.data === null) {
+            // Magic link was sent - stay on current step and update UI
+            // The link-account-step component will show the "check email" message
+            // when the form is submitted with magic-link method
+            form.setError("root", {
+              type: "info",
+              message: "Magic link sent! Check your email to complete linking.",
+            });
+          } else {
+            // Account linked successfully, continue with personal step
+            const nextStep = getNextStepForUser(
+              user,
+              "link-account",
+              orgStatus,
+            );
+            navigateToStep(nextStep);
+          }
+        } else {
+          applyHandleEventToForm<LinkAccountFormValues>(
+            form as unknown as FormLike<LinkAccountFormValues>,
+            result,
+            ["password", "verificationMethod"],
+          );
+        }
+      },
       account: async () => {
         const result = await accountHandler(
           values as AccountFormValues,
@@ -228,7 +269,7 @@ export function WelcomeStepper({
 
   const handleStepClick = (stepId: StepNames): void => {
     // Check if user can access this step
-    if (!canUserAccessStep(user, stepId, orgStatus)) {
+    if (!canUserAccessStep(user, stepId, orgStatus, linkStatus)) {
       return; // Don't allow navigation to restricted steps
     }
 
@@ -239,7 +280,7 @@ export function WelcomeStepper({
   };
 
   // Get only the steps visible for this user
-  const visibleSteps = getVisibleSteps(user, orgStatus);
+  const visibleSteps = getVisibleSteps(user, orgStatus, linkStatus);
   const visibleStepConfigs = stepper.all.filter(step =>
     visibleSteps.includes(step.id),
   );
@@ -247,6 +288,12 @@ export function WelcomeStepper({
   // Create step components with user-specific props
   const stepComponentsWithProps = {
     ...stepComponents,
+    "link-account": () => (
+      <LinkAccountStepComponent
+        email={user.email}
+        hostedDomain={user.hostedDomain}
+      />
+    ),
     account: () => (
       <AccountStepComponent
         hostedDomain={user.hostedDomain}

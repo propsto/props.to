@@ -48,6 +48,63 @@ enum SlugScope {
   ORGANIZATION // Scoped within an organization: org members, groups
 }
 
+// Enum for feedback visibility
+enum FeedbackVisibility {
+  PUBLIC       // Visible to everyone
+  PRIVATE      // Visible only to recipient
+  ORGANIZATION // Visible to org members
+  ANONYMOUS    // Anonymous feedback (no sender info shown)
+}
+
+// Enum for feedback type
+enum FeedbackType {
+  RECOGNITION      // Props/recognition for good work
+  THREE_SIXTY      // 360 degree feedback
+  PEER_REVIEW      // Peer review
+  MANAGER_FEEDBACK // Feedback from manager
+  REPORT_FEEDBACK  // Feedback from direct reports
+  SELF_ASSESSMENT  // Self review
+  ANONYMOUS        // Anonymous feedback
+}
+
+// Enum for feedback status
+enum FeedbackStatus {
+  DRAFT              // Not yet submitted
+  PENDING_MODERATION // Awaiting approval
+  APPROVED           // Approved and visible
+  REJECTED           // Rejected by moderator
+  ARCHIVED           // Archived/hidden
+}
+
+// Enum for feedback request status
+enum FeedbackRequestStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+// Enum for goal status
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// Enum for template field types
+enum FieldType {
+  TEXT
+  TEXTAREA
+  NUMBER
+  RATING     // 1-5 stars
+  SCALE      // 1-10 scale
+  SELECT
+  RADIO
+  CHECKBOX
+  DATE
+}
+
 // Organization model (represents an organization, e.g., Acme Corp)
 model Organization {
   id           String               @id @default(cuid())
@@ -63,6 +120,11 @@ model Organization {
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   uris         Uri[] // URIs associated with the user for feedback
+
+  // Feedback links and requests
+  feedbackLinks    FeedbackLink[] // Links created for this organization
+  feedbackRequests FeedbackRequest[] // Requests within this organization
+  goals            Goal[] // Organization-related goals
 
   // Organization settings relations
   defaultUserSettings  OrganizationDefaultUserSettings?
@@ -96,6 +158,7 @@ model Group {
   users          User[] // Users associated with the group
   feedbacks      Feedback[] // Feedback related to the group
   templates      FeedbackTemplate[] @relation(name: "GroupTemplates") // Templates associated with this group
+  feedbackLinks  FeedbackLink[] // Feedback links for this group
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -109,8 +172,11 @@ model Group {
 model User {
   id            String               @id @default(cuid())
   email         String               @unique
-  slug          Slug                 @relation(fields: [slugId], references: [id], onDelete: Cascade)
+  // Personal slug (GLOBAL scope) - the user's permanent personal identity
+  slug          Slug                 @relation("PersonalSlug", fields: [slugId], references: [id], onDelete: Cascade)
   slugId        String               @unique
+  // Organization-scoped slugs (one per org membership)
+  organizationSlugs Slug[]           @relation("UserOrgSlugs")
   password      String?
   firstName     String?
   lastName      String?
@@ -118,20 +184,29 @@ model User {
   hostedDomain           String? // Google Workspace domain from OAuth (e.g., "acme.com")
   isGoogleWorkspaceAdmin Boolean              @default(false) // Whether user is a Google Workspace admin (checked on OAuth login)
   dateOfBirth            DateTime?
-  feedbacks     Feedback[] // Feedback received by the user
+  feedbacksReceived Feedback[]       @relation("ReceivedFeedback") // Feedback received by the user
+  feedbacksSent     Feedback[]       @relation("SentFeedback") // Feedback sent by the user
+  moderatedFeedback Feedback[]       @relation("ModeratedFeedback") // Feedback moderated by the user
   groups        Group[] // Groups the user belongs to
   organizations OrganizationMember[] // Organizations the user belongs to (multi-org support)
   templates     FeedbackTemplate[]   @relation(name: "UserTemplates") // Templates associated with this user
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
   image         String?
-  emailVerified DateTime?
-  payments      Payment[]
+  emailVerified         DateTime?
+  onboardingCompletedAt DateTime? // Timestamp when user completed the onboarding flow
+  payments              Payment[]
   uris          Uri[] // URIs associated with the user for feedback
   UriClaim      UriClaim?
   Account       Account[]
   Session       Session[]
   Authenticator Authenticator[]
+
+  // Feedback links and requests
+  feedbackLinks            FeedbackLink[] // Links created by this user
+  feedbackRequestsSent     FeedbackRequest[] @relation("FeedbackRequestsSent") // Requests sent by this user
+  feedbackRequestsReceived FeedbackRequest[] @relation("FeedbackRequestsReceived") // Requests received by this user
+  goals                    Goal[] // User's goals
 
   // User preferences and settings relations
   notificationPreferences UserNotificationPreferences?
@@ -153,7 +228,14 @@ model Slug {
   scopedToOrgId  String? // The organization this slug is scoped to (null for GLOBAL)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  user           User?
+
+  // Personal slug relation (1:1 with User - their permanent personal identity)
+  personalSlugOwner User? @relation("PersonalSlug")
+
+  // Organization slug relation (many:1 with User - their org-scoped usernames)
+  orgSlugOwner   User?   @relation("UserOrgSlugs", fields: [orgSlugOwnerId], references: [id], onDelete: Cascade)
+  orgSlugOwnerId String? // The user who owns this org-scoped slug
+
   organization   Organization? @relation("OrganizationSlug")
   group          Group[]
   integration    Integration[]
@@ -174,37 +256,173 @@ model GroupAdmin {
   updatedAt DateTime @updatedAt
 }
 
+// TemplateCategory model (for organizing templates by skill/topic)
+model TemplateCategory {
+  id          String             @id @default(cuid())
+  name        String             @unique // e.g., "Soft Skills", "Leadership", "Technical"
+  description String?
+  icon        String? // Icon name for UI display
+  templates   FeedbackTemplate[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
 // FeedbackTemplate model (stores templates for feedback forms)
 model FeedbackTemplate {
-  id            String         @id @default(cuid())
-  name          String // Name of the template, e.g., "Instagram Feedback"
+  id            String            @id @default(cuid())
+  name          String // Name of the template, e.g., "Leadership Feedback"
   description   String? // Optional description for the template
   price         Float? // Price for premium templates (nullable for free templates)
   deletedAt     DateTime? // Soft delete: Date when template was deleted (nullable)
-  filePath      String // File path or URL to the template file (React component file)
-  organizations Organization[] @relation("OrganizationTemplates") // Templates associated with organizations
-  groups        Group[]        @relation("GroupTemplates") // Templates associated with groups
-  users         User[]         @relation("UserTemplates") // Templates associated with users
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  Feedback      Feedback[]
+  filePath      String? // Optional file path (for legacy or custom components)
+  feedbackType  FeedbackType      @default(RECOGNITION) // Type of feedback this template is for
+  isPublic      Boolean           @default(false) // Whether template is publicly available
+  isDefault     Boolean           @default(false) // Whether this is a system default template
+  category      TemplateCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId    String?
+  organizations Organization[]    @relation("OrganizationTemplates") // Templates associated with organizations
+  groups        Group[]           @relation("GroupTemplates") // Templates associated with groups
+  users         User[]            @relation("UserTemplates") // Templates associated with users
+  fields        TemplateField[] // Dynamic fields for this template
+  feedbacks     Feedback[]
+  links         FeedbackLink[] // Feedback links using this template
+  requests      FeedbackRequest[] // Feedback requests using this template
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+// TemplateField model (dynamic fields for feedback templates)
+model TemplateField {
+  id          String           @id @default(cuid())
+  template    FeedbackTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId  String
+  label       String // Display label for the field
+  type        FieldType // Type of field input
+  required    Boolean          @default(false)
+  options     Json? // Options for select/radio fields (array of strings)
+  placeholder String?
+  helpText    String? // Help text shown below the field
+  order       Int              @default(0) // Order in which fields appear
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 // Feedback model (feedback related to a user, group, or organization)
+// Feedback is ALWAYS tied to a user's personal account for permanent traceability
 model Feedback {
   id             BigInt           @id @default(autoincrement())
-  user           User?            @relation(fields: [userId], references: [id])
-  userId         String?
-  group          Group?           @relation(fields: [groupId], references: [id])
+  // User is REQUIRED - feedback always belongs to a personal account (the recipient)
+  user           User             @relation("ReceivedFeedback", fields: [userId], references: [id])
+  userId         String
+  group          Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
   groupId        String?
-  organization   Organization?    @relation(fields: [organizationId], references: [id])
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   organizationId String?
   template       FeedbackTemplate @relation(fields: [templateId], references: [id]) // Link to the template
   templateId     String // Link to the feedback template used for this feedback
 
+  // Link that was used to submit this feedback (optional)
+  link   FeedbackLink? @relation("LinkFeedbacks", fields: [linkId], references: [id], onDelete: SetNull)
+  linkId String?
+
+  // Feedback metadata
+  visibility   FeedbackVisibility @default(PRIVATE)
+  feedbackType FeedbackType       @default(RECOGNITION)
+  status       FeedbackStatus     @default(APPROVED)
+
+  // Submitter info (the person giving feedback)
+  submitter      User?   @relation("SentFeedback", fields: [submitterId], references: [id], onDelete: SetNull)
+  submitterId    String? // Null if anonymous or external
+  submitterEmail String? // For external/anonymous feedback
+  submitterName  String? // Optional name for external feedback
+
+  // Moderation
+  moderatedBy   User?     @relation("ModeratedFeedback", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderatedById String?
+  moderatedAt   DateTime?
+  rejectReason  String? // Reason for rejection if rejected
+
+  // Snapshot fields for traceability (preserved even if org/group is deleted)
+  organizationNameSnapshot String? // Organization name at time of feedback
+  groupNameSnapshot        String? // Group name at time of feedback
+  userOrgRoleSnapshot      String? // User's role in org at time of feedback (OWNER/ADMIN/MEMBER)
+
+  // Goals linked to this feedback
+  goals Goal[] @relation("GoalFeedback")
+
+  // Request that this feedback fulfills (if any)
+  request FeedbackRequest? @relation("RequestFeedback")
+
   fieldsData Json? // Store the actual responses as JSON (e.g., answers to the feedback fields)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+// FeedbackLink model (shareable links for receiving feedback)
+model FeedbackLink {
+  id             String             @id @default(cuid())
+  slug           String // Short URL slug (e.g., "leadership-2024")
+  name           String // User-friendly name for the link
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId String?
+  group          Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  groupId        String?
+  template       FeedbackTemplate   @relation(fields: [templateId], references: [id])
+  templateId     String
+  isActive       Boolean            @default(true)
+  expiresAt      DateTime? // Optional expiration date
+  maxResponses   Int? // Optional max number of responses
+  responseCount  Int                @default(0)
+  visibility     FeedbackVisibility @default(PRIVATE)
+  feedbackType   FeedbackType       @default(RECOGNITION)
+  feedbacks      Feedback[]         @relation("LinkFeedbacks")
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  // Slug is unique per user+org context (same slug can be used by different users)
+  @@unique([userId, organizationId, slug])
+}
+
+// FeedbackRequest model (request feedback from specific people)
+model FeedbackRequest {
+  id              String                @id @default(cuid())
+  requester       User                  @relation("FeedbackRequestsSent", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId     String
+  recipientEmail  String // Email of person to request feedback from
+  recipientUser   User?                 @relation("FeedbackRequestsReceived", fields: [recipientUserId], references: [id], onDelete: SetNull)
+  recipientUserId String?
+  template        FeedbackTemplate      @relation(fields: [templateId], references: [id])
+  templateId      String
+  organization    Organization?         @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId  String?
+  feedbackType    FeedbackType          @default(THREE_SIXTY)
+  message         String? // Personal message to recipient
+  status          FeedbackRequestStatus @default(PENDING)
+  expiresAt       DateTime
+  completedAt     DateTime?
+  feedback        Feedback?             @relation("RequestFeedback", fields: [feedbackId], references: [id], onDelete: SetNull)
+  feedbackId      BigInt?               @unique
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+// Goal model (for goals integration - linking feedback to personal/org goals)
+model Goal {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId String?
+  title          String
+  description    String?
+  targetDate     DateTime?
+  status         GoalStatus   @default(NOT_STARTED)
+  progress       Int          @default(0) // 0-100 percentage
+  linkedFeedback Feedback[]   @relation("GoalFeedback")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 // Uri model (for integrating external URIs, like Instagram, email, etc.)

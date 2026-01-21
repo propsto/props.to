@@ -204,3 +204,12 @@ export const defaults = (user: User): PersonalFormValues => ({
   email: user.email ?? "",
   image: user.image ?? undefined,
 });
+
+/**
+ * Check if the personal step data requirements are met
+ */
+export function isStepComplete(user: User): boolean {
+  return Boolean(
+    user.firstName?.trim() && user.lastName?.trim() && user.dateOfBirth,
+  );
+}

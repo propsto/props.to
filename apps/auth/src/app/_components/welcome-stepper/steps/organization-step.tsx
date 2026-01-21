@@ -390,8 +390,14 @@ export const config: Step = {
   schema: organizationSchema,
 };
 
-// Extended user type that includes hostedDomain
-type WelcomeUser = User & { hostedDomain?: string | null };
+// Extended user type that includes hostedDomain and isGoogleWorkspaceAdmin
+type WelcomeUser = User & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
+// Organization status type
+type OrganizationStatus = "none" | "exists" | "not_exists" | "member";
 
 export const defaults = (user?: WelcomeUser): OrganizationFormValues => {
   // Pre-fill from Google Workspace domain if available
@@ -427,3 +433,34 @@ export const defaults = (user?: WelcomeUser): OrganizationFormValues => {
     },
   };
 };
+
+/**
+ * Check if the organization step is complete or not required
+ * This step is only for Google Workspace admins when no org exists for their domain.
+ * @param user - The user object with hostedDomain and isGoogleWorkspaceAdmin
+ * @param orgStatus - The organization status for the user's domain
+ */
+export function isStepComplete(
+  user?: WelcomeUser,
+  orgStatus: OrganizationStatus = "none",
+): boolean {
+  // No hosted domain means no org step needed
+  if (!user?.hostedDomain || orgStatus === "none") {
+    return true;
+  }
+
+  // User is already a member of the org for their domain
+  if (orgStatus === "member") {
+    return true;
+  }
+
+  // This step is only for admins when org doesn't exist
+  // If not admin or org already exists, this step is not their responsibility
+  if (!user.isGoogleWorkspaceAdmin || orgStatus === "exists") {
+    return true;
+  }
+
+  // Admin with no existing org - they need to complete this step
+  // This step is complete once the org is created (orgStatus would become "member")
+  return false;
+}

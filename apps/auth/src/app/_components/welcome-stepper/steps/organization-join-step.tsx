@@ -117,3 +117,44 @@ export const config: Step = {
 export const defaults = (_user?: User): OrganizationJoinFormValues => ({
   confirmJoin: true,
 });
+
+// Extended user type that includes hostedDomain and isGoogleWorkspaceAdmin
+type WelcomeUser = User & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
+// Organization status type
+type OrganizationStatus = "none" | "exists" | "not_exists" | "member";
+
+/**
+ * Check if the organization-join step is complete or not required
+ * This step is for users when an organization exists for their domain but they haven't joined yet.
+ * @param user - The user object with hostedDomain
+ * @param orgStatus - The organization status for the user's domain
+ */
+export function isStepComplete(
+  user?: WelcomeUser,
+  orgStatus: OrganizationStatus = "none",
+): boolean {
+  // No hosted domain means no org step needed
+  if (!user?.hostedDomain || orgStatus === "none") {
+    return true;
+  }
+
+  // User is already a member of the org for their domain
+  if (orgStatus === "member") {
+    return true;
+  }
+
+  // This step is only relevant when org exists and user hasn't joined
+  // For admins when org doesn't exist, they go to "organization" step instead
+  if (orgStatus === "not_exists") {
+    // If admin, they need to create org first (not this step)
+    // If non-admin, they go to "pending-organization" step
+    return true;
+  }
+
+  // orgStatus === "exists" and user is not a member - they need to join
+  return false;
+}

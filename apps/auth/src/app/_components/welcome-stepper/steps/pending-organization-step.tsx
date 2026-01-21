@@ -95,3 +95,46 @@ export const config: Step = {
 export const defaults = (_user?: User): PendingOrganizationFormValues => ({
   acknowledged: true,
 });
+
+// Extended user type that includes hostedDomain and isGoogleWorkspaceAdmin
+type WelcomeUser = User & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
+// Organization status type
+type OrganizationStatus = "none" | "exists" | "not_exists" | "member";
+
+/**
+ * Check if the pending-organization step is complete or not required
+ * This step is informational only for non-admin users when no org exists for their domain.
+ * It's always considered "complete" since user just needs to acknowledge and move on.
+ * @param user - The user object with hostedDomain and isGoogleWorkspaceAdmin
+ * @param orgStatus - The organization status for the user's domain
+ */
+export function isStepComplete(
+  user?: WelcomeUser,
+  orgStatus: OrganizationStatus = "none",
+): boolean {
+  // No hosted domain means no org step needed
+  if (!user?.hostedDomain || orgStatus === "none") {
+    return true;
+  }
+
+  // User is already a member of the org for their domain
+  if (orgStatus === "member") {
+    return true;
+  }
+
+  // This step is only for non-admins when org doesn't exist
+  // For admins, they go to "organization" step
+  // For non-admins when org exists, they go to "organization-join" step
+  if (user.isGoogleWorkspaceAdmin || orgStatus === "exists") {
+    return true;
+  }
+
+  // Non-admin with no existing org - this is just informational
+  // Since there's no action required (just acknowledgement), we consider this
+  // step as "always passable" - the user can proceed without blocking
+  return true;
+}

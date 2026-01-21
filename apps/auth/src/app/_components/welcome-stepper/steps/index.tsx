@@ -4,6 +4,7 @@ import {
   createFormDefaults,
   createStepComponents,
 } from "../../../../lib/stepper-utils";
+import * as linkAccountStep from "./link-account-step";
 import * as personalStep from "./personal-step";
 import * as accountStep from "./account-step";
 import * as organizationStep from "./organization-step";
@@ -11,6 +12,29 @@ import * as organizationJoinStep from "./organization-join-step";
 import * as pendingOrganizationStep from "./pending-organization-step";
 import * as completeStep from "./complete-step";
 
+// Import server-compatible step completion checks and types
+export {
+  stepCompletionChecks,
+  isLinkAccountStepComplete,
+  isPersonalStepComplete,
+  isAccountStepComplete,
+  isOrganizationStepComplete,
+  isOrganizationJoinStepComplete,
+  isPendingOrganizationStepComplete,
+  isCompleteStepComplete,
+  type WelcomeUser,
+  type OrganizationStatus,
+  type LinkAccountStatus,
+} from "./step-completion-checks";
+
+import {
+  stepCompletionChecks as completionChecks,
+  type WelcomeUser,
+  type OrganizationStatus,
+  type LinkAccountStatus,
+} from "./step-completion-checks";
+
+export type { LinkAccountFormValues } from "./link-account-step";
 export type { PersonalFormValues } from "./personal-step";
 export type { AccountFormValues } from "./account-step";
 export type { OrganizationFormValues } from "./organization-step";
@@ -18,22 +42,9 @@ export type { OrganizationJoinFormValues } from "./organization-join-step";
 export type { PendingOrganizationFormValues } from "./pending-organization-step";
 export type { CompleteFormValues } from "./complete-step";
 
-// Organization status:
-// - "none": no hostedDomain
-// - "exists": org exists for domain
-// - "not_exists": org doesn't exist yet for domain
-// - "member": user is already a member of the org for their domain
-export type OrganizationStatus = "none" | "exists" | "not_exists" | "member";
-
-// Extended user type with Google Workspace fields
-export type WelcomeUser = User & {
-  role?: string;
-  hostedDomain?: string | null;
-  isGoogleWorkspaceAdmin?: boolean;
-};
-
-// All steps - always shown in UI
+// All steps - link-account is conditional (first step when linking is needed)
 const allSteps = [
+  { name: "link-account", module: linkAccountStep },
   { name: "personal", module: personalStep },
   { name: "account", module: accountStep },
   { name: "organization", module: organizationStep },
@@ -91,8 +102,12 @@ export function canUserAccessStep(
   user: WelcomeUser,
   stepName: string,
   orgStatus: OrganizationStatus,
+  linkStatus: LinkAccountStatus = "none",
 ): boolean {
   switch (stepName) {
+    case "link-account":
+      // Only accessible when account linking is pending
+      return linkStatus === "pending";
     case "personal":
     case "account":
     case "complete":
@@ -116,6 +131,9 @@ export function getNextStepForUser(
   orgStatus: OrganizationStatus,
 ): string {
   switch (currentStep) {
+    case "link-account":
+      // After linking account, continue with personal step
+      return "personal";
     case "personal":
       return "account";
     case "account": {
@@ -137,7 +155,12 @@ export function shouldSkipStep(
   user: WelcomeUser,
   stepName: string,
   orgStatus: OrganizationStatus,
+  linkStatus: LinkAccountStatus = "none",
 ): boolean {
+  // Link account step is skipped when not pending
+  if (stepName === "link-account") {
+    return linkStatus !== "pending";
+  }
   if (
     stepName === "organization" ||
     stepName === "organization-join" ||
@@ -153,12 +176,75 @@ export function shouldSkipStep(
 export function getVisibleSteps(
   user: WelcomeUser,
   orgStatus: OrganizationStatus,
+  linkStatus: LinkAccountStatus = "none",
 ): StepNames[] {
-  const baseSteps: StepNames[] = ["personal", "account"];
+  const steps: StepNames[] = [];
+
+  // Link account step comes first when pending
+  if (linkStatus === "pending") {
+    steps.push("link-account");
+  }
+
+  // Always include personal and account steps
+  steps.push("personal", "account");
+
+  // Add appropriate org step if applicable
   const orgStep = getOrganizationStep(user, orgStatus);
   if (orgStep) {
-    baseSteps.push(orgStep);
+    steps.push(orgStep);
   }
-  baseSteps.push("complete");
-  return baseSteps;
+
+  // Always end with complete
+  steps.push("complete");
+
+  return steps;
+}
+
+/**
+ * Check if all required steps are complete for a user
+ * This determines whether a user can skip the onboarding flow entirely
+ */
+export function areAllStepsComplete(
+  user: WelcomeUser,
+  orgStatus: OrganizationStatus,
+  linkStatus: LinkAccountStatus = "none",
+): boolean {
+  // Check link-account step
+  if (!completionChecks["link-account"](linkStatus)) {
+    return false;
+  }
+
+  // Check personal step
+  if (!completionChecks.personal(user as User)) {
+    return false;
+  }
+
+  // Check account step
+  if (!completionChecks.account(user as User)) {
+    return false;
+  }
+
+  // Check organization-related steps based on what's applicable to this user
+  const orgStep = getOrganizationStep(user, orgStatus);
+  if (orgStep === "organization") {
+    if (!completionChecks.organization(user, orgStatus)) {
+      return false;
+    }
+  } else if (orgStep === "organization-join") {
+    if (!completionChecks["organization-join"](user, orgStatus)) {
+      return false;
+    }
+  } else if (orgStep === "pending-organization") {
+    if (!completionChecks["pending-organization"](user, orgStatus)) {
+      return false;
+    }
+  }
+
+  // Check complete step - this ensures user sees the completion screen
+  // before being redirected to the app
+  if (!completionChecks.complete(user)) {
+    return false;
+  }
+
+  return true;
 }
