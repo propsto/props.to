@@ -88,7 +88,6 @@ export const nextAuthConfig = {
   session: { strategy: "jwt" },
   pages: {
     signIn: "/",
-    newUser: "/welcome",
   },
   events: {
     linkAccount: async ({ user }) => {
