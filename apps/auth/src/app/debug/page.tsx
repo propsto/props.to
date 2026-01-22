@@ -1,6 +1,7 @@
 import { constServer } from "@propsto/constants/server";
 import { constClient } from "@propsto/constants/client";
 import { vercelPreviewEnvVars } from "@propsto/constants/other";
+import { CopyButton } from "./copy-button";
 
 export default function DebugPage() {
   // Mask sensitive parts of DATABASE_URL
@@ -48,6 +49,26 @@ export default function DebugPage() {
       constClient.NEXT_PUBLIC_PROPSTO_APP_URL,
   };
 
+  const analysis = {
+    isPreview: process.env.VERCEL_ENV === "preview",
+    shouldUseProxy:
+      process.env.VERCEL_ENV === "preview" &&
+      Boolean(process.env.AUTH_PROXY_HOST),
+    proxyUrlSetOnProcessEnv: Boolean(process.env.AUTH_REDIRECT_PROXY_URL),
+    expectedProxyUrl: process.env.AUTH_PROXY_HOST
+      ? `https://auth.${process.env.AUTH_PROXY_HOST}/api/auth`
+      : null,
+  };
+
+  const allDebugData = {
+    timestamp: new Date().toISOString(),
+    rawEnvVars,
+    computedEnvVars,
+    serverConst,
+    clientConst,
+    analysis,
+  };
+
   const EnvTable = ({
     title,
     vars,
@@ -87,7 +108,10 @@ export default function DebugPage() {
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Auth Debug Info</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Auth Debug Info</h1>
+        <CopyButton data={allDebugData} />
+      </div>
 
       <EnvTable title="Raw process.env" vars={rawEnvVars} />
       <EnvTable
@@ -101,24 +125,19 @@ export default function DebugPage() {
         <h2 className="text-lg font-semibold mb-4">OAuth Proxy Analysis</h2>
         <ul className="space-y-2 text-sm">
           <li>
-            <strong>Is Preview:</strong>{" "}
-            {process.env.VERCEL_ENV === "preview" ? "Yes" : "No"}
+            <strong>Is Preview:</strong> {analysis.isPreview ? "Yes" : "No"}
           </li>
           <li>
             <strong>Should use proxy:</strong>{" "}
-            {process.env.VERCEL_ENV === "preview" && process.env.AUTH_PROXY_HOST
-              ? "Yes"
-              : "No"}
+            {analysis.shouldUseProxy ? "Yes" : "No"}
           </li>
           <li>
             <strong>Proxy URL set on process.env:</strong>{" "}
-            {process.env.AUTH_REDIRECT_PROXY_URL ? "Yes" : "No"}
+            {analysis.proxyUrlSetOnProcessEnv ? "Yes" : "No"}
           </li>
           <li>
             <strong>Expected proxy URL:</strong>{" "}
-            {process.env.AUTH_PROXY_HOST
-              ? `https://auth.${process.env.AUTH_PROXY_HOST}/api/auth`
-              : "(AUTH_PROXY_HOST not set)"}
+            {analysis.expectedProxyUrl ?? "(AUTH_PROXY_HOST not set)"}
           </li>
         </ul>
       </div>
