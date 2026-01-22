@@ -6,7 +6,12 @@
   ],
   "globalEnv": [
     "DEBUG",
+    "VERCEL_ENV",
+    "VERCEL_GIT_PULL_REQUEST_ID",
+    "VERCEL_URL",
     "AUTH_URL",
+    "AUTH_REDIRECT_PROXY_URL",
+    "EMAIL_PROVIDER",
     "PUBLIC_AUTH_URL",
     "PROPSTO_ENV",
     "DATABASE_URL",

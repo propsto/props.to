@@ -4,6 +4,7 @@ const localRules = require("./local-rules");
 const nextPlugin = require("@next/eslint-plugin-next");
 const reactPlugin = require("eslint-plugin-react");
 const reactHooksPlugin = require("eslint-plugin-react-hooks");
+const turboPlugin = require("eslint-plugin-turbo");
 const tsPlugin = require("@typescript-eslint/eslint-plugin");
 const tsParser = require("@typescript-eslint/parser");
 const { resolve } = require("node:path");
@@ -42,6 +43,7 @@ module.exports = defineConfig([
       import: importPlugin,
       "local-rules": localRules,
       react: reactPlugin,
+      turbo: turboPlugin,
     },
     languageOptions: {
       globals: {
@@ -62,6 +64,7 @@ module.exports = defineConfig([
     rules: {
       "import/no-default-export": "off", // Next.js App Router relies on default exporting pages/components.
       "react/jsx-sort-props": "off",
+      "turbo/no-undeclared-env-vars": "error",
       "local-rules/restrict-import": [
         "error",
         [
