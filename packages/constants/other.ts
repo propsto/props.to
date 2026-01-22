@@ -44,13 +44,29 @@ export const examplePropsToInput = [
   "type any URI here!",
 ];
 
-export const vercelPreviewEnvVars = {
-  AUTH_URL:
+// Compute AUTH_URL based on environment:
+// - Preview: https://auth.pr-{PR_ID}.{PROPSTO_HOST}
+// - Production: https://auth.{PROPSTO_HOST} (computed, not from env var)
+// Note: Auth.js v5 recommends NOT setting AUTH_URL explicitly so it can infer from headers.
+// We compute it here for our internal use but avoid setting it as an env var for Auth.js.
+const computeAuthUrl = (): string | undefined => {
+  const isPreview =
     process.env.VERCEL_ENV === "preview" &&
-    process.env.VERCEL_GIT_PULL_REQUEST_ID &&
-    process.env.PROPSTO_HOST
-      ? `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
-      : process.env.AUTH_URL,
+    process.env.VERCEL_GIT_PULL_REQUEST_ID;
+  const host = process.env.PROPSTO_HOST;
+
+  if (!host) return process.env.AUTH_URL;
+
+  if (isPreview) {
+    return `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${host}`;
+  }
+
+  // For production, compute from PROPSTO_HOST instead of requiring AUTH_URL env var
+  return `https://auth.${host}`;
+};
+
+export const vercelPreviewEnvVars = {
+  AUTH_URL: computeAuthUrl(),
 
   // OAuth proxy URL - stable auth domain for Google OAuth callbacks
   // MUST be set on BOTH preview AND production for Auth.js proxy to work:
@@ -62,10 +78,20 @@ export const vercelPreviewEnvVars = {
       ? `https://auth.${process.env.AUTH_PROXY_HOST ?? process.env.PROPSTO_HOST}/api/auth`
       : undefined,
 
-  PROPSTO_APP_URL:
-    process.env.VERCEL_ENV === "preview" &&
-    process.env.VERCEL_GIT_PULL_REQUEST_ID &&
-    process.env.PROPSTO_HOST
-      ? `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${process.env.PROPSTO_HOST}`
-      : process.env.PROPSTO_APP_URL,
+  // Compute PROPSTO_APP_URL similarly to AUTH_URL
+  PROPSTO_APP_URL: (() => {
+    const isPreview =
+      process.env.VERCEL_ENV === "preview" &&
+      process.env.VERCEL_GIT_PULL_REQUEST_ID;
+    const host = process.env.PROPSTO_HOST;
+
+    if (!host) return process.env.PROPSTO_APP_URL;
+
+    if (isPreview) {
+      return `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${host}`;
+    }
+
+    // For production, compute from PROPSTO_HOST
+    return `https://app.${host}`;
+  })(),
 };
