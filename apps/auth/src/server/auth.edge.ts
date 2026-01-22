@@ -16,6 +16,7 @@ import {
   getUserByEmail,
   getUserByAccount,
   createPendingAccountLink,
+  createUser,
 } from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
 
@@ -177,6 +178,45 @@ export const nextAuthConfig = {
           token.user = user;
         }
       }
+
+      // Sync user to branch database for preview environments
+      // When OAuth completes on production proxy, user is created in prod DB
+      // Preview environments have their own Neon branch DB that needs the user
+      if (
+        process.env.VERCEL_ENV === "preview" &&
+        token.user &&
+        typeof token.user === "object" &&
+        "id" in token.user &&
+        token.user.id &&
+        !token.branchDbSynced
+      ) {
+        const tokenUser = token.user as NextAuthUser & {
+          id: string;
+          email: string;
+          hostedDomain?: string | null;
+          isGoogleWorkspaceAdmin?: boolean;
+        };
+        const existingUser = await getUser({ id: tokenUser.id });
+        if (!existingUser.data && tokenUser.email) {
+          // User doesn't exist in branch DB - sync from token
+          logger("jwt: Syncing user to branch DB", { email: tokenUser.email });
+          try {
+            const syncedUser = await createUser({
+              email: tokenUser.email,
+              hostedDomain: tokenUser.hostedDomain,
+              isGoogleWorkspaceAdmin: tokenUser.isGoogleWorkspaceAdmin,
+            });
+            if (syncedUser.data) {
+              // Update token with the new user (has different ID in branch DB)
+              token.user = syncedUser.data;
+            }
+          } catch (error) {
+            logger("jwt: Failed to sync user to branch DB", error);
+          }
+        }
+        token.branchDbSynced = true;
+      }
+
       if (trigger === "update" && session) {
         logger("authConfig:jwt:update", session.user);
         token.user = session.user;
@@ -223,7 +263,8 @@ export const nextAuthConfig = {
   session: { strategy: "jwt" },
   pages: {
     signIn: "/",
-    newUser: "/welcome",
+    // Note: Don't set newUser here - it breaks OAuth proxy redirect for preview environments
+    // Instead, the app checks onboardingCompletedAt and redirects to /welcome if needed
   },
   events: {
     linkAccount: async ({ user }) => {
