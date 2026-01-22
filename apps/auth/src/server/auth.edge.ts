@@ -99,7 +99,9 @@ export const nextAuthConfig = {
       }
     },
   },
-  debug: constServer.PROPSTO_ENV !== "production",
+  debug:
+    constServer.PROPSTO_ENV !== "production" ||
+    process.env.DEBUG_AUTH === "true",
   cookies: {
     sessionToken: {
       name: secureCookies
