@@ -40,6 +40,8 @@ export default function DebugPage() {
     "constClient.NEXT_PUBLIC_AUTH_URL": constClient.NEXT_PUBLIC_AUTH_URL,
     "constClient.NEXT_PUBLIC_PROPSTO_APP_URL":
       constClient.NEXT_PUBLIC_PROPSTO_APP_URL,
+    "constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID":
+      constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
   };
 
   const analysis = {
