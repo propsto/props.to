@@ -204,6 +204,13 @@ export const nextAuthConfig = {
       // Sync user to branch database for preview environments
       // When OAuth completes on production proxy, user is created in prod DB
       // Preview environments have their own Neon branch DB that needs the user
+      logger("jwt: Branch sync check", {
+        VERCEL_ENV: process.env.VERCEL_ENV,
+        hasTokenUser: Boolean(token.user),
+        tokenUserType: typeof token.user,
+        hasId: token.user && typeof token.user === "object" && "id" in token.user,
+        branchDbSynced: token.branchDbSynced,
+      });
       if (
         process.env.VERCEL_ENV === "preview" &&
         token.user &&
