@@ -89,7 +89,7 @@ export function SigninForm({
         </Button>
         <GoogleSignInButton
           disabled={isPending}
-          onError={(error) => console.error("Google sign-in error:", error)}
+          onError={error => console.error("Google sign-in error:", error)}
         />
         <Button
           variant="ghost"

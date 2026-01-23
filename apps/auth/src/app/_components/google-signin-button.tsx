@@ -69,14 +69,14 @@ export function GoogleSignInButton({
   }
 
   return (
-    <div className="flex justify-center [&>div]:w-full">
+    <div className="flex justify-center w-full [&>div]:w-full [&_iframe]:w-full">
       <GoogleLogin
         onSuccess={handleSuccess}
         onError={handleError}
         useOneTap={false}
         theme="outline"
         size="large"
-        width="100%"
+        width={400}
         text="signin_with"
         shape="rectangular"
       />
