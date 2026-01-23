@@ -33,6 +33,7 @@ export default function DebugPage() {
     "constServer.PROPSTO_HOST": constServer.PROPSTO_HOST,
     "constServer.PROPSTO_APP_URL": constServer.PROPSTO_APP_URL,
     "constServer.AUTH_URL": constServer.AUTH_URL,
+    "constServer.GOOGLE_CLIENT_ID": constServer.GOOGLE_CLIENT_ID ?? "(not set)",
   };
 
   const clientConst = {
@@ -40,8 +41,6 @@ export default function DebugPage() {
     "constClient.NEXT_PUBLIC_AUTH_URL": constClient.NEXT_PUBLIC_AUTH_URL,
     "constClient.NEXT_PUBLIC_PROPSTO_APP_URL":
       constClient.NEXT_PUBLIC_PROPSTO_APP_URL,
-    "constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID":
-      constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "(Not set)",
   };
 
   const analysis = {
