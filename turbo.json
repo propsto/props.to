@@ -30,7 +30,8 @@
     "PROPSTO_HOST",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
-    "GOOGLE_ALLOWED_HOSTED_DOMAINS"
+    "GOOGLE_ALLOWED_HOSTED_DOMAINS",
+    "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
   ],
   "tasks": {
     "@propsto/email#maildev": {

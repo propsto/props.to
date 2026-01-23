@@ -294,6 +294,9 @@ importers:
       '@propsto/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@react-oauth/google':
+        specifier: ^0.13.4
+        version: 0.13.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@simplewebauthn/browser':
         specifier: 9.0.1
         version: 9.0.1
@@ -2606,6 +2609,12 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: 19.1.0
+
+  '@react-oauth/google@0.13.4':
+    resolution: {integrity: sha512-hGKyNEH+/PK8M0sFEuo3MAEk0txtHpgs94tDQit+s2LXg7b6z53NtzHfqDvoB2X8O6lGB+FRg80hY//X6hfD+w==}
+    peerDependencies:
+      react: 19.1.0
+      react-dom: 19.1.0
 
   '@reduxjs/toolkit@2.8.2':
     resolution: {integrity: sha512-MYlOhQ0sLdw4ud48FoC5w0dH9VfWQjtCjreKwYTT3l+r427qYC5Y8PihNutepr8XrNaBUDQo9khWUwQxZaqt5A==}
@@ -8434,6 +8443,11 @@ snapshots:
   '@react-email/text@0.1.5(react@19.1.0)':
     dependencies:
       react: 19.1.0
+
+  '@react-oauth/google@0.13.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   '@reduxjs/toolkit@2.8.2(react-redux@9.2.0(@types/react@19.1.8)(react@19.1.0)(redux@5.0.1))(react@19.1.0)':
     dependencies:
