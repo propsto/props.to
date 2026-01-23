@@ -62,17 +62,13 @@ export const nextAuthConfig = {
       if (new URL(url).origin === baseUrl) return url;
 
       // Allow redirects to any subdomain of PROPSTO_HOST (for preview environments)
-      // This enables the OAuth proxy pattern where callbacks go through stable auth
-      // and then redirect back to preview environments
+      // With shared domain (e.g., auth.props.to and auth.pr-35.props.to both under .props.to),
+      // cookies are shared and OAuth proxy pattern works correctly
       try {
         const urlObj = new URL(url);
         const hostname = urlObj.hostname;
-        // Allow redirects to PROPSTO_HOST (e.g., props.to) and preview host (props.build)
-        // Production auth.props.to needs to redirect back to preview *.props.build URLs
-        if (
-          hostname.endsWith(constServer.PROPSTO_HOST) ||
-          hostname.endsWith("props.build")
-        ) {
+        // Allow redirects to any subdomain of PROPSTO_HOST
+        if (hostname.endsWith(constServer.PROPSTO_HOST)) {
           return url;
         }
       } catch {
