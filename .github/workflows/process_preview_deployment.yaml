@@ -42,7 +42,7 @@ jobs:
           fi
       - name: Define Preview URL
         id: preview_url
-        run: echo "value=${{ steps.project_name.outputs.lower }}.pr-${{steps.get_pr.outputs.pr_number}}.props.build" >> $GITHUB_OUTPUT
+        run: echo "value=${{ steps.project_name.outputs.lower }}.pr-${{steps.get_pr.outputs.pr_number}}.${{ vars.PROPSTO_HOST }}" >> $GITHUB_OUTPUT
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
       - name: Check if cert already exists

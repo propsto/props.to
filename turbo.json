@@ -6,6 +6,7 @@
   ],
   "globalEnv": [
     "DEBUG",
+    "AUTH_DEBUG",
     "VERCEL_ENV",
     "VERCEL_GIT_PULL_REQUEST_ID",
     "VERCEL_URL",

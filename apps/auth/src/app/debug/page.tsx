@@ -15,7 +15,6 @@ export default function DebugPage() {
       process.env.VERCEL_GIT_PULL_REQUEST_ID ?? "(not set)",
     VERCEL_URL: process.env.VERCEL_URL ?? "(not set)",
     PROPSTO_HOST: process.env.PROPSTO_HOST ?? "(not set)",
-    AUTH_PROXY_HOST: process.env.AUTH_PROXY_HOST ?? "(not set)",
     AUTH_URL: process.env.AUTH_URL ?? "(not set)",
     "process.env.AUTH_REDIRECT_PROXY_URL":
       process.env.AUTH_REDIRECT_PROXY_URL ?? "(not set)",
@@ -51,12 +50,12 @@ export default function DebugPage() {
 
   const analysis = {
     isPreview: process.env.VERCEL_ENV === "preview",
-    shouldUseProxy:
-      process.env.VERCEL_ENV === "preview" &&
-      Boolean(process.env.AUTH_PROXY_HOST),
+    // With shared domain approach, both preview and production use same PROPSTO_HOST
+    // Proxy is used when AUTH_REDIRECT_PROXY_URL is set
+    shouldUseProxy: Boolean(process.env.AUTH_REDIRECT_PROXY_URL),
     proxyUrlSetOnProcessEnv: Boolean(process.env.AUTH_REDIRECT_PROXY_URL),
-    expectedProxyUrl: process.env.AUTH_PROXY_HOST
-      ? `https://auth.${process.env.AUTH_PROXY_HOST}/api/auth`
+    expectedProxyUrl: process.env.PROPSTO_HOST
+      ? `https://auth.${process.env.PROPSTO_HOST}/api/auth`
       : null,
   };
 
@@ -137,7 +136,7 @@ export default function DebugPage() {
           </li>
           <li>
             <strong>Expected proxy URL:</strong>{" "}
-            {analysis.expectedProxyUrl ?? "(AUTH_PROXY_HOST not set)"}
+            {analysis.expectedProxyUrl ?? "(PROPSTO_HOST not set)"}
           </li>
         </ul>
       </div>
