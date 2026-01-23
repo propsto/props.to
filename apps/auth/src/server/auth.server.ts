@@ -2,9 +2,17 @@
 
 import { type EmailConfig } from "next-auth/providers/email";
 import { createLogger } from "@propsto/logger";
-import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
+import {
+  getUserByEmailAndPassword,
+  getUserByEmail,
+  createUser,
+  updateUser,
+  getUserByAccount,
+} from "@propsto/data/repos/user";
+import { createPendingAccountLink } from "@propsto/data/repos/pending-account-link";
+import { linkAccount } from "@propsto/data/repos/account";
 import Passkey from "next-auth/providers/passkey";
-import { PropstoAdapter, Role } from "@propsto/data";
+import { PropstoAdapter } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
 import NodemailerProvider, {
   type NodemailerConfig,
@@ -12,15 +20,7 @@ import NodemailerProvider, {
 import Resend from "next-auth/providers/resend";
 import { constServer } from "@propsto/constants/server";
 import NextAuth, { CredentialsSignin } from "next-auth";
-import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google";
-import { type OAuthConfig } from "next-auth/providers";
 import { nextAuthConfig as edgeNextAuthConfig } from "./auth.edge";
-
-// Set AUTH_REDIRECT_PROXY_URL on process.env for Auth.js to read
-// This enables OAuth proxy pattern for preview environments
-if (constServer.AUTH_REDIRECT_PROXY_URL) {
-  process.env.AUTH_REDIRECT_PROXY_URL = constServer.AUTH_REDIRECT_PROXY_URL;
-}
 
 const logger = createLogger("authConfig");
 class CustomError extends CredentialsSignin {
@@ -48,70 +48,169 @@ const allowedDomains: string[] = (
   constServer.GOOGLE_ALLOWED_HOSTED_DOMAINS ?? ""
 ).split(",");
 
-function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
-  if (constServer.GOOGLE_CLIENT_ID && constServer.GOOGLE_CLIENT_SECRET) {
-    return [
-      GoogleProvider({
-        clientId: constServer.GOOGLE_CLIENT_ID,
-        clientSecret: constServer.GOOGLE_CLIENT_SECRET,
-        authorization: {
-          params: {
-            scope:
-              "openid email profile https://www.googleapis.com/auth/admin.directory.user.readonly",
-          },
-        },
-        checks: ["none"],
-        profile: async (profile: GoogleProfile, tokens) => {
-          // Validate hosted domain if GOOGLE_ALLOWED_HOSTED_DOMAINS is configured
-          if (
-            allowedDomains.length > 0 &&
-            allowedDomains[0] !== "" &&
-            (!profile.hd || !allowedDomains.includes(profile.hd))
-          ) {
-            throw Error("Google Hosted Domain not allowed");
-          }
+interface GoogleTokenInfo {
+  iss: string;
+  azp: string;
+  aud: string;
+  sub: string;
+  email: string;
+  email_verified: string;
+  name?: string;
+  picture?: string;
+  given_name?: string;
+  family_name?: string;
+  hd?: string; // Hosted domain (Google Workspace)
+  exp: string;
+}
 
-          // Check if user is a Google Workspace admin
-          let isGoogleWorkspaceAdmin = false;
-          try {
-            if (tokens.access_token && profile.hd) {
-              const response = await fetch(
-                `https://admin.googleapis.com/admin/directory/v1/users/${profile.email}`,
-                {
-                  method: "GET",
-                  headers: {
-                    Authorization: `Bearer ${tokens.access_token}`,
-                    Accept: "application/json",
-                  },
-                },
-              );
+async function validateGoogleIdToken(
+  idToken: string,
+): Promise<GoogleTokenInfo | null> {
+  try {
+    const response = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`,
+    );
+    if (!response.ok) {
+      logger("Google token validation failed:", response.status);
+      return null;
+    }
+    const tokenInfo = (await response.json()) as GoogleTokenInfo;
 
-              if (response.ok) {
-                const adminData = (await response.json()) as Record<
-                  string,
-                  unknown
-                >;
-                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
-              }
-            }
-          } catch (error) {
-            logger("Error fetching admin directory data:", error);
-          }
+    // Verify the token is for our app
+    if (tokenInfo.aud !== constServer.GOOGLE_CLIENT_ID) {
+      logger("Google token audience mismatch");
+      return null;
+    }
 
-          return {
-            firstName: profile.given_name,
-            lastName: profile.family_name,
-            email: profile.email,
-            image: profile.picture,
-            hostedDomain: profile.hd, // Pass through for storage and onboarding logic
-            isGoogleWorkspaceAdmin, // Flag for onboarding step logic
-            role: Role.USER, // Always USER, org roles are in OrganizationMember
-          };
-        },
-      }),
-    ];
+    // Check expiration
+    if (Number(tokenInfo.exp) * 1000 < Date.now()) {
+      logger("Google token expired");
+      return null;
+    }
+
+    return tokenInfo;
+  } catch (error) {
+    logger("Error validating Google token:", error);
+    return null;
   }
-  return [];
+}
+
+function getGoogleCredentialsProvider() {
+  if (!constServer.GOOGLE_CLIENT_ID || !constServer.GOOGLE_CLIENT_SECRET) {
+    return [];
+  }
+
+  return [
+    Credentials({
+      id: "google-one-tap",
+      name: "Google",
+      credentials: {
+        credential: { type: "text" },
+      },
+      authorize: async ({ credential }) => {
+        if (!credential || typeof credential !== "string") {
+          throw new CustomError("Missing Google credential");
+        }
+
+        // Validate the Google ID token
+        const tokenInfo = await validateGoogleIdToken(credential);
+        if (!tokenInfo) {
+          throw new CustomError("Invalid Google credential");
+        }
+
+        // Validate hosted domain if configured
+        if (
+          allowedDomains.length > 0 &&
+          allowedDomains[0] !== "" &&
+          (!tokenInfo.hd || !allowedDomains.includes(tokenInfo.hd))
+        ) {
+          throw new CustomError("Google Workspace domain not allowed");
+        }
+
+        const email = tokenInfo.email;
+        const providerAccountId = tokenInfo.sub;
+
+        // Check if Google account is already linked to a user
+        const existingGoogleAccount = await getUserByAccount({
+          provider: "google-one-tap",
+          providerAccountId,
+        });
+
+        if (existingGoogleAccount?.data) {
+          // User exists with linked Google account - return them
+          logger("Google sign-in: existing user with linked account", {
+            email,
+          });
+          return existingGoogleAccount.data;
+        }
+
+        // Check if user with this email already exists
+        const existingUser = await getUserByEmail(email);
+
+        if (existingUser.data) {
+          // User exists but Google not linked - create pending link
+          logger("Google sign-in: existing user needs account linking", {
+            email,
+          });
+
+          const pendingLink = await createPendingAccountLink({
+            email,
+            provider: "google-one-tap",
+            providerAccountId,
+            hostedDomain: tokenInfo.hd,
+            isGoogleWorkspaceAdmin: false, // Can't check without access token
+          });
+
+          if (pendingLink.success && pendingLink.data) {
+            // Return a special error that the client can handle
+            throw new CustomError(
+              `ACCOUNT_LINKING_REQUIRED:${pendingLink.data.token}`,
+            );
+          }
+
+          throw new CustomError("Failed to create account link");
+        }
+
+        // New user - create account and link Google
+        logger("Google sign-in: creating new user", { email });
+
+        const newUser = await createUser({
+          email,
+          hostedDomain: tokenInfo.hd,
+          isGoogleWorkspaceAdmin: false,
+        });
+
+        if (!newUser.data) {
+          throw new CustomError("Failed to create user");
+        }
+
+        // Update with additional profile info from Google
+        await updateUser(newUser.data.id, {
+          firstName: tokenInfo.given_name,
+          lastName: tokenInfo.family_name,
+          image: tokenInfo.picture,
+          emailVerified: new Date(), // Google verified the email
+        });
+
+        // Link the Google account
+        await linkAccount({
+          userId: newUser.data.id,
+          type: "oidc",
+          provider: "google-one-tap",
+          providerAccountId,
+        });
+
+        // Return user with updated fields
+        return {
+          ...newUser.data,
+          firstName: tokenInfo.given_name,
+          lastName: tokenInfo.family_name,
+          image: tokenInfo.picture,
+          emailVerified: new Date(),
+        };
+      },
+    }),
+  ];
 }
 
 export const nextAuthConfig = {
@@ -120,7 +219,7 @@ export const nextAuthConfig = {
   providers: [
     getEmailProvider(),
     Passkey,
-    ...getGoogleProvider(),
+    ...getGoogleCredentialsProvider(),
     Credentials({
       credentials: {
         email: { type: "email", required: true },
