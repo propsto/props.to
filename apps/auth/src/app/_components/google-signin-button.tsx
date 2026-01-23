@@ -3,18 +3,18 @@
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useGoogleClientId } from "./google-oauth-provider";
 
 interface GoogleSignInButtonProps {
+  clientId?: string;
   disabled?: boolean;
   onError?: (error: string) => void;
 }
 
 export function GoogleSignInButton({
+  clientId,
   disabled,
   onError,
 }: GoogleSignInButtonProps) {
-  const clientId = useGoogleClientId();
   const [isLoading, setIsLoading] = useState(false);
 
   // If Google Client ID is not configured, don't render the button

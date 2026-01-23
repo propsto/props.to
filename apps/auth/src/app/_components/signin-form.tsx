@@ -9,10 +9,15 @@ import { FormInputError, SubmitButton } from "@propsto/ui/molecules";
 import { signInAction } from "@/server/signin-action";
 import { GoogleSignInButton } from "./google-signin-button";
 
+interface SigninFormProps extends React.HTMLAttributes<HTMLDivElement> {
+  googleClientId?: string;
+}
+
 export function SigninForm({
   className,
+  googleClientId,
   ...props
-}: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
+}: Readonly<SigninFormProps>): React.ReactNode {
   const [result, action, isPending, progress] = useResetableActionState(
     signInAction,
     undefined,
@@ -88,6 +93,7 @@ export function SigninForm({
           Sign in with Passkey
         </Button>
         <GoogleSignInButton
+          clientId={googleClientId}
           disabled={isPending}
           onError={error => console.error("Google sign-in error:", error)}
         />
