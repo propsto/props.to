@@ -23,6 +23,28 @@ import { createLogger } from "@propsto/logger";
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
+// Shared cookie domain for OAuth proxy pattern - allows cookies to be shared
+// between production (auth.props.to) and preview (auth.pr-XX.props.to)
+const cookieDomain =
+  constServer.PROPSTO_HOST === "localhost"
+    ? undefined
+    : `.${constServer.PROPSTO_HOST}`;
+
+// Common cookie options for all auth cookies
+const sharedCookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+  secure: secureCookies,
+  domain: cookieDomain,
+};
+
+// Helper to create cookie config with secure prefix when needed
+const createCookieConfig = (name: string) => ({
+  name: secureCookies ? `__Secure-authjs.${name}` : `authjs.${name}`,
+  options: sharedCookieOptions,
+});
+
 export const nextAuthConfig = {
   providers: [],
   callbacks: {
@@ -275,20 +297,14 @@ export const nextAuthConfig = {
   },
   debug:
     constServer.PROPSTO_ENV !== "production" ||
-    process.env.AUTH_DEBUG === "true",
+    process.env.DEBUG_AUTH === "true",
+  // All cookies use shared domain for OAuth proxy pattern between
+  // production (auth.props.to) and preview (auth.pr-XX.props.to)
   cookies: {
-    sessionToken: {
-      name: secureCookies
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax", // Prevents CSRF while allowing subdomain sharing
-        path: "/",
-        secure: secureCookies,
-        domain: `${constServer.PROPSTO_HOST === "localhost" ? "" : "."}${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
-      },
-    },
+    sessionToken: createCookieConfig("session-token"),
+    state: createCookieConfig("state"),
+    pkceCodeVerifier: createCookieConfig("pkce.code_verifier"),
+    callbackUrl: createCookieConfig("callback-url"),
   },
 } satisfies NextAuthConfig;
 
