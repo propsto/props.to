@@ -41,7 +41,7 @@ export default function DebugPage() {
     "constClient.NEXT_PUBLIC_PROPSTO_APP_URL":
       constClient.NEXT_PUBLIC_PROPSTO_APP_URL,
     "constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID":
-      constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+      constClient.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "(Not set)",
   };
 
   const analysis = {
