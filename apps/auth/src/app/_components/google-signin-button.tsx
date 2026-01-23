@@ -19,6 +19,9 @@ export function GoogleSignInButton({
 
   // If Google Client ID is not configured, don't render the button
   if (!clientId) {
+    console.log(
+      "Google Client ID not configured; skipping Google Sign-In button",
+    );
     return null;
   }
 
