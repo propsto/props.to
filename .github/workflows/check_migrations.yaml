@@ -19,6 +19,15 @@ jobs:
   check:
     name: Validate Migrations
     runs-on: ubuntu-latest
+    env:
+      # Dummy values for env validation during install/generate (not used for actual DB operations)
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      EMAIL_FROM: "ci@example.com"
+      AUTH_SECRET: "ci-dummy-secret-not-used"
+      PROPSTO_ENV: "production"
+      PROPSTO_APP_URL: "https://app.example.com"
+      AUTH_URL: "https://auth.example.com"
+      PROPSTO_HOST: "example.com"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,9 +43,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @propsto/data db-generate
 
       - name: Check for migration drift
         run: |
@@ -60,6 +66,15 @@ jobs:
     permissions:
       contents: read
       issues: write
+    env:
+      # Dummy values for env validation during install/generate (overridden later for actual migration)
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      EMAIL_FROM: "ci@example.com"
+      AUTH_SECRET: "ci-dummy-secret-not-used"
+      PROPSTO_ENV: "production"
+      PROPSTO_APP_URL: "https://app.example.com"
+      AUTH_URL: "https://auth.example.com"
+      PROPSTO_HOST: "example.com"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,9 +90,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Generate Prisma Client
-        run: pnpm --filter @propsto/data db-generate
 
       - name: Create Neon branch from production
         id: create-branch
