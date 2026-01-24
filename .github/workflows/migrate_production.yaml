@@ -8,6 +8,10 @@ on:
       - "packages/data/migrations/**"
       - "packages/data/schema.prisma"
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   migrate:
     name: Run Prisma Migrations
