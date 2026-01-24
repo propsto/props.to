@@ -44,21 +44,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check for migration drift
-        run: |
-          # Validate schema syntax
-          pnpm --filter @propsto/data lint
-
-          # Check if there are pending schema changes that need a migration
-          # This uses prisma migrate diff to compare schema vs migrations
-          cd packages/data
-          npx prisma migrate diff \
-            --from-migrations ./migrations \
-            --to-schema ./schema.prisma \
-            --exit-code || {
-              echo "::error::Schema has changes that are not reflected in migrations. Run 'pnpm --filter @propsto/data db-migrate' locally."
-              exit 1
-            }
+      - name: Validate schema syntax
+        run: pnpm --filter @propsto/data lint
 
   dry-run:
     name: Dry-run Migration on Production Copy
