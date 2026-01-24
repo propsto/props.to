@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "pnpm dotenv -- next build",
+    "vercel-build": "prisma migrate deploy --schema=../../packages/data/schema.prisma && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint .",

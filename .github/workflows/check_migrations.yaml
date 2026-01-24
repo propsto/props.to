@@ -1,0 +1,151 @@
+name: Check Prisma Migrations
+
+on:
+  pull_request:
+    paths:
+      - "packages/data/schema.prisma"
+      - "packages/data/migrations/**"
+
+env:
+  NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  # Main branch ID from Neon console (e.g., br-lively-thunder-28239235)
+  NEON_MAIN_BRANCH_ID: ${{ vars.NEON_MAIN_BRANCH_ID }}
+
+jobs:
+  check:
+    name: Validate Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @propsto/data db-generate
+
+      - name: Check for migration drift
+        run: |
+          # Validate schema syntax
+          pnpm --filter @propsto/data lint
+
+          # Check if there are pending schema changes that need a migration
+          # This uses prisma migrate diff to compare schema vs migrations
+          cd packages/data
+          npx prisma migrate diff \
+            --from-migrations ./migrations \
+            --to-schema-datamodel ./schema.prisma \
+            --exit-code || {
+              echo "::error::Schema has changes that are not reflected in migrations. Run 'pnpm --filter @propsto/data db-migrate' locally."
+              exit 1
+            }
+
+  dry-run:
+    name: Dry-run Migration on Production Copy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @propsto/data db-generate
+
+      - name: Create Neon branch from production
+        id: create-branch
+        run: |
+          BRANCH_NAME="migration-check-pr-${{ github.event.pull_request.number }}-$(date +%s)"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          # Create branch from main (production)
+          RESPONSE=$(curl -s -X POST \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches" \
+            -H "Authorization: Bearer $NEON_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"branch\": {
+                \"name\": \"$BRANCH_NAME\",
+                \"parent_id\": \"$NEON_MAIN_BRANCH_ID\"
+              },
+              \"endpoints\": [{
+                \"type\": \"read_write\"
+              }]
+            }")
+
+          echo "API Response: $RESPONSE"
+
+          BRANCH_ID=$(echo $RESPONSE | jq -r '.branch.id')
+          if [ "$BRANCH_ID" == "null" ] || [ -z "$BRANCH_ID" ]; then
+            echo "::error::Failed to create Neon branch"
+            echo $RESPONSE
+            exit 1
+          fi
+
+          echo "branch_id=$BRANCH_ID" >> $GITHUB_OUTPUT
+
+          # Get the connection string
+          ENDPOINT_ID=$(echo $RESPONSE | jq -r '.endpoints[0].id')
+          HOST=$(echo $RESPONSE | jq -r '.endpoints[0].host')
+
+          # Get connection URI (need to fetch separately with password)
+          CONN_RESPONSE=$(curl -s -X GET \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/connection_uri?branch_id=$BRANCH_ID&endpoint_id=$ENDPOINT_ID&database_name=${{ vars.NEON_DATABASE_NAME }}&role_name=${{ vars.NEON_ROLE_NAME }}" \
+            -H "Authorization: Bearer $NEON_API_KEY")
+
+          CONNECTION_URI=$(echo $CONN_RESPONSE | jq -r '.uri')
+          echo "::add-mask::$CONNECTION_URI"
+          echo "connection_uri=$CONNECTION_URI" >> $GITHUB_OUTPUT
+
+      - name: Run migration dry-run
+        id: migrate
+        env:
+          DATABASE_URL: ${{ steps.create-branch.outputs.connection_uri }}
+        run: |
+          echo "Running migrations on temporary Neon branch..."
+          pnpm --filter @propsto/data db-deploy
+
+      - name: Delete Neon branch
+        if: always()
+        run: |
+          BRANCH_ID="${{ steps.create-branch.outputs.branch_id }}"
+          if [ -n "$BRANCH_ID" ] && [ "$BRANCH_ID" != "null" ]; then
+            echo "Cleaning up Neon branch: $BRANCH_ID"
+            curl -s -X DELETE \
+              "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches/$BRANCH_ID" \
+              -H "Authorization: Bearer $NEON_API_KEY"
+            echo "Branch deleted"
+          fi
+
+      - name: Report migration failure
+        if: failure() && steps.migrate.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `❌ **Migration dry-run failed!**\n\nThe migrations in this PR failed when applied to a copy of the production database.\n\nPlease check the migration files and ensure they are compatible with the current production schema.\n\n[View workflow logs](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });

@@ -23,7 +23,7 @@ const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
 // Shared cookie domain - allows cookies to be shared between
-// production (auth.props.build) and preview (auth.pr-XX.props.build)
+// production (auth.props.to) and preview (auth.pr-XX.props.build)
 const cookieDomain =
   constServer.PROPSTO_HOST === "localhost"
     ? undefined
@@ -257,7 +257,7 @@ export const nextAuthConfig = {
     constServer.PROPSTO_ENV !== "production" ||
     process.env.DEBUG_AUTH === "true",
   // All cookies use shared domain between
-  // production (auth.props.build) and preview (auth.pr-XX.props.build)
+  // production (auth.props.to) and preview (auth.pr-XX.props.build)
   cookies: {
     sessionToken: createCookieConfig("session-token"),
     state: createCookieConfig("state"),
