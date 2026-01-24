@@ -87,13 +87,24 @@ pnpm e2e        # Run Playwright E2E suites
 - Supports email/password + Google OAuth
 - Auth routes handled in `apps/auth`, shared session across subdomains via `PROPSTO_HOST`
 
-### Local Development Domains
+### Local Development Options
 
+**Option A: Localhost (simpler, no hosts file needed)**
+Set `PROPSTO_HOST="localhost"` and hostname vars to `"localhost"` in `.env`:
+
+- `http://localhost:3000` - Product app
+- `http://localhost:3002` - Auth app
+- `http://localhost:3001` - Marketing site
+
+**Option B: Custom domain with subdomains (enables SSO testing)**
 After running `sudo pnpm setup:hosts`:
 
-- `http://app.propsto.local:3000` - Product app
-- `http://auth.propsto.local:3002` - Auth app
-- `http://propsto.local:3001` - Marketing site
+- `http://app.props.local:3000` - Product app
+- `http://auth.props.local:3002` - Auth app
+- `http://props.local:3001` - Marketing site
+
+**Shared services (both options):**
+
 - `http://0.0.0.0:1080` - MailDev inbox
 - `http://localhost:5555` - Prisma Studio
 
