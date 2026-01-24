@@ -54,7 +54,7 @@ jobs:
           cd packages/data
           npx prisma migrate diff \
             --from-migrations ./migrations \
-            --to-schema-datamodel ./schema.prisma \
+            --to-schema ./schema.prisma \
             --exit-code || {
               echo "::error::Schema has changes that are not reflected in migrations. Run 'pnpm --filter @propsto/data db-migrate' locally."
               exit 1
