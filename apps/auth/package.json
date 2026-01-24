@@ -24,7 +24,6 @@
     "@propsto/email": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
-    "@react-oauth/google": "^0.13.4",
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
     "@stepperize/react": "4.2.0",

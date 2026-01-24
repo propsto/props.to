@@ -10,14 +10,20 @@ import type {
 } from "next-auth";
 import type { AdapterUser } from "next-auth/adapters";
 import { constServer } from "@propsto/constants/server";
-import { updateUser, getUser } from "@propsto/data/repos";
+import {
+  updateUser,
+  getUser,
+  getUserByEmail,
+  getUserByAccount,
+  createPendingAccountLink,
+} from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
-// Shared cookie domain for cross-subdomain sessions
-// Allows cookies to be shared between auth.props.to, app.props.to, etc.
+// Shared cookie domain - allows cookies to be shared between
+// production (auth.props.build) and preview (auth.pr-XX.props.build)
 const cookieDomain =
   constServer.PROPSTO_HOST === "localhost"
     ? undefined
@@ -44,12 +50,120 @@ export const nextAuthConfig = {
     authorized({ auth }) {
       return Boolean(auth);
     },
-    async signIn({ account }) {
-      // Handle Google sign-in (via Credentials provider with ID token)
-      if (account?.provider === "google-one-tap") {
-        // For Credentials-based Google sign-in, the user object already has all the data
-        // from the authorize function. Account linking and admin checks are handled there.
-        return true;
+    async signIn({ user, account, profile }) {
+      // Handle Google OAuth sign-in
+      if (account?.provider === "google" && profile) {
+        const googleProfile = profile as { hd?: string; email?: string };
+        const email = googleProfile.email;
+
+        if (!email) {
+          return false;
+        }
+
+        // Check if user with this email already exists
+        const existingUser = await getUserByEmail(email);
+
+        // Check if a Google account is already linked to this user
+        const existingGoogleAccount = await getUserByAccount({
+          provider: "google",
+          providerAccountId: account.providerAccountId,
+        });
+
+        // If user exists but Google account is NOT linked, initiate account linking flow
+        // This handles the "future-proofing" scenario where a Google Workspace user
+        // already has a personal account created via email/password
+        if (existingUser.data && !existingGoogleAccount?.data) {
+          logger("signIn: Existing user needs account linking", {
+            email,
+            hasExistingUser: true,
+            hasLinkedGoogle: false,
+          });
+
+          // Check Google Workspace admin status for the pending link data
+          let isGoogleWorkspaceAdmin = false;
+          try {
+            if (account.access_token && googleProfile.hd) {
+              const response = await fetch(
+                `https://admin.googleapis.com/admin/directory/v1/users/${email}`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${account.access_token}`,
+                    Accept: "application/json",
+                  },
+                },
+              );
+
+              if (response.ok) {
+                const adminData = (await response.json()) as Record<
+                  string,
+                  unknown
+                >;
+                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              }
+            }
+          } catch (error) {
+            logger("signIn: Error checking admin status for linking:", error);
+          }
+
+          // Create pending account link with OAuth data
+          const pendingLink = await createPendingAccountLink({
+            email,
+            provider: "google",
+            providerAccountId: account.providerAccountId,
+            accessToken: account.access_token,
+            refreshToken: account.refresh_token,
+            expiresAt: account.expires_at,
+            hostedDomain: googleProfile.hd,
+            isGoogleWorkspaceAdmin,
+          });
+
+          if (pendingLink.success && pendingLink.data) {
+            // Redirect to account linking flow instead of completing sign-in
+            return `/welcome?step=link-account&token=${pendingLink.data.token}`;
+          }
+
+          // If pending link creation failed, redirect to error page
+          return `/error?code=AccountLinkingFailed`;
+        }
+
+        // For existing users with linked Google account OR new users,
+        // update Google Workspace data on each sign-in
+        if (user.id) {
+          let isGoogleWorkspaceAdmin = false;
+          try {
+            if (account.access_token && googleProfile.hd) {
+              const response = await fetch(
+                `https://admin.googleapis.com/admin/directory/v1/users/${email}`,
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: `Bearer ${account.access_token}`,
+                    Accept: "application/json",
+                  },
+                },
+              );
+
+              if (response.ok) {
+                const adminData = (await response.json()) as Record<
+                  string,
+                  unknown
+                >;
+                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              }
+            }
+          } catch (error) {
+            logger(
+              "signIn: Error checking Google Workspace admin status:",
+              error,
+            );
+          }
+
+          await updateUser(user.id, {
+            isGoogleWorkspaceAdmin,
+            hostedDomain: googleProfile.hd,
+          });
+        }
       }
       return true;
     },
@@ -72,8 +186,9 @@ export const nextAuthConfig = {
         return null;
       }
       if (user) {
-        // For Google sign-in, fetch the updated user from DB
-        if (account?.provider === "google-one-tap" && user.id) {
+        // For Google OAuth sign-in, fetch the updated user from DB
+        // (signIn callback has already updated isGoogleWorkspaceAdmin)
+        if (account?.provider === "google" && user.id) {
           const updatedUser = await getUser({ id: user.id });
           if (updatedUser.data) {
             token.user = updatedUser.data;
@@ -104,11 +219,12 @@ export const nextAuthConfig = {
       // Allows callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
 
-      // Allow redirects to any subdomain of PROPSTO_HOST
-      // Enables cross-subdomain redirects (e.g., auth.props.to to app.props.to)
+      // Allow redirects to any subdomain of PROPSTO_HOST (for preview environments)
+      // e.g., auth.props.build and auth.pr-35.props.build both under .props.build
       try {
         const urlObj = new URL(url);
         const hostname = urlObj.hostname;
+
         // Allow redirects to any subdomain of PROPSTO_HOST
         if (hostname.endsWith(constServer.PROPSTO_HOST)) {
           return url;
@@ -140,8 +256,8 @@ export const nextAuthConfig = {
   debug:
     constServer.PROPSTO_ENV !== "production" ||
     process.env.DEBUG_AUTH === "true",
-  // All cookies use shared domain for cross-subdomain sessions
-  // (auth.props.to, app.props.to, etc.)
+  // All cookies use shared domain between
+  // production (auth.props.build) and preview (auth.pr-XX.props.build)
   cookies: {
     sessionToken: createCookieConfig("session-token"),
     state: createCookieConfig("state"),

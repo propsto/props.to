@@ -33,7 +33,6 @@ export default function DebugPage() {
     "constServer.PROPSTO_HOST": constServer.PROPSTO_HOST,
     "constServer.PROPSTO_APP_URL": constServer.PROPSTO_APP_URL,
     "constServer.AUTH_URL": constServer.AUTH_URL,
-    "constServer.GOOGLE_CLIENT_ID": constServer.GOOGLE_CLIENT_ID ?? "(not set)",
   };
 
   const clientConst = {
@@ -45,9 +44,6 @@ export default function DebugPage() {
 
   const analysis = {
     isPreview: process.env.VERCEL_ENV === "preview",
-    // Google sign-in uses Credentials provider with ID token validation
-    // No OAuth redirect needed - works on any domain including previews
-    googleAuthMethod: "Credentials (ID Token)",
   };
 
   const allDebugData = {
@@ -112,13 +108,10 @@ export default function DebugPage() {
       <EnvTable title="constClient (validated)" vars={clientConst} />
 
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">Auth Analysis</h2>
+        <h2 className="text-lg font-semibold mb-4">Environment</h2>
         <ul className="space-y-2 text-sm">
           <li>
             <strong>Is Preview:</strong> {analysis.isPreview ? "Yes" : "No"}
-          </li>
-          <li>
-            <strong>Google Auth Method:</strong> {analysis.googleAuthMethod}
           </li>
         </ul>
       </div>
