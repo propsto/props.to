@@ -85,7 +85,13 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
                   string,
                   unknown
                 >;
+                logger("Admin directory response:", adminData);
                 isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              } else {
+                const errorText = await response.text();
+                logger(
+                  `Admin directory API returned ${response.status}: ${errorText}`,
+                );
               }
             }
           } catch (error) {

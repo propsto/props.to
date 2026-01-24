@@ -169,6 +169,7 @@ export function isReservedSlug(slug: string): boolean {
 }
 
 // Compute AUTH_URL based on environment:
+// - Development: http://{PROPSTO_AUTH_HOSTNAME}:{PROPSTO_AUTH_PORT} (from env vars)
 // - Preview: https://auth.pr-{PR_ID}.{PROPSTO_HOST}
 // - Production: https://auth.{PROPSTO_HOST} (computed, not from env var)
 // Note: Auth.js v5 recommends NOT setting AUTH_URL explicitly so it can infer from headers.
@@ -177,9 +178,19 @@ const computeAuthUrl = (): string | undefined => {
   const isPreview =
     process.env.VERCEL_ENV === "preview" &&
     process.env.VERCEL_GIT_PULL_REQUEST_ID;
+  const isDevelopment = process.env.PROPSTO_ENV === "development";
   const host = process.env.PROPSTO_HOST;
 
   if (!host) return process.env.AUTH_URL;
+
+  if (isDevelopment) {
+    const authHostname = process.env.PROPSTO_AUTH_HOSTNAME;
+    const authPort = process.env.PROPSTO_AUTH_PORT;
+    if (authHostname && authPort) {
+      return `http://${authHostname}:${authPort}`;
+    }
+    return process.env.AUTH_URL;
+  }
 
   if (isPreview) {
     return `https://auth.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${host}`;
@@ -197,9 +208,19 @@ export const vercelPreviewEnvVars = {
     const isPreview =
       process.env.VERCEL_ENV === "preview" &&
       process.env.VERCEL_GIT_PULL_REQUEST_ID;
+    const isDevelopment = process.env.PROPSTO_ENV === "development";
     const host = process.env.PROPSTO_HOST;
 
     if (!host) return process.env.PROPSTO_APP_URL;
+
+    if (isDevelopment) {
+      const appHostname = process.env.PROPSTO_APP_HOSTNAME;
+      const appPort = process.env.PROPSTO_APP_PORT;
+      if (appHostname && appPort) {
+        return `http://${appHostname}:${appPort}`;
+      }
+      return process.env.PROPSTO_APP_URL;
+    }
 
     if (isPreview) {
       return `https://app.pr-${process.env.VERCEL_GIT_PULL_REQUEST_ID}.${host}`;
