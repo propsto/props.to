@@ -127,9 +127,9 @@ export const nextAuthConfig = {
           return `/error?code=AccountLinkingFailed`;
         }
 
-        // For existing users with linked Google account OR new users,
-        // update Google Workspace data on each sign-in
-        if (user.id) {
+        // For existing users with linked Google account, update Google Workspace data on each sign-in.
+        // Skip for new users - their data is set via the profile callback and adapter.createUser.
+        if (existingGoogleAccount?.data) {
           let isGoogleWorkspaceAdmin = false;
           try {
             if (account.access_token && googleProfile.hd) {
@@ -159,7 +159,7 @@ export const nextAuthConfig = {
             );
           }
 
-          await updateUser(user.id, {
+          await updateUser(existingGoogleAccount.data.id, {
             isGoogleWorkspaceAdmin,
             hostedDomain: googleProfile.hd,
           });

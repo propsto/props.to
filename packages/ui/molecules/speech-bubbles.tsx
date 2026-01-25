@@ -19,21 +19,31 @@ const SIZE_PRESETS = [
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), max);
 
+// Seeded PRNG for deterministic bubble positions (server/client must match)
+function createSeededRandom(seed: number): () => number {
+  let state = seed;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0xffffffff;
+  };
+}
+
 type BubbleStyle = CSSProperties & Record<string, string | number | undefined>;
 
 interface SpeechBubblesProps {
   scale?: number;
 }
 
-// Pre-compute static bubble configurations (positions determined at module load)
+// Pre-compute static bubble configurations with deterministic positions
 const BUBBLE_CONFIGS = (() => {
+  const random = createSeededRandom(42);
   const columns = Math.max(3, Math.ceil(Math.sqrt(BUBBLE_COUNT)));
   const rows = Math.ceil(BUBBLE_COUNT / columns);
   return Array.from({ length: BUBBLE_COUNT }, (_, index) => {
     const column = index % columns;
     const row = Math.floor(index / columns);
-    const jitterX = (Math.random() - 0.5) * 18;
-    const jitterY = (Math.random() - 0.5) * 20;
+    const jitterX = (random() - 0.5) * 18;
+    const jitterY = (random() - 0.5) * 20;
     const baseX = ((column + 0.5) / columns) * 100;
     const baseY = ((row + 0.5) / rows) * 100;
     const x = clamp(baseX + jitterX, 6, 94);

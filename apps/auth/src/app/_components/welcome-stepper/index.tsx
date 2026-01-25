@@ -14,19 +14,19 @@ import {
   ArrowRightIcon,
   LinkIcon,
 } from "lucide-react";
-import { constServer } from "@propsto/constants/server";
+import { constClient } from "@propsto/constants/client";
 import { cn } from "@propsto/ui/lib/utils";
 import {
   applyHandleEventToForm,
   type FormLike,
 } from "@propsto/ui/lib/form-result";
-import { constClient } from "@propsto/constants/client";
 import {
   accountHandler,
   personalHandler,
   organizationHandler,
   organizationJoinHandler,
   linkAccountHandler,
+  completeHandler,
 } from "@/server/welcome-stepper-action";
 import {
   config,
@@ -263,7 +263,17 @@ export function WelcomeStepper({
         );
         navigateToStep(nextStep);
       },
-      complete: () => redirect(constServer.PROPSTO_APP_URL),
+      complete: async () => {
+        // Mark onboarding as complete before redirecting
+        const result = await completeHandler(user.id);
+        if (result.success) {
+          window.location.href = constClient.NEXT_PUBLIC_PROPSTO_APP_URL;
+        } else {
+          form.setError("root", {
+            message: result.error ?? "Failed to complete onboarding",
+          });
+        }
+      },
     });
   };
 
@@ -389,13 +399,7 @@ export function WelcomeStepper({
             </div>
           ) : (
             <div className="flex flex-row justify-end">
-              <Button
-                onClick={() => {
-                  window.location.href =
-                    constClient.NEXT_PUBLIC_PROPSTO_APP_URL;
-                }}
-                className="self-end"
-              >
+              <Button type="submit" className="self-end">
                 Go to Dashboard <ArrowRightIcon className="size-4 ml-2" />
               </Button>
             </div>
