@@ -112,11 +112,28 @@ jobs:
         if: steps.check-previews.outputs.both_ready == 'true'
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Install Playwright browsers
+      - name: Get Playwright version
         if: steps.check-previews.outputs.both_ready == 'true'
+        id: playwright-version
+        run: echo "version=$(cd e2e/auth && pnpm exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        if: steps.check-previews.outputs.both_ready == 'true'
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
           cd e2e/auth && pnpm exec playwright install --with-deps chromium
           cd ../app && pnpm exec playwright install chromium
+
+      - name: Install Playwright dependencies
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: Run Auth E2E tests
         if: steps.check-previews.outputs.both_ready == 'true'
