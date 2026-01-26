@@ -58,7 +58,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm setup:e2e
+        run: pnpm exec playwright install --with-deps chromium
 
       - name: Run database migrations
         run: pnpm --filter @propsto/data db-deploy
