@@ -138,6 +138,54 @@ jobs:
         if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
+      - name: Get Neon branch database URL
+        if: steps.check-previews.outputs.both_ready == 'true'
+        id: neon-branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+        run: |
+          PR_NUM="${{ steps.pr.outputs.number }}"
+          # Get the branch for this PR (branch name format: pr-{number})
+          BRANCH_NAME="pr-${PR_NUM}"
+
+          # Get branch details from Neon API
+          BRANCH_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches")
+
+          # Find the branch matching our PR
+          BRANCH_ID=$(echo "$BRANCH_RESPONSE" | jq -r ".branches[] | select(.name == \"$BRANCH_NAME\") | .id")
+
+          if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" == "null" ]; then
+            echo "No Neon branch found for PR $PR_NUM"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Get the connection string for this branch
+          CONN_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/connection_uri?branch_id=${BRANCH_ID}&role_name=neondb_owner&database_name=neondb")
+
+          DATABASE_URL=$(echo "$CONN_RESPONSE" | jq -r '.uri')
+
+          if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" == "null" ]; then
+            echo "Could not get connection string for branch $BRANCH_NAME"
+            echo "found=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Found database URL for branch $BRANCH_NAME"
+          echo "found=true" >> $GITHUB_OUTPUT
+          echo "url=$DATABASE_URL" >> $GITHUB_OUTPUT
+
+      - name: Seed preview database
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.neon-branch.outputs.found == 'true'
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.url }}
+        run: |
+          echo "Seeding preview database..."
+          pnpm --filter @propsto/data db-seed
+
       - name: Run Auth E2E tests
         if: steps.check-previews.outputs.both_ready == 'true'
         env:
