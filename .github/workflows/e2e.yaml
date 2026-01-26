@@ -138,6 +138,18 @@ jobs:
         if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
+      - name: Get Git branch name
+        if: steps.check-previews.outputs.both_ready == 'true'
+        id: git-branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM="${{ steps.pr.outputs.number }}"
+          # Get the head branch name from the PR
+          BRANCH_NAME=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM --jq '.head.ref')
+          echo "name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "Git branch: $BRANCH_NAME"
+
       - name: Get Neon branch database URL
         if: steps.check-previews.outputs.both_ready == 'true'
         id: neon-branch
@@ -145,22 +157,26 @@ jobs:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
         run: |
-          PR_NUM="${{ steps.pr.outputs.number }}"
-          # Get the branch for this PR (branch name format: pr-{number})
-          BRANCH_NAME="pr-${PR_NUM}"
+          GIT_BRANCH="${{ steps.git-branch.outputs.name }}"
+          # Neon branch name format: preview/{git-branch-name}
+          NEON_BRANCH_NAME="preview/${GIT_BRANCH}"
+
+          echo "Looking for Neon branch: $NEON_BRANCH_NAME"
 
           # Get branch details from Neon API
           BRANCH_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
             "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches")
 
-          # Find the branch matching our PR
-          BRANCH_ID=$(echo "$BRANCH_RESPONSE" | jq -r ".branches[] | select(.name == \"$BRANCH_NAME\") | .id")
+          # Find the branch matching our pattern
+          BRANCH_ID=$(echo "$BRANCH_RESPONSE" | jq -r ".branches[] | select(.name == \"$NEON_BRANCH_NAME\") | .id")
 
           if [ -z "$BRANCH_ID" ] || [ "$BRANCH_ID" == "null" ]; then
-            echo "No Neon branch found for PR $PR_NUM"
+            echo "No Neon branch found: $NEON_BRANCH_NAME"
             echo "found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
+
+          echo "Found Neon branch ID: $BRANCH_ID"
 
           # Get the connection string for this branch
           CONN_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
@@ -169,12 +185,12 @@ jobs:
           DATABASE_URL=$(echo "$CONN_RESPONSE" | jq -r '.uri')
 
           if [ -z "$DATABASE_URL" ] || [ "$DATABASE_URL" == "null" ]; then
-            echo "Could not get connection string for branch $BRANCH_NAME"
+            echo "Could not get connection string for branch $NEON_BRANCH_NAME"
             echo "found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "Found database URL for branch $BRANCH_NAME"
+          echo "Found database URL for branch $NEON_BRANCH_NAME"
           echo "found=true" >> $GITHUB_OUTPUT
           echo "url=$DATABASE_URL" >> $GITHUB_OUTPUT
 
