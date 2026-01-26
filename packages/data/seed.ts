@@ -38,6 +38,7 @@ async function main() {
       image: "https://avatars.githubusercontent.com/u/1?v=4",
       dateOfBirth: new Date("1985-11-03"),
       password: await hash("P4ssw0rd", 10),
+      onboardingCompletedAt: new Date(), // Mark as onboarding completed for E2E tests
       slug: {
         create: {
           slug: "mikeryan",
