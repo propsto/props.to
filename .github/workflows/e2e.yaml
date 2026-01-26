@@ -1,0 +1,145 @@
+name: E2E Tests
+
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/propsto_test?schema=public"
+  EMAIL_FROM: "ci@example.com"
+  AUTH_SECRET: "ci-dummy-secret-for-e2e-tests"
+  PROPSTO_ENV: "development"
+  PROPSTO_APP_URL: "http://localhost:3000"
+  AUTH_URL: "http://localhost:3002"
+  PROPSTO_HOST: "localhost"
+  PROPSTO_APP_HOSTNAME: "localhost"
+  PROPSTO_APP_PORT: "3000"
+  PROPSTO_AUTH_HOSTNAME: "localhost"
+  PROPSTO_AUTH_PORT: "3002"
+
+jobs:
+  e2e:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: propsto_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm setup:e2e
+
+      - name: Run database migrations
+        run: pnpm --filter @propsto/data db-deploy
+
+      - name: Seed database
+        run: pnpm --filter @propsto/data db-seed
+
+      - name: Build apps
+        run: pnpm build
+
+      - name: Run E2E tests
+        run: pnpm e2e
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-results
+          path: |
+            e2e-results/
+            e2e-report/
+          retention-days: 7
+
+  e2e-reminder:
+    name: E2E Coverage Reminder
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for E2E test changes
+        id: check-e2e
+        run: |
+          # Get changed files in this PR
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+
+          # Check if there are app/package changes (excluding config files)
+          HAS_CODE_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^(apps|packages)/.+\.(ts|tsx)$" | grep -v "\.config\." | grep -v "\.d\.ts$" || true)
+
+          # Check if there are E2E test changes
+          HAS_E2E_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^e2e/.+\.e2e\.(ts|tsx)$" || true)
+
+          if [ -n "$HAS_CODE_CHANGES" ] && [ -z "$HAS_E2E_CHANGES" ]; then
+            echo "needs_reminder=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_reminder=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post E2E reminder comment
+        if: steps.check-e2e.outputs.needs_reminder == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Check if we already posted a reminder
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const hasReminder = comments.some(c =>
+              c.user.type === 'Bot' &&
+              c.body.includes('E2E Test Coverage Reminder')
+            );
+
+            if (!hasReminder) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `## 🧪 E2E Test Coverage Reminder
+
+This PR includes code changes but no new E2E tests were detected.
+
+**Consider adding E2E tests if your changes:**
+- Add new user-facing features
+- Modify authentication or authorization flows
+- Change form validation or submission logic
+- Update navigation or routing
+
+If E2E tests aren't applicable for this change, feel free to ignore this reminder.`
+              });
+            }
