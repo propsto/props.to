@@ -196,11 +196,22 @@ jobs:
           echo "found=true" >> $GITHUB_OUTPUT
           echo "url=$DATABASE_URL" >> $GITHUB_OUTPUT
 
+      - name: Generate Prisma client
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.neon-branch.outputs.found == 'true'
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.url }}
+          EMAIL_FROM: "ci@example.com"
+          AUTH_SECRET: "ci-dummy-secret"
+          PROPSTO_ENV: "production"
+          PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
+          AUTH_URL: ${{ steps.urls.outputs.auth }}
+          PROPSTO_HOST: ${{ vars.PROPSTO_HOST }}
+        run: pnpm --filter @propsto/data db-generate
+
       - name: Seed preview database
         if: steps.check-previews.outputs.both_ready == 'true' && steps.neon-branch.outputs.found == 'true'
         env:
           DATABASE_URL: ${{ steps.neon-branch.outputs.url }}
-          # Required by config validation but not used for seeding
           EMAIL_FROM: "ci@example.com"
           AUTH_SECRET: "ci-dummy-secret"
           PROPSTO_ENV: "production"
