@@ -247,6 +247,7 @@ jobs:
           name: e2e-results-pr-${{ steps.pr.outputs.number }}
           path: |
             e2e/*/test-results/
+            /tmp/*.png
           retention-days: 7
 
       - name: Comment on PR with results

@@ -40,6 +40,14 @@ test.describe("Feedback Links", () => {
     // Debug: log URL after navigation
     console.log(`After navigation URL: ${page.url()}`);
 
+    // Take screenshot to see what's on the page
+    await page.screenshot({ path: "/tmp/links-new-page.png", fullPage: true });
+    console.log("Screenshot saved to /tmp/links-new-page.png");
+
+    // Log page content for debugging
+    const bodyText = await page.textContent("body");
+    console.log(`Page body text (first 500 chars): ${bodyText?.slice(0, 500)}`);
+
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
     ).toBeVisible({ timeout: 10000 });
