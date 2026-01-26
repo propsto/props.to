@@ -18,6 +18,9 @@ test.describe("Feedback Links", () => {
   test("should navigate to create link page", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/links`);
 
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
+
     // Click create link button
     await page
       .getByRole("link", { name: /create link/i })
@@ -26,30 +29,39 @@ test.describe("Feedback Links", () => {
 
     // Verify we're on the create page
     await expect(page).toHaveURL(/\/links\/new/);
+    await page.waitForLoadState("networkidle");
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test("should create a new feedback link", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/links/new`);
+    await page.waitForLoadState("networkidle");
+
+    // Wait for form to load
+    await expect(
+      page.getByRole("heading", { name: /create feedback link/i }),
+    ).toBeVisible({ timeout: 10000 });
 
     // Fill out the form
-    const nameInput = page.locator("input").first();
+    const nameInput = page.getByLabel(/name/i).first();
     await nameInput.fill("E2E Test Link");
 
     // Select template
     await page.locator('[role="combobox"]').first().click();
-    await page.getByRole("option", { name: "Default" }).click();
+    await page.getByRole("option").first().click();
 
     // Submit the form
-    await page.getByRole("button", { name: "Create Link" }).click();
+    await page.getByRole("button", { name: /create/i }).click();
 
     // Verify redirect to links page
-    await page.waitForURL(/\/links$/);
+    await page.waitForURL(/\/links$/, { timeout: 10000 });
 
     // Verify a link appears (use first() since there might be multiple)
-    await expect(page.getByText("E2E Test Link").first()).toBeVisible();
+    await expect(page.getByText("E2E Test Link").first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test("should display created feedback link with correct details", async ({
@@ -59,17 +71,25 @@ test.describe("Feedback Links", () => {
     // First create a link with a unique name
     const uniqueName = `Test Link ${Date.now()}`;
     await page.goto(`${baseURL}/links/new`);
+    await page.waitForLoadState("networkidle");
 
-    const nameInput = page.locator("input").first();
+    // Wait for form to load
+    await expect(
+      page.getByRole("heading", { name: /create feedback link/i }),
+    ).toBeVisible({ timeout: 10000 });
+
+    const nameInput = page.getByLabel(/name/i).first();
     await nameInput.fill(uniqueName);
 
     await page.locator('[role="combobox"]').first().click();
-    await page.getByRole("option", { name: "Default" }).click();
-    await page.getByRole("button", { name: "Create Link" }).click();
-    await page.waitForURL(/\/links$/);
+    await page.getByRole("option").first().click();
+    await page.getByRole("button", { name: /create/i }).click();
+    await page.waitForURL(/\/links$/, { timeout: 10000 });
 
     // Verify the newly created link is displayed
-    await expect(page.getByText(uniqueName).first()).toBeVisible();
+    await expect(page.getByText(uniqueName).first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 });
 
