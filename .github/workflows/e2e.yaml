@@ -156,6 +156,8 @@ jobs:
         env:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          NEON_DATABASE_NAME: ${{ vars.NEON_DATABASE_NAME }}
+          NEON_ROLE_NAME: ${{ vars.NEON_ROLE_NAME }}
         run: |
           GIT_BRANCH="${{ steps.git-branch.outputs.name }}"
           # Neon branch name format: preview/{git-branch-name}
@@ -180,7 +182,7 @@ jobs:
 
           # Get the connection string for this branch
           CONN_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
-            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/connection_uri?branch_id=${BRANCH_ID}&role_name=neondb_owner&database_name=neondb")
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/connection_uri?branch_id=${BRANCH_ID}&role_name=${NEON_ROLE_NAME}&database_name=${NEON_DATABASE_NAME}")
 
           DATABASE_URL=$(echo "$CONN_RESPONSE" | jq -r '.uri')
 
