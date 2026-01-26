@@ -18,18 +18,28 @@ test.describe("Feedback Links", () => {
   test("should navigate to create link page", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/links`);
 
+    // Debug: log current URL and page content
+    console.log(`Initial URL: ${page.url()}`);
+
     // Wait for page to load
     await page.waitForLoadState("networkidle");
 
+    // Debug: check if we're authenticated or redirected
+    const pageTitle = await page.title();
+    console.log(`Page title: ${pageTitle}`);
+
     // Click create link button
-    await page
-      .getByRole("link", { name: /create link/i })
-      .first()
-      .click();
+    const createLink = page.getByRole("link", { name: /create link/i }).first();
+    await expect(createLink).toBeVisible({ timeout: 10000 });
+    await createLink.click();
 
     // Verify we're on the create page
     await expect(page).toHaveURL(/\/links\/new/);
     await page.waitForLoadState("networkidle");
+
+    // Debug: log URL after navigation
+    console.log(`After navigation URL: ${page.url()}`);
+
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
     ).toBeVisible({ timeout: 10000 });
