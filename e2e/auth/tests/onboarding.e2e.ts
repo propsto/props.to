@@ -30,8 +30,10 @@ test.describe("Onboarding Stepper Structure", () => {
     // After login, user should be on welcome page or redirected to app
     // (depends on their onboarding status)
     const currentUrl = page.url();
+    const appUrl = process.env.PROPSTO_APP_URL ?? "http://localhost:3000";
+    const appHost = new URL(appUrl).host;
     expect(
-      currentUrl.includes("/welcome") || currentUrl.includes("localhost:3000"),
+      currentUrl.includes("/welcome") || currentUrl.includes(appHost),
     ).toBeTruthy();
   });
 });
