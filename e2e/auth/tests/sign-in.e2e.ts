@@ -98,8 +98,8 @@ test.describe("Password Authentication", () => {
   }) => {
     await page.goto(baseURL ?? "");
 
-    // Fill email for a user without password (leo@props.to from seed)
-    await page.getByLabel("email").fill("leo@props.to");
+    // Fill email for a user without password (bob.jones from seed - no password set)
+    await page.getByLabel("email").fill("bob.jones@acme.com");
 
     // Click Continue with password twice
     await page.getByRole("button", { name: "Continue with password" }).click();
