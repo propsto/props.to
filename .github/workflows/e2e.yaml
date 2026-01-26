@@ -3,151 +3,164 @@ name: E2E Tests
 permissions:
   contents: read
   pull-requests: write
+  deployments: read
 
 on:
-  pull_request:
-    branches: [main]
-
-env:
-  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/propsto_test?schema=public"
-  EMAIL_FROM: "ci@example.com"
-  EMAIL_SERVER: "smtp://localhost:1025"
-  AUTH_SECRET: "ci-dummy-secret-for-e2e-tests"
-  PROPSTO_ENV: "development"
-  PROPSTO_APP_URL: "http://localhost:3000"
-  AUTH_URL: "http://localhost:3002"
-  PROPSTO_HOST: "localhost"
-  PROPSTO_APP_HOSTNAME: "localhost"
-  PROPSTO_APP_PORT: "3000"
-  PROPSTO_AUTH_HOSTNAME: "localhost"
-  PROPSTO_AUTH_PORT: "3002"
+  deployment_status:
 
 jobs:
   e2e:
     name: Run E2E Tests
+    # Only run when a preview deployment succeeds
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      startsWith(github.event.deployment.environment, 'Preview')
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: propsto_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
+      - name: Get project info
+        id: project
+        run: |
+          ENV="${{ github.event.deployment.environment }}"
+          PROJECT=$(echo "$ENV" | rev | cut -d' ' -f1 | rev | tr '[:upper:]' '[:lower:]')
+          echo "name=$PROJECT" >> $GITHUB_OUTPUT
+
+      - name: Get PR number
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
+          PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[0].number")
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
+            echo "No PR found for this deployment"
+            exit 0
+          fi
+          echo "number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Define preview URLs
+        id: urls
+        run: |
+          PR_NUM="${{ steps.pr.outputs.number }}"
+          HOST="${{ vars.PROPSTO_HOST }}"
+          echo "app=https://app.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
+          echo "auth=https://auth.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
+
+      - name: Check if both previews are ready
+        id: check-previews
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
+
+          # Get all deployments for this commit
+          DEPLOYMENTS=$(gh api repos/${{ github.repository }}/deployments \
+            --jq "[.[] | select(.sha == \"$DEPLOYMENT_SHA\" and (.environment | startswith(\"Preview\")))]")
+
+          APP_READY=false
+          AUTH_READY=false
+
+          # Check each deployment's status
+          for row in $(echo "$DEPLOYMENTS" | jq -r '.[] | @base64'); do
+            _jq() { echo ${row} | base64 --decode | jq -r ${1}; }
+            ENV=$(_jq '.environment')
+            ID=$(_jq '.id')
+
+            STATUS=$(gh api repos/${{ github.repository }}/deployments/$ID/statuses --jq ".[0].state")
+
+            if [[ "$ENV" == *"app"* ]] && [[ "$STATUS" == "success" ]]; then
+              APP_READY=true
+            fi
+            if [[ "$ENV" == *"auth"* ]] && [[ "$STATUS" == "success" ]]; then
+              AUTH_READY=true
+            fi
+          done
+
+          echo "App ready: $APP_READY"
+          echo "Auth ready: $AUTH_READY"
+          echo "app_ready=$APP_READY" >> $GITHUB_OUTPUT
+          echo "auth_ready=$AUTH_READY" >> $GITHUB_OUTPUT
+
+          if [[ "$APP_READY" == "true" ]] && [[ "$AUTH_READY" == "true" ]]; then
+            echo "both_ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "both_ready=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if not all previews ready
+        if: steps.check-previews.outputs.both_ready != 'true'
+        run: |
+          echo "Not all previews are ready yet. Skipping E2E tests."
+          echo "This workflow will run again when the other preview is deployed."
+
       - name: Checkout code
+        if: steps.check-previews.outputs.both_ready == 'true'
         uses: actions/checkout@v4
 
       - name: Setup pnpm
+        if: steps.check-previews.outputs.both_ready == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
+        if: steps.check-previews.outputs.both_ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
 
       - name: Install dependencies
+        if: steps.check-previews.outputs.both_ready == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
+        if: steps.check-previews.outputs.both_ready == 'true'
         run: |
-          # Install browsers for each e2e package to ensure version compatibility
           cd e2e/auth && pnpm exec playwright install --with-deps chromium
           cd ../app && pnpm exec playwright install chromium
 
-      - name: Run database migrations
-        run: pnpm --filter @propsto/data db-deploy
+      - name: Run Auth E2E tests
+        if: steps.check-previews.outputs.both_ready == 'true'
+        env:
+          AUTH_URL: ${{ steps.urls.outputs.auth }}
+        run: |
+          cd e2e/auth
+          pnpm exec playwright test --reporter=line
 
-      - name: Seed database
-        run: pnpm --filter @propsto/data db-seed
-
-      - name: Build apps
-        run: pnpm build
-
-      - name: Run E2E tests
-        run: pnpm e2e
+      - name: Run App E2E tests
+        if: steps.check-previews.outputs.both_ready == 'true'
+        env:
+          PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
+          AUTH_URL: ${{ steps.urls.outputs.auth }}
+        run: |
+          cd e2e/app
+          pnpm exec playwright test --reporter=line
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: failure() && steps.check-previews.outputs.both_ready == 'true'
         with:
-          name: e2e-results
+          name: e2e-results-pr-${{ steps.pr.outputs.number }}
           path: |
-            e2e-results/
-            e2e-report/
+            e2e/*/test-results/
           retention-days: 7
 
-  e2e-reminder:
-    name: E2E Coverage Reminder
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check for E2E test changes
-        id: check-e2e
-        run: |
-          # Get changed files in this PR
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-
-          # Check if there are app/package changes (excluding config files)
-          HAS_CODE_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^(apps|packages)/.+\.(ts|tsx)$" | grep -v "\.config\." | grep -v "\.d\.ts$" || true)
-
-          # Check if there are E2E test changes
-          HAS_E2E_CHANGES=$(echo "$CHANGED_FILES" | grep -E "^e2e/.+\.e2e\.(ts|tsx)$" || true)
-
-          if [ -n "$HAS_CODE_CHANGES" ] && [ -z "$HAS_E2E_CHANGES" ]; then
-            echo "needs_reminder=true" >> $GITHUB_OUTPUT
-          else
-            echo "needs_reminder=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Post E2E reminder comment
-        if: steps.check-e2e.outputs.needs_reminder == 'true'
+      - name: Comment on PR with results
+        if: always() && steps.check-previews.outputs.both_ready == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const { data: comments } = await github.rest.issues.listComments({
+            const prNumber = ${{ steps.pr.outputs.number }};
+            const success = '${{ job.status }}' === 'success';
+            const appUrl = '${{ steps.urls.outputs.app }}';
+            const authUrl = '${{ steps.urls.outputs.auth }}';
+
+            const body = success
+              ? `✅ **E2E Tests Passed**\n\nTested against:\n- App: ${appUrl}\n- Auth: ${authUrl}`
+              : `❌ **E2E Tests Failed**\n\nTested against:\n- App: ${appUrl}\n- Auth: ${authUrl}\n\n[View details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: prNumber,
+              body: body
             });
-
-            const hasReminder = comments.some(c =>
-              c.user.type === 'Bot' &&
-              c.body.includes('E2E Test Coverage Reminder')
-            );
-
-            if (!hasReminder) {
-              const body = [
-                '## 🧪 E2E Test Coverage Reminder',
-                '',
-                'This PR includes code changes but no new E2E tests were detected.',
-                '',
-                '**Consider adding E2E tests if your changes:**',
-                '- Add new user-facing features',
-                '- Modify authentication or authorization flows',
-                '- Change form validation or submission logic',
-                '- Update navigation or routing',
-                '',
-                "If E2E tests aren't applicable for this change, feel free to ignore this reminder."
-              ].join('\n');
-
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body
-              });
-            }
-
