@@ -223,8 +223,10 @@ test.describe("Completion Step", () => {
 
     // If user already completed onboarding, they'll be redirected to dashboard
     const currentUrl = page.url();
+    const appUrl = process.env.PROPSTO_APP_URL ?? "http://localhost:3000";
+    const appHost = new URL(appUrl).host;
 
-    if (currentUrl.includes("localhost:3000")) {
+    if (currentUrl.includes(appHost)) {
       // User was redirected to app - onboarding complete
       expect(true).toBeTruthy();
     } else {
