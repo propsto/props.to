@@ -48,36 +48,39 @@ jobs:
 
       - name: Check if both previews are ready
         id: check-previews
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
+          APP_URL="${{ steps.urls.outputs.app }}"
+          AUTH_URL="${{ steps.urls.outputs.auth }}"
 
-          # Get all deployments for this commit
-          DEPLOYMENTS=$(gh api repos/${{ github.repository }}/deployments \
-            --jq "[.[] | select(.sha == \"$DEPLOYMENT_SHA\" and (.environment | startswith(\"Preview\")))]")
+          # Check if URLs are reachable (retry up to 3 times with 10s delay)
+          check_url() {
+            local url=$1
+            local max_attempts=3
+            local attempt=1
+            while [ $attempt -le $max_attempts ]; do
+              if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" | grep -q "200\|301\|302"; then
+                return 0
+              fi
+              echo "Attempt $attempt: $url not ready, waiting..."
+              sleep 10
+              attempt=$((attempt + 1))
+            done
+            return 1
+          }
 
           APP_READY=false
           AUTH_READY=false
 
-          # Check each deployment's status
-          for row in $(echo "$DEPLOYMENTS" | jq -r '.[] | @base64'); do
-            _jq() { echo ${row} | base64 --decode | jq -r ${1}; }
-            ENV=$(_jq '.environment')
-            ID=$(_jq '.id')
+          if check_url "$APP_URL"; then
+            APP_READY=true
+          fi
 
-            STATUS=$(gh api repos/${{ github.repository }}/deployments/$ID/statuses --jq ".[0].state")
+          if check_url "$AUTH_URL"; then
+            AUTH_READY=true
+          fi
 
-            if [[ "$ENV" == *"app"* ]] && [[ "$STATUS" == "success" ]]; then
-              APP_READY=true
-            fi
-            if [[ "$ENV" == *"auth"* ]] && [[ "$STATUS" == "success" ]]; then
-              AUTH_READY=true
-            fi
-          done
-
-          echo "App ready: $APP_READY"
-          echo "Auth ready: $AUTH_READY"
+          echo "App ready: $APP_READY ($APP_URL)"
+          echo "Auth ready: $AUTH_READY ($AUTH_URL)"
           echo "app_ready=$APP_READY" >> $GITHUB_OUTPUT
           echo "auth_ready=$AUTH_READY" >> $GITHUB_OUTPUT
 
