@@ -58,7 +58,7 @@ jobs:
             local max_attempts=3
             local attempt=1
             while [ $attempt -le $max_attempts ]; do
-              if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" | grep -q "200\|301\|302"; then
+              if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" | grep -qE "^(200|301|302|307|308|401|403)$"; then
                 return 0
               fi
               echo "Attempt $attempt: $url not ready, waiting..."
