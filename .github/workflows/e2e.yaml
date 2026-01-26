@@ -11,6 +11,7 @@ on:
 env:
   DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/propsto_test?schema=public"
   EMAIL_FROM: "ci@example.com"
+  EMAIL_SERVER: "smtp://localhost:1025"
   AUTH_SECRET: "ci-dummy-secret-for-e2e-tests"
   PROPSTO_ENV: "development"
   PROPSTO_APP_URL: "http://localhost:3000"
