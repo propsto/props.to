@@ -226,6 +226,7 @@ jobs:
         if: steps.check-previews.outputs.both_ready == 'true'
         env:
           AUTH_URL: ${{ steps.urls.outputs.auth }}
+          PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
         run: |
           cd e2e/auth
           pnpm exec playwright test --reporter=line
