@@ -5,6 +5,35 @@ import { PrismaPg } from "@prisma/adapter-pg";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
+// Use deterministic UUIDs for seeded entities to ensure consistency across builds.
+// This is important because both app and auth Vercel builds run seeding,
+// and we need user IDs to remain stable so sessions created during auth build
+// are still valid when the app build completes.
+const SEED_IDS = {
+  // Users
+  mike: "00000000-0000-0000-0000-000000000001",
+  bob: "00000000-0000-0000-0000-000000000002",
+  john: "00000000-0000-0000-0000-000000000003",
+  jane: "00000000-0000-0000-0000-000000000004",
+  // Organization
+  acme: "00000000-0000-0000-0000-000000000010",
+  // Group
+  marketing: "00000000-0000-0000-0000-000000000020",
+  // Template Categories
+  recognitionCategory: "00000000-0000-0000-0000-000000000030",
+  reviewCategory: "00000000-0000-0000-0000-000000000031",
+  // Templates
+  propsTemplate: "00000000-0000-0000-0000-000000000040",
+  threeSixtyTemplate: "00000000-0000-0000-0000-000000000041",
+  anonymousTemplate: "00000000-0000-0000-0000-000000000042",
+  leadershipTemplate: "00000000-0000-0000-0000-000000000043",
+  peerReviewTemplate: "00000000-0000-0000-0000-000000000044",
+  // Integration
+  instagram: "00000000-0000-0000-0000-000000000050",
+  // Uri
+  mikeInstagram: "00000000-0000-0000-0000-000000000060",
+};
+
 async function main() {
   // Clean up existing data in reverse dependency order
   await prisma.uriClaim.deleteMany();
@@ -29,6 +58,7 @@ async function main() {
   // Create root user (Mike Ryan) - personal account with GLOBAL scope slug
   const mike = await prisma.user.create({
     data: {
+      id: SEED_IDS.mike,
       email: "mike.ryan@example.com",
       firstName: "Mike",
       lastName: "Ryan",
@@ -52,6 +82,7 @@ async function main() {
   // Create Organization (Acme Inc.) with GLOBAL scope slug
   const acme = await prisma.organization.create({
     data: {
+      id: SEED_IDS.acme,
       name: "Acme Inc.",
       hostedDomain: "acme.com",
       slug: {
@@ -69,6 +100,7 @@ async function main() {
   // Create Org Admin (Bob Jones) - org user with ORGANIZATION scope slug
   const bob = await prisma.user.create({
     data: {
+      id: SEED_IDS.bob,
       email: "bob.jones@acme.com",
       firstName: "Bob",
       lastName: "Jones",
@@ -99,6 +131,7 @@ async function main() {
   // Create Org User 1 (John Doe) - org user with ORGANIZATION scope slug
   const john = await prisma.user.create({
     data: {
+      id: SEED_IDS.john,
       email: "john.doe@acme.com",
       firstName: "John",
       lastName: "Doe",
@@ -129,6 +162,7 @@ async function main() {
   // Create Org User 2 (Jane Smith) - org user with ORGANIZATION scope slug
   const jane = await prisma.user.create({
     data: {
+      id: SEED_IDS.jane,
       email: "jane.smith@acme.com",
       firstName: "Jane",
       lastName: "Smith",
@@ -159,6 +193,7 @@ async function main() {
   // Create Marketing Group with ORGANIZATION scope slug
   const marketingGroup = await prisma.group.create({
     data: {
+      id: SEED_IDS.marketing,
       name: "Marketing",
       organization: { connect: { id: acme.id } },
       slug: {
@@ -198,6 +233,7 @@ async function main() {
   // Create Template Categories
   const recognitionCategory = await prisma.templateCategory.create({
     data: {
+      id: SEED_IDS.recognitionCategory,
       name: "Recognition",
       description: "Templates for giving recognition and props",
       icon: "trophy",
@@ -206,6 +242,7 @@ async function main() {
 
   const reviewCategory = await prisma.templateCategory.create({
     data: {
+      id: SEED_IDS.reviewCategory,
       name: "Performance Reviews",
       description: "Templates for structured feedback and reviews",
       icon: "clipboard",
@@ -217,6 +254,7 @@ async function main() {
   // 1. Simple Props / Recognition Template
   const propsTemplate = await prisma.feedbackTemplate.create({
     data: {
+      id: SEED_IDS.propsTemplate,
       name: "Quick Props",
       description: "A simple template for giving quick recognition and props.",
       feedbackType: "RECOGNITION",
@@ -258,6 +296,7 @@ async function main() {
   // 2. 360° Feedback Template
   const threeSixtyTemplate = await prisma.feedbackTemplate.create({
     data: {
+      id: SEED_IDS.threeSixtyTemplate,
       name: "360° Feedback",
       description:
         "Comprehensive feedback template for all-around performance insights.",
@@ -319,6 +358,7 @@ async function main() {
   // 3. Anonymous Feedback Template
   const anonymousTemplate = await prisma.feedbackTemplate.create({
     data: {
+      id: SEED_IDS.anonymousTemplate,
       name: "Anonymous Feedback",
       description: "Share honest feedback anonymously.",
       feedbackType: "ANONYMOUS",
@@ -364,6 +404,7 @@ async function main() {
   // 4. Leadership Feedback Template
   const leadershipTemplate = await prisma.feedbackTemplate.create({
     data: {
+      id: SEED_IDS.leadershipTemplate,
       name: "Leadership Feedback",
       description: "Provide feedback on leadership effectiveness.",
       feedbackType: "MANAGER_FEEDBACK",
@@ -417,6 +458,7 @@ async function main() {
   // 5. Peer Review Template
   const peerReviewTemplate = await prisma.feedbackTemplate.create({
     data: {
+      id: SEED_IDS.peerReviewTemplate,
       name: "Peer Review",
       description: "Template for peer-to-peer feedback.",
       feedbackType: "PEER_REVIEW",
@@ -537,6 +579,7 @@ async function main() {
 
   const mikeInstagramUri = await prisma.uri.create({
     data: {
+      id: SEED_IDS.mikeInstagram,
       uri: "https://instagram.com/mike.ryan",
       user: { connect: { id: mike.id } },
     },
@@ -554,6 +597,7 @@ async function main() {
   // Create Integration and Uri for Mike Ryan (Instagram) with GLOBAL scope
   await prisma.integration.create({
     data: {
+      id: SEED_IDS.instagram,
       hostname: "instagram.com",
       uris: {
         connect: {
