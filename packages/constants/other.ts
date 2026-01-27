@@ -203,13 +203,6 @@ const computeAuthUrl = (): string | undefined => {
 export const vercelPreviewEnvVars = {
   AUTH_URL: computeAuthUrl(),
 
-  // OAuth proxy URL - stable auth domain for Google OAuth callbacks
-  // Must be set in BOTH preview AND production for Auth.js proxy to work
-  // See: https://authjs.dev/getting-started/deployment#securing-a-preview-deployment
-  AUTH_REDIRECT_PROXY_URL: process.env.PROPSTO_HOST
-    ? `https://auth.${process.env.PROPSTO_HOST}/api/auth`
-    : undefined,
-
   // Compute PROPSTO_APP_URL similarly to AUTH_URL
   PROPSTO_APP_URL: (() => {
     const isPreview =
