@@ -69,17 +69,41 @@ test.describe("Feedback Links", () => {
     ).toBeVisible({ timeout: 15000 });
 
     // Fill out the form
-    await page.getByLabel(/name/i).first().fill("E2E Test Link");
+    await page.getByLabel(/link name/i).fill("E2E Test Link");
 
-    // Select template
-    await page.locator('[role="combobox"]').first().click();
-    await page.getByRole("option").first().click();
+    // Select template using label association
+    // The Template label is followed by a combobox trigger
+    const templateSection = page.locator("text=Template").locator("..");
+    await templateSection.getByRole("combobox").click();
+
+    // Wait for options to appear and select first template
+    const templateOption = page.getByRole("option").first();
+    await expect(templateOption).toBeVisible({ timeout: 5000 });
+    console.log("Template option found:", await templateOption.textContent());
+    await templateOption.click();
+
+    // Small delay to ensure the value is set
+    await page.waitForTimeout(500);
 
     // Submit the form
-    await page.getByRole("button", { name: /create/i }).click();
+    const submitButton = page.getByRole("button", { name: /create link/i });
+    await expect(submitButton).toBeEnabled({ timeout: 5000 });
+    await submitButton.click();
 
-    // Verify redirect to links page
-    await page.waitForURL(/\/links$/, { timeout: 15000 });
+    // Wait for navigation or stay on page with error
+    try {
+      await page.waitForURL(/\/links$/, { timeout: 20000 });
+    } catch (error) {
+      // If timeout, log the current state for debugging
+      const currentUrl = page.url();
+      const errorText = await page
+        .locator(".text-destructive")
+        .textContent()
+        .catch(() => "No error shown");
+      console.log("Current URL:", currentUrl);
+      console.log("Error text:", errorText);
+      throw error;
+    }
 
     // Verify a link appears
     await expect(page.getByText("E2E Test Link").first()).toBeVisible({
@@ -101,11 +125,25 @@ test.describe("Feedback Links", () => {
       page.getByRole("heading", { name: /create feedback link/i }),
     ).toBeVisible({ timeout: 15000 });
 
-    await page.getByLabel(/name/i).first().fill(uniqueName);
-    await page.locator('[role="combobox"]').first().click();
-    await page.getByRole("option").first().click();
-    await page.getByRole("button", { name: /create/i }).click();
-    await page.waitForURL(/\/links$/, { timeout: 15000 });
+    await page.getByLabel(/link name/i).fill(uniqueName);
+
+    // Select template using label association
+    const templateSection = page.locator("text=Template").locator("..");
+    await templateSection.getByRole("combobox").click();
+
+    // Wait for options to appear and select first template
+    const templateOption = page.getByRole("option").first();
+    await expect(templateOption).toBeVisible({ timeout: 5000 });
+    await templateOption.click();
+
+    // Small delay to ensure the value is set
+    await page.waitForTimeout(500);
+
+    const submitButton = page.getByRole("button", { name: /create link/i });
+    await expect(submitButton).toBeEnabled({ timeout: 5000 });
+    await submitButton.click();
+
+    await page.waitForURL(/\/links$/, { timeout: 20000 });
 
     // Verify the newly created link is displayed
     await expect(page.getByText(uniqueName).first()).toBeVisible({
