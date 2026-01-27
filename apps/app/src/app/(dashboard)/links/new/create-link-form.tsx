@@ -153,7 +153,7 @@ export function CreateLinkForm({
                     </FormControl>
                     <SelectContent>
                       {templates.length === 0 ? (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="__no_templates__" disabled>
                           No templates available
                         </SelectItem>
                       ) : (
