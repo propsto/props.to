@@ -11,17 +11,15 @@ on:
 jobs:
   e2e:
     name: Run E2E Tests
-    # Only run when app or auth preview deployment succeeds (not web - not needed for E2E)
-    # The "Check if both previews are ready" step will skip if both aren't ready yet
+    # Only trigger on "app" deployment to run once per commit
+    # The workflow will wait for auth to be ready before running tests
     if: |
       github.event.deployment_status.state == 'success' &&
-      (github.event.deployment.environment == 'Preview – app' ||
-       github.event.deployment.environment == 'Preview – auth')
+      github.event.deployment.environment == 'Preview – app'
     runs-on: ubuntu-latest
-    # Ensure only one E2E run per commit - don't cancel, let first ready one complete
     concurrency:
       group: e2e-${{ github.event.deployment.sha }}
-      cancel-in-progress: false
+      cancel-in-progress: true
 
     steps:
       - name: Get project info
@@ -58,17 +56,17 @@ jobs:
           APP_URL="${{ steps.urls.outputs.app }}"
           AUTH_URL="${{ steps.urls.outputs.auth }}"
 
-          # Check if URLs are reachable (retry up to 3 times with 10s delay)
+          # Check if URLs are reachable (retry up to 12 times with 15s delay = 3 minutes max wait)
           check_url() {
             local url=$1
-            local max_attempts=3
+            local max_attempts=12
             local attempt=1
             while [ $attempt -le $max_attempts ]; do
               if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" | grep -qE "^(200|301|302|307|308|401|403)$"; then
                 return 0
               fi
-              echo "Attempt $attempt: $url not ready, waiting..."
-              sleep 10
+              echo "Attempt $attempt/$max_attempts: $url not ready, waiting 15s..."
+              sleep 15
               attempt=$((attempt + 1))
             done
             return 1
