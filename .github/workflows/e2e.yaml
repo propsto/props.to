@@ -11,16 +11,17 @@ on:
 jobs:
   e2e:
     name: Run E2E Tests
-    # Only run when a preview deployment succeeds
-    # Only trigger on "app" deployment to avoid running 3 times (once per Vercel project)
+    # Only run when app or auth preview deployment succeeds (not web - not needed for E2E)
+    # The "Check if both previews are ready" step will skip if both aren't ready yet
     if: |
       github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment == 'Preview – app'
+      (github.event.deployment.environment == 'Preview – app' ||
+       github.event.deployment.environment == 'Preview – auth')
     runs-on: ubuntu-latest
-    # Ensure only one E2E run per PR at a time
+    # Ensure only one E2E run per commit - don't cancel, let first ready one complete
     concurrency:
       group: e2e-${{ github.event.deployment.sha }}
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     steps:
       - name: Get project info
