@@ -40,7 +40,8 @@ export async function createLinkAction(
   });
 
   if (!result.success) {
-    return { success: false, error: "Failed to create link" };
+    console.error("createFeedbackLink failed:", result.error);
+    return { success: false, error: result.error ?? "Failed to create link" };
   }
 
   revalidatePath("/links");
