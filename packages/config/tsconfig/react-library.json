@@ -7,8 +7,10 @@
     "strictNullChecks": true,
     "types": [
       "@propsto/logger",
-      "../../global.d.ts",
       "node"
-    ],
-  }
+    ]
+  },
+  "include": [
+    "../../global.d.ts"
+  ]
 }

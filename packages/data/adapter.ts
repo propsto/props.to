@@ -29,10 +29,29 @@ import {
   updateAuthenticatorCounter,
 } from "./repos";
 
+// Extended user data from Google provider includes extra fields
+type CreateUserInput = AdapterUser & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
 export function PropstoAdapter(): Adapter {
   return {
-    async createUser({ id: _id, ...data }) {
-      const result = await createUser(data);
+    async createUser(inputData) {
+      // Cast to extended type to access Google-specific fields
+      const {
+        id: _id,
+        hostedDomain,
+        isGoogleWorkspaceAdmin,
+        ...data
+      } = inputData as CreateUserInput;
+
+      // Extract hostedDomain and isGoogleWorkspaceAdmin from the data and pass to createUser
+      const result = await createUser({
+        ...data,
+        hostedDomain: hostedDomain ?? undefined,
+        isGoogleWorkspaceAdmin: isGoogleWorkspaceAdmin ?? false,
+      });
       return result.data as AdapterUser;
     },
     async getUser(id) {
@@ -91,17 +110,23 @@ export function PropstoAdapter(): Adapter {
     async createVerificationToken(data) {
       const verificationToken = await createVerificationToken(data);
       if (!verificationToken.data) return null;
-      // @ts-expect-errors // MongoDB needs an ID, but we don't
-      if (verificationToken.data.id) delete verificationToken.data.id;
-      return verificationToken as unknown as VerificationToken;
+      // Prisma may include an id field that Auth.js doesn't expect
+      const tokenData = verificationToken.data as {
+        id?: string;
+      } & typeof verificationToken.data;
+      if (tokenData.id) delete tokenData.id;
+      return tokenData as unknown as VerificationToken;
     },
     async useVerificationToken(identifier_token) {
       try {
         const verificationToken = await useVerificationToken(identifier_token);
         if (!verificationToken.data) return null;
-        // @ts-expect-errors // MongoDB needs an ID, but we don't
-        if (verificationToken.id) delete verificationToken.id;
-        return verificationToken.data;
+        // Prisma may include an id field that Auth.js doesn't expect
+        const tokenData = verificationToken.data as {
+          id?: string;
+        } & typeof verificationToken.data;
+        if (tokenData.id) delete tokenData.id;
+        return tokenData;
       } catch (error) {
         // If token already used/deleted, just return null
         // https://www.prisma.io/docs/reference/api-reference/error-reference#p2025

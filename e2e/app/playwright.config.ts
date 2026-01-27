@@ -1,6 +1,8 @@
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
+const storageStatePath = path.resolve(__dirname, "../auth/fixtures/user.json");
+
 export default defineConfig({
   testMatch: "**/*.e2e.{ts,tsx}",
   retries: 2,
@@ -17,7 +19,7 @@ export default defineConfig({
     {
       name: "app",
       use: {
-        storageState: path.resolve("./../auth/fixtures/user.json"),
+        storageState: storageStatePath,
       },
       dependencies: ["setup"],
     },

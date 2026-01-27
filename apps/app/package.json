@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm dotenv -- next build",
+    "vercel-build": "cd ../.. && turbo run build --filter=@propsto/data && cd apps/app && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint",
@@ -16,12 +17,17 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@propsto/auth": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
     "@propsto/logger": "workspace:*",
-    "@propsto/ui": "workspace:*"
+    "@propsto/ui": "workspace:*",
+    "date-fns": "4.1.0",
+    "react-hook-form": "7.60.0",
+    "survey-core": "^2.5.6",
+    "survey-react-ui": "^2.5.6"
   },
   "peerDependencies": {
     "@types/node": "*",

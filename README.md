@@ -92,20 +92,88 @@ Props.to is the open-source infrastructure for owning feedback across public and
    ```bash
    pnpm dev:setup
    ```
-4. Add the local domain mappings (requires sudo/admin rights):
-   ```bash
-   sudo pnpm setup:hosts
-   ```
+4. **Choose your local development setup** (see options below)
 5. Launch the product surface you want to build against (starts Auth, App, MailDev, and Prisma Studio):
    ```bash
    pnpm dev:app
    ```
-6. Visit the local services:
-   - `http://auth.propsto.local:3002` – Auth app (`PROPSTO_AUTH_HOSTNAME`)
-   - `http://app.propsto.local:3000` – Product app (`PROPSTO_APP_HOSTNAME`)
-   - `http://propsto.local:3001` – Marketing site (`PROPSTO_WEB_HOSTNAME`)
-   - `http://0.0.0.0:1080` – MailDev inbox
-   - `http://localhost:5555` – Prisma Studio (auto-opened by setup)
+
+### Local development options
+
+There are two ways to run the apps locally:
+
+#### Option A: Localhost with ports (simpler)
+
+Use different ports on `localhost` for each app. This is the simplest setup but **does not support subdomain-based SSO testing**.
+
+Update your `.env`:
+
+```bash
+PROPSTO_HOST="localhost"
+
+PROPSTO_APP_PORT="3000"
+PROPSTO_APP_HOSTNAME="localhost"
+
+PROPSTO_WEB_PORT="3001"
+PROPSTO_WEB_HOSTNAME="localhost"
+
+PROPSTO_AUTH_PORT="3002"
+PROPSTO_AUTH_HOSTNAME="localhost"
+
+AUTH_URL="http://localhost:3002"
+NEXT_PUBLIC_AUTH_URL="http://localhost:3002"
+PROPSTO_APP_URL="http://localhost:3000"
+```
+
+Access the apps at:
+
+- `http://localhost:3002` – Auth app
+- `http://localhost:3000` – Product app
+- `http://localhost:3001` – Marketing site
+
+#### Option B: Custom domain with subdomains (recommended for full testing)
+
+Use subdomain-based URLs which enables **SSO testing across apps**. Requires adding entries to your hosts file.
+
+1. Add the local domain mappings (requires sudo/admin rights):
+
+   ```bash
+   sudo pnpm setup:hosts
+   ```
+
+   This adds the entries from `hosts.txt` to your system's hosts file, mapping `props.local` and its subdomains to `127.0.0.1`.
+
+2. Use the default `.env.example` values (or adjust as needed):
+
+   ```bash
+   PROPSTO_HOST="props.local"
+
+   PROPSTO_APP_PORT="3000"
+   PROPSTO_APP_HOSTNAME="app.props.local"
+
+   PROPSTO_WEB_PORT="3001"
+   PROPSTO_WEB_HOSTNAME="props.local"
+
+   PROPSTO_AUTH_PORT="3002"
+   PROPSTO_AUTH_HOSTNAME="auth.props.local"
+
+   AUTH_URL="http://auth.props.local:3002"
+   NEXT_PUBLIC_AUTH_URL="http://auth.props.local:3002"
+   PROPSTO_APP_URL="http://app.props.local:3000"
+   ```
+
+Access the apps at:
+
+- `http://auth.props.local:3002` – Auth app
+- `http://app.props.local:3000` – Product app
+- `http://props.local:3001` – Marketing site
+
+### Additional local services
+
+Regardless of which option you choose:
+
+- `http://0.0.0.0:1080` – MailDev inbox (local email testing)
+- `http://localhost:5555` – Prisma Studio (database browser, auto-opened by setup)
 
 ### Useful scripts
 

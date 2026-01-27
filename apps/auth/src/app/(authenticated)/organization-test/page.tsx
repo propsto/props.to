@@ -14,13 +14,19 @@ export default async function OrganizationTestPage(): Promise<React.ReactElement
     redirect("/error?code=InvalidSession");
   }
 
-  // Get user's organization
-  const userWithOrg = await db.user.findUnique({
+  // Get user's organizations via the junction table
+  const userWithOrgs = await db.user.findUnique({
     where: { id: user.id },
-    include: { organization: true },
+    include: {
+      organizations: {
+        include: { organization: true },
+      },
+    },
   });
 
-  if (!userWithOrg?.organization) {
+  const firstOrg = userWithOrgs?.organizations?.[0]?.organization;
+
+  if (!firstOrg) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -47,9 +53,7 @@ export default async function OrganizationTestPage(): Promise<React.ReactElement
         </div>
 
         <div className="flex justify-center">
-          <OrganizationSettingsDisplay
-            organizationId={userWithOrg.organization.id}
-          />
+          <OrganizationSettingsDisplay organizationId={firstOrg.id} />
         </div>
       </div>
     </div>

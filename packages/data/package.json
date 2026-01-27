@@ -4,6 +4,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
+    "build": "node scripts/seed-if-preview.cjs",
     "db-deploy": "pnpm dotenv -- prisma migrate deploy",
     "db-generate": "pnpm dotenv -- prisma generate",
     "db-migrate": "pnpm dotenv -- prisma migrate dev",

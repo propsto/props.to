@@ -5,6 +5,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js"],
+  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "../../global.d.ts"],
   "exclude": ["dist", "build", "node_modules"]
 }

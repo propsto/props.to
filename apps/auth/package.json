@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "pnpm dotenv -- next build",
+    "vercel-build": "cd ../.. && turbo run build --filter=@propsto/data && cd apps/auth && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint .",

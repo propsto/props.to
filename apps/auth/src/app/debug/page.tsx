@@ -16,8 +16,6 @@ export default function DebugPage() {
     VERCEL_URL: process.env.VERCEL_URL ?? "(not set)",
     PROPSTO_HOST: process.env.PROPSTO_HOST ?? "(not set)",
     AUTH_URL: process.env.AUTH_URL ?? "(not set)",
-    "process.env.AUTH_REDIRECT_PROXY_URL":
-      process.env.AUTH_REDIRECT_PROXY_URL ?? "(not set)",
     DATABASE_URL: maskedDbUrl || "(not set)",
   };
 
@@ -25,8 +23,6 @@ export default function DebugPage() {
     // vercelPreviewEnvVars (computed)
     "vercelPreviewEnvVars.AUTH_URL":
       vercelPreviewEnvVars.AUTH_URL ?? "(not set)",
-    "vercelPreviewEnvVars.AUTH_REDIRECT_PROXY_URL":
-      vercelPreviewEnvVars.AUTH_REDIRECT_PROXY_URL ?? "(not set)",
     "vercelPreviewEnvVars.PROPSTO_APP_URL":
       vercelPreviewEnvVars.PROPSTO_APP_URL ?? "(not set)",
   };
@@ -37,8 +33,6 @@ export default function DebugPage() {
     "constServer.PROPSTO_HOST": constServer.PROPSTO_HOST,
     "constServer.PROPSTO_APP_URL": constServer.PROPSTO_APP_URL,
     "constServer.AUTH_URL": constServer.AUTH_URL,
-    "constServer.AUTH_REDIRECT_PROXY_URL":
-      constServer.AUTH_REDIRECT_PROXY_URL ?? "(not set)",
   };
 
   const clientConst = {
@@ -50,13 +44,6 @@ export default function DebugPage() {
 
   const analysis = {
     isPreview: process.env.VERCEL_ENV === "preview",
-    // With shared domain approach, both preview and production use same PROPSTO_HOST
-    // Proxy is used when AUTH_REDIRECT_PROXY_URL is set
-    shouldUseProxy: Boolean(process.env.AUTH_REDIRECT_PROXY_URL),
-    proxyUrlSetOnProcessEnv: Boolean(process.env.AUTH_REDIRECT_PROXY_URL),
-    expectedProxyUrl: process.env.PROPSTO_HOST
-      ? `https://auth.${process.env.PROPSTO_HOST}/api/auth`
-      : null,
   };
 
   const allDebugData = {
@@ -121,22 +108,10 @@ export default function DebugPage() {
       <EnvTable title="constClient (validated)" vars={clientConst} />
 
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">OAuth Proxy Analysis</h2>
+        <h2 className="text-lg font-semibold mb-4">Environment</h2>
         <ul className="space-y-2 text-sm">
           <li>
             <strong>Is Preview:</strong> {analysis.isPreview ? "Yes" : "No"}
-          </li>
-          <li>
-            <strong>Should use proxy:</strong>{" "}
-            {analysis.shouldUseProxy ? "Yes" : "No"}
-          </li>
-          <li>
-            <strong>Proxy URL set on process.env:</strong>{" "}
-            {analysis.proxyUrlSetOnProcessEnv ? "Yes" : "No"}
-          </li>
-          <li>
-            <strong>Expected proxy URL:</strong>{" "}
-            {analysis.expectedProxyUrl ?? "(PROPSTO_HOST not set)"}
           </li>
         </ul>
       </div>

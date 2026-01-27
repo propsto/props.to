@@ -42,7 +42,7 @@ export function FormInputError({
       <Input
         autoCapitalize={autocapitalize}
         autoComplete={autocomplete ?? controlName.toLowerCase()}
-        className={cn(result?.errors?.name && "!border-red-500")}
+        className={cn(result?.errors?.[controlName] && "!border-red-500")}
         disabled={isPending}
         id={controlName.toLowerCase()}
         name={controlName}

@@ -14,6 +14,7 @@ import {
 import { useFormContext, useController } from "react-hook-form";
 import { type Step } from "@stepperize/react";
 import { type User } from "next-auth";
+import { LockIcon } from "lucide-react";
 
 const organizationSchema = z.object({
   organizationName: z
@@ -22,12 +23,14 @@ const organizationSchema = z.object({
     .max(100, "Organization name must be less than 100 characters"),
   organizationSlug: z
     .string()
-    .min(3, "Organization slug must be at least 3 characters")
+    .min(1, "Organization slug is required")
     .max(50, "Organization slug must be less than 50 characters")
     .regex(
       /^[a-zA-Z0-9-]+$/,
       "Organization slug can only contain letters, numbers, and hyphens",
     ),
+  // Store the hosted domain for the organization
+  hostedDomain: z.string().optional(),
   defaultUserSettings: z.object({
     defaultProfileVisibility: z
       .enum(["public", "private", "organization"])
@@ -51,7 +54,13 @@ const organizationSchema = z.object({
 
 export type OrganizationFormValues = z.infer<typeof organizationSchema>;
 
-export function StepComponent(): React.ReactElement {
+interface StepComponentProps {
+  hostedDomain?: string | null;
+}
+
+export function StepComponent({
+  hostedDomain,
+}: StepComponentProps): React.ReactElement {
   const {
     register,
     formState: { errors },
@@ -61,12 +70,19 @@ export function StepComponent(): React.ReactElement {
   // Organization basic settings
   const organizationName = watch("organizationName");
 
+  // The slug is locked to the domain prefix (e.g., "acme.com" -> "acme")
+  const domainSlug = hostedDomain
+    ? hostedDomain.split(".")[0].toLowerCase()
+    : null;
+  const isSlugLocked = Boolean(domainSlug);
+
   // Default user settings controllers
   const { field: defaultProfileVisibilityField } = useController<
     OrganizationFormValues,
     "defaultUserSettings.defaultProfileVisibility"
   >({
     name: "defaultUserSettings.defaultProfileVisibility",
+    defaultValue: "organization",
   });
   const { field: allowExternalFeedbackField } = useController<
     OrganizationFormValues,
@@ -184,12 +200,21 @@ export function StepComponent(): React.ReactElement {
           className="block text-sm font-medium text-primary"
         >
           Organization URL Slug
+          {isSlugLocked ? (
+            <span className="ml-2 text-xs text-muted-foreground inline-flex items-center">
+              <LockIcon className="w-3 h-3 mr-1" />
+              Locked to email domain
+            </span>
+          ) : null}
         </Label>
         <Input
           id={register("organizationSlug").name}
           {...register("organizationSlug")}
           placeholder="organization-slug"
           className="block w-full"
+          readOnly={isSlugLocked}
+          disabled={isSlugLocked}
+          value={isSlugLocked ? (domainSlug ?? "") : undefined}
         />
         {errors.organizationSlug ? (
           <span className="text-sm text-destructive">
@@ -197,28 +222,32 @@ export function StepComponent(): React.ReactElement {
           </span>
         ) : null}
         <p className="text-xs text-muted-foreground">
-          This will be used in URLs:{" "}
-          <b>
-            props.to/org/
-            {organizationName
-              ? organizationName
-                  .toLowerCase()
-                  .replace(/[^a-zA-Z0-9\s-]/g, "")
-                  .replace(/\s+/g, "-")
-              : "your-org"}
-          </b>
-          &nbsp;or&nbsp;
-          <b>
-            {organizationName
-              ? organizationName
-                  .toLowerCase()
-                  .replace(/[^a-zA-Z0-9\s-]/g, "")
-                  .replace(/\s+/g, "-")
-              : "your-org"}
-            .props.to
-          </b>
+          {isSlugLocked ? (
+            <>
+              Your organization URL is based on your Google Workspace domain:{" "}
+              <b>props.to/{domainSlug}/username</b> or{" "}
+              <b>props.to/user@{hostedDomain}</b>
+            </>
+          ) : (
+            <>
+              This will be used in URLs:{" "}
+              <b>
+                props.to/
+                {organizationName
+                  ? organizationName
+                      .toLowerCase()
+                      .replace(/[^a-zA-Z0-9\s-]/g, "")
+                      .replace(/\s+/g, "-")
+                  : "your-org"}
+                /username
+              </b>
+            </>
+          )}
         </p>
       </div>
+
+      {/* Hidden field to store hostedDomain */}
+      <input type="hidden" {...register("hostedDomain")} />
 
       <div className="space-y-2">
         <Label className="block text-sm font-medium text-primary">
@@ -361,24 +390,77 @@ export const config: Step = {
   schema: organizationSchema,
 };
 
-export const defaults = (_user?: User): OrganizationFormValues => ({
-  organizationName: "",
-  organizationSlug: "",
-  defaultUserSettings: {
-    defaultProfileVisibility: "organization",
-    allowExternalFeedback: false,
-    requireApprovalForPublicProfiles: true,
-  },
-  organizationSettings: {
-    allowUserInvites: true,
-    enableGroupManagement: true,
-    requireEmailVerification: true,
-    enableSSOIntegration: false,
-  },
-  feedbackSettings: {
-    enableOrganizationFeedback: true,
-    allowAnonymousFeedback: false,
-    enableFeedbackModeration: true,
-    autoApproveInternalFeedback: true,
-  },
-});
+// Extended user type that includes hostedDomain and isGoogleWorkspaceAdmin
+type WelcomeUser = User & {
+  hostedDomain?: string | null;
+  isGoogleWorkspaceAdmin?: boolean;
+};
+
+// Organization status type
+type OrganizationStatus = "none" | "exists" | "not_exists" | "member";
+
+export const defaults = (user?: WelcomeUser): OrganizationFormValues => {
+  // Pre-fill from Google Workspace domain if available
+  const hostedDomain = user?.hostedDomain ?? undefined;
+  const domainParts = hostedDomain?.split(".") ?? [];
+  const domainPrefix = domainParts[0] ?? "";
+
+  // Capitalize first letter for organization name suggestion
+  const suggestedName = domainPrefix
+    ? domainPrefix.charAt(0).toUpperCase() + domainPrefix.slice(1)
+    : "";
+
+  return {
+    organizationName: suggestedName,
+    organizationSlug: domainPrefix.toLowerCase(),
+    hostedDomain,
+    defaultUserSettings: {
+      defaultProfileVisibility: "organization",
+      allowExternalFeedback: false,
+      requireApprovalForPublicProfiles: true,
+    },
+    organizationSettings: {
+      allowUserInvites: true,
+      enableGroupManagement: true,
+      requireEmailVerification: true,
+      enableSSOIntegration: hostedDomain ? true : false, // Default to true for Google Workspace
+    },
+    feedbackSettings: {
+      enableOrganizationFeedback: true,
+      allowAnonymousFeedback: false,
+      enableFeedbackModeration: true,
+      autoApproveInternalFeedback: true,
+    },
+  };
+};
+
+/**
+ * Check if the organization step is complete or not required
+ * This step is only for Google Workspace admins when no org exists for their domain.
+ * @param user - The user object with hostedDomain and isGoogleWorkspaceAdmin
+ * @param orgStatus - The organization status for the user's domain
+ */
+export function isStepComplete(
+  user?: WelcomeUser,
+  orgStatus: OrganizationStatus = "none",
+): boolean {
+  // No hosted domain means no org step needed
+  if (!user?.hostedDomain || orgStatus === "none") {
+    return true;
+  }
+
+  // User is already a member of the org for their domain
+  if (orgStatus === "member") {
+    return true;
+  }
+
+  // This step is only for admins when org doesn't exist
+  // If not admin or org already exists, this step is not their responsibility
+  if (!user.isGoogleWorkspaceAdmin || orgStatus === "exists") {
+    return true;
+  }
+
+  // Admin with no existing org - they need to complete this step
+  // This step is complete once the org is created (orgStatus would become "member")
+  return false;
+}

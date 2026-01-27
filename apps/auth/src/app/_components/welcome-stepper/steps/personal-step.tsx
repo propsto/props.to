@@ -14,7 +14,7 @@ const personalSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().email(),
-  dateOfBirth: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
   image: z.unknown().optional(),
 });
 
@@ -128,7 +128,7 @@ export function StepComponent(): React.ReactElement {
                 htmlFor={register("dateOfBirth").name}
                 className="block text-sm font-medium text-primary"
               >
-                Date of birth
+                Date of birth*
               </Label>
               <Input
                 id={register("dateOfBirth").name}
@@ -204,3 +204,12 @@ export const defaults = (user: User): PersonalFormValues => ({
   email: user.email ?? "",
   image: user.image ?? undefined,
 });
+
+/**
+ * Check if the personal step data requirements are met
+ */
+export function isStepComplete(user: User): boolean {
+  return Boolean(
+    user.firstName?.trim() && user.lastName?.trim() && user.dateOfBirth,
+  );
+}

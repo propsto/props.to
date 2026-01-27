@@ -25,17 +25,6 @@ export const constServer = createEnv({
       () => vercelPreviewEnvVars.AUTH_URL,
       z.string().url(),
     ),
-    // OAuth proxy URL for preview environments - Auth.js uses this to route
-    // Google OAuth callbacks through stable auth domain.
-    // Auth.js reads process.env.AUTH_REDIRECT_PROXY_URL directly, so this must be
-    // set as an actual environment variable in Vercel (not computed at runtime).
-    // Value should be: https://auth.props.to/api/auth (for both production and preview)
-    AUTH_REDIRECT_PROXY_URL: z.preprocess(
-      () =>
-        process.env.AUTH_REDIRECT_PROXY_URL ??
-        vercelPreviewEnvVars.AUTH_REDIRECT_PROXY_URL,
-      z.string().url().optional(),
-    ),
     PROPSTO_HOST: z.string(),
     EMAIL_PROVIDER: z.string(),
     GOOGLE_CLIENT_ID: z.string().optional(),

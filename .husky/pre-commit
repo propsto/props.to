@@ -1,2 +1,2 @@
-pnpm format
+pnpm lint-staged
 pnpm lint && pnpm type-check

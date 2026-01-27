@@ -56,12 +56,19 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
         },
         checks: ["none"],
         profile: async (profile: GoogleProfile, tokens) => {
-          if (!profile.hd || !allowedDomains.includes(profile.hd)) {
+          // Validate hosted domain if GOOGLE_ALLOWED_HOSTED_DOMAINS is configured
+          if (
+            allowedDomains.length > 0 &&
+            allowedDomains[0] !== "" &&
+            (!profile.hd || !allowedDomains.includes(profile.hd))
+          ) {
             throw Error("Google Hosted Domain not allowed");
           }
-          let adminData: Record<string, string> | null = null;
+
+          // Check if user is a Google Workspace admin
+          let isGoogleWorkspaceAdmin = false;
           try {
-            if (tokens.access_token) {
+            if (tokens.access_token && profile.hd) {
               const response = await fetch(
                 `https://admin.googleapis.com/admin/directory/v1/users/${profile.email}`,
                 {
@@ -73,13 +80,19 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
                 },
               );
 
-              if (!response.ok) {
-                throw new Error(
-                  `Error fetching admin data: ${response.statusText}`,
+              if (response.ok) {
+                const adminData = (await response.json()) as Record<
+                  string,
+                  unknown
+                >;
+                logger("Admin directory response:", adminData);
+                isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
+              } else {
+                const errorText = await response.text();
+                logger(
+                  `Admin directory API returned ${response.status}: ${errorText}`,
                 );
               }
-
-              adminData = (await response.json()) as Record<string, string>;
             }
           } catch (error) {
             logger("Error fetching admin directory data:", error);
@@ -89,9 +102,10 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
             firstName: profile.given_name,
             lastName: profile.family_name,
             email: profile.email,
-            /*emailVerified: profile.email_verified ? new Date() : null, << DOESN'T WORK, events.linkAccount takes care of this */
             image: profile.picture,
-            role: adminData?.isAdmin ? Role.ORGANIZATION_ADMIN : Role.USER,
+            hostedDomain: profile.hd, // Pass through for storage and onboarding logic
+            isGoogleWorkspaceAdmin, // Flag for onboarding step logic
+            role: Role.USER, // Always USER, org roles are in OrganizationMember
           };
         },
       }),
