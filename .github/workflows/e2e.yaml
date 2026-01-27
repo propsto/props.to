@@ -12,10 +12,15 @@ jobs:
   e2e:
     name: Run E2E Tests
     # Only run when a preview deployment succeeds
+    # Only trigger on "app" deployment to avoid running 3 times (once per Vercel project)
     if: |
       github.event.deployment_status.state == 'success' &&
-      startsWith(github.event.deployment.environment, 'Preview')
+      github.event.deployment.environment == 'Preview – app'
     runs-on: ubuntu-latest
+    # Ensure only one E2E run per PR at a time
+    concurrency:
+      group: e2e-${{ github.event.deployment.sha }}
+      cancel-in-progress: true
 
     steps:
       - name: Get project info

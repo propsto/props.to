@@ -1,30 +1,24 @@
 import { test, expect } from "@playwright/test";
 
-// Track console errors to catch client-side issues early
-let consoleErrors: string[] = [];
+// Track JavaScript errors to catch client-side issues early
+let jsErrors: string[] = [];
 
 test.beforeEach(async ({ page }) => {
-  consoleErrors = [];
-  page.on("console", msg => {
-    if (msg.type() === "error") {
-      consoleErrors.push(msg.text());
-    }
-  });
+  jsErrors = [];
+  // Only capture actual JavaScript errors, not network/resource errors
   page.on("pageerror", error => {
-    consoleErrors.push(error.message);
+    jsErrors.push(error.message);
   });
 });
 
 test.afterEach(async ({}, testInfo) => {
   // Only fail on errors if the test itself passed (to avoid masking the real failure)
-  if (testInfo.status === "passed" && consoleErrors.length > 0) {
-    throw new Error(
-      `Client-side errors detected:\n${consoleErrors.join("\n")}`,
-    );
+  if (testInfo.status === "passed" && jsErrors.length > 0) {
+    throw new Error(`Client-side errors detected:\n${jsErrors.join("\n")}`);
   }
   // Log errors even if test failed (for debugging)
-  if (consoleErrors.length > 0) {
-    console.log("Console errors during test:", consoleErrors);
+  if (jsErrors.length > 0) {
+    console.log("JS errors during test:", jsErrors);
   }
 });
 
