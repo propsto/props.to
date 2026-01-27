@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "pnpm dotenv -- next build",
-    "vercel-build": "prisma migrate deploy --config=../../packages/data/prisma.config.ts --schema=../../packages/data/schema.prisma && next build",
+    "vercel-build": "cd ../.. && turbo run build --filter=@propsto/data && cd apps/auth && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint .",

@@ -8,6 +8,9 @@
  * so we run the seed script directly without needing dotenv.
  *
  * This script is part of @propsto/data and runs during the data package's build.
+ *
+ * Note: Neon preview branches are created from the main branch, which already
+ * has the schema applied. We skip migrations and just run the seed script.
  */
 
 const { execSync } = require("child_process");
@@ -35,31 +38,16 @@ async function main() {
     // This script is at packages/data/scripts, so package root is one level up
     const packageRoot = path.resolve(__dirname, "..");
     const seedPath = path.join(packageRoot, "seed.ts");
-    const schemaPath = path.join(packageRoot, "schema.prisma");
     // Monorepo root is two levels up from package root
     const monorepoRoot = path.resolve(packageRoot, "../..");
 
     console.log(`[@propsto/data] Package root: ${packageRoot}`);
-    console.log(`[@propsto/data] Schema path: ${schemaPath}`);
     console.log(`[@propsto/data] Seed script path: ${seedPath}`);
 
-    // For Neon preview branches, the database is created from the main branch
-    // which already has the schema applied. We just need to run migrations
-    // to ensure any new migrations are applied.
-    // Use --url flag to pass DATABASE_URL directly since prisma.config.ts
-    // uses @propsto/constants which has Zod validation that may fail.
-    console.log("[@propsto/data] Running migrations...");
-    execSync(`npx prisma migrate deploy --schema="${schemaPath}" --url="${process.env.DATABASE_URL}"`, {
-      stdio: "inherit",
-      cwd: monorepoRoot,
-      env: {
-        ...process.env,
-      },
-    });
-    console.log("[@propsto/data] Migrations applied successfully!");
-
-    // Then run the seed script directly with tsx
-    // DATABASE_URL is already in the environment from Vercel-Neon integration
+    // Neon preview branches are created from the main branch, which already
+    // has the schema and migrations applied. We skip migrations and just
+    // run the seed script directly with tsx.
+    // DATABASE_URL is already in the environment from Vercel-Neon integration.
     console.log("[@propsto/data] Running seed script...");
     execSync(`npx tsx "${seedPath}"`, {
       stdio: "inherit",

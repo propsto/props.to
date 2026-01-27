@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm dotenv -- next build",
-    "vercel-build": "turbo run build --filter=@propsto/data && next build",
+    "vercel-build": "cd ../.. && turbo run build --filter=@propsto/data && cd apps/app && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint",
