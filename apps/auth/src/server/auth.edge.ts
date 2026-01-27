@@ -22,6 +22,28 @@ import { createLogger } from "@propsto/logger";
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
+// Shared cookie domain - allows cookies to be shared between
+// production (auth.props.to) and preview (auth.pr-XX.props.build)
+const cookieDomain =
+  constServer.PROPSTO_HOST === "localhost"
+    ? undefined
+    : `.${constServer.PROPSTO_HOST}`;
+
+// Common cookie options for all auth cookies
+const sharedCookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  path: "/",
+  secure: secureCookies,
+  domain: cookieDomain,
+};
+
+// Helper to create cookie config with secure prefix when needed
+const createCookieConfig = (name: string) => ({
+  name: secureCookies ? `__Secure-authjs.${name}` : `authjs.${name}`,
+  options: sharedCookieOptions,
+});
+
 export const nextAuthConfig = {
   providers: [],
   callbacks: {
@@ -105,9 +127,9 @@ export const nextAuthConfig = {
           return `/error?code=AccountLinkingFailed`;
         }
 
-        // For existing users with linked Google account OR new users,
-        // update Google Workspace data on each sign-in
-        if (user.id) {
+        // For existing users with linked Google account, update Google Workspace data on each sign-in.
+        // Skip for new users - their data is set via the profile callback and adapter.createUser.
+        if (existingGoogleAccount?.data) {
           let isGoogleWorkspaceAdmin = false;
           try {
             if (account.access_token && googleProfile.hd) {
@@ -137,7 +159,7 @@ export const nextAuthConfig = {
             );
           }
 
-          await updateUser(user.id, {
+          await updateUser(existingGoogleAccount.data.id, {
             isGoogleWorkspaceAdmin,
             hostedDomain: googleProfile.hd,
           });
@@ -177,6 +199,7 @@ export const nextAuthConfig = {
           token.user = user;
         }
       }
+
       if (trigger === "update" && session) {
         logger("authConfig:jwt:update", session.user);
         token.user = session.user;
@@ -197,11 +220,13 @@ export const nextAuthConfig = {
       if (new URL(url).origin === baseUrl) return url;
 
       // Allow redirects to any subdomain of PROPSTO_HOST (for preview environments)
-      // This enables the OAuth proxy pattern where callbacks go through stable auth
-      // and then redirect back to preview environments
+      // e.g., auth.props.build and auth.pr-35.props.build both under .props.build
       try {
         const urlObj = new URL(url);
-        if (urlObj.hostname.endsWith(constServer.PROPSTO_HOST)) {
+        const hostname = urlObj.hostname;
+
+        // Allow redirects to any subdomain of PROPSTO_HOST
+        if (hostname.endsWith(constServer.PROPSTO_HOST)) {
           return url;
         }
       } catch {
@@ -217,7 +242,6 @@ export const nextAuthConfig = {
   session: { strategy: "jwt" },
   pages: {
     signIn: "/",
-    newUser: "/welcome",
   },
   events: {
     linkAccount: async ({ user }) => {
@@ -229,20 +253,16 @@ export const nextAuthConfig = {
       }
     },
   },
-  debug: constServer.PROPSTO_ENV !== "production",
+  debug:
+    constServer.PROPSTO_ENV !== "production" ||
+    process.env.DEBUG_AUTH === "true",
+  // All cookies use shared domain between
+  // production (auth.props.to) and preview (auth.pr-XX.props.build)
   cookies: {
-    sessionToken: {
-      name: secureCookies
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax", // Prevents CSRF while allowing subdomain sharing
-        path: "/",
-        secure: secureCookies,
-        domain: `${constServer.PROPSTO_HOST === "localhost" ? "" : "."}${constServer.PROPSTO_HOST}`, // Use the common domain for subdomains
-      },
-    },
+    sessionToken: createCookieConfig("session-token"),
+    state: createCookieConfig("state"),
+    pkceCodeVerifier: createCookieConfig("pkce.code_verifier"),
+    callbackUrl: createCookieConfig("callback-url"),
   },
 } satisfies NextAuthConfig;
 

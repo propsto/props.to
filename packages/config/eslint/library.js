@@ -2,6 +2,7 @@ const { FlatCompat } = require("@eslint/eslintrc");
 const js = require("@eslint/js");
 const { defineConfig, globalIgnores } = require("eslint/config");
 const importPlugin = require("eslint-plugin-import");
+const turboPlugin = require("eslint-plugin-turbo");
 const tsPlugin = require("@typescript-eslint/eslint-plugin");
 const tsParser = require("@typescript-eslint/parser");
 const { resolve } = require("node:path");
@@ -31,6 +32,7 @@ module.exports = defineConfig([
   {
     plugins: {
       import: importPlugin,
+      turbo: turboPlugin,
     },
     settings: {
       "import/resolver": {
@@ -41,6 +43,7 @@ module.exports = defineConfig([
     },
     rules: {
       "import/no-default-export": "off",
+      "turbo/no-undeclared-env-vars": "error",
     },
   },
   {

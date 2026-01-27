@@ -1,0 +1,195 @@
+name: E2E Tests
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: read
+
+on:
+  deployment_status:
+
+jobs:
+  e2e:
+    name: Run E2E Tests
+    # Only trigger on "app" deployment to run once per commit
+    # The workflow will wait for auth to be ready before running tests
+    if: |
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Preview – app'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: e2e-${{ github.event.deployment.sha }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Get project info
+        id: project
+        run: |
+          ENV="${{ github.event.deployment.environment }}"
+          PROJECT=$(echo "$ENV" | rev | cut -d' ' -f1 | rev | tr '[:upper:]' '[:lower:]')
+          echo "name=$PROJECT" >> $GITHUB_OUTPUT
+
+      - name: Get PR number
+        id: pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
+          PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[0].number")
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
+            echo "No PR found for this deployment"
+            exit 0
+          fi
+          echo "number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Define preview URLs
+        id: urls
+        run: |
+          PR_NUM="${{ steps.pr.outputs.number }}"
+          HOST="${{ vars.PROPSTO_HOST }}"
+          echo "app=https://app.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
+          echo "auth=https://auth.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
+
+      - name: Check if both previews are ready
+        id: check-previews
+        run: |
+          APP_URL="${{ steps.urls.outputs.app }}"
+          AUTH_URL="${{ steps.urls.outputs.auth }}"
+
+          # Check if URLs are reachable (retry up to 12 times with 15s delay = 3 minutes max wait)
+          check_url() {
+            local url=$1
+            local max_attempts=12
+            local attempt=1
+            while [ $attempt -le $max_attempts ]; do
+              if curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" | grep -qE "^(200|301|302|307|308|401|403)$"; then
+                return 0
+              fi
+              echo "Attempt $attempt/$max_attempts: $url not ready, waiting 15s..."
+              sleep 15
+              attempt=$((attempt + 1))
+            done
+            return 1
+          }
+
+          APP_READY=false
+          AUTH_READY=false
+
+          if check_url "$APP_URL"; then
+            APP_READY=true
+          fi
+
+          if check_url "$AUTH_URL"; then
+            AUTH_READY=true
+          fi
+
+          echo "App ready: $APP_READY ($APP_URL)"
+          echo "Auth ready: $AUTH_READY ($AUTH_URL)"
+          echo "app_ready=$APP_READY" >> $GITHUB_OUTPUT
+          echo "auth_ready=$AUTH_READY" >> $GITHUB_OUTPUT
+
+          if [[ "$APP_READY" == "true" ]] && [[ "$AUTH_READY" == "true" ]]; then
+            echo "both_ready=true" >> $GITHUB_OUTPUT
+          else
+            echo "both_ready=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Skip if not all previews ready
+        if: steps.check-previews.outputs.both_ready != 'true'
+        run: |
+          echo "Not all previews are ready yet. Skipping E2E tests."
+          echo "This workflow will run again when the other preview is deployed."
+
+      - name: Checkout code
+        if: steps.check-previews.outputs.both_ready == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        if: steps.check-previews.outputs.both_ready == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        if: steps.check-previews.outputs.both_ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        if: steps.check-previews.outputs.both_ready == 'true'
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Get Playwright version
+        if: steps.check-previews.outputs.both_ready == 'true'
+        id: playwright-version
+        run: echo "version=$(cd e2e/auth && pnpm exec playwright --version | head -1)" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        if: steps.check-previews.outputs.both_ready == 'true'
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright browsers
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          cd e2e/auth && pnpm exec playwright install --with-deps chromium
+          cd ../app && pnpm exec playwright install chromium
+
+      - name: Install Playwright dependencies
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      # Database seeding now happens during Vercel build via vercel-build script
+      # This ensures the same DATABASE_URL is used for both seeding and runtime
+
+      - name: Run Auth E2E tests
+        if: steps.check-previews.outputs.both_ready == 'true'
+        env:
+          AUTH_URL: ${{ steps.urls.outputs.auth }}
+          PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
+        run: |
+          cd e2e/auth
+          pnpm exec playwright test --reporter=line
+
+      - name: Run App E2E tests
+        if: steps.check-previews.outputs.both_ready == 'true'
+        env:
+          PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
+          AUTH_URL: ${{ steps.urls.outputs.auth }}
+        run: |
+          cd e2e/app
+          pnpm exec playwright test --reporter=line
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: failure() && steps.check-previews.outputs.both_ready == 'true'
+        with:
+          name: e2e-results-pr-${{ steps.pr.outputs.number }}
+          path: |
+            e2e/*/test-results/
+            /tmp/*.png
+          retention-days: 7
+
+      - name: Comment on PR with results
+        if: always() && steps.check-previews.outputs.both_ready == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr.outputs.number }};
+            const success = '${{ job.status }}' === 'success';
+            const appUrl = '${{ steps.urls.outputs.app }}';
+            const authUrl = '${{ steps.urls.outputs.auth }}';
+
+            const body = success
+              ? `✅ **E2E Tests Passed**\n\nTested against:\n- App: ${appUrl}\n- Auth: ${authUrl}`
+              : `❌ **E2E Tests Failed**\n\nTested against:\n- App: ${appUrl}\n- Auth: ${authUrl}\n\n[View details](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body
+            });

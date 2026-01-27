@@ -192,6 +192,19 @@ export function getVisibleSteps(
   const orgStep = getOrganizationStep(user, orgStatus);
   if (orgStep) {
     steps.push(orgStep);
+  } else if (orgStatus === "member" && user.hostedDomain) {
+    // User already completed an org step - show it in the trail
+    // Determine which step based on their role: owners created the org, others joined
+    const userOrgRole = user.organizations?.find(
+      org => org.organizationSlug, // Has at least one org
+    )?.role;
+    if (userOrgRole === "OWNER") {
+      // User created the organization
+      steps.push("organization");
+    } else if (userOrgRole) {
+      // User joined an existing organization
+      steps.push("organization-join");
+    }
   }
 
   // Always end with complete

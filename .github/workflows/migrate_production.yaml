@@ -1,0 +1,72 @@
+name: Migrate Production Database
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/data/migrations/**"
+      - "packages/data/schema.prisma"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  migrate:
+    name: Run Prisma Migrations
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values for env validation during install/generate (DATABASE_URL overridden for actual migration)
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      EMAIL_FROM: "ci@example.com"
+      AUTH_SECRET: "ci-dummy-secret-not-used"
+      PROPSTO_ENV: "production"
+      PROPSTO_APP_URL: "https://app.example.com"
+      AUTH_URL: "https://auth.example.com"
+      PROPSTO_HOST: "example.com"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+        run: pnpm --filter @propsto/data db-deploy
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const run_url = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            // Find the PR that was merged
+            const commits = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: context.sha
+            });
+
+            if (commits.data.length > 0) {
+              const pr = commits.data[0];
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body: `⚠️ **Production database migration failed!**\n\nThe migration that was part of this PR failed to apply to production.\n\n[View workflow run](${run_url})`
+              });
+            }

@@ -6,6 +6,14 @@
 
 import { type User } from "next-auth";
 
+// Organization membership type (matches next-auth User extension)
+type OrganizationMembership = {
+  organizationId: string;
+  organizationSlug: string;
+  organizationName: string;
+  role: string;
+};
+
 // Extended user type with Google Workspace fields
 export type WelcomeUser = User & {
   role?: string;
@@ -13,6 +21,7 @@ export type WelcomeUser = User & {
   isGoogleWorkspaceAdmin?: boolean;
   pendingLinkToken?: string | null;
   onboardingCompletedAt?: Date | string | null;
+  organizations?: OrganizationMembership[];
 };
 
 // Organization status type

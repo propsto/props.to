@@ -105,12 +105,18 @@ const userInclude = Prisma.validator<Prisma.UserInclude>()({
 
 export async function createUser(data: {
   email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  image?: string | null;
   hostedDomain?: string | null;
   isGoogleWorkspaceAdmin?: boolean;
 }) {
   try {
     const dataWithSlug = {
       email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      image: data.image,
       hostedDomain: data.hostedDomain,
       isGoogleWorkspaceAdmin: data.isGoogleWorkspaceAdmin ?? false,
       slug: { create: { slug: `user-${uuidv4()}` } },
@@ -252,10 +258,42 @@ export async function updateUser(
 export async function deleteUser(id: string) {
   try {
     logger("deleteUser", { id });
+
+    // Get user with their slugs before deletion
+    const user = await db.user.findUnique({
+      where: { id },
+      include: {
+        ...userInclude,
+        organizationSlugs: true,
+      },
+    });
+
+    if (!user) {
+      return handleError(new Error("User not found"));
+    }
+
+    // Collect all slug IDs to delete (personal + org-scoped)
+    const slugIdsToDelete = [
+      user.slugId, // Personal slug
+      ...user.organizationSlugs.map(s => s.id), // Org-scoped slugs
+    ];
+
+    // Delete the user first (this will work because of the cascade setup)
     const deletedUser = await db.user.delete({
       where: { id },
       include: userInclude,
     });
+
+    // Delete the orphaned slugs
+    await db.slug.deleteMany({
+      where: { id: { in: slugIdsToDelete } },
+    });
+
+    logger("deleteUser: deleted user and slugs", {
+      userId: id,
+      slugsDeleted: slugIdsToDelete.length,
+    });
+
     return handleSuccess(userMapper(deletedUser));
   } catch (e) {
     return handleError(e);

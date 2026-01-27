@@ -1,4 +1,2 @@
-pnpm format
-git add -A
-
+pnpm lint-staged
 pnpm lint && pnpm type-check

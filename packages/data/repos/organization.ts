@@ -235,3 +235,49 @@ export async function getOrganizationMembers(
     return handleError(e);
   }
 }
+
+// Delete an organization and its associated slugs
+export async function deleteOrganization(organizationId: string) {
+  try {
+    logger("deleteOrganization", { organizationId });
+
+    // Get organization with its slugs before deletion
+    const organization = await db.organization.findUnique({
+      where: { id: organizationId },
+      include: {
+        slug: true,
+        scopedSlugs: true, // Slugs scoped to this organization (member usernames, groups)
+      },
+    });
+
+    if (!organization) {
+      return handleError(new Error("Organization not found"));
+    }
+
+    // Collect all slug IDs to delete
+    const slugIdsToDelete = [
+      organization.slugId, // Organization's own slug
+      ...organization.scopedSlugs.map(s => s.id), // All org-scoped slugs
+    ];
+
+    // Delete the organization (cascades to members, settings, etc.)
+    const deletedOrganization = await db.organization.delete({
+      where: { id: organizationId },
+      include: { slug: true },
+    });
+
+    // Delete the orphaned slugs
+    await db.slug.deleteMany({
+      where: { id: { in: slugIdsToDelete } },
+    });
+
+    logger("deleteOrganization: deleted organization and slugs", {
+      organizationId,
+      slugsDeleted: slugIdsToDelete.length,
+    });
+
+    return handleSuccess(deletedOrganization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
