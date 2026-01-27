@@ -42,9 +42,13 @@ async function main() {
     console.log(`Schema path: ${schemaPath}`);
     console.log(`Seed script path: ${seedPath}`);
 
-    // First, run migrations to ensure the database schema exists
+    // For Neon preview branches, the database is created from the main branch
+    // which already has the schema applied. We just need to run migrations
+    // to ensure any new migrations are applied.
+    // Use --url flag to pass DATABASE_URL directly since prisma.config.ts
+    // uses @propsto/constants which has Zod validation that may fail.
     console.log("Running migrations...");
-    execSync(`npx prisma migrate deploy --schema="${schemaPath}"`, {
+    execSync(`npx prisma migrate deploy --schema="${schemaPath}" --url="${process.env.DATABASE_URL}"`, {
       stdio: "inherit",
       cwd: monorepoRoot,
       env: {
