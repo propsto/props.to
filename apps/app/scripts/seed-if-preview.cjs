@@ -3,27 +3,48 @@
 /**
  * Seed database if running in Vercel preview environment.
  * This ensures E2E tests have the necessary test data.
+ *
+ * In Vercel, DATABASE_URL is injected by the Vercel-Neon integration,
+ * so we run the seed script directly without needing dotenv.
  */
 
 const { execSync } = require("child_process");
+const path = require("path");
 
 const VERCEL_ENV = process.env.VERCEL_ENV;
 
 async function main() {
   console.log(`VERCEL_ENV: ${VERCEL_ENV}`);
+  console.log(`DATABASE_URL: ${process.env.DATABASE_URL ? "[SET]" : "[NOT SET]"}`);
 
   if (VERCEL_ENV !== "preview") {
     console.log("Not a preview environment, skipping seed.");
     return;
   }
 
+  if (!process.env.DATABASE_URL) {
+    console.error("DATABASE_URL is not set, cannot seed database.");
+    return;
+  }
+
   console.log("Preview environment detected, seeding database...");
 
   try {
-    // Run the seed command from the data package
-    execSync("pnpm --filter @propsto/data db-seed", {
+    // Get the monorepo root (apps/app -> root)
+    const monorepoRoot = path.resolve(process.cwd(), "..", "..");
+    const seedPath = path.join(monorepoRoot, "packages", "data", "seed.ts");
+
+    console.log(`Monorepo root: ${monorepoRoot}`);
+    console.log(`Seed script path: ${seedPath}`);
+
+    // Run the seed script directly with tsx
+    // DATABASE_URL is already in the environment from Vercel-Neon integration
+    execSync(`npx tsx "${seedPath}"`, {
       stdio: "inherit",
-      cwd: process.cwd().replace(/\/apps\/app$/, ""), // Go to monorepo root
+      cwd: monorepoRoot,
+      env: {
+        ...process.env,
+      },
     });
     console.log("Database seeded successfully!");
   } catch (error) {
