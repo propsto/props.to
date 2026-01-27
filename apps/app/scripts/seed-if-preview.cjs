@@ -33,12 +33,26 @@ async function main() {
     // Get the monorepo root (apps/app -> root)
     const monorepoRoot = path.resolve(process.cwd(), "..", "..");
     const seedPath = path.join(monorepoRoot, "packages", "data", "seed.ts");
+    const schemaPath = path.join(monorepoRoot, "packages", "data", "schema.prisma");
 
     console.log(`Monorepo root: ${monorepoRoot}`);
+    console.log(`Schema path: ${schemaPath}`);
     console.log(`Seed script path: ${seedPath}`);
 
-    // Run the seed script directly with tsx
+    // First, run migrations to ensure the database schema exists
+    console.log("Running migrations...");
+    execSync(`npx prisma migrate deploy --schema="${schemaPath}"`, {
+      stdio: "inherit",
+      cwd: monorepoRoot,
+      env: {
+        ...process.env,
+      },
+    });
+    console.log("Migrations applied successfully!");
+
+    // Then run the seed script directly with tsx
     // DATABASE_URL is already in the environment from Vercel-Neon integration
+    console.log("Running seed script...");
     execSync(`npx tsx "${seedPath}"`, {
       stdio: "inherit",
       cwd: monorepoRoot,
