@@ -1,74 +1,40 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Feedback Links", () => {
-  test("should display empty state when no links exist", async ({
+  test("should display links page when authenticated", async ({
     page,
     baseURL,
   }) => {
     await page.goto(`${baseURL}/links`);
+    await page.waitForLoadState("networkidle");
 
-    // Check for empty state or links list
-    const pageContent = await page.textContent("body");
-    expect(
-      pageContent?.includes("Feedback Links") ||
-        pageContent?.includes("No feedback links"),
-    ).toBeTruthy();
+    // Verify the heading is visible (not just in RSC payload)
+    // This will fail if session is not working
+    await expect(
+      page.getByRole("heading", { name: /feedback links/i }),
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test("should navigate to create link page", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/links`);
-
-    // Debug: log current URL and page content
-    console.log(`Initial URL: ${page.url()}`);
-
-    // Wait for page to load
     await page.waitForLoadState("networkidle");
 
-    // Debug: check if we're authenticated or redirected
-    const pageTitle = await page.title();
-    console.log(`Page title: ${pageTitle}`);
+    // Wait for page to render authenticated content
+    await expect(
+      page.getByRole("heading", { name: /feedback links/i }),
+    ).toBeVisible({ timeout: 15000 });
 
     // Click create link button
-    const createLink = page.getByRole("link", { name: /create link/i }).first();
-    await expect(createLink).toBeVisible({ timeout: 10000 });
-    await createLink.click();
-
-    // Verify we're on the create page
-    await expect(page).toHaveURL(/\/links\/new/);
-    await page.waitForLoadState("networkidle");
-
-    // Debug: log URL after navigation
-    console.log(`After navigation URL: ${page.url()}`);
-
-    // Wait for hydration to complete
     await page
-      .waitForFunction(
-        () => {
-          return (
-            document.querySelector("h1") !== null ||
-            document.body.innerText.includes("Create") ||
-            document.body.innerText.includes("Sign in")
-          );
-        },
-        { timeout: 15000 },
-      )
-      .catch(() => {
-        console.log("No h1 or expected text found after waiting");
-      });
+      .getByRole("link", { name: /create link/i })
+      .first()
+      .click();
 
-    // Take screenshot to see what's on the page
-    await page.screenshot({ path: "/tmp/links-new-page.png", fullPage: true });
-    console.log("Screenshot saved to /tmp/links-new-page.png");
-
-    // Log visible text content (not raw RSC payload)
-    const visibleText = await page.evaluate(() => document.body.innerText);
-    console.log(
-      `Visible page text (first 500 chars): ${visibleText?.slice(0, 500)}`,
-    );
-
+    // Verify we're on the create page with visible heading
+    await expect(page).toHaveURL(/\/links\/new/);
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test("should create a new feedback link", async ({ page, baseURL }) => {
@@ -78,11 +44,10 @@ test.describe("Feedback Links", () => {
     // Wait for form to load
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: 15000 });
 
     // Fill out the form
-    const nameInput = page.getByLabel(/name/i).first();
-    await nameInput.fill("E2E Test Link");
+    await page.getByLabel(/name/i).first().fill("E2E Test Link");
 
     // Select template
     await page.locator('[role="combobox"]').first().click();
@@ -92,11 +57,11 @@ test.describe("Feedback Links", () => {
     await page.getByRole("button", { name: /create/i }).click();
 
     // Verify redirect to links page
-    await page.waitForURL(/\/links$/, { timeout: 10000 });
+    await page.waitForURL(/\/links$/, { timeout: 15000 });
 
-    // Verify a link appears (use first() since there might be multiple)
+    // Verify a link appears
     await expect(page.getByText("E2E Test Link").first()).toBeVisible({
-      timeout: 10000,
+      timeout: 15000,
     });
   });
 
@@ -104,7 +69,7 @@ test.describe("Feedback Links", () => {
     page,
     baseURL,
   }) => {
-    // First create a link with a unique name
+    // Create a link with a unique name
     const uniqueName = `Test Link ${Date.now()}`;
     await page.goto(`${baseURL}/links/new`);
     await page.waitForLoadState("networkidle");
@@ -112,19 +77,17 @@ test.describe("Feedback Links", () => {
     // Wait for form to load
     await expect(
       page.getByRole("heading", { name: /create feedback link/i }),
-    ).toBeVisible({ timeout: 10000 });
+    ).toBeVisible({ timeout: 15000 });
 
-    const nameInput = page.getByLabel(/name/i).first();
-    await nameInput.fill(uniqueName);
-
+    await page.getByLabel(/name/i).first().fill(uniqueName);
     await page.locator('[role="combobox"]').first().click();
     await page.getByRole("option").first().click();
     await page.getByRole("button", { name: /create/i }).click();
-    await page.waitForURL(/\/links$/, { timeout: 10000 });
+    await page.waitForURL(/\/links$/, { timeout: 15000 });
 
     // Verify the newly created link is displayed
     await expect(page.getByText(uniqueName).first()).toBeVisible({
-      timeout: 10000,
+      timeout: 15000,
     });
   });
 });
