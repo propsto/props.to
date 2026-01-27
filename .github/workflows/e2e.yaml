@@ -169,6 +169,11 @@ jobs:
 
           echo "Looking for Neon branch: $NEON_BRANCH_NAME"
 
+          # List all branches for debugging
+          echo "Listing all Neon branches:"
+          curl -s -H "Authorization: Bearer $NEON_API_KEY" \
+            "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches" | jq -r '.branches[] | "\(.name) -> \(.id)"'
+
           # Get branch details from Neon API
           BRANCH_RESPONSE=$(curl -s -H "Authorization: Bearer $NEON_API_KEY" \
             "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches")
@@ -225,6 +230,14 @@ jobs:
         run: |
           echo "Seeding preview database..."
           pnpm --filter @propsto/data db-seed
+
+      - name: Verify seeded data
+        if: steps.check-previews.outputs.both_ready == 'true' && steps.neon-branch.outputs.found == 'true'
+        env:
+          DATABASE_URL: ${{ steps.neon-branch.outputs.url }}
+        run: |
+          echo "Verifying templates exist in database..."
+          npx prisma db execute --stdin <<< "SELECT id, name, \"isDefault\" FROM \"FeedbackTemplate\" LIMIT 10;"
 
       - name: Run Auth E2E tests
         if: steps.check-previews.outputs.both_ready == 'true'
