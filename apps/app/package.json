@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm dotenv -- next build",
-    "vercel-build": "node scripts/seed-if-preview.cjs && next build",
+    "vercel-build": "node ../../scripts/seed-if-preview.cjs && next build",
     "dev": "pnpm dotenv -- pnpm next-dev",
     "dotenv": "dotenv -e ../../.env",
     "lint": "eslint",

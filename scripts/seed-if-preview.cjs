@@ -6,6 +6,9 @@
  *
  * In Vercel, DATABASE_URL is injected by the Vercel-Neon integration,
  * so we run the seed script directly without needing dotenv.
+ *
+ * This script should be called from any app's vercel-build script:
+ *   "vercel-build": "node ../../scripts/seed-if-preview.cjs && next build"
  */
 
 const { execSync } = require("child_process");
@@ -30,8 +33,8 @@ async function main() {
   console.log("Preview environment detected, seeding database...");
 
   try {
-    // Get the monorepo root (apps/app -> root)
-    const monorepoRoot = path.resolve(process.cwd(), "..", "..");
+    // This script is at /scripts, so root is one level up
+    const monorepoRoot = path.resolve(__dirname, "..");
     const seedPath = path.join(monorepoRoot, "packages", "data", "seed.ts");
     const schemaPath = path.join(monorepoRoot, "packages", "data", "schema.prisma");
 
