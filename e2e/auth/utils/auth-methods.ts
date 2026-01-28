@@ -33,7 +33,7 @@ export async function waitForPostLoginRedirect(page: Page): Promise<void> {
   const appHost = new URL(appUrl).hostname;
 
   await page.waitForURL(
-    url => url.includes("/welcome") || url.hostname.includes(appHost),
+    url => url.href.includes("/welcome") || url.hostname.includes(appHost),
     { timeout: 15000 }
   );
 }
