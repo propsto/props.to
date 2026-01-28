@@ -5,9 +5,6 @@ permissions:
 
 on:
   pull_request:
-    paths:
-      - "packages/data/schema.prisma"
-      - "packages/data/migrations/**"
 
 env:
   NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
@@ -16,8 +13,26 @@ env:
   NEON_MAIN_BRANCH_ID: ${{ vars.NEON_MAIN_BRANCH_ID }}
 
 jobs:
+  # Check if migration files changed
+  changes:
+    name: Check for Changes
+    runs-on: ubuntu-latest
+    outputs:
+      migrations: ${{ steps.filter.outputs.migrations }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            migrations:
+              - 'packages/data/schema.prisma'
+              - 'packages/data/migrations/**'
+
   check:
     name: Validate Migrations
+    needs: changes
+    if: needs.changes.outputs.migrations == 'true'
     runs-on: ubuntu-latest
     env:
       # Dummy values for env validation during install/generate (not used for actual DB operations)
@@ -49,6 +64,8 @@ jobs:
 
   dry-run:
     name: Dry-run Migration on Production Copy
+    needs: changes
+    if: needs.changes.outputs.migrations == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
