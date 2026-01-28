@@ -6,9 +6,16 @@ import { send } from ".";
 
 export async function sendWelcomeEmail(
   email: Email,
+  userName: string,
 ): Promise<HandleEmailEvent> {
   try {
-    const sent = await send(email, "Welcome to Props.to", WelcomeEmail);
+    const dashboardUrl = `${process.env.PROPSTO_APP_URL ?? "https://app.props.to"}`;
+    const sent = await send(
+      email,
+      "Welcome to props.to 🎉",
+      WelcomeEmail,
+      { userName, dashboardUrl },
+    );
     return handleSuccess(sent);
   } catch (e) {
     return handleError(e);
