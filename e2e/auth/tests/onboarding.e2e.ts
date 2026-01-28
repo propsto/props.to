@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- env vars checked anyway */
 import { test, expect } from "@playwright/test";
-import { signInByPassword } from "../utils/auth-methods";
+import { signInByPassword, waitForPostLoginRedirect } from "../utils/auth-methods";
 
 /**
  * Note: These tests require a user who has NOT completed onboarding.
@@ -25,7 +25,9 @@ test.describe("Onboarding Stepper Structure", () => {
     await expect(page).toHaveTitle(/Authenticate/);
 
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(3000);
+
+    // Wait for redirect to either welcome page or app dashboard
+    await waitForPostLoginRedirect(page);
 
     // After login, user should be on welcome page or redirected to app
     // (depends on their onboarding status)
@@ -43,7 +45,7 @@ test.describe("Personal Step", () => {
     // Login and navigate to welcome page
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
 
     // If we're on welcome page, we can test the steps
     // If redirected to app, the user already completed onboarding
@@ -93,7 +95,7 @@ test.describe("Account Step", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
   });
 
   test("should allow username configuration", async ({ page }) => {
@@ -132,7 +134,7 @@ test.describe("Stepper Navigation", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
   });
 
   test("should display step indicators", async ({ page }) => {
@@ -219,7 +221,7 @@ test.describe("Completion Step", () => {
   }) => {
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
 
     // If user already completed onboarding, they'll be redirected to dashboard
     const currentUrl = page.url();
@@ -242,7 +244,7 @@ test.describe("Completion Step", () => {
   }) => {
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
 
     const currentUrl = page.url();
 
@@ -263,7 +265,7 @@ test.describe("Form Validation in Onboarding", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     await page.goto(baseURL ?? "");
     await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
-    await page.waitForTimeout(2000);
+    await waitForPostLoginRedirect(page);
   });
 
   test("should require first name on personal step", async ({ page }) => {
