@@ -28,10 +28,10 @@ const SEED_IDS = {
   anonymousTemplate: "00000000-0000-0000-0000-000000000042",
   leadershipTemplate: "00000000-0000-0000-0000-000000000043",
   peerReviewTemplate: "00000000-0000-0000-0000-000000000044",
-  // Integration
-  instagram: "00000000-0000-0000-0000-000000000050",
-  // Uri
-  mikeInstagram: "00000000-0000-0000-0000-000000000060",
+  // Integration (BigInt - use numeric strings)
+  instagram: BigInt(50),
+  // Uri (BigInt - use numeric strings)
+  mikeInstagram: BigInt(60),
 };
 
 async function main() {
