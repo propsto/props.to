@@ -1,3 +1,7 @@
 # .kodiak.toml
 # Minimal config. version is the only required field.
 version = 1
+
+[update]
+always = true
+require_automerge_label = false
