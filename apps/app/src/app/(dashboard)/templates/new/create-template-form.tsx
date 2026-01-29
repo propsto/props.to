@@ -305,7 +305,7 @@ export function CreateTemplateForm(): React.JSX.Element {
               {/* Fields Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-base">Fields</FormLabel>
+                  <span className="text-base font-medium">Fields</span>
                   <Button
                     type="button"
                     variant="outline"
