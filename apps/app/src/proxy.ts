@@ -10,7 +10,7 @@ import { auth } from "@/server/auth.edge";
  * - Reserved slugs (feedback, templates, links, goals, etc.) require authentication
  * - Non-reserved paths (/<username>, /<username>/<link>) are public profile pages
  */
-export default function middleware(request: NextRequest): Response {
+export default function proxy(request: NextRequest): Response {
   const { pathname } = request.nextUrl;
 
   // Skip static files and Next.js internals
