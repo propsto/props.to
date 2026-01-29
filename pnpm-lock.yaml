@@ -198,6 +198,9 @@ importers:
       '@propsto/data':
         specifier: workspace:*
         version: link:../../packages/data
+      '@propsto/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@propsto/logger':
         specifier: workspace:*
         version: link:../../packages/logger
@@ -655,6 +658,22 @@ importers:
       maildev:
         specifier: 2.2.1
         version: 2.2.1
+
+  packages/forms:
+    dependencies:
+      '@json-render/core':
+        specifier: ^0.3.0
+        version: 0.3.0(zod@4.2.1)
+      zod:
+        specifier: 4.2.1
+        version: 4.2.1
+    devDependencies:
+      '@propsto/config':
+        specifier: workspace:*
+        version: link:../config
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
 
   packages/logger:
     dependencies:
@@ -1644,6 +1663,11 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@json-render/core@0.3.0':
+    resolution: {integrity: sha512-/Om3SNSNkOOkcx07luCBizN8stDrpQ0haclo8iv+1U40WpTjNsJ5u4vt8GIrKMjr/Cdm+cCoV+PiwGEZ/m1yVQ==}
+    peerDependencies:
+      zod: ^4.0.0
 
   '@ljharb/through@2.3.14':
     resolution: {integrity: sha512-ajBvlKpWucBB17FuQYUShqpqy8GRgYEpJW0vWJbUu1CV9lWyrDCapy0lScU8T8Z6qn49sSwJB3+M+evYIdGg+A==}
@@ -7552,6 +7576,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@json-render/core@0.3.0(zod@4.2.1)':
+    dependencies:
+      zod: 4.2.1
 
   '@ljharb/through@2.3.14':
     dependencies:

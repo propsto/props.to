@@ -7,6 +7,7 @@ import { send } from ".";
 export async function sendPasswordResetEmail(
   email: Email,
   token: string,
+  userName?: string,
 ): Promise<HandleEmailEvent> {
   try {
     const resetLink = `${process.env.AUTH_URL ?? ""}/new-password?token=${token}`;
@@ -14,7 +15,7 @@ export async function sendPasswordResetEmail(
       email,
       "Reset your password",
       PasswordResetTokenEmail,
-      resetLink,
+      { userName, resetLink, expiresInMinutes: 60 },
     );
     return handleSuccess(sent);
   } catch (e) {
@@ -24,9 +25,16 @@ export async function sendPasswordResetEmail(
 
 export async function sendPasswordChanged(
   email: Email,
+  userName?: string,
 ): Promise<HandleEmailEvent> {
   try {
-    const sent = await send(email, "Password changed", PasswordChangedEmail);
+    const loginUrl = `${process.env.AUTH_URL ?? ""}/sign-in`;
+    const sent = await send(
+      email,
+      "Your password was changed",
+      PasswordChangedEmail,
+      { userName, loginUrl, changedAt: new Date() },
+    );
     return handleSuccess(sent);
   } catch (e) {
     return handleError(e);

@@ -27,7 +27,8 @@
     "date-fns": "4.1.0",
     "react-hook-form": "7.60.0",
     "survey-core": "^2.5.6",
-    "survey-react-ui": "^2.5.6"
+    "survey-react-ui": "^2.5.6",
+    "@propsto/email": "workspace:*"
   },
   "peerDependencies": {
     "@types/node": "*",
