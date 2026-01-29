@@ -77,10 +77,13 @@ test.describe("Public Feedback Submission", () => {
     await page.goto(`${baseURL}/mikeryan/mike-props`);
     await page.waitForLoadState("networkidle");
 
-    // Verify the feedback form card is present
+    // Verify the feedback form page loaded (h1 has "Give Feedback to")
     await expect(
-      page.getByRole("heading", { name: /share your feedback/i }),
+      page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
+
+    // Verify the feedback form card title is present (CardTitle is a div, not heading)
+    await expect(page.getByText(/share your feedback/i)).toBeVisible();
 
     // Verify form fields are present
     await expect(page.getByLabel(/your feedback/i)).toBeVisible();
@@ -99,9 +102,9 @@ test.describe("Public Feedback Submission", () => {
     await page.goto(`${baseURL}/mikeryan/mike-props`);
     await page.waitForLoadState("networkidle");
 
-    // Wait for form to load
+    // Wait for form to load (h1 has "Give Feedback to")
     await expect(
-      page.getByRole("heading", { name: /share your feedback/i }),
+      page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
 
     // Fill out feedback text
@@ -130,10 +133,10 @@ test.describe("Public Feedback Submission", () => {
     // Wait for navigation to thank you page
     await page.waitForURL(/\/mikeryan\/mike-props\/thanks/, { timeout: 20000 });
 
-    // Verify thank you page
-    await expect(page.getByRole("heading", { name: /thank you/i })).toBeVisible(
-      { timeout: 15000 },
-    );
+    // Verify thank you page (CardTitle is a div, not heading)
+    await expect(page.getByText(/thank you/i).first()).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test("should handle non-existent user gracefully", async ({
@@ -186,9 +189,9 @@ test.describe("Public Feedback Form Validation", () => {
     await page.goto(`${baseURL}/mikeryan/mike-props`);
     await page.waitForLoadState("networkidle");
 
-    // Wait for form to load
+    // Wait for form to load (h1 has "Give Feedback to")
     await expect(
-      page.getByRole("heading", { name: /share your feedback/i }),
+      page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
 
     // Try to submit without filling feedback
@@ -217,10 +220,10 @@ test.describe("Thank You Page", () => {
     // The page should load successfully with thank you content
     await expect(page.locator("body")).toBeVisible();
 
-    // Check for thank you heading
-    await expect(page.getByRole("heading", { name: /thank you/i })).toBeVisible(
-      { timeout: 15000 },
-    );
+    // Check for thank you title (CardTitle is a div, not heading)
+    await expect(page.getByText(/thank you/i).first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Check for confirmation message
     await expect(
@@ -241,9 +244,9 @@ test.describe("Anonymous Feedback Toggle", () => {
     await page.goto(`${baseURL}/mikeryan/mike-props`);
     await page.waitForLoadState("networkidle");
 
-    // Wait for form to load
+    // Wait for form to load (h1 has "Give Feedback to")
     await expect(
-      page.getByRole("heading", { name: /share your feedback/i }),
+      page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
 
     // Check if anonymous toggle is visible
