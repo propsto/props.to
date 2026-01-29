@@ -45,11 +45,7 @@ test.describe("Feedback Templates", () => {
     ).toBeVisible();
   });
 
-  // TODO: Enable when /templates/new page is implemented
-  test.skip("should navigate to create template page", async ({
-    page,
-    baseURL,
-  }) => {
+  test("should navigate to create template page", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/templates`);
     await page.waitForLoadState("networkidle");
 
@@ -68,8 +64,7 @@ test.describe("Feedback Templates", () => {
     ).toBeVisible({ timeout: 15000 });
   });
 
-  // TODO: Enable when /templates/new page is implemented
-  test.skip("should create a new template manually", async ({ page, baseURL }) => {
+  test("should create a new template manually", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/templates/new`);
     await page.waitForLoadState("networkidle");
 

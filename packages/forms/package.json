@@ -1,0 +1,23 @@
+{
+  "name": "@propsto/forms",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./providers/*": "./providers/*.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@json-render/core": "^0.3.0",
+    "zod": "4.2.1"
+  },
+  "devDependencies": {
+    "@propsto/config": "workspace:*",
+    "typescript": "5.8.3"
+  }
+}
