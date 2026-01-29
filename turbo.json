@@ -37,6 +37,24 @@
       "outputs": [],
       "persistent": true
     },
+    "@propsto/email#export": {
+      "outputs": [
+        "../../apps/web/public/email-templates/**"
+      ]
+    },
+    "@propsto/web#build": {
+      "dependsOn": [
+        "@propsto/email#export",
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "packages/ui/**"
+      ],
+      "outputs": [
+        ".next/**"
+      ]
+    },
     "@propsto/constants#test": {
       "outputs": []
     },
