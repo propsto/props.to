@@ -108,13 +108,10 @@ test.describe("Feedback Templates", () => {
     const labelInput = page.getByPlaceholder("Question text");
     await labelInput.fill("What did they do well?");
 
-    // Select field type - find the card containing "Field 1" and get its combobox
-    const fieldCard = page.locator('[class*="rounded-lg"]').filter({ hasText: "Field 1" });
-    const typeCombobox = fieldCard.locator('button[role="combobox"]').first();
-    await typeCombobox.click();
-
-    // Wait for dropdown to open
-    await page.waitForTimeout(300);
+    // Select field type - find the "Type" label (exact match) and get its sibling combobox
+    // Note: "Feedback Type" is different from "Type" - exact match avoids confusion
+    const typeSection = page.getByText("Type", { exact: true }).locator("..");
+    await typeSection.getByRole("combobox").click();
 
     // Select "Text (multi-line)"
     const fieldTypeOption = page.getByRole("option", {
