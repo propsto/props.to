@@ -108,11 +108,13 @@ test.describe("Feedback Templates", () => {
     const labelInput = page.getByPlaceholder("Question text");
     await labelInput.fill("What did they do well?");
 
-    // Select field type - find the Type label within the field card and get its sibling combobox
-    // The field card contains "Field 1" text, and within it there's a "Type" label with a combobox
-    const fieldCard = page.locator("text=Field 1").locator("xpath=ancestor::div[contains(@class, 'rounded-lg')]");
-    const typeCombobox = fieldCard.getByRole("combobox").first();
+    // Select field type - find the card containing "Field 1" and get its combobox
+    const fieldCard = page.locator('[class*="rounded-lg"]').filter({ hasText: "Field 1" });
+    const typeCombobox = fieldCard.locator('button[role="combobox"]').first();
     await typeCombobox.click();
+
+    // Wait for dropdown to open
+    await page.waitForTimeout(300);
 
     // Select "Text (multi-line)"
     const fieldTypeOption = page.getByRole("option", {
