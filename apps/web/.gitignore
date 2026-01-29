@@ -1,0 +1,5 @@
+.vercel
+.env*.local
+
+# Generated email templates (built from @propsto/email)
+public/email-templates/
