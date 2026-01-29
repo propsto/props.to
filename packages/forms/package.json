@@ -2,6 +2,7 @@
   "name": "@propsto/forms",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
@@ -9,7 +10,7 @@
     "./providers/*": "./providers/*.ts"
   },
   "scripts": {
-    "lint": "eslint .",
+    "lint": "eslint",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
