@@ -10,6 +10,7 @@ import {
   Button,
   Hr,
   Preview,
+  Img,
 } from "@react-email/components";
 
 interface FeedbackReceivedEmailProps {
@@ -40,8 +41,15 @@ export function FeedbackReceivedEmail({
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.header}>
+            <Img
+              src="https://props.to/logo-color-rounded.png"
+              alt="Props.to"
+              width={32}
+              height={32}
+              style={styles.logoImg}
+            />
             <Heading as="h1" style={styles.logo}>
-              props.to
+              Props.to
             </Heading>
           </Section>
 
@@ -115,12 +123,19 @@ const styles = {
   },
   header: {
     padding: "32px 48px 0",
+    display: "flex",
+    alignItems: "center",
+  },
+  logoImg: {
+    marginRight: "8px",
+    borderRadius: "6px",
   },
   logo: {
     color: "#000",
     fontSize: "24px",
     fontWeight: "bold" as const,
     margin: "0",
+    letterSpacing: "0.025em",
   },
   content: {
     padding: "0 48px",
