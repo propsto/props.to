@@ -13,30 +13,31 @@ import {
   Img,
 } from "@react-email/components";
 
-interface PasswordChangedEmailProps {
-  userName?: string;
-  loginUrl: string;
-  changedAt?: Date;
+interface FeedbackReceivedEmailProps {
+  recipientName: string;
+  feedbackPreview?: string;
+  senderName?: string;
+  isAnonymous: boolean;
+  feedbackType: string;
+  dashboardUrl: string;
 }
 
-export function PasswordChangedEmail({
-  userName,
-  loginUrl,
-  changedAt = new Date(),
-}: PasswordChangedEmailProps): React.ReactElement {
-  const formattedDate = changedAt.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+export function FeedbackReceivedEmail({
+  recipientName = "there",
+  feedbackPreview,
+  senderName,
+  isAnonymous = false,
+  feedbackType = "recognition",
+  dashboardUrl = "https://app.props.to",
+}: FeedbackReceivedEmailProps): React.ReactElement {
+  const previewText = isAnonymous
+    ? `You received anonymous ${feedbackType.toLowerCase()} feedback`
+    : `${senderName ?? "Someone"} sent you ${feedbackType.toLowerCase()} feedback`;
 
   return (
     <Html>
       <Head />
-      <Preview>Your props.to password was changed</Preview>
+      <Preview>{previewText}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.header}>
@@ -54,40 +55,51 @@ export function PasswordChangedEmail({
 
           <Section style={styles.content}>
             <Heading as="h2" style={styles.heading}>
-              Password updated ✓
+              You received new feedback! 🎉
             </Heading>
 
-            <Text style={styles.text}>
-              Hi{userName ? ` ${userName}` : ""},
-            </Text>
+            <Text style={styles.text}>Hi {recipientName},</Text>
 
             <Text style={styles.text}>
-              Your password was successfully changed on {formattedDate}.
+              {isAnonymous ? (
+                <>Someone sent you anonymous {feedbackType.toLowerCase()} feedback.</>
+              ) : (
+                <>
+                  <strong>{senderName ?? "Someone"}</strong> sent you{" "}
+                  {feedbackType.toLowerCase()} feedback.
+                </>
+              )}
             </Text>
 
-            <Text style={styles.text}>
-              You can now sign in with your new password.
-            </Text>
+            {feedbackPreview && !isAnonymous && (
+              <Section style={styles.previewBox}>
+                <Text style={styles.previewLabel}>Preview:</Text>
+                <Text style={styles.previewText}>
+                  &quot;{feedbackPreview.slice(0, 200)}
+                  {feedbackPreview.length > 200 ? "..." : ""}&quot;
+                </Text>
+              </Section>
+            )}
 
-            <Button href={loginUrl} style={styles.button}>
-              Sign In
-            </Button>
-
-            <Section style={styles.warningBox}>
-              <Text style={styles.warningText}>
-                <strong>Didn't make this change?</strong> If you didn't reset
-                your password, please contact support immediately and secure
-                your account.
+            {isAnonymous && (
+              <Text style={styles.anonymousNote}>
+                This feedback was submitted anonymously. View the full feedback
+                in your dashboard.
               </Text>
-            </Section>
+            )}
+
+            <Button href={dashboardUrl} style={styles.button}>
+              View Feedback
+            </Button>
           </Section>
 
           <Hr style={styles.hr} />
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              This is a security notification. You're receiving this because
-              your account password was changed.
+              You received this email because someone submitted feedback through
+              your props.to profile. You can manage your notification
+              preferences in your account settings.
             </Text>
           </Section>
         </Container>
@@ -141,17 +153,31 @@ const styles = {
     lineHeight: "1.6",
     margin: "16px 0",
   },
-  warningBox: {
-    backgroundColor: "#fef3c7",
+  previewBox: {
+    backgroundColor: "#f3f4f6",
     borderRadius: "8px",
     padding: "16px 20px",
     margin: "24px 0",
   },
-  warningText: {
-    color: "#92400e",
-    fontSize: "14px",
+  previewLabel: {
+    color: "#6b7280",
+    fontSize: "12px",
+    fontWeight: "600" as const,
+    textTransform: "uppercase" as const,
+    margin: "0 0 8px",
+  },
+  previewText: {
+    color: "#1f2937",
+    fontSize: "15px",
+    fontStyle: "italic" as const,
     lineHeight: "1.5",
     margin: "0",
+  },
+  anonymousNote: {
+    color: "#6b7280",
+    fontSize: "14px",
+    fontStyle: "italic" as const,
+    margin: "16px 0",
   },
   button: {
     backgroundColor: "#000",
@@ -179,4 +205,4 @@ const styles = {
   },
 };
 
-export default PasswordChangedEmail;
+export default FeedbackReceivedEmail;

@@ -198,6 +198,9 @@ importers:
       '@propsto/data':
         specifier: workspace:*
         version: link:../../packages/data
+      '@propsto/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@propsto/forms':
         specifier: workspace:*
         version: link:../../packages/forms

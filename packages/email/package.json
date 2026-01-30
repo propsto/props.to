@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "email dev --dir templates",
     "email-build": "email build --dir templates",
-    "export": "email export --dir templates --outDir ../../apps/web/public/email-templates",
+    "export": "email export --dir templates --outDir ../../apps/web/public/email-templates && tsx scripts/generate-index.ts",
     "lint": "eslint",
     "maildev": "pnpm exec maildev",
     "type-check": "tsc --noEmit"

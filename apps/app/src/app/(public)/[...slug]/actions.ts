@@ -4,9 +4,12 @@ import {
   createFeedback,
   incrementLinkResponseCount,
   getFeedbackLink,
+  getUser,
 } from "@propsto/data/repos";
+import { sendFeedbackReceivedEmail } from "@propsto/email";
 import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
+import { constServer } from "@propsto/constants/server";
 
 interface SubmitFeedbackInput {
   linkId: string;
@@ -78,6 +81,29 @@ export async function submitFeedbackAction(
 
   // Increment the response count
   await incrementLinkResponseCount(link.id);
+
+  // Send email notification to recipient
+  try {
+    const userResult = await getUser({ id: link.userId });
+    if (userResult.success && userResult.data?.email) {
+      const recipientName =
+        userResult.data.firstName ?? userResult.data.email.split("@")[0];
+      const feedbackData = input.fieldsData as { feedback?: string };
+      const feedbackPreview = feedbackData?.feedback;
+
+      await sendFeedbackReceivedEmail(userResult.data.email, {
+        recipientName,
+        feedbackPreview: input.isAnonymous ? undefined : feedbackPreview,
+        senderName: input.isAnonymous ? undefined : input.submitterName,
+        isAnonymous: input.isAnonymous,
+        feedbackType: link.feedbackType.replace(/_/g, " "),
+        dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
+      });
+    }
+  } catch (emailError) {
+    // Log but don't fail the submission if email fails
+    console.error("Failed to send feedback notification email:", emailError);
+  }
 
   return { success: true };
 }
