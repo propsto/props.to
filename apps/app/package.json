@@ -28,7 +28,8 @@
     "react-hook-form": "7.60.0",
     "survey-core": "^2.5.6",
     "survey-react-ui": "^2.5.6",
-    "@propsto/email": "workspace:*"
+    "@propsto/email": "workspace:*",
+    "@propsto/forms": "workspace:*"
   },
   "peerDependencies": {
     "@types/node": "*",

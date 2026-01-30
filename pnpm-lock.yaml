@@ -201,6 +201,9 @@ importers:
       '@propsto/email':
         specifier: workspace:*
         version: link:../../packages/email
+      '@propsto/forms':
+        specifier: workspace:*
+        version: link:../../packages/forms
       '@propsto/logger':
         specifier: workspace:*
         version: link:../../packages/logger
