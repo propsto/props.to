@@ -11,6 +11,8 @@ import {
   Hr,
   Preview,
   Img,
+  Row,
+  Column,
 } from "@react-email/components";
 
 interface PasswordChangedEmailProps {
@@ -40,16 +42,22 @@ export function PasswordChangedEmail({
       <Body style={styles.body}>
         <Container style={styles.container}>
           <Section style={styles.header}>
-            <Img
-              src="https://props.to/logo-color-rounded.png"
-              alt="Props.to"
-              width={32}
-              height={32}
-              style={styles.logoImg}
-            />
-            <Heading as="h1" style={styles.logo}>
-              Props.to
-            </Heading>
+            <Row>
+              <Column style={styles.logoColumn}>
+                <Img
+                  src="https://props.to/logo-color-rounded.png"
+                  alt="Props.to"
+                  width={32}
+                  height={32}
+                  style={styles.logoImg}
+                />
+              </Column>
+              <Column>
+                <Heading as="h1" style={styles.logo}>
+                  Props.to
+                </Heading>
+              </Column>
+            </Row>
           </Section>
 
           <Section style={styles.content}>
@@ -111,11 +119,12 @@ const styles = {
   },
   header: {
     padding: "32px 48px 0",
-    display: "flex",
-    alignItems: "center",
+  },
+  logoColumn: {
+    width: "40px",
+    verticalAlign: "middle",
   },
   logoImg: {
-    marginRight: "8px",
     borderRadius: "6px",
   },
   logo: {
@@ -124,6 +133,7 @@ const styles = {
     fontWeight: "bold" as const,
     margin: "0",
     letterSpacing: "0.025em",
+    verticalAlign: "middle",
   },
   content: {
     padding: "0 48px",
