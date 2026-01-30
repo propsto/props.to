@@ -125,6 +125,7 @@ export const reservedSlugs = [
   "goals",
   "reports",
   "organizations",
+  "org",
   "teams",
   "groups",
   "users",
