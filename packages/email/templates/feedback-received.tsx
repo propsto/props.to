@@ -22,12 +22,12 @@ interface FeedbackReceivedEmailProps {
 }
 
 export function FeedbackReceivedEmail({
-  recipientName,
+  recipientName = "there",
   feedbackPreview,
   senderName,
-  isAnonymous,
-  feedbackType,
-  dashboardUrl,
+  isAnonymous = false,
+  feedbackType = "recognition",
+  dashboardUrl = "https://app.props.to",
 }: FeedbackReceivedEmailProps): React.ReactElement {
   const previewText = isAnonymous
     ? `You received anonymous ${feedbackType.toLowerCase()} feedback`
