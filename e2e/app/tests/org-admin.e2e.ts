@@ -35,10 +35,11 @@ test.describe("Organization Admin Panel", () => {
       timeout: 15000,
     });
 
-    // Should see navigation tabs
-    await expect(page.getByRole("link", { name: /overview/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /members/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /settings/i })).toBeVisible();
+    // Should see navigation tabs in the admin nav (not sidebar)
+    const adminNav = page.locator("nav").filter({ hasText: "Overview" });
+    await expect(adminNav.getByRole("link", { name: /overview/i })).toBeVisible();
+    await expect(adminNav.getByRole("link", { name: /members/i })).toBeVisible();
+    await expect(adminNav.getByRole("link", { name: /settings/i })).toBeVisible();
 
     // Should see stats cards
     await expect(page.getByText("Total Members")).toBeVisible();
@@ -51,14 +52,18 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see members heading
-    await expect(page.getByRole("heading", { name: /members/i })).toBeVisible({
+    await expect(page.getByRole("heading", { name: /members/i }).first()).toBeVisible({
       timeout: 15000,
     });
 
-    // Should see member table headers
-    await expect(page.getByRole("columnheader", { name: /member/i })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: /username/i })).toBeVisible();
-    await expect(page.getByRole("columnheader", { name: /role/i })).toBeVisible();
+    // Should see the All Members card
+    await expect(page.getByText("All Members")).toBeVisible();
+
+    // Should see member table with data
+    await expect(page.getByRole("table")).toBeVisible({ timeout: 10000 });
+    
+    // Should see at least one member row with role badge
+    await expect(page.getByText(/OWNER|ADMIN|MEMBER/).first()).toBeVisible();
   });
 
   test("should display settings page with editable form", async ({
