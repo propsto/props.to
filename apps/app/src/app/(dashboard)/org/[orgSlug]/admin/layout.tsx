@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
+import { db } from "@propsto/data";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
 import { Building2, Users, Settings, LayoutDashboard } from "lucide-react";
@@ -21,10 +22,21 @@ export default async function OrgAdminLayout({
     return redirect(constServer.AUTH_URL);
   }
 
-  // Find user's membership in this organization
-  const membership = session.user.organizations?.find(
-    (org) => org.organizationSlug === orgSlug
-  );
+  // Do fresh DB lookup for membership to handle slug changes
+  // (session cache may have stale org slug after URL change)
+  const membership = await db.organizationMember.findFirst({
+    where: {
+      userId: session.user.id,
+      organization: {
+        slug: {
+          slug: orgSlug,
+        },
+      },
+    },
+    select: {
+      role: true,
+    },
+  });
 
   // Check if user is member of this org
   if (!membership) {

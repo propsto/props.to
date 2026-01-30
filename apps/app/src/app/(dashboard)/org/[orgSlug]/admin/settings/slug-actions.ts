@@ -119,7 +119,8 @@ export async function updateOrgSlug(
     });
 
     // Revalidate old and new paths
-    revalidatePath(`/org/${currentSlug}/admin/settings`);
+    revalidatePath(`/org/${currentSlug}`, "layout");
+    revalidatePath(`/org/${normalizedSlug}`, "layout");
     
     return { success: true, newSlug: normalizedSlug };
   } catch (error) {
