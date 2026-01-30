@@ -159,6 +159,9 @@ model Organization {
   // Audit logging
   auditLogs AuditLog[]
 
+  // Custom feedback categories
+  categories TemplateCategory[]
+
   @@unique([id, slugId])
 }
 
@@ -288,14 +291,21 @@ model GroupAdmin {
 }
 
 // TemplateCategory model (for organizing templates by skill/topic)
+// Categories can be global (organizationId = null) or organization-specific
 model TemplateCategory {
-  id          String             @id @default(cuid())
-  name        String             @unique // e.g., "Soft Skills", "Leadership", "Technical"
-  description String?
-  icon        String? // Icon name for UI display
-  templates   FeedbackTemplate[]
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  id             String             @id @default(cuid())
+  name           String // e.g., "Soft Skills", "Leadership", "Technical"
+  description    String?
+  icon           String? // Icon name for UI display
+  color          String? // Color for UI display (hex code)
+  organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String? // null = global/system category, non-null = org-specific
+  templates      FeedbackTemplate[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  // Name must be unique within scope (global or per-org)
+  @@unique([organizationId, name])
 }
 
 // FeedbackTemplate model (stores templates for feedback forms)

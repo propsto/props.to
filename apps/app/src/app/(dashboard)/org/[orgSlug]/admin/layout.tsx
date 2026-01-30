@@ -4,7 +4,7 @@ import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
-import { Building2, Users, Settings, LayoutDashboard, ScrollText } from "lucide-react";
+import { Building2, Users, Settings, LayoutDashboard, ScrollText, Tags } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -63,6 +63,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/members`,
       label: "Members",
       icon: Users,
+    },
+    {
+      href: `/org/${orgSlug}/admin/categories`,
+      label: "Categories",
+      icon: Tags,
     },
     {
       href: `/org/${orgSlug}/admin/settings`,
