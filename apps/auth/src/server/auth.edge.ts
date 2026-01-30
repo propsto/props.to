@@ -22,12 +22,32 @@ import { createLogger } from "@propsto/logger";
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
 
-// Shared cookie domain - allows cookies to be shared between
-// production (auth.props.to) and preview (auth.pr-XX.props.build)
-const cookieDomain =
-  constServer.PROPSTO_HOST === "localhost"
-    ? undefined
-    : `.${constServer.PROPSTO_HOST}`;
+// Compute cookie domain based on environment:
+// - Development (localhost): undefined (no domain restriction)
+// - Preview: .pr-XX.props.build (scoped to PR subdomain)
+// - Production: .props.to (shared across all subdomains)
+const computeCookieDomain = (): string | undefined => {
+  const host = constServer.PROPSTO_HOST;
+  
+  // Development - no domain restriction
+  if (host === "localhost" || !host) {
+    return undefined;
+  }
+  
+  // Preview environment - include PR number in domain
+  // This avoids using bare .props.build which is a public suffix
+  const isPreview = process.env.VERCEL_ENV === "preview";
+  const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID;
+  
+  if (isPreview && prNumber) {
+    return `.pr-${prNumber}.${host}`;
+  }
+  
+  // Production - use the full host domain
+  return `.${host}`;
+};
+
+const cookieDomain = computeCookieDomain();
 
 // Common cookie options for all auth cookies
 const sharedCookieOptions = {
