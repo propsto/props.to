@@ -2,6 +2,7 @@
 
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
+import { auditHelpers } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -46,6 +47,11 @@ export async function updateMemberSettings(
       return { success: false, error: "Organization not found" };
     }
 
+    // Get current settings for audit log comparison
+    const currentSettings = await db.organizationDefaultUserSettings.findUnique({
+      where: { organizationId: org.id },
+    });
+
     // Upsert the settings
     await db.organizationDefaultUserSettings.upsert({
       where: { organizationId: org.id },
@@ -61,6 +67,36 @@ export async function updateMemberSettings(
         requireApprovalForPublicProfiles: input.requireApprovalForPublicProfiles,
       },
     });
+
+    // Log the audit event
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+    if (currentSettings?.defaultProfileVisibility !== input.defaultProfileVisibility) {
+      changes.defaultProfileVisibility = {
+        old: currentSettings?.defaultProfileVisibility ?? "none",
+        new: input.defaultProfileVisibility,
+      };
+    }
+    if (currentSettings?.allowExternalFeedback !== input.allowExternalFeedback) {
+      changes.allowExternalFeedback = {
+        old: currentSettings?.allowExternalFeedback ?? false,
+        new: input.allowExternalFeedback,
+      };
+    }
+    if (currentSettings?.requireApprovalForPublicProfiles !== input.requireApprovalForPublicProfiles) {
+      changes.requireApprovalForPublicProfiles = {
+        old: currentSettings?.requireApprovalForPublicProfiles ?? true,
+        new: input.requireApprovalForPublicProfiles,
+      };
+    }
+
+    if (Object.keys(changes).length > 0) {
+      await auditHelpers.logSettingsUpdate(
+        org.id,
+        session.user.id,
+        "member_defaults",
+        changes,
+      );
+    }
 
     revalidatePath(`/org/${input.orgSlug}/admin/settings`);
     return { success: true };

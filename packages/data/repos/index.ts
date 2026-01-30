@@ -8,6 +8,7 @@ export * from "./user-preferences";
 export * from "./organization-settings";
 export * from "./organization";
 export * from "./pending-account-link";
+export * from "./audit-log";
 
 // Feedback platform repositories
 export * from "./feedback";
