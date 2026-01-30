@@ -12,6 +12,7 @@ import { Label } from "@propsto/ui/atoms/label";
 import { Input } from "@propsto/ui/atoms/input";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { MemberSettingsForm } from "./member-settings-form";
+import { OrgSlugForm } from "./org-slug-form";
 
 interface SettingsPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -46,6 +47,12 @@ export default async function OrgAdminSettings({
     return notFound();
   }
 
+  // Check if user is OWNER
+  const membership = session.user.organizations?.find(
+    (m) => m.organizationSlug === orgSlug
+  );
+  const isOwner = membership?.role === "OWNER";
+
   // Default settings if none exist
   const memberSettings = {
     defaultProfileVisibility: org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION",
@@ -76,13 +83,6 @@ export default async function OrgAdminSettings({
               <Label>Organization Name</Label>
               <Input value={org.name} disabled />
             </div>
-            <div className="space-y-2">
-              <Label>Organization URL</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">props.to/</span>
-                <Input value={org.slug.slug} disabled className="max-w-[200px]" />
-              </div>
-            </div>
             {org.hostedDomain && (
               <div className="space-y-2">
                 <Label>Google Workspace Domain</Label>
@@ -94,6 +94,13 @@ export default async function OrgAdminSettings({
             )}
           </CardContent>
         </Card>
+
+        {/* Organization URL */}
+        <OrgSlugForm 
+          currentSlug={org.slug.slug} 
+          orgName={org.name}
+          isOwner={isOwner}
+        />
 
         {/* Member Settings - Editable */}
         <MemberSettingsForm

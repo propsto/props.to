@@ -114,6 +114,52 @@ test.describe("Organization Admin Panel", () => {
     await expect(saveButton).toBeEnabled();
   });
 
+  test("should display organization URL form", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/settings`);
+    await page.waitForLoadState("networkidle");
+
+    // Should see Organization URL card
+    await expect(page.getByText("Organization URL")).toBeVisible({
+      timeout: 15000,
+    });
+    
+    // Should see the URL preview
+    await expect(page.getByText("props.to/")).toBeVisible();
+    
+    // Should see URL slug input with current value
+    const slugInput = page.locator("#orgSlug");
+    await expect(slugInput).toHaveValue(orgSlug);
+    
+    // Should see Save URL button (Mike is OWNER)
+    const saveButton = page.getByRole("button", { name: /save url/i });
+    await expect(saveButton).toBeVisible();
+    await expect(saveButton).toBeDisabled(); // Disabled when no changes
+  });
+
+  test("should validate slug availability", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/settings`);
+    await page.waitForLoadState("networkidle");
+
+    // Wait for form to load
+    await expect(page.getByText("Organization URL")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Change the slug to something new
+    const slugInput = page.locator("#orgSlug");
+    await slugInput.clear();
+    await slugInput.fill("test-unique-slug-12345");
+
+    // Wait for availability check
+    await expect(page.locator("svg.text-green-500")).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Save button should be enabled
+    const saveButton = page.getByRole("button", { name: /save url/i });
+    await expect(saveButton).toBeEnabled();
+  });
+
   test("should save settings successfully", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/org/${orgSlug}/admin/settings`);
     await page.waitForLoadState("networkidle");
