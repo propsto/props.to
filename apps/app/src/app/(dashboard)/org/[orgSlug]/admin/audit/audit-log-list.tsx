@@ -214,34 +214,32 @@ export function AuditLogList({
             Page {currentPage} of {totalPages}
           </p>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              disabled={currentPage <= 1}
-            >
-              <Link
-                href={`/org/${orgSlug}/admin/audit?page=${currentPage - 1}`}
-                aria-disabled={currentPage <= 1}
-              >
+            {currentPage > 1 ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/org/${orgSlug}/admin/audit?page=${currentPage - 1}`}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              disabled={currentPage >= totalPages}
-            >
-              <Link
-                href={`/org/${orgSlug}/admin/audit?page=${currentPage + 1}`}
-                aria-disabled={currentPage >= totalPages}
-              >
+              </Button>
+            )}
+            {currentPage < totalPages ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/org/${orgSlug}/admin/audit?page=${currentPage + 1}`}>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
                 Next
                 <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
+              </Button>
+            )}
           </div>
         </div>
       )}

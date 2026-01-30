@@ -1,7 +1,7 @@
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { getAuditLogs } from "@propsto/data/repos";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -27,18 +27,36 @@ export default async function OrgAdminAudit({
     return notFound();
   }
 
-  // Get organization
-  const org = await db.organization.findFirst({
+  // Verify user is admin of this org
+  const membership = await db.organizationMember.findFirst({
     where: {
-      slug: {
-        slug: orgSlug,
+      userId: session.user.id,
+      organization: {
+        slug: {
+          slug: orgSlug,
+        },
+      },
+    },
+    select: {
+      role: true,
+      organization: {
+        select: {
+          id: true,
+        },
       },
     },
   });
 
-  if (!org) {
+  if (!membership) {
     return notFound();
   }
+
+  // Only OWNER and ADMIN can view audit logs
+  if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
+    return redirect(`/org/${orgSlug}`);
+  }
+
+  const org = membership.organization;
 
   // Parse pagination
   const page = parseInt(search.page ?? "1", 10);
