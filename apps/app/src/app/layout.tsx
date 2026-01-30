@@ -45,3 +45,4 @@ export default function RootLayout({
     </html>
   );
 }
+// E2E test selector fixes
