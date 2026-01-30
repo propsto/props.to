@@ -97,6 +97,16 @@ async function main() {
     },
   });
 
+  // Add Mike as OWNER of the organization (for E2E testing)
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: mike.id } },
+      organization: { connect: { id: acme.id } },
+      role: "OWNER",
+      joinedAt: new Date(),
+    },
+  });
+
   // Create Org Admin (Bob Jones) - org user with ORGANIZATION scope slug
   const bob = await prisma.user.create({
     data: {
