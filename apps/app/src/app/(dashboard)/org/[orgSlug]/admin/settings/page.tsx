@@ -11,6 +11,7 @@ import {
 import { Label } from "@propsto/ui/atoms/label";
 import { Input } from "@propsto/ui/atoms/input";
 import { Badge } from "@propsto/ui/atoms/badge";
+import { MemberSettingsForm } from "./member-settings-form";
 
 interface SettingsPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -44,6 +45,13 @@ export default async function OrgAdminSettings({
   if (!org) {
     return notFound();
   }
+
+  // Default settings if none exist
+  const memberSettings = {
+    defaultProfileVisibility: org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION",
+    allowExternalFeedback: org.defaultUserSettings?.allowExternalFeedback ?? false,
+    requireApprovalForPublicProfiles: org.defaultUserSettings?.requireApprovalForPublicProfiles ?? true,
+  } as const;
 
   return (
     <div className="space-y-6">
@@ -87,37 +95,13 @@ export default async function OrgAdminSettings({
           </CardContent>
         </Card>
 
-        {/* Member Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Member Defaults</CardTitle>
-            <CardDescription>
-              Default settings for new organization members
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Default Profile Visibility</Label>
-              <div className="text-sm text-muted-foreground">
-                {org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Controls who can view member profiles by default
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label>Allow External Feedback</Label>
-              <div className="text-sm text-muted-foreground">
-                {org.defaultUserSettings?.allowExternalFeedback ? "Yes" : "No"}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Whether members can receive feedback from outside the organization
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Member Settings - Editable */}
+        <MemberSettingsForm
+          orgSlug={orgSlug}
+          defaultSettings={memberSettings}
+        />
 
-        {/* Feedback Settings */}
+        {/* Feedback Settings - Read Only for now */}
         <Card>
           <CardHeader>
             <CardTitle>Feedback Settings</CardTitle>
@@ -138,13 +122,12 @@ export default async function OrgAdminSettings({
                 {org.feedbackSettings?.enableFeedbackModeration ? "Enabled" : "Disabled"}
               </div>
             </div>
+            <p className="text-xs text-muted-foreground italic">
+              Feedback settings editing coming soon.
+            </p>
           </CardContent>
         </Card>
       </div>
-
-      <p className="text-sm text-muted-foreground italic">
-        Settings editing coming soon. Contact support to change organization settings.
-      </p>
     </div>
   );
 }
