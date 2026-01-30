@@ -24,8 +24,9 @@ const secureCookies = constServer.PROPSTO_ENV === "production";
 
 // Compute cookie domain based on environment:
 // - Development (localhost): undefined (no domain restriction)
-// - Preview: .pr-XX.props.build (scoped to PR subdomain)
-// - Production: .props.to (shared across all subdomains)
+// - Preview: pr-XX.props.build (scoped to PR subdomain)
+// - Production: props.to (shared across all subdomains)
+// NOTE: Testing without leading dot - browsers should auto-expand to include subdomains
 const computeCookieDomain = (): string | undefined => {
   const host = constServer.PROPSTO_HOST;
   
@@ -40,11 +41,11 @@ const computeCookieDomain = (): string | undefined => {
   const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID;
   
   if (isPreview && prNumber) {
-    return `.pr-${prNumber}.${host}`;
+    return `pr-${prNumber}.${host}`;
   }
   
   // Production - use the full host domain
-  return `.${host}`;
+  return host;
 };
 
 const cookieDomain = computeCookieDomain();
