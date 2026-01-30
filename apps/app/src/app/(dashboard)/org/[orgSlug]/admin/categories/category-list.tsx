@@ -103,6 +103,7 @@ export function CategoryList({
                   size="icon"
                   onClick={() => setConfirmDelete(category)}
                   disabled={deletingId === category.id}
+                  aria-label={`Delete ${category.name}`}
                 >
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>

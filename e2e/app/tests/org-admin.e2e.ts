@@ -315,10 +315,7 @@ test.describe("Organization Admin Panel", () => {
     await expect(page.getByText(testCategoryName)).toBeVisible({ timeout: 5000 });
 
     // Now delete the category
-    const categoryRow = page.locator("div").filter({ hasText: testCategoryName }).first();
-    const deleteButton = categoryRow.getByRole("button").filter({
-      has: page.locator("svg.text-destructive"),
-    });
+    const deleteButton = page.getByRole("button", { name: `Delete ${testCategoryName}` });
     await deleteButton.click();
 
     // Confirm deletion in dialog

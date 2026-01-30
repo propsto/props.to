@@ -25,6 +25,7 @@ import { Input } from "@propsto/ui/atoms/input";
 import { Textarea } from "@propsto/ui/atoms/textarea";
 import { Plus } from "lucide-react";
 import { createCategoryAction } from "./actions";
+import { categoryColorOptions, defaultCategoryColor } from "./constants";
 
 interface CreateCategoryDialogProps {
   orgSlug: string;
@@ -36,17 +37,6 @@ type FormValues = {
   color: string;
 };
 
-const colorOptions = [
-  { name: "Blue", value: "#3b82f6" },
-  { name: "Green", value: "#22c55e" },
-  { name: "Yellow", value: "#eab308" },
-  { name: "Orange", value: "#f97316" },
-  { name: "Red", value: "#ef4444" },
-  { name: "Purple", value: "#a855f7" },
-  { name: "Pink", value: "#ec4899" },
-  { name: "Teal", value: "#14b8a6" },
-];
-
 export function CreateCategoryDialog({
   orgSlug,
 }: CreateCategoryDialogProps): React.ReactNode {
@@ -57,7 +47,7 @@ export function CreateCategoryDialog({
     defaultValues: {
       name: "",
       description: "",
-      color: "#3b82f6",
+      color: defaultCategoryColor,
     },
   });
 
@@ -147,7 +137,7 @@ export function CreateCategoryDialog({
                   <FormLabel>Color</FormLabel>
                   <FormControl>
                     <div className="flex gap-2 flex-wrap">
-                      {colorOptions.map((color) => (
+                      {categoryColorOptions.map((color) => (
                         <button
                           key={color.value}
                           type="button"
