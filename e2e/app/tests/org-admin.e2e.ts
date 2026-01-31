@@ -80,7 +80,7 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see General settings card
     await expect(page.getByText("Organization Name")).toBeVisible();
-    await expect(page.getByText("Organization URL")).toBeVisible();
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible();
 
     // Should see Member Defaults card with form
     await expect(page.getByText("Member Defaults")).toBeVisible();
@@ -119,12 +119,12 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see Organization URL card
-    await expect(page.getByText("Organization URL")).toBeVisible({
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
       timeout: 15000,
     });
     
-    // Should see the URL preview
-    await expect(page.getByText("props.to/")).toBeVisible();
+    // Should see the URL preview (use first() as there may be multiple instances)
+    await expect(page.getByText("props.to/").first()).toBeVisible();
     
     // Should see URL slug input with current value
     const slugInput = page.locator("#orgSlug");
@@ -141,7 +141,7 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for form to load
-    await expect(page.getByText("Organization URL")).toBeVisible({
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
       timeout: 15000,
     });
 
@@ -158,6 +158,38 @@ test.describe("Organization Admin Panel", () => {
     // Save button should be enabled
     const saveButton = page.getByRole("button", { name: /save url/i });
     await expect(saveButton).toBeEnabled();
+  });
+
+  test("should display audit log page", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/audit`);
+    await page.waitForLoadState("networkidle");
+
+    // Should see audit log heading
+    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Should see Activity History card
+    await expect(page.getByText("Activity History")).toBeVisible();
+  });
+
+  test("should have audit log navigation link", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin`);
+    await page.waitForLoadState("networkidle");
+
+    // Should see Audit Log link in admin nav
+    const adminNav = page.locator("nav").filter({ hasText: "Overview" });
+    const auditLink = adminNav.getByRole("link", { name: /audit log/i });
+    await expect(auditLink).toBeVisible({ timeout: 15000 });
+
+    // Navigate to audit log
+    await auditLink.click();
+    await page.waitForLoadState("networkidle");
+
+    // Should be on audit page
+    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test("should save settings successfully", async ({ page, baseURL }) => {

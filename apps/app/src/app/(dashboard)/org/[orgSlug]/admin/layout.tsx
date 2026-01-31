@@ -4,7 +4,7 @@ import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
-import { Building2, Users, Settings, LayoutDashboard } from "lucide-react";
+import { Building2, Users, Settings, LayoutDashboard, ScrollText } from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -35,6 +35,11 @@ export default async function OrgAdminLayout({
     },
     select: {
       role: true,
+      organization: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 
@@ -64,6 +69,11 @@ export default async function OrgAdminLayout({
       label: "Settings",
       icon: Settings,
     },
+    {
+      href: `/org/${orgSlug}/admin/audit`,
+      label: "Audit Log",
+      icon: ScrollText,
+    },
   ];
 
   return (
@@ -71,7 +81,7 @@ export default async function OrgAdminLayout({
       <div className="flex items-center gap-3">
         <Building2 className="h-8 w-8" />
         <div>
-          <h1 className="text-2xl font-semibold">{membership.organizationName}</h1>
+          <h1 className="text-2xl font-semibold">{membership.organization.name}</h1>
           <p className="text-sm text-muted-foreground">Organization Admin</p>
         </div>
       </div>

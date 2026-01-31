@@ -17,8 +17,8 @@ enum Role {
 
 // Enum for organization-specific roles
 enum OrganizationRole {
-  OWNER  // Created the org, full control
-  ADMIN  // Can manage org settings
+  OWNER // Created the org, full control
+  ADMIN // Can manage org settings
   MEMBER // Regular member
 }
 
@@ -44,36 +44,36 @@ enum AccountType {
 
 // Enum for slug scope (determines namespace for uniqueness)
 enum SlugScope {
-  GLOBAL       // Top-level namespace: personal users, organizations
+  GLOBAL // Top-level namespace: personal users, organizations
   ORGANIZATION // Scoped within an organization: org members, groups
 }
 
 // Enum for feedback visibility
 enum FeedbackVisibility {
-  PUBLIC       // Visible to everyone
-  PRIVATE      // Visible only to recipient
+  PUBLIC // Visible to everyone
+  PRIVATE // Visible only to recipient
   ORGANIZATION // Visible to org members
-  ANONYMOUS    // Anonymous feedback (no sender info shown)
+  ANONYMOUS // Anonymous feedback (no sender info shown)
 }
 
 // Enum for feedback type
 enum FeedbackType {
-  RECOGNITION      // Props/recognition for good work
-  THREE_SIXTY      // 360 degree feedback
-  PEER_REVIEW      // Peer review
+  RECOGNITION // Props/recognition for good work
+  THREE_SIXTY // 360 degree feedback
+  PEER_REVIEW // Peer review
   MANAGER_FEEDBACK // Feedback from manager
-  REPORT_FEEDBACK  // Feedback from direct reports
-  SELF_ASSESSMENT  // Self review
-  ANONYMOUS        // Anonymous feedback
+  REPORT_FEEDBACK // Feedback from direct reports
+  SELF_ASSESSMENT // Self review
+  ANONYMOUS // Anonymous feedback
 }
 
 // Enum for feedback status
 enum FeedbackStatus {
-  DRAFT              // Not yet submitted
+  DRAFT // Not yet submitted
   PENDING_MODERATION // Awaiting approval
-  APPROVED           // Approved and visible
-  REJECTED           // Rejected by moderator
-  ARCHIVED           // Archived/hidden
+  APPROVED // Approved and visible
+  REJECTED // Rejected by moderator
+  ARCHIVED // Archived/hidden
 }
 
 // Enum for feedback request status
@@ -97,12 +97,37 @@ enum FieldType {
   TEXT
   TEXTAREA
   NUMBER
-  RATING     // 1-5 stars
-  SCALE      // 1-10 scale
+  RATING // 1-5 stars
+  SCALE // 1-10 scale
   SELECT
   RADIO
   CHECKBOX
   DATE
+}
+
+// Enum for audit log actions
+enum AuditAction {
+  // Member actions
+  MEMBER_INVITED
+  MEMBER_REMOVED
+  MEMBER_ROLE_CHANGED
+
+  // Settings actions
+  SETTINGS_UPDATED
+  ORG_URL_CHANGED
+
+  // Category actions
+  CATEGORY_CREATED
+  CATEGORY_UPDATED
+  CATEGORY_DELETED
+
+  // Template actions
+  TEMPLATE_CREATED
+  TEMPLATE_UPDATED
+  TEMPLATE_DELETED
+
+  // General
+  OTHER
 }
 
 // Organization model (represents an organization, e.g., Acme Corp)
@@ -130,6 +155,9 @@ model Organization {
   defaultUserSettings  OrganizationDefaultUserSettings?
   organizationSettings OrganizationSettings?
   feedbackSettings     OrganizationFeedbackSettings?
+
+  // Audit logging
+  auditLogs AuditLog[]
 
   @@unique([id, slugId])
 }
@@ -170,37 +198,37 @@ model Group {
 
 // User model (user with personal account, can belong to multiple organizations)
 model User {
-  id            String               @id @default(cuid())
-  email         String               @unique
+  id                     String               @id @default(cuid())
+  email                  String               @unique
   // Personal slug (GLOBAL scope) - the user's permanent personal identity
-  slug          Slug                 @relation("PersonalSlug", fields: [slugId], references: [id], onDelete: Cascade)
-  slugId        String               @unique
+  slug                   Slug                 @relation("PersonalSlug", fields: [slugId], references: [id], onDelete: Cascade)
+  slugId                 String               @unique
   // Organization-scoped slugs (one per org membership)
-  organizationSlugs Slug[]           @relation("UserOrgSlugs")
-  password      String?
-  firstName     String?
-  lastName      String?
+  organizationSlugs      Slug[]               @relation("UserOrgSlugs")
+  password               String?
+  firstName              String?
+  lastName               String?
   role                   Role                 @default(USER)
   hostedDomain           String? // Google Workspace domain from OAuth (e.g., "acme.com")
   isGoogleWorkspaceAdmin Boolean              @default(false) // Whether user is a Google Workspace admin (checked on OAuth login)
   dateOfBirth            DateTime?
-  feedbacksReceived Feedback[]       @relation("ReceivedFeedback") // Feedback received by the user
-  feedbacksSent     Feedback[]       @relation("SentFeedback") // Feedback sent by the user
-  moderatedFeedback Feedback[]       @relation("ModeratedFeedback") // Feedback moderated by the user
-  groups        Group[] // Groups the user belongs to
-  organizations OrganizationMember[] // Organizations the user belongs to (multi-org support)
-  templates     FeedbackTemplate[]   @relation(name: "UserTemplates") // Templates associated with this user
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  image         String?
-  emailVerified         DateTime?
-  onboardingCompletedAt DateTime? // Timestamp when user completed the onboarding flow
-  payments              Payment[]
-  uris          Uri[] // URIs associated with the user for feedback
-  UriClaim      UriClaim?
-  Account       Account[]
-  Session       Session[]
-  Authenticator Authenticator[]
+  feedbacksReceived      Feedback[]           @relation("ReceivedFeedback") // Feedback received by the user
+  feedbacksSent          Feedback[]           @relation("SentFeedback") // Feedback sent by the user
+  moderatedFeedback      Feedback[]           @relation("ModeratedFeedback") // Feedback moderated by the user
+  groups                 Group[] // Groups the user belongs to
+  organizations          OrganizationMember[] // Organizations the user belongs to (multi-org support)
+  templates              FeedbackTemplate[]   @relation(name: "UserTemplates") // Templates associated with this user
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  image                  String?
+  emailVerified          DateTime?
+  onboardingCompletedAt  DateTime? // Timestamp when user completed the onboarding flow
+  payments               Payment[]
+  uris                   Uri[] // URIs associated with the user for feedback
+  UriClaim               UriClaim?
+  Account                Account[]
+  Session                Session[]
+  Authenticator          Authenticator[]
 
   // Feedback links and requests
   feedbackLinks            FeedbackLink[] // Links created by this user
@@ -216,18 +244,21 @@ model User {
   // Relation to GroupAdmins (to check if user is an admin of any group)
   groupAdmins GroupAdmin[] // Relation to track group admin roles
 
+  // Audit logs where this user was the actor
+  auditLogs AuditLog[] @relation("AuditLogActor")
+
   @@unique([id, slugId])
 }
 
 // Slug model (to store unique slugs for both users and organizations)
 model Slug {
-  id             String        @id @default(cuid())
-  slug           String // Slug for user or organization
-  scope          SlugScope     @default(GLOBAL) // Determines namespace for uniqueness
-  scopedToOrg    Organization? @relation("ScopedSlugs", fields: [scopedToOrgId], references: [id], onDelete: Cascade)
-  scopedToOrgId  String? // The organization this slug is scoped to (null for GLOBAL)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  slug          String // Slug for user or organization
+  scope         SlugScope     @default(GLOBAL) // Determines namespace for uniqueness
+  scopedToOrg   Organization? @relation("ScopedSlugs", fields: [scopedToOrgId], references: [id], onDelete: Cascade)
+  scopedToOrgId String? // The organization this slug is scoped to (null for GLOBAL)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   // Personal slug relation (1:1 with User - their permanent personal identity)
   personalSlugOwner User? @relation("PersonalSlug")
@@ -236,9 +267,9 @@ model Slug {
   orgSlugOwner   User?   @relation("UserOrgSlugs", fields: [orgSlugOwnerId], references: [id], onDelete: Cascade)
   orgSlugOwnerId String? // The user who owns this org-scoped slug
 
-  organization   Organization? @relation("OrganizationSlug")
-  group          Group[]
-  integration    Integration[]
+  organization Organization? @relation("OrganizationSlug")
+  group        Group[]
+  integration  Integration[]
 
   // Slug uniqueness is scoped: GLOBAL slugs are globally unique,
   // ORGANIZATION slugs are unique within their organization
@@ -410,19 +441,19 @@ model FeedbackRequest {
 
 // Goal model (for goals integration - linking feedback to personal/org goals)
 model Goal {
-  id             String       @id @default(cuid())
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String        @id @default(cuid())
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   organizationId String?
   title          String
   description    String?
   targetDate     DateTime?
-  status         GoalStatus   @default(NOT_STARTED)
-  progress       Int          @default(0) // 0-100 percentage
-  linkedFeedback Feedback[]   @relation("GoalFeedback")
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  status         GoalStatus    @default(NOT_STARTED)
+  progress       Int           @default(0) // 0-100 percentage
+  linkedFeedback Feedback[]    @relation("GoalFeedback")
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 
 // Uri model (for integrating external URIs, like Instagram, email, etc.)
@@ -613,4 +644,23 @@ model OrganizationFeedbackSettings {
   autoApproveInternalFeedback Boolean      @default(true)
   createdAt                   DateTime     @default(now())
   updatedAt                   DateTime     @updatedAt
+}
+
+// Audit log for tracking admin actions within an organization
+model AuditLog {
+  id             String       @id @default(cuid())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  actor          User         @relation("AuditLogActor", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId        String
+  action         AuditAction
+  resourceType   String // e.g., "member", "settings", "category", "template"
+  resourceId     String? // ID of the affected resource (if applicable)
+  details        Json? // Additional context (old/new values, etc.)
+  ipAddress      String? // IP address of the actor
+  userAgent      String? // Browser/client info
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([actorId])
 }

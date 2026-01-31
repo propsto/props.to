@@ -2,6 +2,7 @@
 
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
+import { auditHelpers } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -117,6 +118,14 @@ export async function updateOrgSlug(
       where: { id: org.slug.id },
       data: { slug: normalizedSlug },
     });
+
+    // Log the audit event
+    await auditHelpers.logOrgUrlChange(
+      org.id,
+      session.user.id,
+      currentSlug,
+      normalizedSlug,
+    );
 
     // Revalidate old and new paths
     revalidatePath(`/org/${currentSlug}`, "layout");
