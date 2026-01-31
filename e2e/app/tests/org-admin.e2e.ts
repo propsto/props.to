@@ -225,4 +225,108 @@ test.describe("Organization Admin Panel", () => {
     await page.locator("#external").click();
     await page.getByRole("button", { name: /save changes/i }).click();
   });
+
+  test("should display categories page with navigation link", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin`);
+    await page.waitForLoadState("networkidle");
+
+    // Should see Categories link in admin nav
+    const adminNav = page.locator("nav").filter({ hasText: "Overview" });
+    const categoriesLink = adminNav.getByRole("link", { name: /categories/i });
+    await expect(categoriesLink).toBeVisible({ timeout: 15000 });
+
+    // Navigate to categories
+    await categoriesLink.click();
+    await page.waitForLoadState("networkidle");
+
+    // Should see categories page header
+    await expect(page.getByRole("heading", { name: /feedback categories/i })).toBeVisible({
+      timeout: 15000,
+    });
+  });
+
+  test("should display custom and system categories sections", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/categories`);
+    await page.waitForLoadState("networkidle");
+
+    // Should see Custom Categories section
+    await expect(page.getByText("Custom Categories")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Should see System Categories section
+    await expect(page.getByText("System Categories")).toBeVisible();
+
+    // Should see New Category button
+    await expect(page.getByRole("button", { name: /new category/i })).toBeVisible();
+  });
+
+  test("should open create category dialog", async ({ page, baseURL }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/categories`);
+    await page.waitForLoadState("networkidle");
+
+    // Click new category button
+    await page.getByRole("button", { name: /new category/i }).click();
+
+    // Should see dialog
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: "Create Category" })).toBeVisible();
+
+    // Should see form fields
+    await expect(page.getByLabel("Name")).toBeVisible();
+    await expect(page.getByLabel("Description")).toBeVisible();
+    await expect(page.getByText("Color")).toBeVisible();
+
+    // Should see color options
+    const colorButtons = page.locator('button[type="button"]').filter({
+      has: page.locator('[style*="background-color"]'),
+    });
+    await expect(colorButtons.first()).toBeVisible();
+  });
+
+  test("should create and delete a custom category", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/categories`);
+    await page.waitForLoadState("networkidle");
+
+    const testCategoryName = `Test Category ${Date.now()}`;
+
+    // Open create dialog
+    await page.getByRole("button", { name: /new category/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+
+    // Fill form
+    await page.getByLabel("Name").fill(testCategoryName);
+    await page.getByLabel("Description").fill("A test category for E2E testing");
+
+    // Submit
+    await page.getByRole("button", { name: /create category/i }).click();
+
+    // Dialog should close and category should appear
+    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(testCategoryName)).toBeVisible({ timeout: 5000 });
+
+    // Now delete the category
+    const deleteButton = page.getByRole("button", { name: `Delete ${testCategoryName}` });
+    await deleteButton.click();
+
+    // Confirm deletion in dialog
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: "Delete Category" })).toBeVisible();
+    await page.getByRole("button", { name: /^delete$/i }).click();
+
+    // Wait for dialog to close first
+    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
+
+    // Category should be removed (use exact match to avoid matching other text)
+    await expect(page.getByText(testCategoryName, { exact: true })).not.toBeVisible({ timeout: 5000 });
+  });
 });

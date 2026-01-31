@@ -14,6 +14,7 @@ export * from "./audit-log";
 export * from "./feedback";
 export * from "./feedback-link";
 export * from "./feedback-template";
+export * from "./template-category";
 export * from "./goal";
 export * from "./group";
 export * from "./slug";
