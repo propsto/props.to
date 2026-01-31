@@ -276,7 +276,7 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see dialog
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Create Category")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create Category" })).toBeVisible();
 
     // Should see form fields
     await expect(page.getByLabel("Name")).toBeVisible();
@@ -320,10 +320,13 @@ test.describe("Organization Admin Panel", () => {
 
     // Confirm deletion in dialog
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("Delete Category")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Delete Category" })).toBeVisible();
     await page.getByRole("button", { name: /^delete$/i }).click();
 
-    // Category should be removed
-    await expect(page.getByText(testCategoryName)).not.toBeVisible({ timeout: 5000 });
+    // Wait for dialog to close first
+    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
+
+    // Category should be removed (use exact match to avoid matching other text)
+    await expect(page.getByText(testCategoryName, { exact: true })).not.toBeVisible({ timeout: 5000 });
   });
 });
