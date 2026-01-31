@@ -49,7 +49,23 @@ export function middleware(request: NextRequest): NextResponse {
   }
 
   // Rewrite to the app for user/org profile pages
-  const appUrl = process.env.PROPSTO_APP_URL ?? "https://app.props.to";
+  // Compute app URL dynamically based on request host to support preview environments
+  // e.g., pr-69.props.build → app.pr-69.props.build
+  //       props.to → app.props.to
+  const host = request.headers.get("host") ?? "";
+  let appUrl: string;
+
+  if (process.env.PROPSTO_APP_URL) {
+    // Use env var if explicitly set
+    appUrl = process.env.PROPSTO_APP_URL;
+  } else if (host.includes(".props.build") || host.includes(".props.to")) {
+    // Preview or production - compute app URL from host
+    appUrl = `https://app.${host}`;
+  } else {
+    // Fallback
+    appUrl = "https://app.props.to";
+  }
+
   const rewriteUrl = new URL(pathname, appUrl);
   rewriteUrl.search = request.nextUrl.search;
 
