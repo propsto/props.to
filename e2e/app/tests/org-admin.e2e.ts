@@ -80,7 +80,7 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see General settings card
     await expect(page.getByText("Organization Name")).toBeVisible();
-    await expect(page.getByText("Organization URL")).toBeVisible();
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible();
 
     // Should see Member Defaults card with form
     await expect(page.getByText("Member Defaults")).toBeVisible();
@@ -119,7 +119,7 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see Organization URL card
-    await expect(page.getByText("Organization URL")).toBeVisible({
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
       timeout: 15000,
     });
     
@@ -141,7 +141,7 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for form to load
-    await expect(page.getByText("Organization URL")).toBeVisible({
+    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
       timeout: 15000,
     });
 
