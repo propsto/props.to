@@ -102,9 +102,10 @@ async function handleProfilePage(
   const resolution = slugResult.data;
 
   if (resolution.type === "user") {
-    // Show user profile with their public feedback links
+    // Show user profile with their public feedback links (exclude hidden)
     const linksResult = await getUserFeedbackLinks(resolution.userId, {
       isActive: true,
+      excludeHidden: true,
     });
     const links = linksResult.success ? linksResult.data.links : [];
 
@@ -177,12 +178,13 @@ async function handleTwoSegments(
     const orgSlugResult = await resolveOrgSlug(firstSegment, secondSegment);
 
     if (orgSlugResult.success && orgSlugResult.data?.type === "user") {
-      // Show org member profile
+      // Show org member profile (exclude hidden links)
       const linksResult = await getUserFeedbackLinks(
         orgSlugResult.data.userId,
         {
           organizationId: orgSlugResult.data.organizationId,
           isActive: true,
+          excludeHidden: true,
         },
       );
       const links = linksResult.success ? linksResult.data.links : [];

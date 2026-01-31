@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@propsto/ui/atoms/select";
+import { Switch } from "@propsto/ui/atoms/switch";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import type { FeedbackTemplateWithFields } from "@propsto/data/repos/feedback-template";
 import { createLinkAction } from "./actions";
@@ -40,6 +41,7 @@ const formSchema = z.object({
   feedbackType: z.nativeEnum(FeedbackType),
   visibility: z.nativeEnum(FeedbackVisibility),
   maxResponses: z.coerce.number().min(0).optional(),
+  isHidden: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -91,6 +93,7 @@ export function CreateLinkForm({
       feedbackType: "RECOGNITION",
       visibility: "PRIVATE",
       maxResponses: undefined,
+      isHidden: false,
     },
   });
 
@@ -256,6 +259,28 @@ export function CreateLinkForm({
                     Limit the number of responses this link can receive
                   </FormDescription>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isHidden"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Hidden Link</FormLabel>
+                    <FormDescription>
+                      Hidden links won&apos;t appear on your public profile but
+                      can still be accessed via direct URL
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

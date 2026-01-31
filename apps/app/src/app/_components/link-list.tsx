@@ -12,6 +12,7 @@ import {
   Building2,
   Users,
   Clock,
+  EyeOff,
 } from "lucide-react";
 import {
   Card,
@@ -189,6 +190,13 @@ function LinkCard({
               <Badge variant="secondary">Max Reached</Badge>
             ) : (
               <Badge variant="secondary">Paused</Badge>
+            )}
+
+            {link.isHidden && (
+              <Badge variant="outline" className="text-muted-foreground">
+                <EyeOff className="mr-1 size-3" />
+                Hidden
+              </Badge>
             )}
 
             <Badge

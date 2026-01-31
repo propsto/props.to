@@ -11,6 +11,7 @@ interface CreateLinkInput {
   feedbackType: FeedbackType;
   visibility: FeedbackVisibility;
   maxResponses?: number;
+  isHidden?: boolean;
 }
 
 interface CreateLinkResult {
@@ -37,6 +38,7 @@ export async function createLinkAction(
       input.maxResponses && input.maxResponses > 0
         ? input.maxResponses
         : undefined,
+    isHidden: input.isHidden,
   });
 
   if (!result.success) {
