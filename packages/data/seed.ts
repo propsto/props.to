@@ -79,6 +79,16 @@ async function main() {
     },
   });
 
+  // Create Mike's privacy settings (public profile for E2E testing)
+  await prisma.userPrivacySettings.create({
+    data: {
+      userId: mike.id,
+      profileVisibility: "PUBLIC",
+      allowFeedbackFromAnyone: true,
+      showEmailInProfile: false,
+    },
+  });
+
   // Create Organization (Acme Inc.) with GLOBAL scope slug
   const acme = await prisma.organization.create({
     data: {
