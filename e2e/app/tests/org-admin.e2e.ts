@@ -123,8 +123,8 @@ test.describe("Organization Admin Panel", () => {
       timeout: 15000,
     });
     
-    // Should see the URL preview
-    await expect(page.getByText("props.to/")).toBeVisible();
+    // Should see the URL preview (use first() as there may be multiple instances)
+    await expect(page.getByText("props.to/").first()).toBeVisible();
     
     // Should see URL slug input with current value
     const slugInput = page.locator("#orgSlug");
