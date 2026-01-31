@@ -1,3 +1,4 @@
+// Trigger rebuild for E2E tests
 import { vercelPreviewEnvVars } from "@propsto/constants/other";
 import { type NextConfig } from "next";
 
