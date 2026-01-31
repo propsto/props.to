@@ -11,18 +11,34 @@ on:
 jobs:
   e2e:
     name: Run E2E Tests
-    # Only trigger on "app" deployment to run once per commit
-    # The workflow will wait for auth to be ready before running tests
-    if: |
-      github.event.deployment_status.state == 'success' &&
-      github.event.deployment.environment == 'Preview – app'
+    # Always run to report a status (required check can't be skipped)
     runs-on: ubuntu-latest
     concurrency:
       group: e2e-${{ github.event.deployment.sha }}
       cancel-in-progress: true
 
     steps:
+      - name: Check if E2E should run
+        id: should-run
+        run: |
+          STATE="${{ github.event.deployment_status.state }}"
+          ENV="${{ github.event.deployment.environment }}"
+          
+          echo "Deployment state: $STATE"
+          echo "Environment: $ENV"
+          
+          # Only run on successful app deployment
+          if [[ "$STATE" == "success" ]] && [[ "$ENV" == "Preview – app" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "✅ App deployment successful - will run E2E tests"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Skipping E2E: state=$STATE, env=$ENV"
+            echo "This is expected for non-app deployments or pending states."
+          fi
+
       - name: Get project info
+        if: steps.should-run.outputs.should_run == 'true'
         id: project
         run: |
           ENV="${{ github.event.deployment.environment }}"
@@ -30,6 +46,7 @@ jobs:
           echo "name=$PROJECT" >> $GITHUB_OUTPUT
 
       - name: Get PR number
+        if: steps.should-run.outputs.should_run == 'true'
         id: pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,6 +60,7 @@ jobs:
           echo "number=$PR_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Define preview URLs
+        if: steps.should-run.outputs.should_run == 'true'
         id: urls
         run: |
           PR_NUM="${{ steps.pr.outputs.number }}"
@@ -51,6 +69,7 @@ jobs:
           echo "auth=https://auth.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
 
       - name: Check if both previews are ready
+        if: steps.should-run.outputs.should_run == 'true'
         id: check-previews
         run: |
           APP_URL="${{ steps.urls.outputs.app }}"
@@ -95,37 +114,37 @@ jobs:
           fi
 
       - name: Skip if not all previews ready
-        if: steps.check-previews.outputs.both_ready != 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready != 'true'
         run: |
           echo "Not all previews are ready yet. Skipping E2E tests."
           echo "This workflow will run again when the other preview is deployed."
 
       - name: Checkout code
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
 
       - name: Install dependencies
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Get Playwright version
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         id: playwright-version
         run: echo "version=$(cd e2e/auth && pnpm exec playwright --version | head -1)" >> $GITHUB_OUTPUT
 
       - name: Cache Playwright browsers
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         uses: actions/cache@v4
         id: playwright-cache
         with:
@@ -133,20 +152,20 @@ jobs:
           key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
-        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
           cd e2e/auth && pnpm exec playwright install --with-deps chromium
           cd ../app && pnpm exec playwright install chromium
 
       - name: Install Playwright dependencies
-        if: steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
         run: pnpm exec playwright install-deps chromium
 
       # Database seeding now happens during Vercel build via vercel-build script
       # This ensures the same DATABASE_URL is used for both seeding and runtime
 
       - name: Run Auth E2E tests
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         env:
           AUTH_URL: ${{ steps.urls.outputs.auth }}
           PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
@@ -155,7 +174,7 @@ jobs:
           pnpm exec playwright test --reporter=line
 
       - name: Run App E2E tests
-        if: steps.check-previews.outputs.both_ready == 'true'
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         env:
           PROPSTO_APP_URL: ${{ steps.urls.outputs.app }}
           AUTH_URL: ${{ steps.urls.outputs.auth }}
@@ -165,7 +184,7 @@ jobs:
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: failure() && steps.check-previews.outputs.both_ready == 'true'
+        if: failure() && steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         with:
           name: e2e-results-pr-${{ steps.pr.outputs.number }}
           path: |
@@ -174,7 +193,7 @@ jobs:
           retention-days: 7
 
       - name: Comment on PR with results
-        if: always() && steps.check-previews.outputs.both_ready == 'true'
+        if: always() && steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
         uses: actions/github-script@v7
         with:
           script: |
