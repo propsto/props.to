@@ -24,9 +24,8 @@ const secureCookies = constServer.PROPSTO_ENV === "production";
 
 // Compute cookie domain based on environment:
 // - Development (localhost): undefined (no domain restriction)
-// - Preview: pr-XX.props.build (scoped to PR subdomain)
+// - Preview: undefined (skip cross-subdomain for now - debugging validation error)
 // - Production: props.to (shared across all subdomains)
-// NOTE: Testing without leading dot - browsers should auto-expand to include subdomains
 const computeCookieDomain = (): string | undefined => {
   const host = constServer.PROPSTO_HOST;
   
@@ -35,13 +34,11 @@ const computeCookieDomain = (): string | undefined => {
     return undefined;
   }
   
-  // Preview environment - include PR number in domain
-  // This avoids using bare .props.build which is a public suffix
+  // Preview environment - skip domain to avoid "option domain is invalid" error
+  // TODO: Figure out why pr-XX.props.build fails validation on Vercel
   const isPreview = process.env.VERCEL_ENV === "preview";
-  const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID;
-  
-  if (isPreview && prNumber) {
-    return `pr-${prNumber}.${host}`;
+  if (isPreview) {
+    return undefined;
   }
   
   // Production - use the full host domain
