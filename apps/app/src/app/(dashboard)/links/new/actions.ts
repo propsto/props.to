@@ -1,12 +1,13 @@
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { createFeedbackLink } from "@propsto/data/repos";
+import { createFeedbackLink, checkFeedbackLinkSlugAvailable } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 interface CreateLinkInput {
   name: string;
+  slug: string;
   templateId: string;
   feedbackType: FeedbackType;
   visibility: FeedbackVisibility;
@@ -31,6 +32,7 @@ export async function createLinkAction(
   const result = await createFeedbackLink({
     userId: session.user.id,
     name: input.name,
+    slug: input.slug,
     templateId: input.templateId,
     feedbackType: input.feedbackType,
     visibility: input.visibility,
@@ -49,4 +51,16 @@ export async function createLinkAction(
   revalidatePath("/links");
 
   return { success: true, linkId: result.data.id };
+}
+
+export async function checkSlugAvailableAction(
+  slug: string,
+): Promise<{ available: boolean }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { available: false };
+  }
+
+  const result = await checkFeedbackLinkSlugAvailable(slug, session.user.id);
+  return { available: result.success ? result.data : false };
 }

@@ -347,3 +347,26 @@ export async function canLinkAcceptResponses(
     return handleError(e);
   }
 }
+
+// Check if a feedback link slug is available for a user
+export async function checkFeedbackLinkSlugAvailable(
+  slug: string,
+  userId: string,
+  organizationId?: string,
+): Promise<HandleEvent<boolean>> {
+  try {
+    logger("checkFeedbackLinkSlugAvailable", { slug, userId, organizationId });
+
+    const existing = await db.feedbackLink.findFirst({
+      where: {
+        slug,
+        userId,
+        organizationId: organizationId ?? null,
+      },
+    });
+
+    return handleSuccess(!existing);
+  } catch (e) {
+    return handleError(e);
+  }
+}
