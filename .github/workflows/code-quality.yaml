@@ -36,10 +36,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          # Prisma generate runs during postinstall and needs DATABASE_URL
-          # (it doesn't connect, just generates the client)
-          DATABASE_URL: "postgresql://placeholder:placeholder@localhost:5432/placeholder"
 
       - name: Run ESLint
         run: pnpm lint
