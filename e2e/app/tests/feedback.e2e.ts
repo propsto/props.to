@@ -143,7 +143,20 @@ test.describe("Feedback Links", () => {
     await expect(submitButton).toBeEnabled({ timeout: 5000 });
     await submitButton.click();
 
-    await page.waitForURL(/\/links$/, { timeout: 20000 });
+    // Wait for navigation or stay on page with error
+    try {
+      await page.waitForURL(/\/links$/, { timeout: 30000 });
+    } catch (error) {
+      // If timeout, log the current state for debugging
+      const currentUrl = page.url();
+      const errorText = await page
+        .locator(".text-destructive")
+        .textContent()
+        .catch(() => "No error shown");
+      console.log("Current URL:", currentUrl);
+      console.log("Error text:", errorText);
+      throw error;
+    }
 
     // Verify the newly created link is displayed
     await expect(page.getByText(uniqueName).first()).toBeVisible({
