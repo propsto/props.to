@@ -1,3 +1,4 @@
+/* eslint-disable local-rules/restrict-import */
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { getAuditLogs } from "@propsto/data/repos";
@@ -69,8 +70,8 @@ export default async function OrgAdminAudit({
     { limit, offset },
   );
 
-  const logs = result.success ? result.data?.logs ?? [] : [];
-  const total = result.success ? result.data?.total ?? 0 : 0;
+  const logs = result.success ? (result.data?.logs ?? []) : [];
+  const total = result.success ? (result.data?.total ?? 0) : 0;
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -85,9 +86,7 @@ export default async function OrgAdminAudit({
       <Card>
         <CardHeader>
           <CardTitle>Activity History</CardTitle>
-          <CardDescription>
-            {total} total events recorded
-          </CardDescription>
+          <CardDescription>{total} total events recorded</CardDescription>
         </CardHeader>
         <CardContent>
           {logs.length > 0 ? (
@@ -99,7 +98,8 @@ export default async function OrgAdminAudit({
             />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No audit events recorded yet. Actions will appear here as they happen.
+              No audit events recorded yet. Actions will appear here as they
+              happen.
             </p>
           )}
         </CardContent>

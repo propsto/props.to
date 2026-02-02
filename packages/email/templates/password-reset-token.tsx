@@ -56,9 +56,7 @@ export function PasswordResetTokenEmail({
               Reset your password
             </Heading>
 
-            <Text style={styles.text}>
-              Hi{userName ? ` ${userName}` : ""},
-            </Text>
+            <Text style={styles.text}>Hi{userName ? ` ${userName}` : ""},</Text>
 
             <Text style={styles.text}>
               We received a request to reset your password. Click the button
@@ -75,8 +73,8 @@ export function PasswordResetTokenEmail({
 
             <Section style={styles.warningBox}>
               <Text style={styles.warningText}>
-                If you didn't request this, you can safely ignore this email.
-                Your password won't be changed.
+                If you didn&apos;t request this, you can safely ignore this
+                email. Your password won&apos;t be changed.
               </Text>
             </Section>
           </Section>

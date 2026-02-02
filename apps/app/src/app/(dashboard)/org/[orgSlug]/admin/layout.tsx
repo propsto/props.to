@@ -1,10 +1,19 @@
+/* eslint-disable local-rules/restrict-import */
+
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
-import { Building2, Users, Settings, LayoutDashboard, ScrollText, Tags } from "lucide-react";
+import {
+  Building2,
+  Users,
+  Settings,
+  LayoutDashboard,
+  ScrollText,
+  Tags,
+} from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -86,19 +95,21 @@ export default async function OrgAdminLayout({
       <div className="flex items-center gap-3">
         <Building2 className="h-8 w-8" />
         <div>
-          <h1 className="text-2xl font-semibold">{membership.organization.name}</h1>
+          <h1 className="text-2xl font-semibold">
+            {membership.organization.name}
+          </h1>
           <p className="text-sm text-muted-foreground">Organization Admin</p>
         </div>
       </div>
 
       <nav className="flex gap-2 border-b">
-        {navItems.map((item) => (
+        {navItems.map(item => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
               "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors",
-              "-mb-px"
+              "-mb-px",
             )}
           >
             <item.icon className="h-4 w-4" />

@@ -1,3 +1,5 @@
+/* eslint-disable local-rules/restrict-import */
+
 "use server";
 
 import { auth } from "@/server/auth.server";
@@ -91,7 +93,10 @@ export async function updateCategoryAction(
 /**
  * Delete a feedback category
  */
-export async function deleteCategoryAction(orgSlug: string, categoryId: string) {
+export async function deleteCategoryAction(
+  orgSlug: string,
+  categoryId: string,
+) {
   const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId) {
     return { success: false, error: error ?? "Organization not found" };

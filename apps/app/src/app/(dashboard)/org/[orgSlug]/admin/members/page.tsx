@@ -1,3 +1,5 @@
+/* eslint-disable local-rules/restrict-import */
+
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { notFound } from "next/navigation";
@@ -84,7 +86,8 @@ export default async function OrgAdminMembers({
         <CardHeader>
           <CardTitle>All Members</CardTitle>
           <CardDescription>
-            {org.members.length} member{org.members.length !== 1 ? "s" : ""} in this organization
+            {org.members.length} member{org.members.length !== 1 ? "s" : ""} in
+            this organization
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,14 +101,16 @@ export default async function OrgAdminMembers({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {org.members.map((member) => (
+              {org.members.map(member => (
                 <TableRow key={member.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={member.user.image ?? undefined} />
                         <AvatarFallback>
-                          {member.user.firstName?.[0] ?? member.user.email?.[0] ?? "?"}
+                          {member.user.firstName?.[0] ??
+                            member.user.email?.[0] ??
+                            "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>

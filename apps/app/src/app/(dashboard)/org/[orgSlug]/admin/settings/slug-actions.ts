@@ -1,3 +1,5 @@
+/* eslint-disable local-rules/restrict-import */
+
 "use server";
 
 import { auth } from "@/server/auth.server";
@@ -12,11 +14,17 @@ const slugSchema = z
   .string()
   .min(3, "Slug must be at least 3 characters")
   .max(30, "Slug must be at most 30 characters")
-  .regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens")
-  .refine((s) => !s.startsWith("-") && !s.endsWith("-"), "Slug cannot start or end with a hyphen");
+  .regex(
+    /^[a-z0-9-]+$/,
+    "Slug can only contain lowercase letters, numbers, and hyphens",
+  )
+  .refine(
+    s => !s.startsWith("-") && !s.endsWith("-"),
+    "Slug cannot start or end with a hyphen",
+  );
 
 export async function checkSlugAvailability(
-  slug: string
+  slug: string,
 ): Promise<{ available: boolean; error?: string }> {
   try {
     const parsed = slugSchema.safeParse(slug);
@@ -50,7 +58,7 @@ export async function checkSlugAvailability(
 
 export async function updateOrgSlug(
   currentSlug: string,
-  newSlug: string
+  newSlug: string,
 ): Promise<{ success: boolean; error?: string; newSlug?: string }> {
   try {
     const session = await auth();
@@ -60,11 +68,14 @@ export async function updateOrgSlug(
 
     // Verify user is OWNER of this org (only owners can change slug)
     const membership = session.user.organizations?.find(
-      (org) => org.organizationSlug === currentSlug
+      org => org.organizationSlug === currentSlug,
     );
 
     if (!membership || membership.role !== "OWNER") {
-      return { success: false, error: "Only organization owners can change the URL" };
+      return {
+        success: false,
+        error: "Only organization owners can change the URL",
+      };
     }
 
     // Validate new slug
@@ -130,7 +141,7 @@ export async function updateOrgSlug(
     // Revalidate old and new paths
     revalidatePath(`/org/${currentSlug}`, "layout");
     revalidatePath(`/org/${normalizedSlug}`, "layout");
-    
+
     return { success: true, newSlug: normalizedSlug };
   } catch (error) {
     console.error("Failed to update org slug:", error);

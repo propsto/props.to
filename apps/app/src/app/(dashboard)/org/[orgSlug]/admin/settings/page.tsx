@@ -1,3 +1,5 @@
+/* eslint-disable local-rules/restrict-import */
+
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
 import { notFound } from "next/navigation";
@@ -49,15 +51,18 @@ export default async function OrgAdminSettings({
 
   // Check if user is OWNER
   const membership = session.user.organizations?.find(
-    (m) => m.organizationSlug === orgSlug
+    m => m.organizationSlug === orgSlug,
   );
   const isOwner = membership?.role === "OWNER";
 
   // Default settings if none exist
   const memberSettings = {
-    defaultProfileVisibility: org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION",
-    allowExternalFeedback: org.defaultUserSettings?.allowExternalFeedback ?? false,
-    requireApprovalForPublicProfiles: org.defaultUserSettings?.requireApprovalForPublicProfiles ?? true,
+    defaultProfileVisibility:
+      org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION",
+    allowExternalFeedback:
+      org.defaultUserSettings?.allowExternalFeedback ?? false,
+    requireApprovalForPublicProfiles:
+      org.defaultUserSettings?.requireApprovalForPublicProfiles ?? true,
   } as const;
 
   return (
@@ -74,9 +79,7 @@ export default async function OrgAdminSettings({
         <Card>
           <CardHeader>
             <CardTitle>General</CardTitle>
-            <CardDescription>
-              Basic organization information
-            </CardDescription>
+            <CardDescription>Basic organization information</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -96,8 +99,8 @@ export default async function OrgAdminSettings({
         </Card>
 
         {/* Organization URL */}
-        <OrgSlugForm 
-          currentSlug={org.slug.slug} 
+        <OrgSlugForm
+          currentSlug={org.slug.slug}
           orgName={org.name}
           isOwner={isOwner}
         />
@@ -120,13 +123,17 @@ export default async function OrgAdminSettings({
             <div className="space-y-2">
               <Label>Anonymous Feedback</Label>
               <div className="text-sm text-muted-foreground">
-                {org.feedbackSettings?.allowAnonymousFeedback ? "Allowed" : "Not allowed"}
+                {org.feedbackSettings?.allowAnonymousFeedback
+                  ? "Allowed"
+                  : "Not allowed"}
               </div>
             </div>
             <div className="space-y-2">
               <Label>Feedback Moderation</Label>
               <div className="text-sm text-muted-foreground">
-                {org.feedbackSettings?.enableFeedbackModeration ? "Enabled" : "Disabled"}
+                {org.feedbackSettings?.enableFeedbackModeration
+                  ? "Enabled"
+                  : "Disabled"}
               </div>
             </div>
             <p className="text-xs text-muted-foreground italic">

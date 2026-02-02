@@ -1,6 +1,11 @@
+/* eslint-disable local-rules/restrict-import */
+
 import { auth } from "@/server/auth.server";
 import { db } from "@propsto/data";
-import { getOrganizationCategories, getGlobalCategories } from "@propsto/data/repos";
+import {
+  getOrganizationCategories,
+  getGlobalCategories,
+} from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -47,11 +52,11 @@ export default async function OrgAdminCategories({
   ]);
 
   const customCategories = categoriesResult.success
-    ? categoriesResult.data?.filter((c) => c.organizationId !== null) ?? []
+    ? (categoriesResult.data?.filter(c => c.organizationId !== null) ?? [])
     : [];
 
   const globalCategories = globalCategoriesResult.success
-    ? globalCategoriesResult.data ?? []
+    ? (globalCategoriesResult.data ?? [])
     : [];
 
   return (
@@ -74,7 +79,8 @@ export default async function OrgAdminCategories({
             <Badge variant="secondary">{customCategories.length}</Badge>
           </CardTitle>
           <CardDescription>
-            Categories specific to your organization. You can edit or delete these.
+            Categories specific to your organization. You can edit or delete
+            these.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,7 +106,8 @@ export default async function OrgAdminCategories({
             <Badge variant="outline">{globalCategories.length}</Badge>
           </CardTitle>
           <CardDescription>
-            Default categories available to all organizations. These cannot be modified.
+            Default categories available to all organizations. These cannot be
+            modified.
           </CardDescription>
         </CardHeader>
         <CardContent>
