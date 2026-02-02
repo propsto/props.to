@@ -1,12 +1,13 @@
-/* eslint-disable local-rules/restrict-import */
-
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
-import { auditHelpers } from "@propsto/data/repos";
+import {
+  isSlugAvailable,
+  isSlugAvailableExcludingOrg,
+  updateOrganizationSlug,
+  auditHelpers,
+} from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { isReservedSlug } from "@propsto/constants/other";
 
@@ -38,14 +39,12 @@ export async function checkSlugAvailability(
     }
 
     // Check if slug exists (globally scoped)
-    const existing = await db.slug.findFirst({
-      where: {
-        slug: slug.toLowerCase(),
-        scope: "GLOBAL",
-      },
-    });
+    const availableResult = await isSlugAvailable(slug, "GLOBAL");
+    if (!availableResult.success) {
+      return { available: false, error: "Failed to check availability" };
+    }
 
-    if (existing) {
+    if (!availableResult.data) {
       return { available: false, error: "This URL is already taken" };
     }
 
@@ -91,48 +90,24 @@ export async function updateOrgSlug(
       return { success: false, error: "This URL is reserved" };
     }
 
-    // Check availability
-    const existing = await db.slug.findFirst({
-      where: {
-        slug: normalizedSlug,
-        scope: "GLOBAL",
-        NOT: {
-          organization: {
-            slug: {
-              slug: currentSlug,
-            },
-          },
-        },
-      },
-    });
-
-    if (existing) {
+    // Check availability (excluding current org's slug)
+    const availableResult = await isSlugAvailableExcludingOrg(normalizedSlug, currentSlug);
+    if (!availableResult.success) {
+      return { success: false, error: "Failed to check availability" };
+    }
+    if (!availableResult.data) {
       return { success: false, error: "This URL is already taken" };
     }
 
-    // Get the organization
-    const org = await db.organization.findFirst({
-      where: {
-        slug: {
-          slug: currentSlug,
-        },
-      },
-      include: { slug: true },
-    });
-
-    if (!org) {
+    // Update the slug
+    const updateResult = await updateOrganizationSlug(currentSlug, normalizedSlug);
+    if (!updateResult.success || !updateResult.data) {
       return { success: false, error: "Organization not found" };
     }
 
-    // Update the slug
-    await db.slug.update({
-      where: { id: org.slug.id },
-      data: { slug: normalizedSlug },
-    });
-
     // Log the audit event
     await auditHelpers.logOrgUrlChange(
-      org.id,
+      updateResult.data.organizationId,
       session.user.id,
       currentSlug,
       normalizedSlug,

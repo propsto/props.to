@@ -1,10 +1,11 @@
-/* eslint-disable local-rules/restrict-import */
-
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
-import { auditHelpers } from "@propsto/data/repos";
+import {
+  getOrganizationBySlug,
+  upsertOrganizationDefaultSettings,
+  auditHelpers,
+} from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -40,43 +41,19 @@ export async function updateMemberSettings(
       return { success: false, error: "Not authorized" };
     }
 
-    // Get organization ID
-    const org = await db.organization.findFirst({
-      where: {
-        slug: {
-          slug: input.orgSlug,
-        },
-      },
-      select: { id: true },
-    });
-
-    if (!org) {
+    // Get organization with current settings
+    const orgResult = await getOrganizationBySlug(input.orgSlug);
+    if (!orgResult.success || !orgResult.data) {
       return { success: false, error: "Organization not found" };
     }
-
-    // Get current settings for audit log comparison
-    const currentSettings = await db.organizationDefaultUserSettings.findUnique(
-      {
-        where: { organizationId: org.id },
-      },
-    );
+    const org = orgResult.data;
+    const currentSettings = org.defaultUserSettings;
 
     // Upsert the settings
-    await db.organizationDefaultUserSettings.upsert({
-      where: { organizationId: org.id },
-      update: {
-        defaultProfileVisibility: input.defaultProfileVisibility,
-        allowExternalFeedback: input.allowExternalFeedback,
-        requireApprovalForPublicProfiles:
-          input.requireApprovalForPublicProfiles,
-      },
-      create: {
-        organizationId: org.id,
-        defaultProfileVisibility: input.defaultProfileVisibility,
-        allowExternalFeedback: input.allowExternalFeedback,
-        requireApprovalForPublicProfiles:
-          input.requireApprovalForPublicProfiles,
-      },
+    await upsertOrganizationDefaultSettings(org.id, {
+      defaultProfileVisibility: input.defaultProfileVisibility,
+      allowExternalFeedback: input.allowExternalFeedback,
+      requireApprovalForPublicProfiles: input.requireApprovalForPublicProfiles,
     });
 
     // Log the audit event

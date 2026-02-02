@@ -1,7 +1,5 @@
-/* eslint-disable local-rules/restrict-import */
-
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getOrganizationBySlugWithMembers } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -36,31 +34,11 @@ export default async function OrgAdminMembers({
   }
 
   // Get organization with members
-  const org = await db.organization.findFirst({
-    where: {
-      slug: {
-        slug: orgSlug,
-      },
-    },
-    include: {
-      members: {
-        include: {
-          user: {
-            include: {
-              slug: true,
-            },
-          },
-        },
-        orderBy: {
-          joinedAt: "asc",
-        },
-      },
-    },
-  });
-
-  if (!org) {
+  const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
+  if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
+  const org = orgResult.data;
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {

@@ -298,5 +298,72 @@ export async function getUserSlugs(userId: string): Promise<
   }
 }
 
+// Check if a global slug is available, excluding a specific organization's current slug
+export async function isSlugAvailableExcludingOrg(
+  slug: string,
+  excludeOrgSlug: string,
+): Promise<HandleEvent<boolean>> {
+  try {
+    logger("isSlugAvailableExcludingOrg", { slug, excludeOrgSlug });
+
+    // Check reserved slugs
+    if (checkReservedSlug(slug)) {
+      return handleSuccess(false);
+    }
+
+    const existing = await db.slug.findFirst({
+      where: {
+        slug: slug.toLowerCase(),
+        scope: "GLOBAL",
+        NOT: {
+          organization: {
+            slug: {
+              slug: excludeOrgSlug.toLowerCase(),
+            },
+          },
+        },
+      },
+    });
+
+    return handleSuccess(!existing);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Update an organization's slug
+export async function updateOrganizationSlug(
+  currentSlug: string,
+  newSlug: string,
+): Promise<HandleEvent<{ slug: string; organizationId: string }>> {
+  try {
+    logger("updateOrganizationSlug", { currentSlug, newSlug });
+
+    // Get the organization and its slug record
+    const org = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: currentSlug.toLowerCase(),
+        },
+      },
+      include: { slug: true },
+    });
+
+    if (!org) {
+      return handleError(new Error("Organization not found"));
+    }
+
+    // Update the slug
+    const updated = await db.slug.update({
+      where: { id: org.slug.id },
+      data: { slug: newSlug.toLowerCase() },
+    });
+
+    return handleSuccess({ slug: updated.slug, organizationId: org.id });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Re-export the centralized isReservedSlug function
 export { isReservedSlug } from "@propsto/constants/other";

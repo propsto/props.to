@@ -1,8 +1,6 @@
-/* eslint-disable local-rules/restrict-import */
-
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
 import {
+  getOrganizationBySlug,
   getOrganizationCategories,
   getGlobalCategories,
 } from "@propsto/data/repos";
@@ -33,17 +31,11 @@ export default async function OrgAdminCategories({
   }
 
   // Get organization
-  const org = await db.organization.findFirst({
-    where: {
-      slug: {
-        slug: orgSlug,
-      },
-    },
-  });
-
-  if (!org) {
+  const orgResult = await getOrganizationBySlug(orgSlug);
+  if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
+  const org = orgResult.data;
 
   // Get categories (org-specific and global)
   const [categoriesResult, globalCategoriesResult] = await Promise.all([

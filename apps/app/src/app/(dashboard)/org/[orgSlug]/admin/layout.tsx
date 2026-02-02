@@ -1,9 +1,7 @@
-/* eslint-disable local-rules/restrict-import */
-
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getMembershipByOrgSlug } from "@propsto/data/repos";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
 import {
@@ -33,29 +31,13 @@ export default async function OrgAdminLayout({
 
   // Do fresh DB lookup for membership to handle slug changes
   // (session cache may have stale org slug after URL change)
-  const membership = await db.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        slug: {
-          slug: orgSlug,
-        },
-      },
-    },
-    select: {
-      role: true,
-      organization: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
+  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
+  
   // Check if user is member of this org
-  if (!membership) {
+  if (!membershipResult.success || !membershipResult.data) {
     return notFound();
   }
+  const membership = membershipResult.data;
 
   // Check if user has admin privileges (OWNER or ADMIN)
   if (membership.role !== "OWNER" && membership.role !== "ADMIN") {

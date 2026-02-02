@@ -1,7 +1,5 @@
-/* eslint-disable local-rules/restrict-import */
-
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getOrganizationBySlugWithSettings } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -31,23 +29,11 @@ export default async function OrgAdminSettings({
   }
 
   // Get organization with settings
-  const org = await db.organization.findFirst({
-    where: {
-      slug: {
-        slug: orgSlug,
-      },
-    },
-    include: {
-      slug: true,
-      organizationSettings: true,
-      defaultUserSettings: true,
-      feedbackSettings: true,
-    },
-  });
-
-  if (!org) {
+  const orgResult = await getOrganizationBySlugWithSettings(orgSlug);
+  if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
+  const org = orgResult.data;
 
   // Check if user is OWNER
   const membership = session.user.organizations?.find(

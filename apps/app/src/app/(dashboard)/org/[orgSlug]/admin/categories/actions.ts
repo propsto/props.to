@@ -1,10 +1,8 @@
-/* eslint-disable local-rules/restrict-import */
-
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
 import {
+  verifyOrgAdminAccess,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -22,26 +20,12 @@ async function verifyAdminAccess(orgSlug: string) {
     return { error: "Not authenticated", orgId: null };
   }
 
-  const membership = await db.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        slug: {
-          slug: orgSlug,
-        },
-      },
-      role: { in: ["OWNER", "ADMIN"] },
-    },
-    include: {
-      organization: true,
-    },
-  });
-
-  if (!membership) {
+  const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
+  if (!membershipResult.success || !membershipResult.data) {
     return { error: "Not authorized", orgId: null };
   }
 
-  return { error: null, orgId: membership.organization.id };
+  return { error: null, orgId: membershipResult.data.organization.id };
 }
 
 /**

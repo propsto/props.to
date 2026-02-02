@@ -1,7 +1,5 @@
-/* eslint-disable local-rules/restrict-import */
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
-import { getAuditLogs } from "@propsto/data/repos";
+import { getMembershipByOrgSlug, getAuditLogs } from "@propsto/data/repos";
 import { notFound, redirect } from "next/navigation";
 import {
   Card,
@@ -28,25 +26,9 @@ export default async function OrgAdminAudit({
     return notFound();
   }
 
-  // Verify user is admin of this org
-  const membership = await db.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        slug: {
-          slug: orgSlug,
-        },
-      },
-    },
-    select: {
-      role: true,
-      organization: {
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+  // Verify user is member of this org
+  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
+  const membership = membershipResult.success ? membershipResult.data : null;
 
   if (!membership) {
     return notFound();
