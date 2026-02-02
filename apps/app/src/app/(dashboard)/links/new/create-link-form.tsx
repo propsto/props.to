@@ -1,10 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@propsto/ui/atoms/button";
 import { Input } from "@propsto/ui/atoms/input";
 import {
@@ -33,10 +34,18 @@ import {
 import { Switch } from "@propsto/ui/atoms/switch";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import type { FeedbackTemplateWithFields } from "@propsto/data/repos/feedback-template";
-import { createLinkAction } from "./actions";
+import { createLinkAction, checkSlugAvailableAction } from "./actions";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
+  slug: z
+    .string()
+    .min(1, "URL slug is required")
+    .max(50)
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "Only lowercase letters, numbers, and hyphens allowed"
+    ),
   templateId: z.string().min(1, "Please select a template"),
   feedbackType: z.nativeEnum(FeedbackType),
   visibility: z.nativeEnum(FeedbackVisibility),
@@ -84,11 +93,13 @@ export function CreateLinkForm({
 }: CreateLinkFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      slug: "",
       templateId: "",
       feedbackType: "RECOGNITION",
       visibility: "PRIVATE",
@@ -96,6 +107,30 @@ export function CreateLinkForm({
       isHidden: false,
     },
   });
+
+  const slugValue = useWatch({ control: form.control, name: "slug" });
+
+  // Debounced slug availability check
+  useEffect(() => {
+    if (!slugValue || slugValue.length < 2) {
+      setSlugStatus("idle");
+      return;
+    }
+
+    // Validate format first
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slugValue)) {
+      setSlugStatus("idle");
+      return;
+    }
+
+    setSlugStatus("checking");
+    const timeout = setTimeout(async () => {
+      const result = await checkSlugAvailableAction(slugValue);
+      setSlugStatus(result.available ? "available" : "taken");
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [slugValue]);
 
   function onSubmit(values: FormValues): void {
     startTransition(async () => {
@@ -133,6 +168,51 @@ export function CreateLinkForm({
                   </FormControl>
                   <FormDescription>
                     A name to help you identify this link
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL Slug</FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., leadership-q1"
+                        {...field}
+                        onChange={(e) => {
+                          // Auto-format: lowercase, replace spaces with hyphens
+                          const formatted = e.target.value
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")
+                            .replace(/[^a-z0-9-]/g, "");
+                          field.onChange(formatted);
+                        }}
+                        className="pr-10"
+                      />
+                    </FormControl>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {slugStatus === "checking" && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                      {slugStatus === "available" && (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
+                      {slugStatus === "taken" && (
+                        <XCircle className="h-4 w-4 text-red-500" />
+                      )}
+                    </div>
+                  </div>
+                  <FormDescription>
+                    Your link URL will be: props.to/you/{field.value || "slug"}
+                    {slugStatus === "taken" && (
+                      <span className="text-red-500 ml-2">— already in use</span>
+                    )}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -292,7 +372,7 @@ export function CreateLinkForm({
             )}
 
             <div className="flex gap-4">
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" disabled={isPending || slugStatus === "taken" || slugStatus === "checking"}>
                 {isPending ? "Creating..." : "Create Link"}
               </Button>
               <Button

@@ -60,6 +60,7 @@ test.describe("Feedback Links", () => {
   });
 
   test("should create a new feedback link", async ({ page, baseURL }) => {
+    const uniqueSlug = `e2e-test-${Date.now()}`;
     await page.goto(`${baseURL}/links/new`);
     await page.waitForLoadState("networkidle");
 
@@ -70,6 +71,12 @@ test.describe("Feedback Links", () => {
 
     // Fill out the form
     await page.getByLabel(/link name/i).fill("E2E Test Link");
+    await page.getByLabel(/url slug/i).fill(uniqueSlug);
+
+    // Wait for slug availability check to complete (shows checkmark or X)
+    await expect(
+      page.locator(".text-green-500, .text-red-500"),
+    ).toBeVisible({ timeout: 5000 });
 
     // Select template using label association
     // The Template label is followed by a combobox trigger
@@ -115,8 +122,10 @@ test.describe("Feedback Links", () => {
     page,
     baseURL,
   }) => {
-    // Create a link with a unique name
-    const uniqueName = `Test Link ${Date.now()}`;
+    // Create a link with a unique name and slug
+    const timestamp = Date.now();
+    const uniqueName = `Test Link ${timestamp}`;
+    const uniqueSlug = `test-link-${timestamp}`;
     await page.goto(`${baseURL}/links/new`);
     await page.waitForLoadState("networkidle");
 
@@ -126,6 +135,12 @@ test.describe("Feedback Links", () => {
     ).toBeVisible({ timeout: 15000 });
 
     await page.getByLabel(/link name/i).fill(uniqueName);
+    await page.getByLabel(/url slug/i).fill(uniqueSlug);
+
+    // Wait for slug availability check to complete
+    await expect(
+      page.locator(".text-green-500, .text-red-500"),
+    ).toBeVisible({ timeout: 5000 });
 
     // Select template using label association
     const templateSection = page.locator("text=Template").locator("..");
