@@ -12,7 +12,6 @@
 import { db } from "../db";
 import { createLogger } from "@propsto/logger";
 import { generateUniqueSlug } from "../repos/slug";
-import { auditHelpers } from "../repos/audit-log";
 
 const logger = createLogger("migration");
 
@@ -61,10 +60,10 @@ async function migrateUsersToOrgs(dryRun: boolean): Promise<void> {
     const domain = org.hostedDomain!;
     const existingMemberIds = new Set(org.members.map((m) => m.userId));
 
-    // Find users whose email ends with @domain
+    // Find users whose email ends with @domain (case-insensitive)
     const usersWithDomain = await db.user.findMany({
       where: {
-        email: { endsWith: `@${domain}` },
+        email: { endsWith: `@${domain}`, mode: "insensitive" },
       },
       include: {
         slug: true,
@@ -123,7 +122,7 @@ async function migrateUsersToOrgs(dryRun: boolean): Promise<void> {
           // Create the membership and org-scoped slug in a transaction
           await db.$transaction(async (tx) => {
             // Create org-scoped slug
-            const newSlug = await tx.slug.create({
+            await tx.slug.create({
               data: {
                 slug: orgSlug,
                 scope: "ORGANIZATION",
