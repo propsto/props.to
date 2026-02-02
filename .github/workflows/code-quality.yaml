@@ -11,6 +11,16 @@ jobs:
     name: Lint & Type Check
     runs-on: ubuntu-latest
 
+    env:
+      # Dummy values for prisma generate during postinstall
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+      EMAIL_FROM: "noreply@example.com"
+      AUTH_SECRET: "dummy-secret-for-ci"
+      PROPSTO_ENV: "development"
+      PROPSTO_APP_URL: "http://localhost:3000"
+      AUTH_URL: "http://localhost:3002"
+      PROPSTO_HOST: "localhost"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
