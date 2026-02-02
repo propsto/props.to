@@ -547,6 +547,20 @@ async function main() {
     },
   });
 
+  // Create a hidden feedback link for Mike (for testing hidden links feature)
+  await prisma.feedbackLink.create({
+    data: {
+      name: "Private 1:1 Feedback",
+      slug: "mike-hidden",
+      userId: mike.id,
+      templateId: propsTemplate.id,
+      feedbackType: "THREE_SIXTY",
+      visibility: "PRIVATE",
+      isActive: true,
+      isHidden: true,
+    },
+  });
+
   // Create sample feedback for Mike from Jane
   await prisma.feedback.create({
     data: {

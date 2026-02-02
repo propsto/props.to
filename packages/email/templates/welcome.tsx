@@ -61,7 +61,7 @@ export function WelcomeEmail({
               receiving feedback effortless.
             </Text>
 
-            <Text style={styles.text}>Here's what you can do next:</Text>
+            <Text style={styles.text}>Here&apos;s what you can do next:</Text>
 
             <Section style={styles.listContainer}>
               <Text style={styles.listItem}>
@@ -86,7 +86,7 @@ export function WelcomeEmail({
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Questions? Just reply to this email — we're here to help.
+              Questions? Just reply to this email — we&apos;re here to help.
             </Text>
           </Section>
         </Container>

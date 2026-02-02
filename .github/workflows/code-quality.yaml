@@ -1,0 +1,44 @@
+name: Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    env:
+      # Dummy values for prisma generate during postinstall
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+      EMAIL_FROM: "noreply@example.com"
+      AUTH_SECRET: "dummy-secret-for-ci"
+      PROPSTO_ENV: "development"
+      PROPSTO_APP_URL: "http://localhost:3000"
+      AUTH_URL: "http://localhost:3002"
+      PROPSTO_HOST: "localhost"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run ESLint
+        run: pnpm lint
+
+      - name: Run Type Check
+        run: pnpm type-check

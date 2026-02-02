@@ -413,6 +413,7 @@ model FeedbackLink {
   template       FeedbackTemplate   @relation(fields: [templateId], references: [id])
   templateId     String
   isActive       Boolean            @default(true)
+  isHidden       Boolean            @default(false) // Hidden links are not listed on public profiles
   expiresAt      DateTime? // Optional expiration date
   maxResponses   Int? // Optional max number of responses
   responseCount  Int                @default(0)

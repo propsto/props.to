@@ -1,6 +1,5 @@
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
-import { getAuditLogs } from "@propsto/data/repos";
+import { getMembershipByOrgSlug, getAuditLogs } from "@propsto/data/repos";
 import { notFound, redirect } from "next/navigation";
 import {
   Card,
@@ -27,25 +26,9 @@ export default async function OrgAdminAudit({
     return notFound();
   }
 
-  // Verify user is admin of this org
-  const membership = await db.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        slug: {
-          slug: orgSlug,
-        },
-      },
-    },
-    select: {
-      role: true,
-      organization: {
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
+  // Verify user is member of this org
+  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
+  const membership = membershipResult.success ? membershipResult.data : null;
 
   if (!membership) {
     return notFound();
@@ -69,8 +52,8 @@ export default async function OrgAdminAudit({
     { limit, offset },
   );
 
-  const logs = result.success ? result.data?.logs ?? [] : [];
-  const total = result.success ? result.data?.total ?? 0 : 0;
+  const logs = result.success ? (result.data?.logs ?? []) : [];
+  const total = result.success ? (result.data?.total ?? 0) : 0;
   const totalPages = Math.ceil(total / limit);
 
   return (
@@ -85,9 +68,7 @@ export default async function OrgAdminAudit({
       <Card>
         <CardHeader>
           <CardTitle>Activity History</CardTitle>
-          <CardDescription>
-            {total} total events recorded
-          </CardDescription>
+          <CardDescription>{total} total events recorded</CardDescription>
         </CardHeader>
         <CardContent>
           {logs.length > 0 ? (
@@ -99,7 +80,8 @@ export default async function OrgAdminAudit({
             />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No audit events recorded yet. Actions will appear here as they happen.
+              No audit events recorded yet. Actions will appear here as they
+              happen.
             </p>
           )}
         </CardContent>

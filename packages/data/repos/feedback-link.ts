@@ -45,6 +45,7 @@ export async function createFeedbackLink(data: {
   feedbackType?: FeedbackType;
   expiresAt?: Date;
   maxResponses?: number;
+  isHidden?: boolean;
 }): Promise<HandleEvent<FeedbackLinkWithRelations>> {
   try {
     logger("createFeedbackLink", { userId: data.userId, name: data.name });
@@ -77,6 +78,7 @@ export async function createFeedbackLink(data: {
         feedbackType: data.feedbackType ?? "RECOGNITION",
         expiresAt: data.expiresAt,
         maxResponses: data.maxResponses,
+        isHidden: data.isHidden ?? false,
       },
       include: feedbackLinkInclude,
     });
@@ -152,6 +154,7 @@ export async function updateFeedbackLink(
     expiresAt?: Date | null;
     maxResponses?: number | null;
     isActive?: boolean;
+    isHidden?: boolean;
   },
 ): Promise<HandleEvent<FeedbackLinkWithRelations>> {
   try {
@@ -189,6 +192,8 @@ export async function getUserFeedbackLinks(
   options?: {
     organizationId?: string;
     isActive?: boolean;
+    isHidden?: boolean;
+    excludeHidden?: boolean; // For public profile pages - exclude hidden links
     skip?: number;
     take?: number;
   },
@@ -201,6 +206,8 @@ export async function getUserFeedbackLinks(
         organizationId: options.organizationId,
       }),
       ...(options?.isActive !== undefined && { isActive: options.isActive }),
+      ...(options?.isHidden !== undefined && { isHidden: options.isHidden }),
+      ...(options?.excludeHidden && { isHidden: false }),
     };
 
     const [links, total] = await Promise.all([

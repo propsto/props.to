@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray, Control } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@propsto/ui/atoms/button";
 import { Input } from "@propsto/ui/atoms/input";
@@ -132,7 +132,7 @@ export function CreateTemplateForm(): React.JSX.Element {
           placeholder: f.placeholder,
           helpText: f.helpText,
           order: i,
-        }))
+        })),
       );
       setAiPrompt("");
     } else {
@@ -180,7 +180,7 @@ export function CreateTemplateForm(): React.JSX.Element {
             <Textarea
               placeholder="e.g., Create a feedback form with a 5-star rating for overall satisfaction and a comment field for suggestions"
               value={aiPrompt}
-              onChange={(e) => setAiPrompt(e.target.value)}
+              onChange={e => setAiPrompt(e.target.value)}
               className="min-h-[80px]"
             />
           </div>
@@ -268,7 +268,7 @@ export function CreateTemplateForm(): React.JSX.Element {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {feedbackTypeOptions.map((option) => (
+                          {feedbackTypeOptions.map(option => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
                             </SelectItem>
@@ -369,7 +369,6 @@ export function CreateTemplateForm(): React.JSX.Element {
 
 interface FieldEditorProps {
   index: number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: any;
   onRemove: () => void;
 }
@@ -430,7 +429,7 @@ function FieldEditor({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {fieldTypeOptions.map((option) => (
+                      {fieldTypeOptions.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>

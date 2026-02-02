@@ -1,10 +1,17 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getMembershipByOrgSlug } from "@propsto/data/repos";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
-import { Building2, Users, Settings, LayoutDashboard, ScrollText, Tags } from "lucide-react";
+import {
+  Building2,
+  Users,
+  Settings,
+  LayoutDashboard,
+  ScrollText,
+  Tags,
+} from "lucide-react";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,29 +31,13 @@ export default async function OrgAdminLayout({
 
   // Do fresh DB lookup for membership to handle slug changes
   // (session cache may have stale org slug after URL change)
-  const membership = await db.organizationMember.findFirst({
-    where: {
-      userId: session.user.id,
-      organization: {
-        slug: {
-          slug: orgSlug,
-        },
-      },
-    },
-    select: {
-      role: true,
-      organization: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  });
-
+  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
+  
   // Check if user is member of this org
-  if (!membership) {
+  if (!membershipResult.success || !membershipResult.data) {
     return notFound();
   }
+  const membership = membershipResult.data;
 
   // Check if user has admin privileges (OWNER or ADMIN)
   if (membership.role !== "OWNER" && membership.role !== "ADMIN") {
@@ -86,19 +77,21 @@ export default async function OrgAdminLayout({
       <div className="flex items-center gap-3">
         <Building2 className="h-8 w-8" />
         <div>
-          <h1 className="text-2xl font-semibold">{membership.organization.name}</h1>
+          <h1 className="text-2xl font-semibold">
+            {membership.organization.name}
+          </h1>
           <p className="text-sm text-muted-foreground">Organization Admin</p>
         </div>
       </div>
 
       <nav className="flex gap-2 border-b">
-        {navItems.map((item) => (
+        {navItems.map(item => (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
               "flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 border-transparent hover:border-primary/50 hover:text-primary transition-colors",
-              "-mb-px"
+              "-mb-px",
             )}
           >
             <item.icon className="h-4 w-4" />

@@ -1,5 +1,5 @@
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getOrganizationBySlugWithCounts } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -25,26 +25,11 @@ export default async function OrgAdminOverview({
   }
 
   // Get organization with counts
-  const org = await db.organization.findFirst({
-    where: {
-      slug: {
-        slug: orgSlug,
-      },
-    },
-    include: {
-      _count: {
-        select: {
-          members: true,
-          templates: true,
-          feedbacks: true,
-        },
-      },
-    },
-  });
-
-  if (!org) {
+  const orgResult = await getOrganizationBySlugWithCounts(orgSlug);
+  if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
+  const org = orgResult.data;
 
   const stats = [
     {
@@ -77,7 +62,7 @@ export default async function OrgAdminOverview({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
+        {stats.map(stat => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">

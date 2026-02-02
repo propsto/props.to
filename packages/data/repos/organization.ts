@@ -6,6 +6,211 @@ import { handleSuccess } from "../utils/success-handling";
 
 const logger = createLogger("data");
 
+// Get organization by slug
+export async function getOrganizationBySlug(slug: string) {
+  try {
+    logger("getOrganizationBySlug", { slug });
+    const organization = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: slug.toLowerCase(),
+        },
+      },
+      include: {
+        slug: true,
+        organizationSettings: true,
+        defaultUserSettings: true,
+        feedbackSettings: true,
+      },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get organization by slug with member/template/feedback counts (for admin overview)
+export async function getOrganizationBySlugWithCounts(slug: string) {
+  try {
+    logger("getOrganizationBySlugWithCounts", { slug });
+    const organization = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: slug.toLowerCase(),
+        },
+      },
+      include: {
+        slug: true,
+        _count: {
+          select: {
+            members: true,
+            templates: true,
+            feedbacks: true,
+          },
+        },
+      },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get organization by slug with members list (for admin members page)
+export async function getOrganizationBySlugWithMembers(slug: string) {
+  try {
+    logger("getOrganizationBySlugWithMembers", { slug });
+    const organization = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: slug.toLowerCase(),
+        },
+      },
+      include: {
+        slug: true,
+        members: {
+          include: {
+            user: {
+              include: {
+                slug: true,
+              },
+            },
+          },
+          orderBy: { joinedAt: "asc" },
+        },
+      },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get organization by slug with categories (for admin categories page)
+export async function getOrganizationBySlugWithCategories(slug: string) {
+  try {
+    logger("getOrganizationBySlugWithCategories", { slug });
+    const organization = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: slug.toLowerCase(),
+        },
+      },
+      include: {
+        slug: true,
+        categories: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get organization by slug with settings (for admin settings page)
+export async function getOrganizationBySlugWithSettings(slug: string) {
+  try {
+    logger("getOrganizationBySlugWithSettings", { slug });
+    const organization = await db.organization.findFirst({
+      where: {
+        slug: {
+          slug: slug.toLowerCase(),
+        },
+      },
+      include: {
+        slug: true,
+        organizationSettings: true,
+        defaultUserSettings: true,
+        feedbackSettings: true,
+      },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get user's membership in an organization by org slug
+export async function getMembershipByOrgSlug(userId: string, orgSlug: string) {
+  try {
+    logger("getMembershipByOrgSlug", { userId, orgSlug });
+    const membership = await db.organizationMember.findFirst({
+      where: {
+        userId,
+        organization: {
+          slug: {
+            slug: orgSlug.toLowerCase(),
+          },
+        },
+      },
+      select: {
+        role: true,
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+    return handleSuccess(membership);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Update or create organization default user settings
+export async function upsertOrganizationDefaultSettings(
+  organizationId: string,
+  settings: {
+    defaultProfileVisibility?: "PUBLIC" | "ORGANIZATION" | "PRIVATE";
+    allowExternalFeedback?: boolean;
+    requireApprovalForPublicProfiles?: boolean;
+  },
+) {
+  try {
+    logger("upsertOrganizationDefaultSettings", { organizationId, settings });
+    const result = await db.organizationDefaultUserSettings.upsert({
+      where: { organizationId },
+      update: settings,
+      create: {
+        organizationId,
+        ...settings,
+      },
+    });
+    return handleSuccess(result);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Verify user has admin access (OWNER or ADMIN role) to an organization by slug
+export async function verifyOrgAdminAccess(userId: string, orgSlug: string) {
+  try {
+    logger("verifyOrgAdminAccess", { userId, orgSlug });
+    const membership = await db.organizationMember.findFirst({
+      where: {
+        userId,
+        organization: {
+          slug: {
+            slug: orgSlug.toLowerCase(),
+          },
+        },
+        role: { in: ["OWNER", "ADMIN"] },
+      },
+      include: {
+        organization: true,
+      },
+    });
+    return handleSuccess(membership);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Get organization by hosted domain (for Google Workspace domain matching)
 export async function getOrganizationByHostedDomain(hostedDomain: string) {
   try {

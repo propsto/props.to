@@ -65,9 +65,7 @@ export function PasswordChangedEmail({
               Password updated ✓
             </Heading>
 
-            <Text style={styles.text}>
-              Hi{userName ? ` ${userName}` : ""},
-            </Text>
+            <Text style={styles.text}>Hi{userName ? ` ${userName}` : ""},</Text>
 
             <Text style={styles.text}>
               Your password was successfully changed on {formattedDate}.
@@ -83,9 +81,9 @@ export function PasswordChangedEmail({
 
             <Section style={styles.warningBox}>
               <Text style={styles.warningText}>
-                <strong>Didn't make this change?</strong> If you didn't reset
-                your password, please contact support immediately and secure
-                your account.
+                <strong>Didn&apos;t make this change?</strong> If you
+                didn&apos;t reset your password, please contact support
+                immediately and secure your account.
               </Text>
             </Section>
           </Section>
@@ -94,8 +92,8 @@ export function PasswordChangedEmail({
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              This is a security notification. You're receiving this because
-              your account password was changed.
+              This is a security notification. You&apos;re receiving this
+              because your account password was changed.
             </Text>
           </Section>
         </Container>

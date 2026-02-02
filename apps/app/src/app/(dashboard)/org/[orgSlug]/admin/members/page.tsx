@@ -1,5 +1,5 @@
 import { auth } from "@/server/auth.server";
-import { db } from "@propsto/data";
+import { getOrganizationBySlugWithMembers } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -34,31 +34,11 @@ export default async function OrgAdminMembers({
   }
 
   // Get organization with members
-  const org = await db.organization.findFirst({
-    where: {
-      slug: {
-        slug: orgSlug,
-      },
-    },
-    include: {
-      members: {
-        include: {
-          user: {
-            include: {
-              slug: true,
-            },
-          },
-        },
-        orderBy: {
-          joinedAt: "asc",
-        },
-      },
-    },
-  });
-
-  if (!org) {
+  const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
+  if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
+  const org = orgResult.data;
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -84,7 +64,8 @@ export default async function OrgAdminMembers({
         <CardHeader>
           <CardTitle>All Members</CardTitle>
           <CardDescription>
-            {org.members.length} member{org.members.length !== 1 ? "s" : ""} in this organization
+            {org.members.length} member{org.members.length !== 1 ? "s" : ""} in
+            this organization
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -98,14 +79,16 @@ export default async function OrgAdminMembers({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {org.members.map((member) => (
+              {org.members.map(member => (
                 <TableRow key={member.id}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={member.user.image ?? undefined} />
                         <AvatarFallback>
-                          {member.user.firstName?.[0] ?? member.user.email?.[0] ?? "?"}
+                          {member.user.firstName?.[0] ??
+                            member.user.email?.[0] ??
+                            "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
