@@ -17,7 +17,8 @@
     "db-studio": "pnpm dotenv -- prisma studio --browser none",
     "db-up": "pnpm dotenv -- docker compose up -d || docker-compose up -d",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "pnpm dotenv -- prisma validate"
+    "lint": "pnpm dotenv -- prisma validate",
+    "migrate:users-to-orgs": "pnpm dotenv -- tsx scripts/migrate-users-to-orgs.ts"
   },
   "dependencies": {
     "@auth/core": "0.41.1",
