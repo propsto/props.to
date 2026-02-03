@@ -25,10 +25,7 @@ export async function addDefaultTemplateToOrgAction(
   }
 
   // Verify admin access
-  const membershipResult = await verifyOrgAdminAccess(
-    session.user.id,
-    orgSlug,
-  );
+  const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
   if (!membershipResult.success || !membershipResult.data) {
     return { success: false, error: "Not authorized" };
   }
@@ -96,7 +93,10 @@ export async function createOrgTemplateAction(
   });
 
   if (!result.success) {
-    return { success: false, error: result.error ?? "Failed to create template" };
+    return {
+      success: false,
+      error: result.error ?? "Failed to create template",
+    };
   }
 
   revalidatePath(`/org/${input.orgSlug}/admin/templates`);

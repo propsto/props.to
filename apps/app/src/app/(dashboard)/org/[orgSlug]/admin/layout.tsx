@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ScrollText,
   Tags,
+  LinkIcon,
   FileText,
 } from "lucide-react";
 
@@ -32,8 +33,11 @@ export default async function OrgAdminLayout({
 
   // Do fresh DB lookup for membership to handle slug changes
   // (session cache may have stale org slug after URL change)
-  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
-  
+  const membershipResult = await getMembershipByOrgSlug(
+    session.user.id,
+    orgSlug,
+  );
+
   // Check if user is member of this org
   if (!membershipResult.success || !membershipResult.data) {
     return notFound();
@@ -55,6 +59,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/members`,
       label: "Members",
       icon: Users,
+    },
+    {
+      href: `/org/${orgSlug}/admin/links`,
+      label: "Links",
+      icon: LinkIcon,
     },
     {
       href: `/org/${orgSlug}/admin/templates`,

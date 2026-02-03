@@ -5,7 +5,7 @@ let jsErrors: string[] = [];
 
 test.beforeEach(async ({ page }) => {
   jsErrors = [];
-  page.on("pageerror", (error) => {
+  page.on("pageerror", error => {
     jsErrors.push(error.message);
   });
 });
@@ -37,14 +37,23 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see navigation tabs in the admin nav (not sidebar)
     const adminNav = page.locator("nav").filter({ hasText: "Overview" });
-    await expect(adminNav.getByRole("link", { name: /overview/i })).toBeVisible();
-    await expect(adminNav.getByRole("link", { name: /members/i })).toBeVisible();
-    await expect(adminNav.getByRole("link", { name: /settings/i })).toBeVisible();
+    await expect(
+      adminNav.getByRole("link", { name: /overview/i }),
+    ).toBeVisible();
+    await expect(
+      adminNav.getByRole("link", { name: /members/i }),
+    ).toBeVisible();
+    await expect(
+      adminNav.getByRole("link", { name: /settings/i }),
+    ).toBeVisible();
 
-    // Should see stats cards
-    await expect(page.getByText("Total Members")).toBeVisible();
-    await expect(page.getByText("Templates")).toBeVisible();
-    await expect(page.getByText("Total Feedback")).toBeVisible();
+    // Should see stats cards (use locator to scope to card titles, avoiding nav links)
+    const statsSection = page
+      .locator(".grid")
+      .filter({ hasText: "Total Members" });
+    await expect(statsSection.getByText("Total Members")).toBeVisible();
+    await expect(statsSection.getByText("Templates")).toBeVisible();
+    await expect(statsSection.getByText("Total Feedback")).toBeVisible();
   });
 
   test("should display members list", async ({ page, baseURL }) => {
@@ -52,7 +61,9 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see members heading
-    await expect(page.getByRole("heading", { name: /members/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /members/i }).first(),
+    ).toBeVisible({
       timeout: 15000,
     });
 
@@ -61,7 +72,7 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see member table with data
     await expect(page.getByRole("table")).toBeVisible({ timeout: 10000 });
-    
+
     // Should see at least one member row with role badge
     await expect(page.getByText(/OWNER|ADMIN|MEMBER/).first()).toBeVisible();
   });
@@ -80,7 +91,9 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see General settings card
     await expect(page.getByText("Organization Name")).toBeVisible();
-    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Organization URL", { exact: true }),
+    ).toBeVisible();
 
     // Should see Member Defaults card with form
     await expect(page.getByText("Member Defaults")).toBeVisible();
@@ -119,17 +132,19 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see Organization URL card
-    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
+    await expect(
+      page.getByText("Organization URL", { exact: true }),
+    ).toBeVisible({
       timeout: 15000,
     });
-    
+
     // Should see the URL preview (use first() as there may be multiple instances)
     await expect(page.getByText("props.to/").first()).toBeVisible();
-    
+
     // Should see URL slug input with current value
     const slugInput = page.locator("#orgSlug");
     await expect(slugInput).toHaveValue(orgSlug);
-    
+
     // Should see Save URL button (Mike is OWNER)
     const saveButton = page.getByRole("button", { name: /save url/i });
     await expect(saveButton).toBeVisible();
@@ -141,7 +156,9 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Wait for form to load
-    await expect(page.getByText("Organization URL", { exact: true })).toBeVisible({
+    await expect(
+      page.getByText("Organization URL", { exact: true }),
+    ).toBeVisible({
       timeout: 15000,
     });
 
@@ -165,9 +182,11 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see audit log heading
-    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible({
-      timeout: 15000,
-    });
+    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible(
+      {
+        timeout: 15000,
+      },
+    );
 
     // Should see Activity History card
     await expect(page.getByText("Activity History")).toBeVisible();
@@ -187,9 +206,11 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should be on audit page
-    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible({
-      timeout: 15000,
-    });
+    await expect(page.getByRole("heading", { name: /audit log/i })).toBeVisible(
+      {
+        timeout: 15000,
+      },
+    );
   });
 
   test("should save settings successfully", async ({ page, baseURL }) => {
@@ -243,7 +264,9 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see categories page header
-    await expect(page.getByRole("heading", { name: /feedback categories/i })).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /feedback categories/i }),
+    ).toBeVisible({
       timeout: 15000,
     });
   });
@@ -255,16 +278,22 @@ test.describe("Organization Admin Panel", () => {
     await page.goto(`${baseURL}/org/${orgSlug}/admin/categories`);
     await page.waitForLoadState("networkidle");
 
-    // Should see Custom Categories section
-    await expect(page.getByText("Custom Categories")).toBeVisible({
+    // Should see Custom Categories section (use heading role to avoid matching empty state text)
+    await expect(
+      page.getByRole("heading", { name: /custom categories/i }),
+    ).toBeVisible({
       timeout: 15000,
     });
 
     // Should see System Categories section
-    await expect(page.getByText("System Categories")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /system categories/i }),
+    ).toBeVisible();
 
     // Should see New Category button
-    await expect(page.getByRole("button", { name: /new category/i })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /new category/i }),
+    ).toBeVisible();
   });
 
   test("should open create category dialog", async ({ page, baseURL }) => {
@@ -276,7 +305,9 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see dialog
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole("heading", { name: "Create Category" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Create Category" }),
+    ).toBeVisible();
 
     // Should see form fields
     await expect(page.getByLabel("Name")).toBeVisible();
@@ -305,28 +336,38 @@ test.describe("Organization Admin Panel", () => {
 
     // Fill form
     await page.getByLabel("Name").fill(testCategoryName);
-    await page.getByLabel("Description").fill("A test category for E2E testing");
+    await page
+      .getByLabel("Description")
+      .fill("A test category for E2E testing");
 
     // Submit
     await page.getByRole("button", { name: /create category/i }).click();
 
     // Dialog should close and category should appear
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
-    await expect(page.getByText(testCategoryName)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(testCategoryName)).toBeVisible({
+      timeout: 5000,
+    });
 
     // Now delete the category
-    const deleteButton = page.getByRole("button", { name: `Delete ${testCategoryName}` });
+    const deleteButton = page.getByRole("button", {
+      name: `Delete ${testCategoryName}`,
+    });
     await deleteButton.click();
 
     // Confirm deletion in dialog
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await expect(page.getByRole("heading", { name: "Delete Category" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Delete Category" }),
+    ).toBeVisible();
     await page.getByRole("button", { name: /^delete$/i }).click();
 
     // Wait for dialog to close first
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
 
     // Category should be removed (use exact match to avoid matching other text)
-    await expect(page.getByText(testCategoryName, { exact: true })).not.toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByText(testCategoryName, { exact: true }),
+    ).not.toBeVisible({ timeout: 5000 });
   });
 });
