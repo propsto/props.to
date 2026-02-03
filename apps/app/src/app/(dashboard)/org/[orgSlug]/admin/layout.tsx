@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   ScrollText,
   Tags,
+  LinkIcon,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -54,6 +55,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/members`,
       label: "Members",
       icon: Users,
+    },
+    {
+      href: `/org/${orgSlug}/admin/links`,
+      label: "Links",
+      icon: LinkIcon,
     },
     {
       href: `/org/${orgSlug}/admin/categories`,

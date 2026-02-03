@@ -260,6 +260,45 @@ export async function getOrganizationFeedbackLinks(
   }
 }
 
+// Get all feedback links from members of an organization
+export async function getOrganizationMemberFeedbackLinks(
+  organizationId: string,
+  options?: {
+    isActive?: boolean;
+    skip?: number;
+    take?: number;
+    excludeHidden?: boolean;
+  },
+): Promise<HandleEvent<{ links: FeedbackLinkWithRelations[]; total: number }>> {
+  try {
+    logger("getOrganizationMemberFeedbackLinks", { organizationId, options });
+    const where: Prisma.FeedbackLinkWhereInput = {
+      user: {
+        organizations: {
+          some: { organizationId },
+        },
+      },
+      ...(options?.isActive !== undefined && { isActive: options.isActive }),
+      ...(options?.excludeHidden && { isHidden: false }),
+    };
+
+    const [links, total] = await Promise.all([
+      db.feedbackLink.findMany({
+        where,
+        include: feedbackLinkInclude,
+        orderBy: { createdAt: "desc" },
+        skip: options?.skip,
+        take: options?.take ?? 50,
+      }),
+      db.feedbackLink.count({ where }),
+    ]);
+
+    return handleSuccess({ links, total });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Increment response count for a link
 export async function incrementLinkResponseCount(
   id: string,
