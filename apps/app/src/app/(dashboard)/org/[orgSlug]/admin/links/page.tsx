@@ -21,8 +21,7 @@ import {
 } from "@propsto/ui/atoms/table";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
-import { LinkIcon, Eye, EyeOff, ExternalLink } from "lucide-react";
-import Link from "next/link";
+import { LinkIcon, EyeOff } from "lucide-react";
 
 interface LinksPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -53,7 +52,7 @@ export default async function OrgAdminLinks({
   const totalLinks = linksResult.success ? linksResult.data.total : 0;
 
   // Calculate stats
-  const activeLinks = links.filter((l) => l.isActive).length;
+  const activeLinks = links.filter(l => l.isActive).length;
   const totalResponses = links.reduce((sum, l) => sum + l._count.feedbacks, 0);
 
   return (
@@ -85,7 +84,9 @@ export default async function OrgAdminLinks({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Responses
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalResponses}</div>
@@ -123,7 +124,7 @@ export default async function OrgAdminLinks({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {links.map((link) => (
+                {links.map(link => (
                   <TableRow key={link.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
