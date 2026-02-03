@@ -214,6 +214,8 @@ model User {
   role                   Role                 @default(USER)
   hostedDomain           String? // Google Workspace domain from OAuth (e.g., "acme.com")
   isGoogleWorkspaceAdmin Boolean              @default(false) // Whether user is a Google Workspace admin (checked on OAuth login)
+  personalEmail          String?              @unique // Fallback personal email for Google Workspace users
+  personalEmailVerified  DateTime? // When the personal email was verified
   dateOfBirth            DateTime?
   feedbacksReceived      Feedback[]           @relation("ReceivedFeedback") // Feedback received by the user
   feedbacksSent          Feedback[]           @relation("SentFeedback") // Feedback sent by the user

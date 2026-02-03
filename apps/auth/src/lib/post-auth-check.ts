@@ -5,7 +5,7 @@ import {
   type OrganizationStatus,
   type LinkAccountStatus,
   type WelcomeUser,
-} from "../app/_components/welcome-stepper/steps";
+} from "../app/_components/welcome-stepper/steps/step-completion-checks";
 
 const logger = createLogger("auth");
 
