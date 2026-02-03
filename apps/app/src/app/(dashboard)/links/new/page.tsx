@@ -16,9 +16,10 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
   const userId = session.user.id;
 
   // Get user's organization (if any)
+  // Note: Currently only uses first org. Multi-org support would need UI to select which org's templates to show.
   const userOrgsResult = await getUserOrganizations(userId);
   const userOrgs = userOrgsResult.success ? userOrgsResult.data : [];
-  const primaryOrg = userOrgs[0]?.organization; // Use first org as primary
+  const primaryOrg = userOrgs[0]?.organization;
 
   // Fetch available templates
   const [userTemplatesResult, defaultTemplatesResult, orgTemplatesResult] =
@@ -40,24 +41,17 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
     ? orgTemplatesResult.data
     : [];
 
-  // Combine templates, removing duplicates (org templates can also be user templates)
-  const templateIds = new Set<string>();
+  // Combine templates, removing duplicates
+  // Priority: user templates > org templates > default templates
   const allTemplates = [
     ...userTemplates,
-    ...orgTemplates.filter(t => {
-      if (templateIds.has(t.id)) return false;
-      templateIds.add(t.id);
-      return !userTemplates.some(ut => ut.id === t.id);
-    }),
+    ...orgTemplates.filter(t => !userTemplates.some(ut => ut.id === t.id)),
     ...defaultTemplates.filter(
       t =>
         !userTemplates.some(ut => ut.id === t.id) &&
         !orgTemplates.some(ot => ot.id === t.id),
     ),
   ];
-
-  // Add org templates to Set for tracking
-  userTemplates.forEach(t => templateIds.add(t.id));
 
   return (
     <div className="flex flex-col gap-6 py-6">
