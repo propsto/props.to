@@ -7,6 +7,7 @@ import {
 import * as linkAccountStep from "./link-account-step";
 import * as personalStep from "./personal-step";
 import * as accountStep from "./account-step";
+import * as personalEmailStep from "./personal-email-step";
 import * as organizationStep from "./organization-step";
 import * as organizationJoinStep from "./organization-join-step";
 import * as pendingOrganizationStep from "./pending-organization-step";
@@ -18,6 +19,7 @@ export {
   isLinkAccountStepComplete,
   isPersonalStepComplete,
   isAccountStepComplete,
+  isPersonalEmailStepComplete,
   isOrganizationStepComplete,
   isOrganizationJoinStepComplete,
   isPendingOrganizationStepComplete,
@@ -37,16 +39,19 @@ import {
 export type { LinkAccountFormValues } from "./link-account-step";
 export type { PersonalFormValues } from "./personal-step";
 export type { AccountFormValues } from "./account-step";
+export type { PersonalEmailFormValues } from "./personal-email-step";
 export type { OrganizationFormValues } from "./organization-step";
 export type { OrganizationJoinFormValues } from "./organization-join-step";
 export type { PendingOrganizationFormValues } from "./pending-organization-step";
 export type { CompleteFormValues } from "./complete-step";
 
 // All steps - link-account is conditional (first step when linking is needed)
+// personal-email is for Google Workspace users only (after account, before org steps)
 const allSteps = [
   { name: "link-account", module: linkAccountStep },
   { name: "personal", module: personalStep },
   { name: "account", module: accountStep },
+  { name: "personal-email", module: personalEmailStep },
   { name: "organization", module: organizationStep },
   { name: "organization-join", module: organizationJoinStep },
   { name: "pending-organization", module: pendingOrganizationStep },
@@ -112,6 +117,9 @@ export function canUserAccessStep(
     case "account":
     case "complete":
       return true; // All users can access these steps
+    case "personal-email":
+      // Only accessible for Google Workspace users
+      return Boolean(user.hostedDomain);
     case "organization":
     case "organization-join":
     case "pending-organization": {
@@ -137,7 +145,15 @@ export function getNextStepForUser(
     case "personal":
       return "account";
     case "account": {
-      // After account, go to appropriate org step or complete
+      // After account, Google Workspace users go to personal-email step
+      if (user.hostedDomain) {
+        return "personal-email";
+      }
+      // Non-Google Workspace users go straight to complete
+      return "complete";
+    }
+    case "personal-email": {
+      // After personal email, go to appropriate org step or complete
       const orgStep = getOrganizationStep(user, orgStatus);
       return orgStep ?? "complete";
     }
@@ -160,6 +176,10 @@ export function shouldSkipStep(
   // Link account step is skipped when not pending
   if (stepName === "link-account") {
     return linkStatus !== "pending";
+  }
+  // Personal email step is skipped for non-Google Workspace users
+  if (stepName === "personal-email") {
+    return !user.hostedDomain;
   }
   if (
     stepName === "organization" ||
@@ -187,6 +207,11 @@ export function getVisibleSteps(
 
   // Always include personal and account steps
   steps.push("personal", "account");
+
+  // Google Workspace users get the personal-email step
+  if (user.hostedDomain) {
+    steps.push("personal-email");
+  }
 
   // Add appropriate org step if applicable
   const orgStep = getOrganizationStep(user, orgStatus);
@@ -234,6 +259,11 @@ export function areAllStepsComplete(
 
   // Check account step
   if (!completionChecks.account(user as User)) {
+    return false;
+  }
+
+  // Check personal-email step (for Google Workspace users)
+  if (!completionChecks["personal-email"](user)) {
     return false;
   }
 

@@ -26,6 +26,7 @@ import {
   organizationHandler,
   organizationJoinHandler,
   linkAccountHandler,
+  verifyPersonalEmailHandler,
   completeHandler,
 } from "@/server/welcome-stepper-action";
 import {
@@ -39,6 +40,7 @@ import {
   type OrganizationStatus,
   type LinkAccountStatus,
   type LinkAccountFormValues,
+  type PersonalEmailFormValues,
   canUserAccessStep,
   getNextStepForUser,
   getVisibleSteps,
@@ -46,16 +48,20 @@ import {
 } from "./steps";
 import { StepComponent as LinkAccountStepComponent } from "./steps/link-account-step";
 import { StepComponent as AccountStepComponent } from "./steps/account-step";
+import { StepComponent as PersonalEmailStepComponent } from "./steps/personal-email-step";
 import { StepComponent as OrganizationStepComponent } from "./steps/organization-step";
 import { StepComponent as OrganizationJoinStepComponent } from "./steps/organization-join-step";
 import { StepComponent as PendingOrganizationStepComponent } from "./steps/pending-organization-step";
 
 const { useStepper } = defineStepper(...config);
 
+import { MailIcon } from "lucide-react";
+
 const stepIcons: Record<string, typeof CogIcon> = {
   "link-account": LinkIcon,
   account: CogIcon,
   personal: UserIcon,
+  "personal-email": MailIcon,
   organization: Building2Icon,
   "organization-join": Building2Icon,
   "pending-organization": Building2Icon,
@@ -213,6 +219,33 @@ export function WelcomeStepper({
           );
         }
       },
+      "personal-email": async () => {
+        const personalEmailValues = values as PersonalEmailFormValues;
+        
+        // If no verification code, user hasn't sent the code yet
+        // The component handles sending the code, we just verify here
+        if (!personalEmailValues.verificationCode) {
+          form.setError("verificationCode", {
+            message: "Please enter the verification code sent to your email",
+          });
+          return;
+        }
+
+        const result = await verifyPersonalEmailHandler(
+          personalEmailValues.verificationCode,
+          user.id,
+        );
+        if (result.success) {
+          const nextStep = getNextStepForUser(user, "personal-email", orgStatus);
+          navigateToStep(nextStep);
+        } else {
+          applyHandleEventToForm<PersonalEmailFormValues>(
+            form as unknown as FormLike<PersonalEmailFormValues>,
+            result,
+            ["personalEmail", "verificationCode"],
+          );
+        }
+      },
       organization: async () => {
         const result = await organizationHandler(
           values as OrganizationFormValues,
@@ -308,6 +341,14 @@ export function WelcomeStepper({
       <AccountStepComponent
         hostedDomain={user.hostedDomain}
         email={user.email}
+      />
+    ),
+    "personal-email": () => (
+      <PersonalEmailStepComponent
+        workEmail={user.email}
+        hostedDomain={user.hostedDomain}
+        userId={user.id}
+        userName={user.firstName ?? user.name ?? undefined}
       />
     ),
     organization: () => (

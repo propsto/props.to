@@ -20,7 +20,11 @@ import {
   linkAccount,
   getUserByEmail,
   verifyUserPassword,
+  createPersonalEmailVerification,
+  verifyPersonalEmailCode,
+  isPersonalEmailAvailable,
 } from "@propsto/data/repos";
+import { sendPersonalEmailVerification } from "@propsto/email/send/user";
 import { type OrganizationJoinFormValues } from "@components/welcome-stepper/steps/organization-join-step";
 import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
@@ -754,6 +758,128 @@ export async function linkAccountHandler(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to link account",
+    };
+  }
+}
+
+// Schema for personal email step
+const personalEmailServerSchema = z.object({
+  personalEmail: z
+    .string()
+    .email("Please enter a valid email address"),
+  verificationCode: z.string().optional(),
+});
+
+export type PersonalEmailFormValues = z.infer<typeof personalEmailServerSchema>;
+
+/**
+ * Handler for sending personal email verification code
+ */
+export async function sendPersonalEmailCodeHandler(
+  personalEmail: string,
+  userId: string,
+  userName?: string,
+  workEmail?: string,
+): Promise<HandleEvent<{ sent: boolean }, PersonalEmailFormValues>> {
+  try {
+    // Validate email format
+    const parsed = personalEmailServerSchema.safeParse({ personalEmail });
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: parsed.error.errors[0]?.message ?? "Invalid email",
+      };
+    }
+
+    // Check if email is available
+    const available = await isPersonalEmailAvailable(personalEmail, userId);
+    if (!available.success || !available.data) {
+      return {
+        success: false,
+        error: "This email is already in use by another account",
+      };
+    }
+
+    // Create verification code
+    const verification = await createPersonalEmailVerification(userId, personalEmail);
+    if (!verification.success || !verification.data) {
+      return {
+        success: false,
+        error: "Failed to create verification code",
+      };
+    }
+
+    // Send verification email
+    const emailSent = await sendPersonalEmailVerification(
+      personalEmail,
+      verification.data.code,
+      userName,
+      workEmail,
+    );
+
+    if (!emailSent.success) {
+      logger("error: Failed to send personal email verification %o", { error: emailSent.error });
+      return {
+        success: false,
+        error: "Failed to send verification email",
+      };
+    }
+
+    logger("info: Personal email verification sent to %s for user %s", personalEmail, userId);
+
+    return {
+      success: true,
+      data: { sent: true },
+    };
+  } catch (error) {
+    logger("error: Send personal email code error %o", { error });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to send verification code",
+    };
+  }
+}
+
+/**
+ * Handler for verifying personal email code
+ */
+export async function verifyPersonalEmailHandler(
+  code: string,
+  userId: string,
+): Promise<HandleEvent<BasicUserData | null | undefined, PersonalEmailFormValues>> {
+  try {
+    // Verify the code
+    const verification = await verifyPersonalEmailCode(userId, code);
+    if (!verification.success) {
+      return {
+        success: false,
+        error: verification.error ?? "Verification failed",
+      };
+    }
+
+    if (!verification.data?.valid) {
+      const errorMsg = "error" in verification.data ? verification.data.error : "Invalid or expired code";
+      return {
+        success: false,
+        error: errorMsg,
+      };
+    }
+
+    // Get updated user data
+    const updatedUser = await getUser({ id: userId });
+    if (updatedUser.success && updatedUser.data) {
+      await updateSession({ user: updatedUser.data });
+    }
+
+    const verifiedEmail = "email" in verification.data ? verification.data.email : "unknown";
+    logger("info: Personal email verified for user %s: %s", userId, verifiedEmail);
+
+    return updatedUser;
+  } catch (error) {
+    logger("error: Verify personal email error %o", { error });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Verification failed",
     };
   }
 }
