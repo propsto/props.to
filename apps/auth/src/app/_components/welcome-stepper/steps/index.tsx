@@ -24,6 +24,8 @@ export {
   isOrganizationJoinStepComplete,
   isPendingOrganizationStepComplete,
   isCompleteStepComplete,
+  getOrganizationStep,
+  areAllStepsComplete,
   type WelcomeUser,
   type OrganizationStatus,
   type LinkAccountStatus,
@@ -31,6 +33,7 @@ export {
 
 import {
   stepCompletionChecks as completionChecks,
+  getOrganizationStep,
   type WelcomeUser,
   type OrganizationStatus,
   type LinkAccountStatus,
@@ -65,42 +68,8 @@ export const stepComponents = createStepComponents(allSteps);
 export const stepNames = allSteps.map(step => step.name);
 export type StepNames = (typeof allSteps)[number]["name"];
 
-/**
- * Determines which organization-related step the user should see based on:
- * - hostedDomain: User's Google Workspace domain (if any)
- * - isGoogleWorkspaceAdmin: Whether user is an admin in their workspace
- * - orgStatus: Whether an organization for their domain already exists
- *
- * Flow:
- * - No hostedDomain → skip all org steps
- * - Already a member → skip all org steps
- * - Admin + org doesn't exist → "organization" (create new org)
- * - Admin + org exists → "organization-join" (join as admin)
- * - Non-admin + org exists → "organization-join" (join as member)
- * - Non-admin + org doesn't exist → "pending-organization" (info only)
- */
-export function getOrganizationStep(
-  user: WelcomeUser,
-  orgStatus: OrganizationStatus,
-): StepNames | null {
-  // No Google Workspace domain - skip org steps
-  if (!user.hostedDomain || orgStatus === "none") {
-    return null;
-  }
-
-  // User is already a member of the organization - skip org steps
-  if (orgStatus === "member") {
-    return null;
-  }
-
-  if (user.isGoogleWorkspaceAdmin) {
-    // Admin: create org if doesn't exist, join as admin if exists
-    return orgStatus === "not_exists" ? "organization" : "organization-join";
-  }
-
-  // Non-admin: join if exists, show pending if doesn't exist
-  return orgStatus === "exists" ? "organization-join" : "pending-organization";
-}
+// Note: getOrganizationStep is now imported from step-completion-checks.ts
+// and re-exported above to avoid pulling React dependencies
 
 // Function to check if user can access a specific step
 export function canUserAccessStep(
@@ -238,56 +207,5 @@ export function getVisibleSteps(
   return steps;
 }
 
-/**
- * Check if all required steps are complete for a user
- * This determines whether a user can skip the onboarding flow entirely
- */
-export function areAllStepsComplete(
-  user: WelcomeUser,
-  orgStatus: OrganizationStatus,
-  linkStatus: LinkAccountStatus = "none",
-): boolean {
-  // Check link-account step
-  if (!completionChecks["link-account"](linkStatus)) {
-    return false;
-  }
-
-  // Check personal step
-  if (!completionChecks.personal(user as User)) {
-    return false;
-  }
-
-  // Check account step
-  if (!completionChecks.account(user as User)) {
-    return false;
-  }
-
-  // Check personal-email step (for Google Workspace users)
-  if (!completionChecks["personal-email"](user)) {
-    return false;
-  }
-
-  // Check organization-related steps based on what's applicable to this user
-  const orgStep = getOrganizationStep(user, orgStatus);
-  if (orgStep === "organization") {
-    if (!completionChecks.organization(user, orgStatus)) {
-      return false;
-    }
-  } else if (orgStep === "organization-join") {
-    if (!completionChecks["organization-join"](user, orgStatus)) {
-      return false;
-    }
-  } else if (orgStep === "pending-organization") {
-    if (!completionChecks["pending-organization"](user, orgStatus)) {
-      return false;
-    }
-  }
-
-  // Check complete step - this ensures user sees the completion screen
-  // before being redirected to the app
-  if (!completionChecks.complete(user)) {
-    return false;
-  }
-
-  return true;
-}
+// Note: areAllStepsComplete is now imported from step-completion-checks.ts
+// and re-exported above to avoid pulling React dependencies when imported externally

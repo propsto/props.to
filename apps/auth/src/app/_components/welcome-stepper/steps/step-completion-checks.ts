@@ -164,3 +164,97 @@ export const stepCompletionChecks = {
   "pending-organization": isPendingOrganizationStepComplete,
   complete: isCompleteStepComplete,
 } as const;
+
+// Step names type for organization steps
+export type OrganizationStepName =
+  | "organization"
+  | "organization-join"
+  | "pending-organization";
+
+/**
+ * Determine which organization step applies to a user based on their status.
+ *
+ * Logic:
+ * - No hosted domain → null (skip org steps)
+ * - Already a member → null (skip org steps)
+ * - Admin + org doesn't exist → "organization" (create new org)
+ * - Admin + org exists → "organization-join" (join as admin)
+ * - Non-admin + org exists → "organization-join" (join as member)
+ * - Non-admin + org doesn't exist → "pending-organization" (info only)
+ */
+export function getOrganizationStep(
+  user: WelcomeUser,
+  orgStatus: OrganizationStatus,
+): OrganizationStepName | null {
+  // No Google Workspace domain - skip org steps
+  if (!user.hostedDomain || orgStatus === "none") {
+    return null;
+  }
+
+  // User is already a member of the organization - skip org steps
+  if (orgStatus === "member") {
+    return null;
+  }
+
+  if (user.isGoogleWorkspaceAdmin) {
+    // Admin: create org if doesn't exist, join as admin if exists
+    return orgStatus === "not_exists" ? "organization" : "organization-join";
+  }
+
+  // Non-admin: join if exists, show pending if doesn't exist
+  return orgStatus === "exists" ? "organization-join" : "pending-organization";
+}
+
+/**
+ * Check if all required steps are complete for a user.
+ * This is a server-compatible function that can be used in the app package
+ * without pulling in React dependencies.
+ */
+export function areAllStepsComplete(
+  user: WelcomeUser,
+  orgStatus: OrganizationStatus,
+  linkStatus: LinkAccountStatus = "none",
+): boolean {
+  // Check link-account step
+  if (!stepCompletionChecks["link-account"](linkStatus)) {
+    return false;
+  }
+
+  // Check personal step
+  if (!stepCompletionChecks.personal(user as User)) {
+    return false;
+  }
+
+  // Check account step
+  if (!stepCompletionChecks.account(user as User)) {
+    return false;
+  }
+
+  // Check personal-email step (for Google Workspace users)
+  if (!stepCompletionChecks["personal-email"](user)) {
+    return false;
+  }
+
+  // Check organization-related steps based on what's applicable to this user
+  const orgStep = getOrganizationStep(user, orgStatus);
+  if (orgStep === "organization") {
+    if (!stepCompletionChecks.organization(user, orgStatus)) {
+      return false;
+    }
+  } else if (orgStep === "organization-join") {
+    if (!stepCompletionChecks["organization-join"](user, orgStatus)) {
+      return false;
+    }
+  } else if (orgStep === "pending-organization") {
+    if (!stepCompletionChecks["pending-organization"](user, orgStatus)) {
+      return false;
+    }
+  }
+
+  // Check complete step (onboarding finished)
+  if (!stepCompletionChecks.complete(user)) {
+    return false;
+  }
+
+  return true;
+}
