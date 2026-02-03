@@ -1,4 +1,5 @@
 import { createLogger } from "@propsto/logger";
+import { randomInt } from "crypto";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
@@ -9,10 +10,10 @@ const VERIFICATION_PREFIX = "personal-email:";
 const EXPIRATION_MINUTES = 15;
 
 /**
- * Generate a 6-digit verification code
+ * Generate a cryptographically secure 6-digit verification code
  */
 function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return randomInt(100000, 999999).toString();
 }
 
 /**

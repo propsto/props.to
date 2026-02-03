@@ -780,6 +780,7 @@ export async function sendPersonalEmailCodeHandler(
   userId: string,
   userName?: string,
   workEmail?: string,
+  hostedDomain?: string,
 ): Promise<HandleEvent<{ sent: boolean }, PersonalEmailFormValues>> {
   try {
     // Validate email format
@@ -788,6 +789,15 @@ export async function sendPersonalEmailCodeHandler(
       return {
         success: false,
         error: parsed.error.errors[0]?.message ?? "Invalid email",
+      };
+    }
+
+    // Server-side validation: personal email must not be from work domain
+    const personalEmailDomain = personalEmail.split("@")[1]?.toLowerCase();
+    if (hostedDomain && personalEmailDomain === hostedDomain.toLowerCase()) {
+      return {
+        success: false,
+        error: "Please use a personal email, not your work email",
       };
     }
 

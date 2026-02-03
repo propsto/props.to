@@ -99,6 +99,7 @@ export function StepComponent({
         userId,
         userName,
         workEmail ?? undefined,
+        hostedDomain ?? undefined,
       );
 
       if (result.success) {
