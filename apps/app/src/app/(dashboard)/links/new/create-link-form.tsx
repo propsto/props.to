@@ -27,7 +27,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@propsto/ui/atoms/select";
@@ -44,7 +46,7 @@ const formSchema = z.object({
     .max(50)
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "Only lowercase letters, numbers, and hyphens allowed"
+      "Only lowercase letters, numbers, and hyphens allowed",
     ),
   templateId: z.string().min(1, "Please select a template"),
   feedbackType: z.nativeEnum(FeedbackType),
@@ -57,6 +59,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface CreateLinkFormProps {
   templates: FeedbackTemplateWithFields[];
+  organizationName?: string;
 }
 
 const feedbackTypeOptions = [
@@ -90,10 +93,13 @@ const visibilityOptions = [
 
 export function CreateLinkForm({
   templates,
+  organizationName,
 }: CreateLinkFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken">("idle");
+  const [slugStatus, setSlugStatus] = useState<
+    "idle" | "checking" | "available" | "taken"
+  >("idle");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -145,6 +151,18 @@ export function CreateLinkForm({
     });
   }
 
+  // Group templates by source
+  const userTemplates = templates.filter(
+    t =>
+      !t.isDefault &&
+      t.organizations?.length === 0 &&
+      (t.users?.length ?? 0) > 0,
+  );
+  const orgTemplates = templates.filter(
+    t => !t.isDefault && (t.organizations?.length ?? 0) > 0,
+  );
+  const defaultTemplates = templates.filter(t => t.isDefault);
+
   return (
     <Card className="max-w-2xl">
       <CardHeader>
@@ -185,7 +203,7 @@ export function CreateLinkForm({
                       <Input
                         placeholder="e.g., leadership-q1"
                         {...field}
-                        onChange={(e) => {
+                        onChange={e => {
                           // Auto-format: lowercase, replace spaces with hyphens
                           const formatted = e.target.value
                             .toLowerCase()
@@ -211,7 +229,9 @@ export function CreateLinkForm({
                   <FormDescription>
                     Your link URL will be: props.to/you/{field.value || "slug"}
                     {slugStatus === "taken" && (
-                      <span className="text-red-500 ml-2">— already in use</span>
+                      <span className="ml-2 text-red-500">
+                        — already in use
+                      </span>
                     )}
                   </FormDescription>
                   <FormMessage />
@@ -240,11 +260,49 @@ export function CreateLinkForm({
                           No templates available
                         </SelectItem>
                       ) : (
-                        templates.map(template => (
-                          <SelectItem key={template.id} value={template.id}>
-                            {template.name}
-                          </SelectItem>
-                        ))
+                        <>
+                          {userTemplates.length > 0 && (
+                            <SelectGroup>
+                              <SelectLabel>My Templates</SelectLabel>
+                              {userTemplates.map(template => (
+                                <SelectItem
+                                  key={template.id}
+                                  value={template.id}
+                                >
+                                  {template.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          )}
+                          {orgTemplates.length > 0 && (
+                            <SelectGroup>
+                              <SelectLabel>
+                                {organizationName ?? "Organization"} Templates
+                              </SelectLabel>
+                              {orgTemplates.map(template => (
+                                <SelectItem
+                                  key={template.id}
+                                  value={template.id}
+                                >
+                                  {template.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          )}
+                          {defaultTemplates.length > 0 && (
+                            <SelectGroup>
+                              <SelectLabel>Default Templates</SelectLabel>
+                              {defaultTemplates.map(template => (
+                                <SelectItem
+                                  key={template.id}
+                                  value={template.id}
+                                >
+                                  {template.name}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          )}
+                        </>
                       )}
                     </SelectContent>
                   </Select>
@@ -372,7 +430,14 @@ export function CreateLinkForm({
             )}
 
             <div className="flex gap-4">
-              <Button type="submit" disabled={isPending || slugStatus === "taken" || slugStatus === "checking"}>
+              <Button
+                type="submit"
+                disabled={
+                  isPending ||
+                  slugStatus === "taken" ||
+                  slugStatus === "checking"
+                }
+              >
                 {isPending ? "Creating..." : "Create Link"}
               </Button>
               <Button
