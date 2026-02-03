@@ -33,19 +33,37 @@ import {
 } from "@propsto/ui/atoms/select";
 import { Switch } from "@propsto/ui/atoms/switch";
 import { FeedbackType, FieldType } from "@prisma/client";
-import { Plus, Trash2, ArrowLeft, Loader2 } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import { createOrgTemplateAction } from "../actions";
 
-const fieldSchema = z.object({
-  label: z.string().min(1, "Label is required"),
-  type: z.nativeEnum(FieldType),
-  required: z.boolean(),
-  options: z.array(z.string()).optional(),
-  placeholder: z.string().optional(),
-  helpText: z.string().optional(),
-  order: z.number(),
-});
+const fieldSchema = z
+  .object({
+    label: z.string().min(1, "Label is required"),
+    type: z.nativeEnum(FieldType),
+    required: z.boolean(),
+    options: z.array(z.string()).optional(),
+    placeholder: z.string().optional(),
+    helpText: z.string().optional(),
+    order: z.number(),
+  })
+  .refine(
+    data => {
+      // SELECT and RADIO require at least one non-empty option
+      if (data.type === "SELECT" || data.type === "RADIO") {
+        return (
+          data.options &&
+          data.options.length > 0 &&
+          data.options.some(opt => opt.trim() !== "")
+        );
+      }
+      return true;
+    },
+    {
+      message: "At least one option is required for this field type",
+      path: ["options"],
+    },
+  );
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -77,6 +95,83 @@ const fieldTypeOptions = [
   { value: "CHECKBOX", label: "Checkbox" },
   { value: "DATE", label: "Date" },
 ];
+
+interface OptionsEditorProps {
+  fieldIndex: number;
+  control: ReturnType<typeof useForm<FormValues>>["control"];
+  getValues: ReturnType<typeof useForm<FormValues>>["getValues"];
+  setValue: ReturnType<typeof useForm<FormValues>>["setValue"];
+}
+
+function OptionsEditor({
+  fieldIndex,
+  control,
+  getValues,
+  setValue,
+}: OptionsEditorProps) {
+  const options = getValues(`fields.${fieldIndex}.options`) ?? [];
+
+  const addOption = () => {
+    const current = getValues(`fields.${fieldIndex}.options`) ?? [];
+    setValue(`fields.${fieldIndex}.options`, [...current, ""]);
+  };
+
+  const removeOption = (optionIndex: number) => {
+    const current = getValues(`fields.${fieldIndex}.options`) ?? [];
+    if (current.length > 1) {
+      setValue(
+        `fields.${fieldIndex}.options`,
+        current.filter((_, i) => i !== optionIndex),
+      );
+    }
+  };
+
+  const updateOption = (optionIndex: number, value: string) => {
+    const current = getValues(`fields.${fieldIndex}.options`) ?? [];
+    const updated = [...current];
+    updated[optionIndex] = value;
+    setValue(`fields.${fieldIndex}.options`, updated);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <FormLabel>Options</FormLabel>
+        <Button type="button" variant="ghost" size="sm" onClick={addOption}>
+          <Plus className="mr-1 h-3 w-3" />
+          Add option
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {options.map((option, optionIndex) => (
+          <div key={optionIndex} className="flex items-center gap-2">
+            <Input
+              value={option}
+              onChange={e => updateOption(optionIndex, e.target.value)}
+              placeholder={`Option ${optionIndex + 1}`}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => removeOption(optionIndex)}
+              disabled={options.length === 1}
+              className="shrink-0"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
+        ))}
+      </div>
+      {options.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Add at least one option for this field type.
+        </p>
+      )}
+    </div>
+  );
+}
 
 interface CreateOrgTemplateFormProps {
   orgSlug: string;
@@ -145,7 +240,9 @@ export function CreateOrgTemplateForm({
         <Card>
           <CardHeader>
             <CardTitle>Template Details</CardTitle>
-            <CardDescription>Basic information about your template</CardDescription>
+            <CardDescription>
+              Basic information about your template
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <FormField
@@ -155,7 +252,10 @@ export function CreateOrgTemplateForm({
                 <FormItem>
                   <FormLabel>Template Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Quarterly Performance Review" {...field} />
+                    <Input
+                      placeholder="e.g., Quarterly Performance Review"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -185,14 +285,17 @@ export function CreateOrgTemplateForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Feedback Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select feedback type" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {feedbackTypeOptions.map((option) => (
+                      {feedbackTypeOptions.map(option => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -215,7 +318,12 @@ export function CreateOrgTemplateForm({
                   Add fields to collect specific feedback
                 </CardDescription>
               </div>
-              <Button type="button" variant="outline" size="sm" onClick={addField}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addField}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Field
               </Button>
@@ -227,83 +335,123 @@ export function CreateOrgTemplateForm({
                 No fields yet. Add at least one field.
               </p>
             ) : (
-              fields.map((field, index) => (
-                <Card key={field.id} className="p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 space-y-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField
-                          control={form.control}
-                          name={`fields.${index}.label`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Label</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Field label" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+              fields.map((field, index) => {
+                const fieldType = form.watch(`fields.${index}.type`);
+                const needsOptions =
+                  fieldType === "SELECT" || fieldType === "RADIO";
+
+                return (
+                  <Card key={field.id} className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-1 space-y-4">
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <FormField
+                            control={form.control}
+                            name={`fields.${index}.label`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Label</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Field label" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`fields.${index}.type`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Type</FormLabel>
+                                <Select
+                                  onValueChange={value => {
+                                    field.onChange(value);
+                                    // Clear options when switching away from select/radio
+                                    if (
+                                      value !== "SELECT" &&
+                                      value !== "RADIO"
+                                    ) {
+                                      form.setValue(
+                                        `fields.${index}.options`,
+                                        undefined,
+                                      );
+                                    } else if (
+                                      !form.getValues(`fields.${index}.options`)
+                                        ?.length
+                                    ) {
+                                      // Initialize with one empty option for select/radio
+                                      form.setValue(`fields.${index}.options`, [
+                                        "",
+                                      ]);
+                                    }
+                                  }}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {fieldTypeOptions.map(option => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={option.value}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        {needsOptions && (
+                          <OptionsEditor
+                            fieldIndex={index}
+                            control={form.control}
+                            getValues={form.getValues}
+                            setValue={form.setValue}
+                          />
+                        )}
 
                         <FormField
                           control={form.control}
-                          name={`fields.${index}.type`}
+                          name={`fields.${index}.required`}
                           render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Type</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {fieldTypeOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
+                            <FormItem className="flex items-center gap-2">
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <FormLabel className="!mt-0">
+                                Required field
+                              </FormLabel>
                             </FormItem>
                           )}
                         />
                       </div>
 
-                      <FormField
-                        control={form.control}
-                        name={`fields.${index}.required`}
-                        render={({ field }) => (
-                          <FormItem className="flex items-center gap-2">
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <FormLabel className="!mt-0">Required field</FormLabel>
-                          </FormItem>
-                        )}
-                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        disabled={fields.length === 1}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove(index)}
-                      disabled={fields.length === 1}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </Card>
-              ))
+                  </Card>
+                );
+              })
             )}
           </CardContent>
         </Card>

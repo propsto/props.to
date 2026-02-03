@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@propsto/ui/atoms/table";
 import { Badge } from "@propsto/ui/atoms/badge";
-import { Plus, FileText, Copy } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { AddDefaultTemplateButton } from "./add-default-template-button";
 
 interface TemplatesPageProps {
@@ -61,9 +61,9 @@ export default async function OrgAdminTemplates({
     : [];
 
   // Filter out default templates already added to org
-  const orgTemplateIds = new Set(orgTemplates.map((t) => t.id));
+  const orgTemplateIds = new Set(orgTemplates.map(t => t.id));
   const availableDefaults = defaultTemplates.filter(
-    (t) => !orgTemplateIds.has(t.id)
+    t => !orgTemplateIds.has(t.id),
   );
 
   return (
@@ -112,7 +112,7 @@ export default async function OrgAdminTemplates({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orgTemplates.map((template) => (
+                {orgTemplates.map(template => (
                   <TableRow key={template.id}>
                     <TableCell>
                       <div>
@@ -157,7 +157,7 @@ export default async function OrgAdminTemplates({
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {availableDefaults.map((template) => (
+              {availableDefaults.map(template => (
                 <Card key={template.id} className="relative">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
@@ -181,6 +181,7 @@ export default async function OrgAdminTemplates({
                       </span>
                       <AddDefaultTemplateButton
                         templateId={template.id}
+                        templateName={template.name}
                         organizationId={org.id}
                         orgSlug={orgSlug}
                       />
