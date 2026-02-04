@@ -21,6 +21,8 @@ export type BasicUserData = Prisma.UserGetPayload<{
     role: true;
     hostedDomain: true;
     isGoogleWorkspaceAdmin: true;
+    personalEmail: true;
+    personalEmailVerified: true;
   };
 }>;
 
@@ -76,6 +78,8 @@ function userMapper(
       dateOfBirth: userData.dateOfBirth || null,
       hostedDomain: userData.hostedDomain,
       isGoogleWorkspaceAdmin: userData.isGoogleWorkspaceAdmin,
+      personalEmail: userData.personalEmail,
+      personalEmailVerified: userData.personalEmailVerified,
       onboardingCompletedAt: userData.onboardingCompletedAt,
       username: userData.slug?.slug, // Personal (GLOBAL) username
       organizations: userData.organizations?.map(m => ({

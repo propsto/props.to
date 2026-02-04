@@ -167,15 +167,29 @@ model Organization {
 
 // OrganizationMember model (junction table for multi-org user membership)
 model OrganizationMember {
-  id             String           @id @default(cuid())
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
-  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String
-  role           OrganizationRole @default(MEMBER)
-  joinedAt       DateTime         @default(now())
+  id                      String                        @id @default(cuid())
+  user                    User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                  String
+  organization            Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId          String
+  role                    OrganizationRole              @default(MEMBER)
+  joinedAt                DateTime                      @default(now())
+  notificationPreferences OrgMemberNotificationPrefs?
 
   @@unique([userId, organizationId])
+}
+
+// Per-organization notification preferences (overrides user defaults when in org context)
+model OrgMemberNotificationPrefs {
+  id                   String             @id @default(cuid())
+  member               OrganizationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId             String             @unique
+  emailNotifications   Boolean            @default(true)
+  feedbackAlerts       Boolean            @default(true)
+  weeklyDigest         Boolean            @default(false)
+  mentionNotifications Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime            @updatedAt
 }
 
 // Group model (represents a group within an organization, e.g., marketing team)

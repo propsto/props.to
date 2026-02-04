@@ -29,12 +29,12 @@ const secureCookies = constServer.PROPSTO_ENV === "production";
 const computeCookieDomain = (): string | undefined => {
   // Trim to handle env vars with trailing whitespace (common Vercel issue)
   const host = constServer.PROPSTO_HOST?.trim();
-  
+
   // Development - no domain restriction
   if (host === "localhost" || !host) {
     return undefined;
   }
-  
+
   // Use leading dot for cross-subdomain cookie sharing
   return `.${host}`;
 };
@@ -305,6 +305,8 @@ declare module "next-auth" {
     role?: string;
     hostedDomain?: string | null;
     isGoogleWorkspaceAdmin?: boolean;
+    personalEmail?: string | null;
+    personalEmailVerified?: Date | null;
     onboardingCompletedAt?: Date | null;
     organizations?: OrganizationMembership[];
   }

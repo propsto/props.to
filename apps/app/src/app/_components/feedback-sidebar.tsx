@@ -15,7 +15,6 @@ import {
   FolderKanban,
   Shield,
   Building2,
-  User,
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,6 +28,7 @@ import {
   SidebarMenuButton,
 } from "@propsto/ui/atoms/sidebar";
 import { NavUser } from "@propsto/ui/molecules/nav-user";
+import { AccountSwitcher } from "./account-switcher";
 
 type NavItem = {
   title: string;
@@ -50,6 +50,7 @@ type User = {
   email: string;
   image?: string;
   username?: string;
+  personalEmail?: string | null;
   organizations?: Organization[];
 };
 
@@ -99,66 +100,25 @@ export function FeedbackSidebar({
       }))
     : personalNavItems;
 
+  // Context-aware display for footer
+  const footerEmail = isOrgContext
+    ? user.email // Work email when in org context
+    : (user.personalEmail ?? user.email); // Personal email when in personal context
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
-              <NextLink href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <MessageSquare className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {isOrgContext ? currentOrg?.name : "Props.to"}
-                  </span>
-                  <span className="truncate text-xs">
-                    {isOrgContext ? "Organization" : "Personal"}
-                  </span>
-                </div>
-              </NextLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <AccountSwitcher
+          userName={user.name}
+          userEmail={user.email}
+          userImage={user.image}
+          personalEmail={user.personalEmail}
+          organizations={user.organizations}
+          currentOrgSlug={currentOrgSlug}
+        />
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Context Switcher */}
-        {user.organizations && user.organizations.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Context</SidebarGroupLabel>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  tooltip="Personal"
-                  isActive={!isOrgContext}
-                  asChild
-                >
-                  <NextLink href="/">
-                    <User className="size-4" />
-                    <span>Personal</span>
-                  </NextLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              {user.organizations.map(org => (
-                <SidebarMenuItem key={org.id}>
-                  <SidebarMenuButton
-                    tooltip={org.name}
-                    isActive={currentOrgSlug === org.slug}
-                    asChild
-                  >
-                    <NextLink href={`/org/${org.slug}`}>
-                      <Building2 className="size-4" />
-                      <span>{org.name}</span>
-                    </NextLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel>
@@ -182,6 +142,23 @@ export function FeedbackSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
+        {/* Admin Link (for org context with admin role) */}
+        {isOrgContext && isOrgAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton tooltip="Admin Panel" asChild>
+                  <NextLink href={`/org/${currentOrgSlug}/admin`}>
+                    <Settings className="size-4" />
+                    <span>Admin Panel</span>
+                  </NextLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
         {/* Settings (for personal context only) */}
         {!isOrgContext && (
           <SidebarGroup>
@@ -204,7 +181,7 @@ export function FeedbackSidebar({
         <NavUser
           user={{
             name: user.name || user.email.split("@")[0],
-            email: user.email,
+            email: footerEmail,
             avatar: user.image || "",
           }}
         />
