@@ -1,5 +1,5 @@
--- DropIndex
-DROP INDEX "TemplateCategory_name_key";
+-- DropIndex (Prisma drift cleanup: old standalone name unique → composite [organizationId, name])
+DROP INDEX IF EXISTS "TemplateCategory_name_key";
 
 -- CreateTable
 CREATE TABLE "OrgMemberNotificationPrefs" (
