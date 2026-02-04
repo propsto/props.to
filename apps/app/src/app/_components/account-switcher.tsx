@@ -99,9 +99,10 @@ export function AccountSwitcher({
                 <DropdownMenuLabel className="text-xs text-muted-foreground">
                   Organizations
                 </DropdownMenuLabel>
-                {organizations.map(org => (
-                  <DropdownMenuItem key={org.id} className="gap-3 p-2" asChild>
-                    <NextLink href={`/org/${org.slug}/admin`}>
+                {organizations.map(org => {
+                  const isAdmin = org.role === "OWNER" || org.role === "ADMIN";
+                  const content = (
+                    <>
                       <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                         <Building2 className="size-4" />
                       </div>
@@ -121,10 +122,38 @@ export function AccountSwitcher({
                           {userEmail}
                         </span>
                       </div>
-                      <ChevronRight className="ml-auto size-4 text-muted-foreground" />
-                    </NextLink>
-                  </DropdownMenuItem>
-                ))}
+                      {isAdmin && (
+                        <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+                      )}
+                    </>
+                  );
+
+                  // Admins get a link to the org admin panel
+                  if (isAdmin) {
+                    return (
+                      <DropdownMenuItem
+                        key={org.id}
+                        className="gap-3 p-2"
+                        asChild
+                      >
+                        <NextLink href={`/org/${org.slug}/admin`}>
+                          {content}
+                        </NextLink>
+                      </DropdownMenuItem>
+                    );
+                  }
+
+                  // Regular members see their org but no admin link
+                  return (
+                    <DropdownMenuItem
+                      key={org.id}
+                      className="gap-3 p-2"
+                      disabled
+                    >
+                      {content}
+                    </DropdownMenuItem>
+                  );
+                })}
               </>
             )}
           </DropdownMenuContent>
