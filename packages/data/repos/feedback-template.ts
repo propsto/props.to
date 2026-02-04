@@ -22,6 +22,8 @@ export type FeedbackTemplateWithFields = Prisma.FeedbackTemplateGetPayload<{
   include: {
     fields: { orderBy: { order: "asc" } };
     category: true;
+    organizations: { select: { id: true } };
+    users: { select: { id: true } };
     _count: { select: { feedbacks: true; links: true } };
   };
 }>;
@@ -29,6 +31,8 @@ export type FeedbackTemplateWithFields = Prisma.FeedbackTemplateGetPayload<{
 const templateInclude = Prisma.validator<Prisma.FeedbackTemplateInclude>()({
   fields: { orderBy: { order: "asc" } },
   category: true,
+  organizations: { select: { id: true } },
+  users: { select: { id: true } },
   _count: { select: { feedbacks: true, links: true } },
 });
 
