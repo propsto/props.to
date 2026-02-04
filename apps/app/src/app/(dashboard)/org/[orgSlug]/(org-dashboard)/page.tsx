@@ -5,7 +5,6 @@ import {
   getMembershipByOrgSlug,
   getOrganizationTemplates,
   getOrganizationMemberFeedbackLinks,
-  getOrganizationBySlug,
 } from "@propsto/data/repos";
 import {
   Card,
@@ -50,22 +49,13 @@ export default async function OrgDashboard({
 
   const membership = membershipResult.data;
   const org = membership.organization;
+  const orgId = org.id;
   const isAdmin = membership.role === "OWNER" || membership.role === "ADMIN";
 
-  // Fetch org data in parallel
-  const orgResult = await getOrganizationBySlug(orgSlug);
-  const orgId = orgResult.success ? orgResult.data?.id : undefined;
-
+  // Fetch org stats in parallel (use orgId from membership, no extra DB call)
   const [templatesResult, linksResult] = await Promise.all([
-    orgId
-      ? getOrganizationTemplates(orgId)
-      : Promise.resolve({ success: false as const, data: [] }),
-    orgId
-      ? getOrganizationMemberFeedbackLinks(orgId, { take: 5 })
-      : Promise.resolve({
-          success: false as const,
-          data: { links: [], total: 0 },
-        }),
+    getOrganizationTemplates(orgId),
+    getOrganizationMemberFeedbackLinks(orgId, { take: 5 }),
   ]);
 
   const templateCount = templatesResult.success
@@ -149,19 +139,21 @@ export default async function OrgDashboard({
               Create Feedback Link
             </Link>
           </Button>
-          <Button asChild variant="outline">
-            <Link href="/feedback">
-              <MessageSquare className="mr-2 h-4 w-4" />
-              View Feedback
-            </Link>
-          </Button>
           {isAdmin && (
-            <Button asChild variant="outline">
-              <Link href={`/org/${orgSlug}/admin/members`}>
-                <Users className="mr-2 h-4 w-4" />
-                Manage Members
-              </Link>
-            </Button>
+            <>
+              <Button asChild variant="outline">
+                <Link href={`/org/${orgSlug}/admin/links`}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  View Org Links
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href={`/org/${orgSlug}/admin/members`}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Manage Members
+                </Link>
+              </Button>
+            </>
           )}
         </CardContent>
       </Card>

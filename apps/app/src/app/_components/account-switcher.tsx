@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChevronsUpDown, Check, Building2, User } from "lucide-react";
 import {
   SidebarMenu,
