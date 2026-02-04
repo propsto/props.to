@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { ChevronsUpDown, Check, Building2, User } from "lucide-react";
+import NextLink from "next/link";
+import { Building2, User, ChevronRight } from "lucide-react";
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -33,7 +33,6 @@ interface AccountSwitcherProps {
   userImage?: string;
   personalEmail?: string | null;
   organizations?: Organization[];
-  currentOrgSlug?: string | null;
 }
 
 export function AccountSwitcher({
@@ -42,28 +41,8 @@ export function AccountSwitcher({
   userImage,
   personalEmail,
   organizations = [],
-  currentOrgSlug,
 }: AccountSwitcherProps): React.JSX.Element {
-  const router = useRouter();
   const { isMobile } = useSidebar();
-
-  const isOrgContext = !!currentOrgSlug;
-  const currentOrg = organizations.find(o => o.slug === currentOrgSlug);
-
-  // Determine display info based on context
-  const displayName = isOrgContext
-    ? (currentOrg?.name ?? "Organization")
-    : "Personal";
-  const displayEmail = isOrgContext ? userEmail : (personalEmail ?? userEmail);
-  const displaySubtext = isOrgContext ? "Work" : "Personal";
-
-  const handleSwitchToPersonal = () => {
-    router.push("/");
-  };
-
-  const handleSwitchToOrg = (slug: string) => {
-    router.push(`/org/${slug}`);
-  };
 
   return (
     <SidebarMenu>
@@ -74,25 +53,18 @@ export function AccountSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              {isOrgContext ? (
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <Building2 className="size-4" />
-                </div>
-              ) : (
-                <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={userImage} alt={userName} />
-                  <AvatarFallback className="rounded-lg">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              <Avatar className="size-8 rounded-lg">
+                <AvatarImage src={userImage} alt={userName} />
+                <AvatarFallback className="rounded-lg">
+                  {userName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{displayName}</span>
+                <span className="truncate font-semibold">Props.to</span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {displaySubtext}
+                  {userName}
                 </span>
               </div>
-              <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -101,14 +73,11 @@ export function AccountSwitcher({
             align="start"
             sideOffset={4}
           >
-            {/* Personal Account */}
+            {/* Personal Identity */}
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Personal
             </DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={handleSwitchToPersonal}
-              className="gap-3 p-2"
-            >
+            <DropdownMenuItem className="gap-3 p-2" disabled>
               <Avatar className="size-8 rounded-lg">
                 <AvatarImage src={userImage} alt={userName} />
                 <AvatarFallback className="rounded-lg">
@@ -121,10 +90,9 @@ export function AccountSwitcher({
                   {personalEmail ?? userEmail}
                 </span>
               </div>
-              {!isOrgContext && <Check className="ml-auto size-4" />}
             </DropdownMenuItem>
 
-            {/* Organization Accounts */}
+            {/* Organizations */}
             {organizations.length > 0 && (
               <>
                 <DropdownMenuSeparator />
@@ -132,31 +100,29 @@ export function AccountSwitcher({
                   Organizations
                 </DropdownMenuLabel>
                 {organizations.map(org => (
-                  <DropdownMenuItem
-                    key={org.id}
-                    onClick={() => handleSwitchToOrg(org.slug)}
-                    className="gap-3 p-2"
-                  >
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                      <Building2 className="size-4" />
-                    </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-medium">{org.name}</span>
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-1 py-0"
-                        >
-                          {org.role.toLowerCase()}
-                        </Badge>
+                  <DropdownMenuItem key={org.id} className="gap-3 p-2" asChild>
+                    <NextLink href={`/org/${org.slug}/admin`}>
+                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Building2 className="size-4" />
                       </div>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {userEmail}
-                      </span>
-                    </div>
-                    {currentOrgSlug === org.slug && (
-                      <Check className="ml-auto size-4" />
-                    )}
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate font-medium">
+                            {org.name}
+                          </span>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] px-1 py-0"
+                          >
+                            {org.role.toLowerCase()}
+                          </Badge>
+                        </div>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {userEmail}
+                        </span>
+                      </div>
+                      <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+                    </NextLink>
                   </DropdownMenuItem>
                 ))}
               </>

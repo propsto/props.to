@@ -19,128 +19,109 @@ test.afterEach(async ({}, testInfo) => {
   }
 });
 
-test.describe("Account Switcher", () => {
-  test("should display account switcher in sidebar", async ({
+test.describe("Account Switcher - Unified View", () => {
+  test("should display account info in sidebar header", async ({
     page,
     baseURL,
   }) => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    // The sidebar should have an account switcher button
+    // The sidebar should be visible
     const sidebar = page.locator("aside");
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Should show "Personal" context by default on the home page
-    await expect(sidebar.getByText("Personal")).toBeVisible({ timeout: 10000 });
+    // Should show Props.to branding
+    await expect(sidebar.getByText("Props.to")).toBeVisible({ timeout: 10000 });
   });
 
-  test("should show organization in account switcher dropdown", async ({
+  test("should show personal and org accounts in dropdown", async ({
     page,
     baseURL,
   }) => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    // Wait for sidebar to load
     const sidebar = page.locator("aside");
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Click the account switcher to open dropdown
+    // Click account switcher to open dropdown
     const switcherButton = sidebar
       .locator("button")
-      .filter({ hasText: "Personal" })
+      .filter({ hasText: "Props.to" })
       .first();
     await expect(switcherButton).toBeVisible({ timeout: 10000 });
     await switcherButton.click();
 
-    // Should see "Organizations" section in dropdown
+    // Should see Personal section
+    await expect(page.getByText("Personal")).toBeVisible({ timeout: 5000 });
+
+    // Should see Organizations section (Mike Ryan belongs to Acme)
     await expect(page.getByText("Organizations")).toBeVisible({
       timeout: 5000,
     });
-
-    // Mike Ryan (seeded user) belongs to Acme org
     await expect(page.getByText("Acme Corp")).toBeVisible({ timeout: 5000 });
   });
 
-  test("should switch to organization context", async ({ page, baseURL }) => {
+  test("should navigate to org admin from dropdown", async ({
+    page,
+    baseURL,
+  }) => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    // Wait for sidebar
     const sidebar = page.locator("aside");
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Open account switcher
+    // Open dropdown
     const switcherButton = sidebar
       .locator("button")
-      .filter({ hasText: "Personal" })
+      .filter({ hasText: "Props.to" })
       .first();
-    await expect(switcherButton).toBeVisible({ timeout: 10000 });
     await switcherButton.click();
 
-    // Click on Acme Corp to switch
+    // Click Acme Corp to go to admin
     const orgItem = page.getByRole("menuitem").filter({ hasText: "Acme Corp" });
     await expect(orgItem).toBeVisible({ timeout: 5000 });
     await orgItem.click();
 
-    // Should navigate to org page
-    await page.waitForURL(/\/org\/acme/, { timeout: 10000 });
-
-    // Sidebar should now show org context
-    await expect(sidebar.getByText("Work")).toBeVisible({ timeout: 10000 });
+    // Should navigate to org admin
+    await page.waitForURL(/\/org\/acme\/admin/, { timeout: 10000 });
   });
 
-  test("should switch back to personal context from org", async ({
+  test("should always show unified navigation regardless of URL", async ({
     page,
     baseURL,
   }) => {
-    // Start in org context
+    // Navigate to org admin page
     await page.goto(`${baseURL}/org/acme/admin`);
     await page.waitForLoadState("networkidle");
 
     const sidebar = page.locator("aside");
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Should show org context in sidebar header
-    await expect(sidebar.getByText("Acme Corp").first()).toBeVisible({
-      timeout: 10000,
-    });
-
-    // Open account switcher
-    const switcherButton = sidebar
-      .locator("button")
-      .filter({ hasText: "Acme Corp" })
-      .first();
-    await switcherButton.click();
-
-    // Click Personal to switch back
-    const personalItem = page
-      .getByRole("menuitem")
-      .filter({ hasText: "Personal" });
-    await expect(personalItem).toBeVisible({ timeout: 5000 });
-    await personalItem.click();
-
-    // Should navigate to home
-    await page.waitForURL(/\/$/, { timeout: 10000 });
+    // Should still show the unified personal navigation
+    await expect(sidebar.getByRole("link", { name: /dashboard/i })).toBeVisible(
+      { timeout: 10000 },
+    );
+    await expect(
+      sidebar.getByRole("link", { name: /my links/i }),
+    ).toBeVisible();
+    await expect(
+      sidebar.getByRole("link", { name: /templates/i }),
+    ).toBeVisible();
   });
 
-  test("should display correct email in footer based on context", async ({
-    page,
-    baseURL,
-  }) => {
+  test("should show user email in footer", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    // The NavUser footer should be visible with the user's email
     const sidebar = page.locator("aside");
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Footer should show user info
+    // Footer should show user info with email
     const footer = sidebar.locator("footer");
     await expect(footer).toBeVisible();
-
-    // Should show the user's email
     await expect(footer.getByText(/@/).first()).toBeVisible({ timeout: 5000 });
   });
 });
