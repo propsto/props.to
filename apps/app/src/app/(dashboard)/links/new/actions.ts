@@ -4,6 +4,7 @@ import { auth } from "@/server/auth.server";
 import {
   createFeedbackLink,
   checkFeedbackLinkSlugAvailable,
+  getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -31,6 +32,20 @@ export async function createLinkAction(
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
+  }
+
+  // Verify org membership if creating an org link
+  if (input.organizationId) {
+    const membership = await getUserOrganizationMembership({
+      userId: session.user.id,
+      organizationId: input.organizationId,
+    });
+    if (!membership.success || !membership.data) {
+      return {
+        success: false,
+        error: "You are not a member of this organization",
+      };
+    }
   }
 
   const result = await createFeedbackLink({
