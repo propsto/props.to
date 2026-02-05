@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Building2, CheckCircle2, Loader2, User, XCircle } from "lucide-react";
 import { Button } from "@propsto/ui/atoms/button";
 import { Input } from "@propsto/ui/atoms/input";
 import {
@@ -53,13 +53,24 @@ const formSchema = z.object({
   visibility: z.nativeEnum(FeedbackVisibility),
   maxResponses: z.coerce.number().min(0).optional(),
   isHidden: z.boolean(),
+  organizationId: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+type Organization = {
+  id: string;
+  name: string;
+  slug: string;
+};
+
 interface CreateLinkFormProps {
   templates: FeedbackTemplateWithFields[];
-  organizationName?: string;
+  organizations?: Organization[];
+  orgTemplatesMap?: Record<
+    string,
+    { orgName: string; templates: FeedbackTemplateWithFields[] }
+  >;
 }
 
 const feedbackTypeOptions = [
@@ -93,13 +104,15 @@ const visibilityOptions = [
 
 export function CreateLinkForm({
   templates,
-  organizationName,
+  organizations = [],
+  orgTemplatesMap = {},
 }: CreateLinkFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [slugStatus, setSlugStatus] = useState<
     "idle" | "checking" | "available" | "taken"
   >("idle");
+  const [selectedAccount, setSelectedAccount] = useState<string>("personal");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -111,10 +124,41 @@ export function CreateLinkForm({
       visibility: "PRIVATE",
       maxResponses: undefined,
       isHidden: false,
+      organizationId: undefined,
     },
   });
 
   const slugValue = useWatch({ control: form.control, name: "slug" });
+
+  // When account changes, update organizationId and reset template
+  function handleAccountChange(value: string): void {
+    setSelectedAccount(value);
+    form.setValue("organizationId", value === "personal" ? undefined : value);
+    form.setValue("templateId", "");
+  }
+
+  // Filter templates based on selected account
+  const filteredTemplates = React.useMemo(() => {
+    const defaultTpls = templates.filter(t => t.isDefault);
+
+    if (selectedAccount === "personal") {
+      const userTpls = templates.filter(
+        t =>
+          !t.isDefault &&
+          t.organizations?.length === 0 &&
+          (t.users?.length ?? 0) > 0,
+      );
+      return [...userTpls, ...defaultTpls];
+    }
+
+    // Org selected — show org templates + defaults
+    const orgData = orgTemplatesMap[selectedAccount];
+    const orgTpls = orgData?.templates ?? [];
+    return [
+      ...orgTpls,
+      ...defaultTpls.filter(t => !orgTpls.some(ot => ot.id === t.id)),
+    ];
+  }, [selectedAccount, templates, orgTemplatesMap]);
 
   // Debounced slug availability check
   useEffect(() => {
@@ -151,17 +195,22 @@ export function CreateLinkForm({
     });
   }
 
-  // Group templates by source
-  const userTemplates = templates.filter(
+  // Group filtered templates by source
+  const userTemplates = filteredTemplates.filter(
     t =>
       !t.isDefault &&
       t.organizations?.length === 0 &&
       (t.users?.length ?? 0) > 0,
   );
-  const orgTemplates = templates.filter(
+  const orgTemplates = filteredTemplates.filter(
     t => !t.isDefault && (t.organizations?.length ?? 0) > 0,
   );
-  const defaultTemplates = templates.filter(t => t.isDefault);
+  const defaultTemplates = filteredTemplates.filter(t => t.isDefault);
+
+  const selectedOrgName =
+    selectedAccount !== "personal"
+      ? organizations.find(o => o.id === selectedAccount)?.name
+      : undefined;
 
   return (
     <Card className="max-w-2xl">
@@ -172,6 +221,42 @@ export function CreateLinkForm({
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Account selector — only show if user has orgs */}
+            {organizations.length > 0 && (
+              <div className="space-y-2">
+                <FormLabel>Create for</FormLabel>
+                <Select
+                  value={selectedAccount}
+                  onValueChange={handleAccountChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="personal">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        <span>Personal</span>
+                      </div>
+                    </SelectItem>
+                    {organizations.map(org => (
+                      <SelectItem key={org.id} value={org.id}>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          <span>{org.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[0.8rem] text-muted-foreground">
+                  {selectedAccount === "personal"
+                    ? "This link will belong to your personal account"
+                    : `This link will belong to ${selectedOrgName}`}
+                </p>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="name"
@@ -277,7 +362,7 @@ export function CreateLinkForm({
                           {orgTemplates.length > 0 && (
                             <SelectGroup>
                               <SelectLabel>
-                                {organizationName ?? "Organization"} Templates
+                                {selectedOrgName ?? "Organization"} Templates
                               </SelectLabel>
                               {orgTemplates.map(template => (
                                 <SelectItem

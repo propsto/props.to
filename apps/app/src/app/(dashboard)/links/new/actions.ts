@@ -1,7 +1,10 @@
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { createFeedbackLink, checkFeedbackLinkSlugAvailable } from "@propsto/data/repos";
+import {
+  createFeedbackLink,
+  checkFeedbackLinkSlugAvailable,
+} from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -13,6 +16,7 @@ interface CreateLinkInput {
   visibility: FeedbackVisibility;
   maxResponses?: number;
   isHidden?: boolean;
+  organizationId?: string;
 }
 
 interface CreateLinkResult {
@@ -41,6 +45,7 @@ export async function createLinkAction(
         ? input.maxResponses
         : undefined,
     isHidden: input.isHidden,
+    organizationId: input.organizationId,
   });
 
   if (!result.success) {
