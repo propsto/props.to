@@ -1,7 +1,11 @@
 "use server";
 
 import { auth } from "@/server/auth.server";
-import { createFeedbackLink, checkFeedbackLinkSlugAvailable } from "@propsto/data/repos";
+import {
+  createFeedbackLink,
+  checkFeedbackLinkSlugAvailable,
+  getUserOrganizationMembership,
+} from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
@@ -13,6 +17,7 @@ interface CreateLinkInput {
   visibility: FeedbackVisibility;
   maxResponses?: number;
   isHidden?: boolean;
+  organizationId?: string;
 }
 
 interface CreateLinkResult {
@@ -29,6 +34,20 @@ export async function createLinkAction(
     return { success: false, error: "Unauthorized" };
   }
 
+  // Verify org membership if creating an org link
+  if (input.organizationId) {
+    const membership = await getUserOrganizationMembership({
+      userId: session.user.id,
+      organizationId: input.organizationId,
+    });
+    if (!membership.success || !membership.data) {
+      return {
+        success: false,
+        error: "You are not a member of this organization",
+      };
+    }
+  }
+
   const result = await createFeedbackLink({
     userId: session.user.id,
     name: input.name,
@@ -41,6 +60,7 @@ export async function createLinkAction(
         ? input.maxResponses
         : undefined,
     isHidden: input.isHidden,
+    organizationId: input.organizationId,
   });
 
   if (!result.success) {

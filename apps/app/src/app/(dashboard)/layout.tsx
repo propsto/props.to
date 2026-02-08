@@ -31,6 +31,7 @@ export default async function DashboardLayout({
     email: session.user.email || "",
     image: session.user.image || undefined,
     username: session.user.username,
+    personalEmail: session.user.personalEmail,
     organizations: session.user.organizations?.map(org => ({
       id: org.organizationId,
       name: org.organizationName,

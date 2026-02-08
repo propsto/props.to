@@ -15,20 +15,26 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
 
   const userId = session.user.id;
 
-  // Get user's organization (if any)
-  // Note: Currently only uses first org. Multi-org support would need UI to select which org's templates to show.
+  // Get all user's organizations
   const userOrgsResult = await getUserOrganizations(userId);
   const userOrgs = userOrgsResult.success ? userOrgsResult.data : [];
-  const primaryOrg = userOrgs[0]?.organization;
 
-  // Fetch available templates
-  const [userTemplatesResult, defaultTemplatesResult, orgTemplatesResult] =
+  // Fetch templates from all orgs + personal + defaults
+  const orgTemplatePromises = userOrgs.map(m =>
+    getOrganizationTemplates(m.organization.id, { includePublic: false }).then(
+      r => ({
+        orgId: m.organization.id,
+        orgName: m.organization.name,
+        templates: r.success ? r.data : [],
+      }),
+    ),
+  );
+
+  const [userTemplatesResult, defaultTemplatesResult, ...orgTemplateResults] =
     await Promise.all([
       getUserTemplates(userId, { includePublic: false }),
       getDefaultTemplates(),
-      primaryOrg
-        ? getOrganizationTemplates(primaryOrg.id, { includePublic: false })
-        : Promise.resolve({ success: true as const, data: [] }),
+      ...orgTemplatePromises,
     ]);
 
   const userTemplates = userTemplatesResult.success
@@ -37,21 +43,37 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
   const defaultTemplates = defaultTemplatesResult.success
     ? defaultTemplatesResult.data
     : [];
-  const orgTemplates = orgTemplatesResult.success
-    ? orgTemplatesResult.data
-    : [];
 
-  // Combine templates, removing duplicates
-  // Priority: user templates > org templates > default templates
+  // Build org templates map (orgId -> templates)
+  const orgTemplatesMap: Record<
+    string,
+    { orgName: string; templates: typeof userTemplates }
+  > = {};
+  for (const result of orgTemplateResults) {
+    orgTemplatesMap[result.orgId] = {
+      orgName: result.orgName,
+      templates: result.templates,
+    };
+  }
+
+  // Combine all templates, removing duplicates
+  const allOrgTemplates = orgTemplateResults.flatMap(r => r.templates);
   const allTemplates = [
     ...userTemplates,
-    ...orgTemplates.filter(t => !userTemplates.some(ut => ut.id === t.id)),
+    ...allOrgTemplates.filter(t => !userTemplates.some(ut => ut.id === t.id)),
     ...defaultTemplates.filter(
       t =>
         !userTemplates.some(ut => ut.id === t.id) &&
-        !orgTemplates.some(ot => ot.id === t.id),
+        !allOrgTemplates.some(ot => ot.id === t.id),
     ),
   ];
+
+  // Build organizations list for the account selector
+  const organizations = userOrgs.map(m => ({
+    id: m.organization.id,
+    name: m.organization.name,
+    slug: m.organization.slug.slug,
+  }));
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -65,7 +87,8 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
       <div className="px-4 lg:px-6">
         <CreateLinkForm
           templates={allTemplates}
-          organizationName={primaryOrg?.name}
+          organizations={organizations}
+          orgTemplatesMap={orgTemplatesMap}
         />
       </div>
     </div>

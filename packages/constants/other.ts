@@ -180,7 +180,7 @@ const computeAuthUrl = (): string | undefined => {
     process.env.VERCEL_ENV === "preview" &&
     process.env.VERCEL_GIT_PULL_REQUEST_ID;
   const isDevelopment = process.env.PROPSTO_ENV === "development";
-  const host = process.env.PROPSTO_HOST;
+  const host = process.env.PROPSTO_HOST?.trim();
 
   if (!host) return process.env.AUTH_URL;
 
@@ -210,7 +210,7 @@ export const vercelPreviewEnvVars = {
       process.env.VERCEL_ENV === "preview" &&
       process.env.VERCEL_GIT_PULL_REQUEST_ID;
     const isDevelopment = process.env.PROPSTO_ENV === "development";
-    const host = process.env.PROPSTO_HOST;
+    const host = process.env.PROPSTO_HOST?.trim();
 
     if (!host) return process.env.PROPSTO_APP_URL;
 
