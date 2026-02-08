@@ -8,6 +8,9 @@ import {
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:links");
 
 interface CreateLinkInput {
   name: string;
@@ -64,7 +67,7 @@ export async function createLinkAction(
   });
 
   if (!result.success) {
-    console.error("createFeedbackLink failed:", result.error);
+    logger("createFeedbackLink failed:", result.error);
     return { success: false, error: result.error ?? "Failed to create link" };
   }
 
