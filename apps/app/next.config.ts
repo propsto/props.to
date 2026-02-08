@@ -9,5 +9,4 @@ export default {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
   reactStrictMode: true,
-  typescript: { ignoreBuildErrors: true },
 } satisfies NextConfig;
