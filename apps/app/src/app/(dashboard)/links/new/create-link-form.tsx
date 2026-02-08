@@ -224,7 +224,9 @@ export function CreateLinkForm({
             {/* Account selector — only show if user has orgs */}
             {organizations.length > 0 && (
               <div className="space-y-2">
-                <FormLabel>Create for</FormLabel>
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Create for
+                </label>
                 <Select
                   value={selectedAccount}
                   onValueChange={handleAccountChange}
