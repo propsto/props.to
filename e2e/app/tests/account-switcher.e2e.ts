@@ -27,8 +27,8 @@ test.describe("Account Switcher - Unified View", () => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    // The sidebar should be visible
-    const sidebar = page.locator("aside");
+    // The sidebar should be visible (uses data-sidebar attribute, not aside element)
+    const sidebar = page.locator('[data-sidebar="sidebar"]');
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
     // Should show Props.to branding
@@ -42,7 +42,7 @@ test.describe("Account Switcher - Unified View", () => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    const sidebar = page.locator("aside");
+    const sidebar = page.locator('[data-sidebar="sidebar"]');
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
     // Click account switcher to open dropdown
@@ -70,7 +70,7 @@ test.describe("Account Switcher - Unified View", () => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    const sidebar = page.locator("aside");
+    const sidebar = page.locator('[data-sidebar="sidebar"]');
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
     // Open dropdown
@@ -97,7 +97,7 @@ test.describe("Account Switcher - Unified View", () => {
     await page.goto(`${baseURL}/org/acme/admin`);
     await page.waitForLoadState("networkidle");
 
-    const sidebar = page.locator("aside");
+    const sidebar = page.locator('[data-sidebar="sidebar"]');
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
     // Should still show the unified personal navigation
@@ -116,11 +116,11 @@ test.describe("Account Switcher - Unified View", () => {
     await page.goto(`${baseURL}/`);
     await page.waitForLoadState("networkidle");
 
-    const sidebar = page.locator("aside");
+    const sidebar = page.locator('[data-sidebar="sidebar"]');
     await expect(sidebar).toBeVisible({ timeout: 15000 });
 
-    // Footer should show user info with email
-    const footer = sidebar.locator("footer");
+    // Footer should show user info with email (uses data-sidebar="footer")
+    const footer = sidebar.locator('[data-sidebar="footer"]');
     await expect(footer).toBeVisible();
     await expect(footer.getByText(/@/).first()).toBeVisible({ timeout: 5000 });
   });

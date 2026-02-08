@@ -54,8 +54,8 @@ test.describe("Hidden Feedback Links - Dashboard", () => {
     await expect(submitButton).toBeEnabled({ timeout: 5000 });
     await submitButton.click();
 
-    // Wait for navigation to links page
-    await page.waitForURL(/\/links$/, { timeout: 20000 });
+    // Wait for navigation to links page (may have query params or trailing slash)
+    await page.waitForURL(/\/links(?:\/|\?|$)/, { timeout: 20000 });
 
     // Verify the link appears with the Hidden badge
     await expect(page.getByText(uniqueName).first()).toBeVisible({
