@@ -51,12 +51,12 @@ export async function signInAction(
     provider = "resend";
   }
   logger("signInAction > signIn", provider);
-  let result;
+  let result: unknown;
   try {
-    result = (await signIn(provider, {
+    result = await signIn(provider, {
       ...data,
       redirect: false,
-    })) as unknown;
+    });
   } catch (e) {
     if (e instanceof Error) {
       if (e.message.includes("password-invalid")) {
@@ -67,7 +67,23 @@ export async function signInAction(
         logger("signInAction > error", e, out);
         return out;
       }
+      // Log unexpected errors but don't expose details
+      logger("signInAction > unexpected error", e);
+    }
+    return { success: false, message: "Sign in failed. Please try again." };
+  }
+
+  // Validate redirect URL before using it
+  if (typeof result === "string" && result.length > 0) {
+    // Only allow relative URLs or URLs to our domain
+    if (
+      result.startsWith("/") ||
+      result.startsWith(constServer.PROPSTO_APP_URL)
+    ) {
+      redirect(result);
     }
   }
-  redirect(result as string);
+
+  // Default redirect to home if no valid URL
+  redirect("/");
 }
