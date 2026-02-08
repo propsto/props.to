@@ -4,6 +4,7 @@ import {
   getOrganizationBySlug,
   getOrganizationTemplates,
   getDefaultTemplates,
+  getOrganizationFeedbackSettingsData,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import { Button } from "@propsto/ui/atoms/button";
@@ -23,8 +24,9 @@ import {
   TableRow,
 } from "@propsto/ui/atoms/table";
 import { Badge } from "@propsto/ui/atoms/badge";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Star } from "lucide-react";
 import { AddDefaultTemplateButton } from "./add-default-template-button";
+import { SetDefaultTemplateButton } from "./set-default-template-button";
 
 interface TemplatesPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -47,11 +49,13 @@ export default async function OrgAdminTemplates({
   }
   const org = orgResult.data;
 
-  // Get organization templates and default templates
-  const [orgTemplatesResult, defaultTemplatesResult] = await Promise.all([
-    getOrganizationTemplates(org.id),
-    getDefaultTemplates(),
-  ]);
+  // Get organization templates, default templates, and feedback settings
+  const [orgTemplatesResult, defaultTemplatesResult, feedbackSettingsResult] =
+    await Promise.all([
+      getOrganizationTemplates(org.id),
+      getDefaultTemplates(),
+      getOrganizationFeedbackSettingsData(org.id),
+    ]);
 
   const orgTemplates = orgTemplatesResult.success
     ? orgTemplatesResult.data
@@ -59,6 +63,9 @@ export default async function OrgAdminTemplates({
   const defaultTemplates = defaultTemplatesResult.success
     ? defaultTemplatesResult.data
     : [];
+  const currentDefaultTemplateId = feedbackSettingsResult.success
+    ? feedbackSettingsResult.data?.defaultTemplateId
+    : null;
 
   // Filter out default templates already added to org
   const orgTemplateIds = new Set(orgTemplates.map(t => t.id));
@@ -109,37 +116,55 @@ export default async function OrgAdminTemplates({
                   <TableHead>Category</TableHead>
                   <TableHead>Fields</TableHead>
                   <TableHead>Usage</TableHead>
+                  <TableHead className="text-right">Default</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orgTemplates.map(template => (
-                  <TableRow key={template.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{template.name}</p>
-                        {template.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {template.description}
-                          </p>
+                {orgTemplates.map(template => {
+                  const isDefault = template.id === currentDefaultTemplateId;
+                  return (
+                    <TableRow key={template.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {isDefault && (
+                            <Star className="size-4 fill-yellow-400 text-yellow-400" />
+                          )}
+                          <div>
+                            <p className="font-medium">{template.name}</p>
+                            {template.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {template.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{template.feedbackType}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {template.category?.name ?? (
+                          <span className="text-muted-foreground">—</span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{template.feedbackType}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {template.category?.name ?? (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{template.fields.length} fields</TableCell>
-                    <TableCell>
-                      <span className="text-muted-foreground">
-                        {template._count.links} links
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell>{template.fields.length} fields</TableCell>
+                      <TableCell>
+                        <span className="text-muted-foreground">
+                          {template._count.links} links
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <SetDefaultTemplateButton
+                          templateId={template.id}
+                          templateName={template.name}
+                          organizationId={org.id}
+                          orgSlug={orgSlug}
+                          isDefault={isDefault}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           )}

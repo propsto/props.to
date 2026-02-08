@@ -6,6 +6,7 @@ import {
   verifyOrgAdminAccess,
   createFeedbackTemplate,
   getOrganizationBySlug,
+  setOrganizationDefaultTemplate,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { FeedbackType } from "@prisma/client";
@@ -101,4 +102,39 @@ export async function createOrgTemplateAction(
 
   revalidatePath(`/org/${input.orgSlug}/admin/templates`);
   return { success: true, templateId: result.data.id };
+}
+
+/**
+ * Set or unset the default template for an organization
+ */
+export async function setDefaultTemplateAction(
+  organizationId: string,
+  templateId: string | null,
+  orgSlug: string,
+): Promise<{ success: boolean; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  // Verify admin access
+  const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
+  if (!membershipResult.success || !membershipResult.data) {
+    return { success: false, error: "Not authorized" };
+  }
+
+  // Set default template
+  const result = await setOrganizationDefaultTemplate(
+    organizationId,
+    templateId,
+  );
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error ?? "Failed to set default template",
+    };
+  }
+
+  revalidatePath(`/org/${orgSlug}/admin/templates`);
+  return { success: true };
 }
