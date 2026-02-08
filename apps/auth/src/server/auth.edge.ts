@@ -225,8 +225,8 @@ export const nextAuthConfig = {
       };
     },
     redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows relative callback URLs (but not protocol-relative like //evil.com)
+      if (url.startsWith("/") && !url.startsWith("//")) return `${baseUrl}${url}`;
 
       // Allows callback URLs on the same origin
       if (new URL(url).origin === baseUrl) return url;
