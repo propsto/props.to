@@ -24,6 +24,7 @@ export type OrganizationFeedbackSettings = {
   allowAnonymousFeedback: boolean;
   enableFeedbackModeration: boolean;
   autoApproveInternalFeedback: boolean;
+  defaultTemplateId?: string | null;
 };
 
 // Create or update organization default user settings
@@ -108,6 +109,7 @@ export async function upsertOrganizationFeedbackSettings(
         allowAnonymousFeedback: settings.allowAnonymousFeedback,
         enableFeedbackModeration: settings.enableFeedbackModeration,
         autoApproveInternalFeedback: settings.autoApproveInternalFeedback,
+        defaultTemplateId: settings.defaultTemplateId,
         updatedAt: new Date(),
       },
       create: {
@@ -116,10 +118,59 @@ export async function upsertOrganizationFeedbackSettings(
         allowAnonymousFeedback: settings.allowAnonymousFeedback,
         enableFeedbackModeration: settings.enableFeedbackModeration,
         autoApproveInternalFeedback: settings.autoApproveInternalFeedback,
+        defaultTemplateId: settings.defaultTemplateId,
       },
     });
 
     return handleSuccess(result);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Set organization default template
+export async function setOrganizationDefaultTemplate(
+  organizationId: string,
+  templateId: string | null,
+) {
+  try {
+    logger("setOrganizationDefaultTemplate", { organizationId, templateId });
+
+    const result = await db.organizationFeedbackSettings.upsert({
+      where: { organizationId },
+      update: {
+        defaultTemplateId: templateId,
+        updatedAt: new Date(),
+      },
+      create: {
+        organizationId,
+        defaultTemplateId: templateId,
+      },
+    });
+
+    return handleSuccess(result);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get organization default template
+export async function getOrganizationDefaultTemplate(organizationId: string) {
+  try {
+    logger("getOrganizationDefaultTemplate", { organizationId });
+
+    const settings = await db.organizationFeedbackSettings.findUnique({
+      where: { organizationId },
+      include: {
+        defaultTemplate: {
+          include: {
+            fields: true,
+          },
+        },
+      },
+    });
+
+    return handleSuccess(settings?.defaultTemplate ?? null);
   } catch (e) {
     return handleError(e);
   }
