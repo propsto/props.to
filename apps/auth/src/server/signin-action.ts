@@ -75,11 +75,9 @@ export async function signInAction(
 
   // Validate redirect URL before using it
   if (typeof result === "string" && result.length > 0) {
-    // Only allow relative URLs or URLs to our domain
-    if (
-      result.startsWith("/") ||
-      result.startsWith(constServer.PROPSTO_APP_URL)
-    ) {
+    // Only allow relative URLs (not protocol-relative like //evil.com) or URLs to our domain
+    const isRelativeUrl = result.startsWith("/") && !result.startsWith("//");
+    if (isRelativeUrl || result.startsWith(constServer.PROPSTO_APP_URL)) {
       redirect(result);
     }
   }
