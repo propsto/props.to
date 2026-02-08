@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { Button } from "@propsto/ui/atoms/button";
+import { toast } from "@propsto/ui/atoms/sonner";
 import { Star, Loader2 } from "lucide-react";
 import { setDefaultTemplateAction } from "./actions";
 
@@ -25,11 +26,19 @@ export function SetDefaultTemplateButton({
   const handleClick = (): void => {
     startTransition(async () => {
       // If already default, unset it (pass null); otherwise set it
-      await setDefaultTemplateAction(
+      const result = await setDefaultTemplateAction(
         organizationId,
         isDefault ? null : templateId,
         orgSlug,
       );
+
+      if (!result.success) {
+        toast.error(result.error ?? "Failed to update default template");
+      } else if (isDefault) {
+        toast.success("Default template removed");
+      } else {
+        toast.success(`"${templateName}" set as default template`);
+      }
     });
   };
 

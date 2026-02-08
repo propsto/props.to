@@ -136,6 +136,26 @@ export async function setOrganizationDefaultTemplate(
   try {
     logger("setOrganizationDefaultTemplate", { organizationId, templateId });
 
+    // If setting a template (not unsetting), validate it belongs to this org
+    if (templateId !== null) {
+      const template = await db.feedbackTemplate.findFirst({
+        where: {
+          id: templateId,
+          organizations: {
+            some: {
+              id: organizationId,
+            },
+          },
+        },
+      });
+
+      if (!template) {
+        throw new Error(
+          "Template not found or does not belong to this organization",
+        );
+      }
+    }
+
     const result = await db.organizationFeedbackSettings.upsert({
       where: { organizationId },
       update: {
