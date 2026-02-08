@@ -25,24 +25,31 @@ export async function passwordResetAction(
     };
   }
 
+  // Always return success to prevent email enumeration attacks
+  // Log internally but don't reveal whether email exists
+  const successMessage =
+    "If an account exists with this email, you will receive a password reset link.";
+
   const user = await getUserByEmail(data.email);
   if (!user.data) {
-    logger("passwordResetAction > no user found");
-    return { success: false, message: "No user found" };
+    logger("passwordResetAction > no user found (not revealed to client)");
+    return { success: true, message: successMessage };
   }
 
   const token = await generatePasswordResetToken(data.email);
   if (!token.data) {
     logger("passwordResetAction > generatePasswordResetToken no success");
-    return { success: false, message: "Unexpected error" };
+    // Still return success to avoid leaking info
+    return { success: true, message: successMessage };
   }
 
   const emailSent = await sendPasswordResetEmail(data.email, token.data.token);
   if (!emailSent.success) {
     logger("passwordResetAction > sendPasswordResetEmail no success");
     await deletePasswordResetToken(token.data.id);
-    return { success: false, message: "Unexpected error" };
+    // Still return success to avoid leaking info
+    return { success: true, message: successMessage };
   }
 
-  return { success: true, message: "Email sent!" };
+  return { success: true, message: successMessage };
 }
