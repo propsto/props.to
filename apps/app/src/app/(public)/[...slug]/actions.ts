@@ -11,6 +11,72 @@ import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
+import { z } from "zod";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:feedback");
+
+// Constants for input limits
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_FIELD_TEXT_LENGTH = 10000;
+
+/**
+ * Strips HTML tags from a string to prevent XSS attacks.
+ * Uses a simple regex approach safe for server-side sanitization.
+ */
+function stripHtmlTags(input: string): string {
+  return input.replace(/<[^>]*>/g, "").trim();
+}
+
+/**
+ * Sanitizes a text field by stripping HTML and limiting length.
+ */
+function sanitizeText(
+  input: string | undefined,
+  maxLength: number,
+): string | undefined {
+  if (!input) return undefined;
+  const stripped = stripHtmlTags(input);
+  return stripped.slice(0, maxLength);
+}
+
+/**
+ * Recursively sanitizes string values in JSON data.
+ */
+function sanitizeFieldsData(
+  data: Prisma.InputJsonValue,
+): Prisma.InputJsonValue {
+  if (typeof data === "string") {
+    return sanitizeText(data, MAX_FIELD_TEXT_LENGTH) ?? "";
+  }
+  if (Array.isArray(data)) {
+    return data.map(sanitizeFieldsData);
+  }
+  if (data !== null && typeof data === "object") {
+    const sanitized: Record<string, Prisma.InputJsonValue> = {};
+    for (const [key, value] of Object.entries(data)) {
+      sanitized[key] = sanitizeFieldsData(value as Prisma.InputJsonValue);
+    }
+    return sanitized;
+  }
+  return data;
+}
+
+// Input validation schema
+const submitFeedbackSchema = z.object({
+  linkId: z.string().uuid(),
+  submitterName: z
+    .string()
+    .max(MAX_NAME_LENGTH)
+    .transform(s => sanitizeText(s, MAX_NAME_LENGTH))
+    .optional(),
+  submitterEmail: z.string().email().max(MAX_EMAIL_LENGTH).optional(),
+  isAnonymous: z.boolean(),
+  fieldsData: z.unknown().transform(data => {
+    return sanitizeFieldsData(data as Prisma.InputJsonValue);
+  }),
+});
 
 interface SubmitFeedbackInput {
   linkId: string;
@@ -34,8 +100,15 @@ export async function submitFeedbackAction(
     return { success: false, error: "Too many requests. Please try again later." };
   }
 
+  // Validate and sanitize input
+  const parseResult = submitFeedbackSchema.safeParse(input);
+  if (!parseResult.success) {
+    logger("Invalid feedback submission input:", parseResult.error.flatten());
+    return { success: false, error: "Invalid input" };
+  }
+  const sanitizedInput = parseResult.data;
   // Get the link to verify it exists and get related data
-  const linkResult = await getFeedbackLink(input.linkId);
+  const linkResult = await getFeedbackLink(sanitizedInput.linkId);
   if (!linkResult.success || !linkResult.data) {
     return { success: false, error: "Feedback link not found" };
   }
@@ -61,7 +134,7 @@ export async function submitFeedbackAction(
   }
 
   // Determine visibility
-  const visibility: FeedbackVisibility = input.isAnonymous
+  const visibility: FeedbackVisibility = sanitizedInput.isAnonymous
     ? "ANONYMOUS"
     : link.visibility;
 
@@ -77,9 +150,13 @@ export async function submitFeedbackAction(
     linkId: link.id,
     organizationId: link.organizationId ?? undefined,
     groupId: link.groupId ?? undefined,
-    submitterName: input.isAnonymous ? undefined : input.submitterName,
-    submitterEmail: input.isAnonymous ? undefined : input.submitterEmail,
-    fieldsData: input.fieldsData,
+    submitterName: sanitizedInput.isAnonymous
+      ? undefined
+      : sanitizedInput.submitterName,
+    submitterEmail: sanitizedInput.isAnonymous
+      ? undefined
+      : sanitizedInput.submitterEmail,
+    fieldsData: sanitizedInput.fieldsData,
   });
 
   if (!feedbackResult.success) {
@@ -95,21 +172,25 @@ export async function submitFeedbackAction(
     if (userResult.success && userResult.data?.email) {
       const recipientName =
         userResult.data.firstName ?? userResult.data.email.split("@")[0];
-      const feedbackData = input.fieldsData as { feedback?: string };
+      const feedbackData = sanitizedInput.fieldsData as { feedback?: string };
       const feedbackPreview = feedbackData?.feedback;
 
       await sendFeedbackReceivedEmail(userResult.data.email, {
         recipientName,
-        feedbackPreview: input.isAnonymous ? undefined : feedbackPreview,
-        senderName: input.isAnonymous ? undefined : input.submitterName,
-        isAnonymous: input.isAnonymous,
+        feedbackPreview: sanitizedInput.isAnonymous
+          ? undefined
+          : feedbackPreview,
+        senderName: sanitizedInput.isAnonymous
+          ? undefined
+          : sanitizedInput.submitterName,
+        isAnonymous: sanitizedInput.isAnonymous,
         feedbackType: link.feedbackType.replace(/_/g, " "),
         dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
       });
     }
   } catch (emailError) {
     // Log but don't fail the submission if email fails
-    console.error("Failed to send feedback notification email:", emailError);
+    logger("Failed to send feedback notification email:", emailError);
   }
 
   return { success: true };
