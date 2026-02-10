@@ -166,8 +166,9 @@ export function CreateLinkForm({
     const orgTpls = orgData?.templates ?? [];
 
     // If org doesn't allow member form creation, only show org templates
+    // No fallback to defaults - server will reject non-org templates anyway
     if (!orgData?.allowMemberFormCreation) {
-      return orgTpls.length > 0 ? orgTpls : defaultTpls; // Fall back to defaults if no org templates
+      return orgTpls;
     }
 
     return [

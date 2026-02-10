@@ -59,19 +59,23 @@ export async function createLinkAction(
       feedbackSettings.data &&
       !feedbackSettings.data.allowMemberFormCreation
     ) {
-      // Verify template belongs to this org
+      // Verify template belongs to this org (fail-closed: reject if we can't verify)
       const orgTemplates = await getOrganizationTemplates(input.organizationId);
-      if (orgTemplates.success) {
-        const isOrgTemplate = orgTemplates.data.some(
-          t => t.id === input.templateId,
-        );
-        if (!isOrgTemplate) {
-          return {
-            success: false,
-            error:
-              "This organization requires using organization-provided templates",
-          };
-        }
+      if (!orgTemplates.success) {
+        return {
+          success: false,
+          error: "Unable to verify template permissions. Please try again.",
+        };
+      }
+      const isOrgTemplate = orgTemplates.data.some(
+        t => t.id === input.templateId,
+      );
+      if (!isOrgTemplate) {
+        return {
+          success: false,
+          error:
+            "This organization requires using organization-provided templates",
+        };
       }
     }
   }
