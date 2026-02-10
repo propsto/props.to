@@ -29,8 +29,8 @@
     "@simplewebauthn/server": "9.0.2",
     "@stepperize/react": "4.2.0",
     "react-confetti": "6.4.0",
-    "@upstash/ratelimit": "*",
-    "@upstash/redis": "*"
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.36.2"
   },
   "peerDependencies": {
     "@types/node": "*",

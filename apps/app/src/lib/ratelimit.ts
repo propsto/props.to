@@ -33,7 +33,6 @@ export interface RateLimitResult {
  */
 export async function checkRateLimit(
   identifier: string,
-  customLimit?: { requests: number; window: string },
 ): Promise<RateLimitResult> {
   if (!ratelimit) {
     // Rate limiting not configured - allow all requests
@@ -78,16 +77,10 @@ export async function checkFeedbackRateLimit(): Promise<RateLimitResult> {
 
 /**
  * Rate limit check for slug availability checks
- * Limit: 20 checks per minute per IP (higher due to debounce)
+ * Limit: 10 checks per minute per IP
  */
 export async function checkSlugCheckRateLimit(): Promise<RateLimitResult> {
   const ip = await getClientIp();
-  // Use a custom limiter for slug checks - more permissive
-  if (!ratelimit) {
-    return { success: true, limit: 0, remaining: 0, reset: 0 };
-  }
-
-  // For slug checks, we use the same limiter but a different prefix
   return checkRateLimit(`slug-check:${ip}`);
 }
 

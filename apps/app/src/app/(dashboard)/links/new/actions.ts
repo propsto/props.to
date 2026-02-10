@@ -76,7 +76,7 @@ export async function createLinkAction(
 
 export async function checkSlugAvailableAction(
   slug: string,
-): Promise<{ available: boolean }> {
+): Promise<{ available: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user?.id) {
     return { available: false };
@@ -85,7 +85,7 @@ export async function checkSlugAvailableAction(
   // Rate limit check for slug availability
   const rateLimitResult = await checkSlugCheckRateLimit();
   if (!rateLimitResult.success) {
-    return { available: false };
+    return { available: false, error: "Too many requests. Please try again." };
   }
 
   const result = await checkFeedbackLinkSlugAvailable(slug, session.user.id);

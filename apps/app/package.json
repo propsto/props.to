@@ -30,8 +30,8 @@
     "survey-react-ui": "^2.5.6",
     "@propsto/email": "workspace:*",
     "@propsto/forms": "workspace:*",
-    "@upstash/ratelimit": "*",
-    "@upstash/redis": "*"
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.36.2"
   },
   "peerDependencies": {
     "@types/node": "*",
