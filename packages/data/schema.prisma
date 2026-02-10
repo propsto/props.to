@@ -346,6 +346,9 @@ model FeedbackTemplate {
   requests      FeedbackRequest[] // Feedback requests using this template
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  // Organizations that have this template as their default
+  defaultForOrgs OrganizationFeedbackSettings[] @relation("OrgDefaultTemplate")
 }
 
 // TemplateField model (dynamic fields for feedback templates)
@@ -662,15 +665,17 @@ model OrganizationSettings {
 
 // Organization feedback settings
 model OrganizationFeedbackSettings {
-  id                          String       @id @default(cuid())
-  organization                Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId              String       @unique
-  enableOrganizationFeedback  Boolean      @default(true)
-  allowAnonymousFeedback      Boolean      @default(false)
-  enableFeedbackModeration    Boolean      @default(true)
-  autoApproveInternalFeedback Boolean      @default(true)
-  createdAt                   DateTime     @default(now())
-  updatedAt                   DateTime     @updatedAt
+  id                          String            @id @default(cuid())
+  organization                Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId              String            @unique
+  enableOrganizationFeedback  Boolean           @default(true)
+  allowAnonymousFeedback      Boolean           @default(false)
+  enableFeedbackModeration    Boolean           @default(true)
+  autoApproveInternalFeedback Boolean           @default(true)
+  defaultTemplate             FeedbackTemplate? @relation("OrgDefaultTemplate", fields: [defaultTemplateId], references: [id], onDelete: SetNull)
+  defaultTemplateId           String? // The default template for this organization
+  createdAt                   DateTime          @default(now())
+  updatedAt                   DateTime          @updatedAt
 }
 
 // Audit log for tracking admin actions within an organization
