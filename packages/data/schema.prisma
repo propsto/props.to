@@ -167,13 +167,13 @@ model Organization {
 
 // OrganizationMember model (junction table for multi-org user membership)
 model OrganizationMember {
-  id                      String                        @id @default(cuid())
-  user                    User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                      String                      @id @default(cuid())
+  user                    User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                  String
-  organization            Organization                  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization            Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId          String
-  role                    OrganizationRole              @default(MEMBER)
-  joinedAt                DateTime                      @default(now())
+  role                    OrganizationRole            @default(MEMBER)
+  joinedAt                DateTime                    @default(now())
   notificationPreferences OrgMemberNotificationPrefs?
 
   @@unique([userId, organizationId])
@@ -189,7 +189,7 @@ model OrgMemberNotificationPrefs {
   weeklyDigest         Boolean            @default(false)
   mentionNotifications Boolean            @default(true)
   createdAt            DateTime           @default(now())
-  updatedAt            DateTime            @updatedAt
+  updatedAt            DateTime           @updatedAt
 }
 
 // Group model (represents a group within an organization, e.g., marketing team)
@@ -251,6 +251,7 @@ model User {
 
   // Feedback links and requests
   feedbackLinks            FeedbackLink[] // Links created by this user
+  managedFeedbackLinks     FeedbackLink[]    @relation("ManagedFeedbackLinks") // Managed links created by this admin
   feedbackRequestsSent     FeedbackRequest[] @relation("FeedbackRequestsSent") // Requests sent by this user
   feedbackRequestsReceived FeedbackRequest[] @relation("FeedbackRequestsReceived") // Requests received by this user
   goals                    Goal[] // User's goals
@@ -442,8 +443,17 @@ model FeedbackLink {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
+  // Managed link fields
+  isManaged       Boolean        @default(false) // True if this is a managed link template
+  managedBy       User?          @relation("ManagedFeedbackLinks", fields: [managedByUserId], references: [id], onDelete: SetNull)
+  managedByUserId String? // Admin who created this managed link
+  sourceManaged   FeedbackLink?  @relation("AdoptedFromManaged", fields: [sourceManagedId], references: [id], onDelete: SetNull)
+  sourceManagedId String? // If adopted from a managed link, reference to the source
+  adoptedLinks    FeedbackLink[] @relation("AdoptedFromManaged") // Links adopted from this managed link
+
   // Slug is unique per user+org context (same slug can be used by different users)
   @@unique([userId, organizationId, slug])
+  @@index([organizationId, isManaged])
 }
 
 // FeedbackRequest model (request feedback from specific people)

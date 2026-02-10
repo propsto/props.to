@@ -409,3 +409,336 @@ export async function checkFeedbackLinkSlugAvailable(
     return handleError(e);
   }
 }
+
+// ============= MANAGED LINKS =============
+
+// Type for managed links with adoption stats
+export type ManagedFeedbackLinkWithStats = Prisma.FeedbackLinkGetPayload<{
+  include: {
+    managedBy: {
+      select: { id: true; firstName: true; lastName: true };
+    };
+    template: { select: { id: true; name: true; feedbackType: true } };
+    organization: { select: { id: true; name: true } };
+    _count: { select: { adoptedLinks: true; feedbacks: true } };
+  };
+}>;
+
+const managedLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
+  managedBy: { select: { id: true, firstName: true, lastName: true } },
+  template: { select: { id: true, name: true, feedbackType: true } },
+  organization: { select: { id: true, name: true } },
+  _count: { select: { adoptedLinks: true, feedbacks: true } },
+});
+
+// Create a managed feedback link (admin only)
+export async function createManagedFeedbackLink(data: {
+  organizationId: string;
+  managedByUserId: string; // Admin who creates it
+  templateId: string;
+  name: string;
+  slug?: string;
+  visibility?: FeedbackVisibility;
+  feedbackType?: FeedbackType;
+  isHidden?: boolean;
+}): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
+  try {
+    logger("createManagedFeedbackLink", {
+      organizationId: data.organizationId,
+      name: data.name,
+    });
+
+    // Generate unique slug if not provided
+    let slug = data.slug ?? generateLinkSlug();
+
+    // For managed links, we use a special "system" user context for the slug uniqueness
+    // The managedByUserId owns the link, but it's an org-level resource
+    const link = await db.feedbackLink.create({
+      data: {
+        slug,
+        name: data.name,
+        userId: data.managedByUserId, // The admin who creates it is the owner
+        templateId: data.templateId,
+        organizationId: data.organizationId,
+        visibility: data.visibility ?? "ORGANIZATION",
+        feedbackType: data.feedbackType ?? "RECOGNITION",
+        isHidden: data.isHidden ?? false,
+        isManaged: true,
+        managedByUserId: data.managedByUserId,
+      },
+      include: managedLinkInclude,
+    });
+
+    return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get all managed links for an organization
+export async function getOrganizationManagedLinks(
+  organizationId: string,
+  options?: {
+    skip?: number;
+    take?: number;
+  },
+): Promise<
+  HandleEvent<{ links: ManagedFeedbackLinkWithStats[]; total: number }>
+> {
+  try {
+    logger("getOrganizationManagedLinks", { organizationId, options });
+    const where: Prisma.FeedbackLinkWhereInput = {
+      organizationId,
+      isManaged: true,
+    };
+
+    const [links, total] = await Promise.all([
+      db.feedbackLink.findMany({
+        where,
+        include: managedLinkInclude,
+        orderBy: { createdAt: "desc" },
+        skip: options?.skip,
+        take: options?.take ?? 20,
+      }),
+      db.feedbackLink.count({ where }),
+    ]);
+
+    return handleSuccess({ links, total });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Adopt a managed link - create a personal copy for the employee
+export async function adoptManagedLink(data: {
+  sourceManagedId: string; // The managed link to adopt from
+  userId: string; // The employee adopting the link
+  slug?: string; // Optional custom slug for their adopted link
+}): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  try {
+    logger("adoptManagedLink", {
+      sourceManagedId: data.sourceManagedId,
+      userId: data.userId,
+    });
+
+    // Get the managed link
+    const managedLink = await db.feedbackLink.findUnique({
+      where: { id: data.sourceManagedId },
+      include: { organization: true },
+    });
+
+    if (!managedLink) {
+      return handleError(new Error("Managed link not found"));
+    }
+
+    if (!managedLink.isManaged) {
+      return handleError(new Error("This is not a managed link"));
+    }
+
+    // Verify user is a member of the organization
+    const membership = await db.organizationMember.findUnique({
+      where: {
+        userId_organizationId: {
+          userId: data.userId,
+          organizationId: managedLink.organizationId!,
+        },
+      },
+    });
+
+    if (!membership) {
+      return handleError(
+        new Error("User is not a member of this organization"),
+      );
+    }
+
+    // Check if user already adopted this managed link
+    const existingAdoption = await db.feedbackLink.findFirst({
+      where: {
+        sourceManagedId: data.sourceManagedId,
+        userId: data.userId,
+      },
+    });
+
+    if (existingAdoption) {
+      return handleError(new Error("You have already adopted this link"));
+    }
+
+    // Generate or use provided slug
+    let slug = data.slug ?? generateLinkSlug();
+
+    // Check for slug collision
+    const existingSlug = await db.feedbackLink.findFirst({
+      where: {
+        slug,
+        userId: data.userId,
+        organizationId: managedLink.organizationId,
+      },
+    });
+    if (existingSlug) {
+      slug = generateLinkSlug();
+    }
+
+    // Create the adopted link
+    const adoptedLink = await db.feedbackLink.create({
+      data: {
+        slug,
+        name: managedLink.name,
+        userId: data.userId,
+        templateId: managedLink.templateId,
+        organizationId: managedLink.organizationId,
+        visibility: managedLink.visibility,
+        feedbackType: managedLink.feedbackType,
+        isHidden: managedLink.isHidden,
+        isManaged: false, // Adopted links are not managed
+        sourceManagedId: data.sourceManagedId,
+      },
+      include: feedbackLinkInclude,
+    });
+
+    return handleSuccess(adoptedLink);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get managed links available for a user to adopt
+export async function getAvailableManagedLinks(
+  userId: string,
+  organizationId: string,
+): Promise<
+  HandleEvent<{
+    available: ManagedFeedbackLinkWithStats[];
+    adopted: FeedbackLinkWithRelations[];
+  }>
+> {
+  try {
+    logger("getAvailableManagedLinks", { userId, organizationId });
+
+    // Get all managed links for the org
+    const managedLinks = await db.feedbackLink.findMany({
+      where: {
+        organizationId,
+        isManaged: true,
+        isActive: true,
+      },
+      include: managedLinkInclude,
+    });
+
+    // Get links the user has already adopted from managed links
+    const adoptedLinks = await db.feedbackLink.findMany({
+      where: {
+        userId,
+        organizationId,
+        sourceManagedId: { not: null },
+      },
+      include: feedbackLinkInclude,
+    });
+
+    // Filter out already adopted managed links
+    const adoptedSourceIds = new Set(
+      adoptedLinks.map(l => l.sourceManagedId).filter(Boolean),
+    );
+    const available = managedLinks.filter(ml => !adoptedSourceIds.has(ml.id));
+
+    return handleSuccess({ available, adopted: adoptedLinks });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Update a managed link (admin only)
+export async function updateManagedFeedbackLink(
+  id: string,
+  data: {
+    name?: string;
+    templateId?: string;
+    visibility?: FeedbackVisibility;
+    feedbackType?: FeedbackType;
+    isActive?: boolean;
+    isHidden?: boolean;
+  },
+): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
+  try {
+    logger("updateManagedFeedbackLink", { id, data });
+    const link = await db.feedbackLink.update({
+      where: { id, isManaged: true },
+      data,
+      include: managedLinkInclude,
+    });
+    return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Delete a managed link (also removes adoption references)
+export async function deleteManagedFeedbackLink(
+  id: string,
+): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
+  try {
+    logger("deleteManagedFeedbackLink", { id });
+
+    // Clear the sourceManagedId from adopted links first
+    await db.feedbackLink.updateMany({
+      where: { sourceManagedId: id },
+      data: { sourceManagedId: null },
+    });
+
+    const link = await db.feedbackLink.delete({
+      where: { id, isManaged: true },
+      include: managedLinkInclude,
+    });
+    return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get adoption stats for a managed link
+export async function getManagedLinkAdoptionStats(
+  managedLinkId: string,
+): Promise<
+  HandleEvent<{
+    totalAdoptions: number;
+    totalResponses: number;
+    adoptedBy: Array<{
+      userId: string;
+      userName: string;
+      linkId: string;
+      responseCount: number;
+    }>;
+  }>
+> {
+  try {
+    logger("getManagedLinkAdoptionStats", { managedLinkId });
+
+    const adoptedLinks = await db.feedbackLink.findMany({
+      where: { sourceManagedId: managedLinkId },
+      include: {
+        user: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+
+    const totalResponses = adoptedLinks.reduce(
+      (sum, link) => sum + link.responseCount,
+      0,
+    );
+
+    const adoptedBy = adoptedLinks.map(link => ({
+      userId: link.userId,
+      userName:
+        [link.user.firstName, link.user.lastName].filter(Boolean).join(" ") ||
+        "Unknown",
+      linkId: link.id,
+      responseCount: link.responseCount,
+    }));
+
+    return handleSuccess({
+      totalAdoptions: adoptedLinks.length,
+      totalResponses,
+      adoptedBy,
+    });
+  } catch (e) {
+    return handleError(e);
+  }
+}
