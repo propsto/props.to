@@ -8,6 +8,7 @@ import {
   type ResetPasswordFormType,
   resetPasswordFormSchema,
 } from "@/app/types";
+import { checkPasswordResetRateLimit } from "@/lib/ratelimit";
 
 const logger = createLogger("auth");
 
@@ -22,6 +23,17 @@ export async function passwordResetAction(
     logger("passwordResetAction", error.flatten());
     return {
       errors: error.flatten().fieldErrors,
+    };
+  }
+
+  // Rate limit check
+  const rateLimitResult = await checkPasswordResetRateLimit(data.email);
+  if (!rateLimitResult.success) {
+    logger("passwordResetAction > rate limited");
+    return {
+      errors: {
+        email: ["Too many requests. Please try again later."],
+      },
     };
   }
 

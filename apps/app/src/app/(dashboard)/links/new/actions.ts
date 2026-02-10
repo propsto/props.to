@@ -8,6 +8,7 @@ import {
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
 
 interface CreateLinkInput {
   name: string;
@@ -78,6 +79,12 @@ export async function checkSlugAvailableAction(
 ): Promise<{ available: boolean }> {
   const session = await auth();
   if (!session?.user?.id) {
+    return { available: false };
+  }
+
+  // Rate limit check for slug availability
+  const rateLimitResult = await checkSlugCheckRateLimit();
+  if (!rateLimitResult.success) {
     return { available: false };
   }
 

@@ -29,7 +29,9 @@
     "survey-core": "^2.5.6",
     "survey-react-ui": "^2.5.6",
     "@propsto/email": "workspace:*",
-    "@propsto/forms": "workspace:*"
+    "@propsto/forms": "workspace:*",
+    "@upstash/ratelimit": "*",
+    "@upstash/redis": "*"
   },
   "peerDependencies": {
     "@types/node": "*",

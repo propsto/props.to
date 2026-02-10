@@ -10,6 +10,7 @@ import { sendFeedbackReceivedEmail } from "@propsto/email";
 import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
+import { checkFeedbackRateLimit } from "@/lib/ratelimit";
 
 interface SubmitFeedbackInput {
   linkId: string;
@@ -27,6 +28,12 @@ interface SubmitFeedbackResult {
 export async function submitFeedbackAction(
   input: SubmitFeedbackInput,
 ): Promise<SubmitFeedbackResult> {
+  // Rate limit check
+  const rateLimitResult = await checkFeedbackRateLimit();
+  if (!rateLimitResult.success) {
+    return { success: false, error: "Too many requests. Please try again later." };
+  }
+
   // Get the link to verify it exists and get related data
   const linkResult = await getFeedbackLink(input.linkId);
   if (!linkResult.success || !linkResult.data) {
