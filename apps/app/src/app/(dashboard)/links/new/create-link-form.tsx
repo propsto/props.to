@@ -69,7 +69,11 @@ interface CreateLinkFormProps {
   organizations?: Organization[];
   orgTemplatesMap?: Record<
     string,
-    { orgName: string; templates: FeedbackTemplateWithFields[] }
+    {
+      orgName: string;
+      templates: FeedbackTemplateWithFields[];
+      allowMemberFormCreation: boolean;
+    }
   >;
 }
 
@@ -137,6 +141,12 @@ export function CreateLinkForm({
     form.setValue("templateId", "");
   }
 
+  // Check if selected org allows member form creation
+  const allowMemberFormCreation = React.useMemo(() => {
+    if (selectedAccount === "personal") return true;
+    return orgTemplatesMap[selectedAccount]?.allowMemberFormCreation ?? true;
+  }, [selectedAccount, orgTemplatesMap]);
+
   // Filter templates based on selected account
   const filteredTemplates = React.useMemo(() => {
     const defaultTpls = templates.filter(t => t.isDefault);
@@ -154,6 +164,12 @@ export function CreateLinkForm({
     // Org selected — show org templates + defaults
     const orgData = orgTemplatesMap[selectedAccount];
     const orgTpls = orgData?.templates ?? [];
+
+    // If org doesn't allow member form creation, only show org templates
+    if (!orgData?.allowMemberFormCreation) {
+      return orgTpls.length > 0 ? orgTpls : defaultTpls; // Fall back to defaults if no org templates
+    }
+
     return [
       ...orgTpls,
       ...defaultTpls.filter(t => !orgTpls.some(ot => ot.id === t.id)),
@@ -342,25 +358,26 @@ export function CreateLinkForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {templates.length === 0 ? (
+                      {filteredTemplates.length === 0 ? (
                         <SelectItem value="__no_templates__" disabled>
                           No templates available
                         </SelectItem>
                       ) : (
                         <>
-                          {userTemplates.length > 0 && (
-                            <SelectGroup>
-                              <SelectLabel>My Templates</SelectLabel>
-                              {userTemplates.map(template => (
-                                <SelectItem
-                                  key={template.id}
-                                  value={template.id}
-                                >
-                                  {template.name}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          )}
+                          {allowMemberFormCreation &&
+                            userTemplates.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel>My Templates</SelectLabel>
+                                {userTemplates.map(template => (
+                                  <SelectItem
+                                    key={template.id}
+                                    value={template.id}
+                                  >
+                                    {template.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
                           {orgTemplates.length > 0 && (
                             <SelectGroup>
                               <SelectLabel>
@@ -376,25 +393,28 @@ export function CreateLinkForm({
                               ))}
                             </SelectGroup>
                           )}
-                          {defaultTemplates.length > 0 && (
-                            <SelectGroup>
-                              <SelectLabel>Default Templates</SelectLabel>
-                              {defaultTemplates.map(template => (
-                                <SelectItem
-                                  key={template.id}
-                                  value={template.id}
-                                >
-                                  {template.name}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          )}
+                          {allowMemberFormCreation &&
+                            defaultTemplates.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel>Default Templates</SelectLabel>
+                                {defaultTemplates.map(template => (
+                                  <SelectItem
+                                    key={template.id}
+                                    value={template.id}
+                                  >
+                                    {template.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
                         </>
                       )}
                     </SelectContent>
                   </Select>
                   <FormDescription>
-                    The template defines what questions will be asked
+                    {!allowMemberFormCreation && selectedAccount !== "personal"
+                      ? "Your organization requires using organization templates"
+                      : "The template defines what questions will be asked"}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

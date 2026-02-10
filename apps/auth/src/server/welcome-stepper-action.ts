@@ -428,6 +428,7 @@ export async function organizationHandler(
         enableFeedbackModeration: feedbackSettings.enableFeedbackModeration,
         autoApproveInternalFeedback:
           feedbackSettings.autoApproveInternalFeedback,
+        allowMemberFormCreation: true, // Default to allowing member form creation
       },
     );
 
@@ -764,9 +765,7 @@ export async function linkAccountHandler(
 
 // Schema for personal email step
 const personalEmailServerSchema = z.object({
-  personalEmail: z
-    .string()
-    .email("Please enter a valid email address"),
+  personalEmail: z.string().email("Please enter a valid email address"),
   verificationCode: z.string().optional(),
 });
 
@@ -811,7 +810,10 @@ export async function sendPersonalEmailCodeHandler(
     }
 
     // Create verification code
-    const verification = await createPersonalEmailVerification(userId, personalEmail);
+    const verification = await createPersonalEmailVerification(
+      userId,
+      personalEmail,
+    );
     if (!verification.success || !verification.data) {
       return {
         success: false,
@@ -828,14 +830,20 @@ export async function sendPersonalEmailCodeHandler(
     );
 
     if (!emailSent.success) {
-      logger("error: Failed to send personal email verification %o", { error: emailSent.error });
+      logger("error: Failed to send personal email verification %o", {
+        error: emailSent.error,
+      });
       return {
         success: false,
         error: "Failed to send verification email",
       };
     }
 
-    logger("info: Personal email verification sent to %s for user %s", personalEmail, userId);
+    logger(
+      "info: Personal email verification sent to %s for user %s",
+      personalEmail,
+      userId,
+    );
 
     return {
       success: true,
@@ -845,7 +853,10 @@ export async function sendPersonalEmailCodeHandler(
     logger("error: Send personal email code error %o", { error });
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to send verification code",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to send verification code",
     };
   }
 }
@@ -856,7 +867,9 @@ export async function sendPersonalEmailCodeHandler(
 export async function verifyPersonalEmailHandler(
   code: string,
   userId: string,
-): Promise<HandleEvent<BasicUserData | null | undefined, PersonalEmailFormValues>> {
+): Promise<
+  HandleEvent<BasicUserData | null | undefined, PersonalEmailFormValues>
+> {
   try {
     // Verify the code
     const verification = await verifyPersonalEmailCode(userId, code);
@@ -868,7 +881,10 @@ export async function verifyPersonalEmailHandler(
     }
 
     if (!verification.data?.valid) {
-      const errorMsg = "error" in verification.data ? verification.data.error : "Invalid or expired code";
+      const errorMsg =
+        "error" in verification.data
+          ? verification.data.error
+          : "Invalid or expired code";
       return {
         success: false,
         error: errorMsg,
@@ -881,8 +897,13 @@ export async function verifyPersonalEmailHandler(
       await updateSession({ user: updatedUser.data });
     }
 
-    const verifiedEmail = "email" in verification.data ? verification.data.email : "unknown";
-    logger("info: Personal email verified for user %s: %s", userId, verifiedEmail);
+    const verifiedEmail =
+      "email" in verification.data ? verification.data.email : "unknown";
+    logger(
+      "info: Personal email verified for user %s: %s",
+      userId,
+      verifiedEmail,
+    );
 
     return updatedUser;
   } catch (error) {
