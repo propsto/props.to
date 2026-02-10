@@ -219,6 +219,12 @@ importers:
       '@types/react-dom':
         specifier: 19.1.6
         version: 19.1.6(@types/react@19.1.8)
+      '@upstash/ratelimit':
+        specifier: ^2.0.5
+        version: 2.0.5(@upstash/redis@1.36.2)
+      '@upstash/redis':
+        specifier: ^1.36.2
+        version: 1.36.2
       autoprefixer:
         specifier: '*'
         version: 10.4.21(postcss@8.5.3)
@@ -325,8 +331,11 @@ importers:
         specifier: 19.1.6
         version: 19.1.6(@types/react@19.1.8)
       '@upstash/ratelimit':
-        specifier: '*'
+        specifier: ^2.0.5
         version: 2.0.5(@upstash/redis@1.36.2)
+      '@upstash/redis':
+        specifier: ^1.36.2
+        version: 1.36.2
       '@vercel/blob':
         specifier: '*'
         version: 0.27.3

@@ -28,14 +28,15 @@
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
     "@stepperize/react": "4.2.0",
-    "react-confetti": "6.4.0"
+    "react-confetti": "6.4.0",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.36.2"
   },
   "peerDependencies": {
     "@types/node": "*",
     "@types/nodemailer": "*",
     "@types/react": "*",
     "@types/react-dom": "*",
-    "@upstash/ratelimit": "*",
     "@vercel/blob": "*",
     "@vercel/kv": "*",
     "autoprefixer": "*",
