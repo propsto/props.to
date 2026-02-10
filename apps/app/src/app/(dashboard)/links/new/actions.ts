@@ -5,6 +5,8 @@ import {
   createFeedbackLink,
   checkFeedbackLinkSlugAvailable,
   getUserOrganizationMembership,
+  getOrganizationFeedbackSettingsData,
+  getOrganizationTemplates,
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
@@ -46,6 +48,31 @@ export async function createLinkAction(
         success: false,
         error: "You are not a member of this organization",
       };
+    }
+
+    // Check if org restricts member form creation
+    const feedbackSettings = await getOrganizationFeedbackSettingsData(
+      input.organizationId,
+    );
+    if (
+      feedbackSettings.success &&
+      feedbackSettings.data &&
+      !feedbackSettings.data.allowMemberFormCreation
+    ) {
+      // Verify template belongs to this org
+      const orgTemplates = await getOrganizationTemplates(input.organizationId);
+      if (orgTemplates.success) {
+        const isOrgTemplate = orgTemplates.data.some(
+          t => t.id === input.templateId,
+        );
+        if (!isOrgTemplate) {
+          return {
+            success: false,
+            error:
+              "This organization requires using organization-provided templates",
+          };
+        }
+      }
     }
   }
 

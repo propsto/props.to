@@ -22,6 +22,7 @@ import {
 } from "@propsto/ui/atoms/form";
 import { Switch } from "@propsto/ui/atoms/switch";
 import { Button } from "@propsto/ui/atoms/button";
+import { toast } from "@propsto/ui/atoms/sonner";
 import { updateFeedbackSettingsAction } from "./actions";
 
 const formSchema = z.object({
@@ -59,7 +60,10 @@ export function FeedbackSettingsForm({
     startTransition(async () => {
       const result = await updateFeedbackSettingsAction(orgSlug, values);
       if (result.success) {
+        toast.success("Feedback settings saved");
         router.refresh();
+      } else {
+        toast.error(result.error ?? "Failed to save settings");
       }
     });
   }
