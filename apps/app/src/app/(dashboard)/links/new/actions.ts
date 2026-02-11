@@ -5,10 +5,15 @@ import {
   createFeedbackLink,
   checkFeedbackLinkSlugAvailable,
   getUserOrganizationMembership,
+  getOrganizationFeedbackSettingsData,
+  getOrganizationTemplates,
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:links");
 
 interface CreateLinkInput {
   name: string;
@@ -47,6 +52,35 @@ export async function createLinkAction(
         error: "You are not a member of this organization",
       };
     }
+
+    // Check if org restricts member form creation
+    const feedbackSettings = await getOrganizationFeedbackSettingsData(
+      input.organizationId,
+    );
+    if (
+      feedbackSettings.success &&
+      feedbackSettings.data &&
+      !feedbackSettings.data.allowMemberFormCreation
+    ) {
+      // Verify template belongs to this org (fail-closed: reject if we can't verify)
+      const orgTemplates = await getOrganizationTemplates(input.organizationId);
+      if (!orgTemplates.success) {
+        return {
+          success: false,
+          error: "Unable to verify template permissions. Please try again.",
+        };
+      }
+      const isOrgTemplate = orgTemplates.data.some(
+        t => t.id === input.templateId,
+      );
+      if (!isOrgTemplate) {
+        return {
+          success: false,
+          error:
+            "This organization requires using organization-provided templates",
+        };
+      }
+    }
   }
 
   const result = await createFeedbackLink({
@@ -65,7 +99,7 @@ export async function createLinkAction(
   });
 
   if (!result.success) {
-    console.error("createFeedbackLink failed:", result.error);
+    logger("createFeedbackLink failed:", result.error);
     return { success: false, error: result.error ?? "Failed to create link" };
   }
 

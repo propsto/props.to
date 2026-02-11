@@ -672,6 +672,7 @@ model OrganizationFeedbackSettings {
   allowAnonymousFeedback      Boolean           @default(false)
   enableFeedbackModeration    Boolean           @default(true)
   autoApproveInternalFeedback Boolean           @default(true)
+  allowMemberFormCreation     Boolean           @default(true) // When false, members can only use org-assigned templates
   defaultTemplate             FeedbackTemplate? @relation("OrgDefaultTemplate", fields: [defaultTemplateId], references: [id], onDelete: SetNull)
   defaultTemplateId           String? // The default template for this organization
   createdAt                   DateTime          @default(now())

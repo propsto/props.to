@@ -4,6 +4,7 @@ import {
   getDefaultTemplates,
   getOrganizationTemplates,
   getUserOrganizations,
+  getOrganizationFeedbackSettingsData,
 } from "@propsto/data/repos";
 import { CreateLinkForm } from "./create-link-form";
 
@@ -19,22 +20,28 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
   const userOrgsResult = await getUserOrganizations(userId);
   const userOrgs = userOrgsResult.success ? userOrgsResult.data : [];
 
-  // Fetch templates from all orgs + personal + defaults
-  const orgTemplatePromises = userOrgs.map(m =>
-    getOrganizationTemplates(m.organization.id, { includePublic: false }).then(
-      r => ({
-        orgId: m.organization.id,
-        orgName: m.organization.name,
-        templates: r.success ? r.data : [],
-      }),
-    ),
-  );
+  // Fetch templates and settings from all orgs + personal + defaults
+  const orgDataPromises = userOrgs.map(async m => {
+    const [templatesResult, settingsResult] = await Promise.all([
+      getOrganizationTemplates(m.organization.id, { includePublic: false }),
+      getOrganizationFeedbackSettingsData(m.organization.id),
+    ]);
+    return {
+      orgId: m.organization.id,
+      orgName: m.organization.name,
+      templates: templatesResult.success ? templatesResult.data : [],
+      allowMemberFormCreation:
+        settingsResult.success && settingsResult.data
+          ? settingsResult.data.allowMemberFormCreation
+          : true,
+    };
+  });
 
-  const [userTemplatesResult, defaultTemplatesResult, ...orgTemplateResults] =
+  const [userTemplatesResult, defaultTemplatesResult, ...orgDataResults] =
     await Promise.all([
       getUserTemplates(userId, { includePublic: false }),
       getDefaultTemplates(),
-      ...orgTemplatePromises,
+      ...orgDataPromises,
     ]);
 
   const userTemplates = userTemplatesResult.success
@@ -44,20 +51,25 @@ export default async function NewLinkPage(): Promise<React.ReactNode> {
     ? defaultTemplatesResult.data
     : [];
 
-  // Build org templates map (orgId -> templates)
+  // Build org templates map (orgId -> templates + settings)
   const orgTemplatesMap: Record<
     string,
-    { orgName: string; templates: typeof userTemplates }
+    {
+      orgName: string;
+      templates: typeof userTemplates;
+      allowMemberFormCreation: boolean;
+    }
   > = {};
-  for (const result of orgTemplateResults) {
+  for (const result of orgDataResults) {
     orgTemplatesMap[result.orgId] = {
       orgName: result.orgName,
       templates: result.templates,
+      allowMemberFormCreation: result.allowMemberFormCreation,
     };
   }
 
   // Combine all templates, removing duplicates
-  const allOrgTemplates = orgTemplateResults.flatMap(r => r.templates);
+  const allOrgTemplates = orgDataResults.flatMap(r => r.templates);
   const allTemplates = [
     ...userTemplates,
     ...allOrgTemplates.filter(t => !userTemplates.some(ut => ut.id === t.id)),

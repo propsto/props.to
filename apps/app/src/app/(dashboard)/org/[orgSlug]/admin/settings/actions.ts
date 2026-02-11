@@ -4,10 +4,14 @@ import { auth } from "@/server/auth.server";
 import {
   getOrganizationBySlug,
   upsertOrganizationDefaultSettings,
+  upsertOrganizationFeedbackSettings,
   auditHelpers,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:org-settings");
 
 const updateMemberSettingsSchema = z.object({
   orgSlug: z.string(),
@@ -97,7 +101,113 @@ export async function updateMemberSettings(
     revalidatePath(`/org/${input.orgSlug}/admin/settings`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to update member settings:", error);
+    logger("Failed to update member settings:", error);
+    return { success: false, error: "Failed to update settings" };
+  }
+}
+
+const updateFeedbackSettingsSchema = z.object({
+  allowAnonymousFeedback: z.boolean(),
+  enableFeedbackModeration: z.boolean(),
+  autoApproveInternalFeedback: z.boolean(),
+  allowMemberFormCreation: z.boolean(),
+});
+
+export type UpdateFeedbackSettingsInput = z.infer<
+  typeof updateFeedbackSettingsSchema
+>;
+
+export async function updateFeedbackSettingsAction(
+  orgSlug: string,
+  input: UpdateFeedbackSettingsInput,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify user is admin of this org
+    const membership = session.user.organizations?.find(
+      org => org.organizationSlug === orgSlug,
+    );
+
+    if (
+      !membership ||
+      (membership.role !== "OWNER" && membership.role !== "ADMIN")
+    ) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    // Get organization with current settings
+    const orgResult = await getOrganizationBySlug(orgSlug);
+    if (!orgResult.success || !orgResult.data) {
+      return { success: false, error: "Organization not found" };
+    }
+    const org = orgResult.data;
+    const currentSettings = org.feedbackSettings;
+
+    // Upsert the settings
+    await upsertOrganizationFeedbackSettings(org.id, {
+      enableOrganizationFeedback:
+        currentSettings?.enableOrganizationFeedback ?? true,
+      allowAnonymousFeedback: input.allowAnonymousFeedback,
+      enableFeedbackModeration: input.enableFeedbackModeration,
+      autoApproveInternalFeedback: input.autoApproveInternalFeedback,
+      allowMemberFormCreation: input.allowMemberFormCreation,
+      defaultTemplateId: currentSettings?.defaultTemplateId ?? null,
+    });
+
+    // Log the audit event
+    const changes: Record<string, { old: unknown; new: unknown }> = {};
+    if (
+      currentSettings?.allowAnonymousFeedback !== input.allowAnonymousFeedback
+    ) {
+      changes.allowAnonymousFeedback = {
+        old: currentSettings?.allowAnonymousFeedback ?? false,
+        new: input.allowAnonymousFeedback,
+      };
+    }
+    if (
+      currentSettings?.enableFeedbackModeration !==
+      input.enableFeedbackModeration
+    ) {
+      changes.enableFeedbackModeration = {
+        old: currentSettings?.enableFeedbackModeration ?? true,
+        new: input.enableFeedbackModeration,
+      };
+    }
+    if (
+      currentSettings?.autoApproveInternalFeedback !==
+      input.autoApproveInternalFeedback
+    ) {
+      changes.autoApproveInternalFeedback = {
+        old: currentSettings?.autoApproveInternalFeedback ?? true,
+        new: input.autoApproveInternalFeedback,
+      };
+    }
+    if (
+      currentSettings?.allowMemberFormCreation !== input.allowMemberFormCreation
+    ) {
+      changes.allowMemberFormCreation = {
+        old: currentSettings?.allowMemberFormCreation ?? true,
+        new: input.allowMemberFormCreation,
+      };
+    }
+
+    if (Object.keys(changes).length > 0) {
+      await auditHelpers.logSettingsUpdate(
+        org.id,
+        session.user.id,
+        "feedback_settings",
+        changes,
+      );
+    }
+
+    revalidatePath(`/org/${orgSlug}/admin/settings`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update feedback settings:", error);
     return { success: false, error: "Failed to update settings" };
   }
 }
