@@ -81,7 +81,6 @@ export default async function OrgAdminManagedLinks({
             organizationId={org.id}
             orgSlug={orgSlug}
             templates={templates}
-            userId={session.user.id}
           />
         )}
       </div>

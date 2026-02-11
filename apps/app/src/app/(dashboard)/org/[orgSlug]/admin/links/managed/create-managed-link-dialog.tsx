@@ -34,14 +34,12 @@ interface CreateManagedLinkDialogProps {
   organizationId: string;
   orgSlug: string;
   templates: Template[];
-  userId: string;
 }
 
 export function CreateManagedLinkDialog({
   organizationId,
   orgSlug,
   templates,
-  userId,
 }: CreateManagedLinkDialogProps): React.ReactNode {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
