@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { auth } from "@/server/auth.server";
 import {
   getOrganizationBySlug,
   getOrganizationMemberFeedbackLinks,
+  getOrganizationManagedLinks,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
+import { Button } from "@propsto/ui/atoms/button";
 import {
   Card,
   CardContent,
@@ -21,7 +24,7 @@ import {
 } from "@propsto/ui/atoms/table";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
-import { LinkIcon, EyeOff } from "lucide-react";
+import { LinkIcon, EyeOff, Settings2 } from "lucide-react";
 
 interface LinksPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -57,11 +60,19 @@ export default async function OrgAdminLinks({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Feedback Links</h2>
-        <p className="text-sm text-muted-foreground">
-          View feedback links created by organization members
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Feedback Links</h2>
+          <p className="text-sm text-muted-foreground">
+            View feedback links created by organization members
+          </p>
+        </div>
+        <Button asChild variant="outline">
+          <Link href={`/org/${orgSlug}/admin/links/managed`}>
+            <Settings2 className="mr-2 size-4" />
+            Managed Links
+          </Link>
+        </Button>
       </div>
 
       {/* Stats Cards */}
