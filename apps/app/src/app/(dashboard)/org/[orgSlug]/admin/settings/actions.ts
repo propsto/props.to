@@ -8,6 +8,9 @@ import {
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:org-settings");
 
 const updateMemberSettingsSchema = z.object({
   orgSlug: z.string(),
@@ -97,7 +100,7 @@ export async function updateMemberSettings(
     revalidatePath(`/org/${input.orgSlug}/admin/settings`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to update member settings:", error);
+    logger("Failed to update member settings:", error);
     return { success: false, error: "Failed to update settings" };
   }
 }
