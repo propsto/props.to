@@ -5,6 +5,7 @@ import { NoLinksState } from "@/app/_components/empty-state";
 import { LinkList } from "@/app/_components/link-list";
 import { Button } from "@propsto/ui/atoms/button";
 import { Plus } from "lucide-react";
+import { AdoptManagedLinks } from "./adopt/adopt-managed-links";
 
 export default async function LinksPage(): Promise<React.ReactNode> {
   const session = await auth();
@@ -39,6 +40,11 @@ export default async function LinksPage(): Promise<React.ReactNode> {
             Create Link
           </Link>
         </Button>
+      </div>
+
+      {/* Show available managed links from organizations */}
+      <div className="px-4 lg:px-6">
+        <AdoptManagedLinks />
       </div>
 
       <div className="px-4 lg:px-6">
