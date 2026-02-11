@@ -10,6 +10,9 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isReservedSlug } from "@propsto/constants/other";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:org-settings");
 
 const slugSchema = z
   .string()
@@ -50,7 +53,7 @@ export async function checkSlugAvailability(
 
     return { available: true };
   } catch (error) {
-    console.error("Failed to check slug availability:", error);
+    logger("Failed to check slug availability:", error);
     return { available: false, error: "Failed to check availability" };
   }
 }
@@ -91,7 +94,10 @@ export async function updateOrgSlug(
     }
 
     // Check availability (excluding current org's slug)
-    const availableResult = await isSlugAvailableExcludingOrg(normalizedSlug, currentSlug);
+    const availableResult = await isSlugAvailableExcludingOrg(
+      normalizedSlug,
+      currentSlug,
+    );
     if (!availableResult.success) {
       return { success: false, error: "Failed to check availability" };
     }
@@ -100,7 +106,10 @@ export async function updateOrgSlug(
     }
 
     // Update the slug
-    const updateResult = await updateOrganizationSlug(currentSlug, normalizedSlug);
+    const updateResult = await updateOrganizationSlug(
+      currentSlug,
+      normalizedSlug,
+    );
     if (!updateResult.success || !updateResult.data) {
       return { success: false, error: "Organization not found" };
     }
@@ -119,7 +128,7 @@ export async function updateOrgSlug(
 
     return { success: true, newSlug: normalizedSlug };
   } catch (error) {
-    console.error("Failed to update org slug:", error);
+    logger("Failed to update org slug:", error);
     return { success: false, error: "Failed to update URL" };
   }
 }

@@ -11,6 +11,9 @@ import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
+import { createLogger } from "@propsto/logger";
+
+const logger = createLogger("app:feedback");
 
 interface SubmitFeedbackInput {
   linkId: string;
@@ -109,7 +112,7 @@ export async function submitFeedbackAction(
     }
   } catch (emailError) {
     // Log but don't fail the submission if email fails
-    console.error("Failed to send feedback notification email:", emailError);
+    logger("Failed to send feedback notification email:", emailError);
   }
 
   return { success: true };
