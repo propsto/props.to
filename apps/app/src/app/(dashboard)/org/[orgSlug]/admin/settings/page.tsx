@@ -13,6 +13,7 @@ import { Input } from "@propsto/ui/atoms/input";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { MemberSettingsForm } from "./member-settings-form";
 import { OrgSlugForm } from "./org-slug-form";
+import { FeedbackSettingsForm } from "./feedback-settings-form";
 
 interface SettingsPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -97,36 +98,20 @@ export default async function OrgAdminSettings({
           defaultSettings={memberSettings}
         />
 
-        {/* Feedback Settings - Read Only for now */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Feedback Settings</CardTitle>
-            <CardDescription>
-              Configure how feedback works in your organization
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Anonymous Feedback</Label>
-              <div className="text-sm text-muted-foreground">
-                {org.feedbackSettings?.allowAnonymousFeedback
-                  ? "Allowed"
-                  : "Not allowed"}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Feedback Moderation</Label>
-              <div className="text-sm text-muted-foreground">
-                {org.feedbackSettings?.enableFeedbackModeration
-                  ? "Enabled"
-                  : "Disabled"}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              Feedback settings editing coming soon.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Feedback Settings - Editable */}
+        <FeedbackSettingsForm
+          orgSlug={orgSlug}
+          defaultSettings={{
+            allowAnonymousFeedback:
+              org.feedbackSettings?.allowAnonymousFeedback ?? false,
+            enableFeedbackModeration:
+              org.feedbackSettings?.enableFeedbackModeration ?? true,
+            autoApproveInternalFeedback:
+              org.feedbackSettings?.autoApproveInternalFeedback ?? true,
+            allowMemberFormCreation:
+              org.feedbackSettings?.allowMemberFormCreation ?? true,
+          }}
+        />
       </div>
     </div>
   );

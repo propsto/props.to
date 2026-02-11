@@ -24,6 +24,7 @@ export type OrganizationFeedbackSettings = {
   allowAnonymousFeedback: boolean;
   enableFeedbackModeration: boolean;
   autoApproveInternalFeedback: boolean;
+  allowMemberFormCreation: boolean;
   defaultTemplateId?: string | null;
 };
 
@@ -109,6 +110,7 @@ export async function upsertOrganizationFeedbackSettings(
         allowAnonymousFeedback: settings.allowAnonymousFeedback,
         enableFeedbackModeration: settings.enableFeedbackModeration,
         autoApproveInternalFeedback: settings.autoApproveInternalFeedback,
+        allowMemberFormCreation: settings.allowMemberFormCreation,
         defaultTemplateId: settings.defaultTemplateId,
         updatedAt: new Date(),
       },
@@ -118,6 +120,7 @@ export async function upsertOrganizationFeedbackSettings(
         allowAnonymousFeedback: settings.allowAnonymousFeedback,
         enableFeedbackModeration: settings.enableFeedbackModeration,
         autoApproveInternalFeedback: settings.autoApproveInternalFeedback,
+        allowMemberFormCreation: settings.allowMemberFormCreation,
         defaultTemplateId: settings.defaultTemplateId,
       },
     });
