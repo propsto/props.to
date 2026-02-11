@@ -7,6 +7,7 @@ import { cn } from "@propsto/ui/lib/utils";
 import {
   Building2,
   Users,
+  UsersRound,
   Settings,
   LayoutDashboard,
   ScrollText,
@@ -59,6 +60,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/members`,
       label: "Members",
       icon: Users,
+    },
+    {
+      href: `/org/${orgSlug}/admin/groups`,
+      label: "Groups",
+      icon: UsersRound,
     },
     {
       href: `/org/${orgSlug}/admin/links`,
