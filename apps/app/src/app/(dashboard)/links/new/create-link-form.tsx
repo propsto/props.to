@@ -51,7 +51,7 @@ const formSchema = z.object({
   templateId: z.string().min(1, "Please select a template"),
   feedbackType: z.nativeEnum(FeedbackType),
   visibility: z.nativeEnum(FeedbackVisibility),
-  maxResponses: z.coerce.number().min(0).optional(),
+  maxResponses: z.number().min(0).optional(),
   isHidden: z.boolean(),
   organizationId: z.string().optional(),
 });
