@@ -198,6 +198,8 @@ model Group {
   slug           Slug               @relation(fields: [slugId], references: [id], onDelete: Cascade)
   slugId         String
   name           String // Name of the group (e.g., marketing team)
+  description    String? // Optional description for the group page
+  visibility     ProfileVisibility  @default(ORGANIZATION) // PUBLIC = anyone can view, ORGANIZATION = org members only
   organization   Organization       @relation(fields: [organizationId], references: [id])
   organizationId String // Link to the organization this group belongs to
   users          User[] // Users associated with the group

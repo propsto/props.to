@@ -18,6 +18,8 @@ export async function createGroupAction(data: {
   name: string;
   organizationId: string;
   slug?: string;
+  description?: string;
+  visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
 }): Promise<ActionResult> {
   const result = await createGroup(data);
 
@@ -34,7 +36,11 @@ export async function createGroupAction(data: {
 
 export async function updateGroupAction(
   id: string,
-  data: { name?: string },
+  data: {
+    name?: string;
+    description?: string;
+    visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+  },
 ): Promise<ActionResult> {
   const result = await updateGroup(id, data);
 

@@ -59,6 +59,8 @@ export async function createGroup(data: {
   name: string;
   organizationId: string;
   slug?: string;
+  description?: string;
+  visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
   adminUserIds?: string[];
   memberUserIds?: string[];
 }): Promise<HandleEvent<GroupWithMembers>> {
@@ -101,6 +103,8 @@ export async function createGroup(data: {
         name: data.name,
         organizationId: data.organizationId,
         slugId: newSlug.id,
+        description: data.description,
+        visibility: data.visibility ?? "ORGANIZATION",
         ...(data.memberUserIds && {
           users: { connect: data.memberUserIds.map(id => ({ id })) },
         }),
@@ -170,6 +174,8 @@ export async function updateGroup(
   id: string,
   data: {
     name?: string;
+    description?: string;
+    visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
   },
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
@@ -412,6 +418,156 @@ export async function isGroupAdmin(
       where: { groupId, userId },
     });
     return handleSuccess(!!admin);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Type for public group page data
+export type PublicGroupData = {
+  id: string;
+  name: string;
+  description: string | null;
+  visibility: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+  organizationId: string;
+  slug: { slug: string };
+  organization: {
+    id: string;
+    name: string;
+    slug: { slug: string };
+  };
+  users: Array<{
+    id: string;
+    firstName: string | null;
+    lastName: string | null;
+    image: string | null;
+    organizationSlugs: Array<{ slug: string; scopedToOrgId: string | null }>;
+  }>;
+  feedbackLinks: Array<{
+    id: string;
+    slug: string;
+    name: string;
+    template: { name: string } | null;
+    isActive: boolean;
+    isHidden: boolean;
+  }>;
+};
+
+// Get group for public page display (respects visibility)
+export async function getGroupForPublicPage(
+  groupId: string,
+  viewerUserId?: string,
+): Promise<HandleEvent<PublicGroupData | null>> {
+  try {
+    logger("getGroupForPublicPage", { groupId, viewerUserId });
+
+    const group = await db.group.findUnique({
+      where: { id: groupId },
+      include: {
+        slug: { select: { slug: true } },
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            slug: { select: { slug: true } },
+          },
+        },
+        users: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            image: true,
+            organizationSlugs: {
+              select: { slug: true, scopedToOrgId: true },
+            },
+          },
+        },
+        feedbackLinks: {
+          where: { isActive: true, isHidden: false },
+          select: {
+            id: true,
+            slug: true,
+            name: true,
+            template: { select: { name: true } },
+            isActive: true,
+            isHidden: true,
+          },
+        },
+      },
+    });
+
+    if (!group) {
+      return handleSuccess(null);
+    }
+
+    // Check visibility
+    if (group.visibility === "PRIVATE") {
+      return handleSuccess(null);
+    }
+
+    if (group.visibility === "ORGANIZATION") {
+      // Must be org member to view
+      if (!viewerUserId) {
+        return handleSuccess(null);
+      }
+
+      const isMember = await db.organizationMember.findFirst({
+        where: {
+          userId: viewerUserId,
+          organizationId: group.organizationId,
+        },
+      });
+
+      if (!isMember) {
+        return handleSuccess(null);
+      }
+    }
+
+    return handleSuccess(group as unknown as PublicGroupData);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Check if user can view group based on visibility
+export async function canViewGroup(
+  groupId: string,
+  viewerUserId?: string,
+): Promise<HandleEvent<boolean>> {
+  try {
+    logger("canViewGroup", { groupId, viewerUserId });
+
+    const group = await db.group.findUnique({
+      where: { id: groupId },
+      select: { visibility: true, organizationId: true },
+    });
+
+    if (!group) {
+      return handleSuccess(false);
+    }
+
+    if (group.visibility === "PUBLIC") {
+      return handleSuccess(true);
+    }
+
+    if (group.visibility === "PRIVATE") {
+      return handleSuccess(false);
+    }
+
+    // ORGANIZATION visibility - check membership
+    if (!viewerUserId) {
+      return handleSuccess(false);
+    }
+
+    const isMember = await db.organizationMember.findFirst({
+      where: {
+        userId: viewerUserId,
+        organizationId: group.organizationId,
+      },
+    });
+
+    return handleSuccess(!!isMember);
   } catch (e) {
     return handleError(e);
   }

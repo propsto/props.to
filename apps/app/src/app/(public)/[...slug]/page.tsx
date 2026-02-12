@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, Users } from "lucide-react";
 import { resolveSlug, resolveOrgSlug } from "@propsto/data/repos";
 import {
   getFeedbackLinkBySlug,
   getUserFeedbackLinks,
+  getGroupForPublicPage,
 } from "@propsto/data/repos";
 import { Button } from "@propsto/ui/atoms/button";
 import {
@@ -14,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@propsto/ui/atoms/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { UserProfileHeader } from "./_components/user-profile-header";
 
@@ -174,7 +176,7 @@ async function handleTwoSegments(
   }
 
   if (slugResult.success && slugResult.data?.type === "organization") {
-    // /<orgSlug>/<username> - Org member profile
+    // /<orgSlug>/<userSlug|groupSlug> - Org member profile or Group page
     const orgSlugResult = await resolveOrgSlug(firstSegment, secondSegment);
 
     if (orgSlugResult.success && orgSlugResult.data?.type === "user") {
@@ -224,9 +226,130 @@ async function handleTwoSegments(
         </div>
       );
     }
+
+    if (orgSlugResult.success && orgSlugResult.data?.type === "group") {
+      // /<orgSlug>/<groupSlug> - Group page
+      return handleGroupPage(
+        orgSlugResult.data.groupId,
+        firstSegment,
+        secondSegment,
+      );
+    }
   }
 
   notFound();
+}
+
+async function handleGroupPage(
+  groupId: string,
+  orgSlug: string,
+  groupSlug: string,
+): Promise<React.ReactNode> {
+  // Get group data with visibility check (no auth for public pages)
+  const groupResult = await getGroupForPublicPage(groupId);
+
+  if (!groupResult.success || !groupResult.data) {
+    notFound();
+  }
+
+  const group = groupResult.data;
+
+  // Get user's org slug for building URLs
+  const getMemberOrgSlug = (
+    user: (typeof group.users)[0],
+    organizationId: string,
+  ): string | null => {
+    const orgSlugRecord = user.organizationSlugs.find(
+      s => s.scopedToOrgId === organizationId,
+    );
+    return orgSlugRecord?.slug ?? null;
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      {/* Group Header */}
+      <div className="text-center mb-8">
+        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+          <Users className="size-8 text-muted-foreground" />
+        </div>
+        <h1 className="text-3xl font-bold mb-2">{group.name}</h1>
+        {group.description && (
+          <p className="text-muted-foreground">{group.description}</p>
+        )}
+        <p className="text-sm text-muted-foreground mt-2">
+          {group.organization.name} • {group.users.length} member
+          {group.users.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+
+      {/* Group Feedback Links */}
+      {group.feedbackLinks.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-4">Group Feedback</h2>
+          <div className="grid gap-4">
+            {group.feedbackLinks.map(link => (
+              <a
+                key={link.id}
+                href={`/${orgSlug}/${groupSlug}/${link.slug}`}
+                className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <h3 className="font-medium">{link.name}</h3>
+                {link.template && (
+                  <p className="text-sm text-muted-foreground">
+                    {link.template.name}
+                  </p>
+                )}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Members List */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">Members</h2>
+        <div className="grid gap-4">
+          {group.users.map(user => {
+            const userOrgSlug = getMemberOrgSlug(user, group.organizationId);
+            const displayName =
+              [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+              userOrgSlug ||
+              "Member";
+            const initials = displayName
+              .split(" ")
+              .map(n => n[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <a
+                key={user.id}
+                href={userOrgSlug ? `/${orgSlug}/${userOrgSlug}` : undefined}
+                className={`flex items-center gap-4 p-4 border rounded-lg ${userOrgSlug ? "hover:bg-muted/50 transition-colors cursor-pointer" : ""}`}
+              >
+                <Avatar className="size-12">
+                  <AvatarImage
+                    src={user.image ?? undefined}
+                    alt={displayName}
+                  />
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-medium">{displayName}</h3>
+                  {userOrgSlug && (
+                    <p className="text-sm text-muted-foreground">
+                      @{userOrgSlug}
+                    </p>
+                  )}
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 async function handlePersonalFeedbackLink(
