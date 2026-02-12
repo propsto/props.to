@@ -68,3 +68,18 @@ export interface GenerateFormResult {
   /** Raw output from the provider (for debugging) */
   raw?: unknown;
 }
+
+/**
+ * Partial form for streaming updates.
+ * Fields may be incomplete during generation.
+ */
+export interface PartialGeneratedForm {
+  name?: string;
+  description?: string;
+  fields?: Partial<FormField>[];
+}
+
+/**
+ * Streaming result callback type.
+ */
+export type StreamFormCallback = (partial: PartialGeneratedForm) => void;

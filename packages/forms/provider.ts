@@ -1,4 +1,8 @@
-import type { GenerateFormOptions, GenerateFormResult } from "./types";
+import type {
+  GenerateFormOptions,
+  GenerateFormResult,
+  PartialGeneratedForm,
+} from "./types";
 
 /**
  * Abstract interface for form generation providers.
@@ -19,6 +23,14 @@ export interface FormBuilderProvider {
    * Generate a form from a natural language prompt.
    */
   generateForm(options: GenerateFormOptions): Promise<GenerateFormResult>;
+
+  /**
+   * Stream form generation with progressive updates.
+   * Returns an async generator that yields partial forms.
+   */
+  streamGenerateForm?(
+    options: GenerateFormOptions
+  ): AsyncGenerator<PartialGeneratedForm, GenerateFormResult, unknown>;
 
   /**
    * Check if the provider is properly configured and ready.

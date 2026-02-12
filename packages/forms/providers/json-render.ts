@@ -1,13 +1,17 @@
 import { createCatalog } from "@json-render/core";
 import { z } from "zod";
+import { createOpenAI } from "@ai-sdk/openai";
+import { streamObject } from "ai";
 import type { FormBuilderProvider, ProviderConfig } from "../provider";
 import type {
   GenerateFormOptions,
   GenerateFormResult,
   FormField,
   FieldType,
+  PartialGeneratedForm,
+  StreamFormCallback,
 } from "../types";
-import { GeneratedFormSchema } from "../types";
+import { GeneratedFormSchema, FieldTypeSchema } from "../types";
 
 /**
  * Form field catalog for json-render.
@@ -233,6 +237,138 @@ export class JsonRenderProvider implements FormBuilderProvider {
 
   async isAvailable(): Promise<boolean> {
     return Boolean(this.config.apiKey || this.config.endpoint);
+  }
+
+  /**
+   * Stream form generation with progressive updates.
+   * Returns an async generator that yields partial forms as they're generated.
+   */
+  async *streamGenerateForm(
+    options: GenerateFormOptions
+  ): AsyncGenerator<PartialGeneratedForm, GenerateFormResult, unknown> {
+    const { prompt, context, maxFields = 10 } = options;
+
+    if (!this.config.apiKey) {
+      return {
+        success: false,
+        error: "API key not configured",
+      };
+    }
+
+    const openai = createOpenAI({
+      apiKey: this.config.apiKey,
+      baseURL: this.config.endpoint,
+    });
+
+    const model = this.config.model ?? "gpt-4o-mini";
+    const systemPrompt = this.buildStreamingSystemPrompt(maxFields, context);
+
+    // Schema for AI SDK structured output
+    const formSchema = z.object({
+      name: z.string().describe("A concise, descriptive name for the form"),
+      description: z.string().optional().describe("Brief description of the form's purpose"),
+      fields: z.array(
+        z.object({
+          label: z.string().describe("The question or field label"),
+          type: FieldTypeSchema.describe("The field type"),
+          required: z.boolean().describe("Whether this field is required"),
+          options: z.array(z.string()).optional().describe("Options for SELECT/RADIO fields"),
+          placeholder: z.string().optional().describe("Placeholder text hint"),
+          helpText: z.string().optional().describe("Help text for the field"),
+        })
+      ).describe("Form fields in order"),
+    });
+
+    try {
+      const { partialObjectStream, object } = streamObject({
+        model: openai(model),
+        schema: formSchema,
+        system: systemPrompt,
+        prompt,
+      });
+
+      // Yield partial updates as they stream in
+      for await (const partial of partialObjectStream) {
+        yield {
+          name: partial.name,
+          description: partial.description,
+          fields: partial.fields?.map((f, i) => ({
+            label: f?.label,
+            type: f?.type as FieldType | undefined,
+            required: f?.required,
+            options: f?.options?.filter((o): o is string => typeof o === "string"),
+            placeholder: f?.placeholder,
+            helpText: f?.helpText,
+            order: i,
+          })),
+        };
+      }
+
+      // Get the final complete object
+      const finalForm = await object;
+
+      // Convert to our format with order
+      const form = {
+        name: finalForm.name,
+        description: finalForm.description,
+        fields: finalForm.fields.map((f, i) => ({
+          label: f.label,
+          type: f.type as FieldType,
+          required: f.required,
+          options: f.options,
+          placeholder: f.placeholder,
+          helpText: f.helpText,
+          order: i,
+        })),
+      };
+
+      // Validate
+      const parsed = GeneratedFormSchema.safeParse(form);
+      if (!parsed.success) {
+        return {
+          success: false,
+          error: `Invalid form structure: ${parsed.error.message}`,
+          raw: form,
+        };
+      }
+
+      return {
+        success: true,
+        form: parsed.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error during streaming",
+      };
+    }
+  }
+
+  private buildStreamingSystemPrompt(maxFields: number, context?: string): string {
+    return `You are a form builder assistant. Create feedback forms based on user requests.
+
+Generate a form with:
+- A clear, descriptive name
+- Optional description
+- Up to ${maxFields} fields
+
+Available field types:
+- TEXT: Single line text
+- TEXTAREA: Multi-line text  
+- NUMBER: Numeric input
+- RATING: 1-5 star rating
+- SCALE: 1-10 scale
+- SELECT: Dropdown (requires options)
+- RADIO: Radio buttons (requires options)
+- CHECKBOX: Single checkbox
+- DATE: Date picker
+
+Guidelines:
+- Use clear, concise labels
+- Only mark truly important fields as required
+- For SELECT/RADIO, provide sensible options
+- Keep forms focused and user-friendly
+${context ? `\nContext: ${context}` : ""}`;
   }
 
   private buildSystemPrompt(maxFields: number, context?: string): string {

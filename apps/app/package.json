@@ -17,21 +17,24 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.27",
+    "@ai-sdk/react": "^3.0.84",
     "@hookform/resolvers": "^5.2.2",
     "@propsto/auth": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",
+    "@propsto/email": "workspace:*",
+    "@propsto/forms": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.36.2",
+    "ai": "^6.0.82",
     "date-fns": "4.1.0",
     "react-hook-form": "7.60.0",
     "survey-core": "^2.5.6",
-    "survey-react-ui": "^2.5.6",
-    "@propsto/email": "workspace:*",
-    "@propsto/forms": "workspace:*",
-    "@upstash/ratelimit": "^2.0.5",
-    "@upstash/redis": "^1.36.2"
+    "survey-react-ui": "^2.5.6"
   },
   "peerDependencies": {
     "@types/node": "*",
