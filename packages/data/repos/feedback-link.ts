@@ -143,6 +143,41 @@ export async function getFeedbackLinkBySlug(
   }
 }
 
+// Get feedback link by slug for a group
+export async function getGroupFeedbackLinkBySlug(
+  slug: string,
+  groupId: string,
+): Promise<HandleEvent<FeedbackLinkWithRelations | null>> {
+  try {
+    logger("getGroupFeedbackLinkBySlug", { slug, groupId });
+    const link = await db.feedbackLink.findFirst({
+      where: {
+        slug,
+        groupId,
+      },
+      include: feedbackLinkInclude,
+    });
+
+    // Check if link is active and not expired
+    if (link) {
+      const now = new Date();
+      if (!link.isActive) {
+        return handleSuccess(null);
+      }
+      if (link.expiresAt && link.expiresAt < now) {
+        return handleSuccess(null);
+      }
+      if (link.maxResponses && link.responseCount >= link.maxResponses) {
+        return handleSuccess(null);
+      }
+    }
+
+    return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Update feedback link
 export async function updateFeedbackLink(
   id: string,

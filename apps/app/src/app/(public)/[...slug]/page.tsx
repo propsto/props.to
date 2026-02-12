@@ -4,6 +4,7 @@ import { CheckCircle, Users } from "lucide-react";
 import { resolveSlug, resolveOrgSlug } from "@propsto/data/repos";
 import {
   getFeedbackLinkBySlug,
+  getGroupFeedbackLinkBySlug,
   getUserFeedbackLinks,
   getGroupForPublicPage,
 } from "@propsto/data/repos";
@@ -56,8 +57,8 @@ export default async function PublicPage({
   }
 
   if (slug.length === 3) {
-    // /<orgSlug>/<username>/<linkSlug>
-    return handleOrgFeedbackLink(slug[0], slug[1], slug[2]);
+    // /<orgSlug>/<userSlug>/<linkSlug> OR /<orgSlug>/<groupSlug>/<linkSlug>
+    return handleThreeSegments(slug[0], slug[1], slug[2]);
   }
 
   notFound();
@@ -382,24 +383,50 @@ async function handlePersonalFeedbackLink(
   );
 }
 
-async function handleOrgFeedbackLink(
+async function handleThreeSegments(
   orgSlug: string,
-  username: string,
+  secondSegment: string,
   linkSlug: string,
 ): Promise<React.ReactNode> {
-  // Resolve the org and user
-  const orgUserResult = await resolveOrgSlug(orgSlug, username);
+  // Resolve the second segment - could be a user or a group
+  const resolution = await resolveOrgSlug(orgSlug, secondSegment);
 
-  if (
-    !orgUserResult.success ||
-    !orgUserResult.data ||
-    orgUserResult.data.type !== "user"
-  ) {
+  if (!resolution.success || !resolution.data) {
     notFound();
   }
 
-  const { userId, organizationId } = orgUserResult.data;
+  if (resolution.data.type === "user") {
+    // /<orgSlug>/<userSlug>/<linkSlug> - User feedback link
+    return handleOrgUserFeedbackLink(
+      orgSlug,
+      secondSegment,
+      linkSlug,
+      resolution.data.userId,
+      resolution.data.organizationId,
+    );
+  }
 
+  if (resolution.data.type === "group") {
+    // /<orgSlug>/<groupSlug>/<linkSlug> - Group feedback link
+    return handleGroupFeedbackLink(
+      orgSlug,
+      secondSegment,
+      linkSlug,
+      resolution.data.groupId,
+      resolution.data.organizationId,
+    );
+  }
+
+  notFound();
+}
+
+async function handleOrgUserFeedbackLink(
+  orgSlug: string,
+  userSlug: string,
+  linkSlug: string,
+  userId: string,
+  organizationId: string,
+): Promise<React.ReactNode> {
   // Find the feedback link for this user within this org
   const linkResult = await getFeedbackLinkBySlug(
     linkSlug,
@@ -417,7 +444,7 @@ async function handleOrgFeedbackLink(
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          Give Feedback to {link.user.firstName || username}
+          Give Feedback to {link.user.firstName || userSlug}
         </h1>
         <p className="text-muted-foreground">{link.name}</p>
         {link.organization && (
@@ -428,7 +455,51 @@ async function handleOrgFeedbackLink(
       </div>
       <FeedbackSubmissionForm
         link={link}
-        basePath={`/${orgSlug}/${username}/${linkSlug}`}
+        basePath={`/${orgSlug}/${userSlug}/${linkSlug}`}
+      />
+    </div>
+  );
+}
+
+async function handleGroupFeedbackLink(
+  orgSlug: string,
+  groupSlug: string,
+  linkSlug: string,
+  groupId: string,
+  _organizationId: string,
+): Promise<React.ReactNode> {
+  // Get the group for visibility check and header info
+  const groupResult = await getGroupForPublicPage(groupId);
+
+  if (!groupResult.success || !groupResult.data) {
+    notFound();
+  }
+
+  const group = groupResult.data;
+
+  // Get the feedback link
+  const linkResult = await getGroupFeedbackLinkBySlug(linkSlug, groupId);
+
+  if (!linkResult.success || !linkResult.data) {
+    notFound();
+  }
+
+  const link = linkResult.data;
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">
+          Give Feedback to {group.name}
+        </h1>
+        <p className="text-muted-foreground">{link.name}</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          {group.organization.name}
+        </p>
+      </div>
+      <FeedbackSubmissionForm
+        link={link}
+        basePath={`/${orgSlug}/${groupSlug}/${linkSlug}`}
       />
     </div>
   );
