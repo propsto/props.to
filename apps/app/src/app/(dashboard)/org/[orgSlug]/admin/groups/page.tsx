@@ -57,6 +57,11 @@ export default async function OrgAdminGroups({
             email: m.user.email,
             image: m.user.image,
           }))}
+          groups={groups.map(g => ({
+            id: g.id,
+            name: g.name,
+            parentGroupId: g.parent?.id ?? null,
+          }))}
         />
       </div>
 

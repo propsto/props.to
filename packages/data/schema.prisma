@@ -210,6 +210,11 @@ model Group {
   // Relation to GroupAdmins (to identify admins of this group)
   admins GroupAdmin[] // Relation to identify admins of this group
 
+  // Subgroup hierarchy (max 2 levels recommended)
+  parentGroupId String? // Parent group ID for subgroups (null = top-level)
+  parent        Group?  @relation("GroupHierarchy", fields: [parentGroupId], references: [id], onDelete: SetNull)
+  children      Group[] @relation("GroupHierarchy") // Subgroups within this group
+
   @@unique([slugId, organizationId])
 }
 

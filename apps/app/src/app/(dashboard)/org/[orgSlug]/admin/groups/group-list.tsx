@@ -11,7 +11,7 @@ import {
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Button } from "@propsto/ui/atoms/button";
-import { MoreHorizontal, Pencil, Trash2, Users } from "lucide-react";
+import { ChevronRight, MoreHorizontal, Pencil, Trash2, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -91,12 +91,27 @@ export function GroupList({
             <TableRow key={group.id}>
               <TableCell>
                 <div className="flex items-center gap-3">
+                  {group.parent && (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground ml-4" />
+                  )}
                   <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
                     <Users className="h-4 w-4 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium">{group.name}</p>
-                    {group.admins.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{group.name}</p>
+                      {group._count.children > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {group._count.children} subgroup{group._count.children !== 1 ? "s" : ""}
+                        </Badge>
+                      )}
+                    </div>
+                    {group.parent && (
+                      <p className="text-xs text-muted-foreground">
+                        Under: {group.parent.name}
+                      </p>
+                    )}
+                    {!group.parent && group.admins.length > 0 && (
                       <p className="text-xs text-muted-foreground">
                         Admin:{" "}
                         {group.admins
@@ -182,6 +197,11 @@ export function GroupList({
       {editingGroup && (
         <EditGroupDialog
           group={editingGroup}
+          allGroups={groups.map(g => ({
+            id: g.id,
+            name: g.name,
+            parentGroupId: g.parent?.id ?? null,
+          }))}
           open={!!editingGroup}
           onOpenChange={(open: boolean) => !open && setEditingGroup(null)}
         />
