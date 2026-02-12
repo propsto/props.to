@@ -9,7 +9,6 @@ import type {
   FormField,
   FieldType,
   PartialGeneratedForm,
-  StreamFormCallback,
 } from "../types";
 import { GeneratedFormSchema, FieldTypeSchema } from "../types";
 
@@ -174,7 +173,9 @@ export class JsonRenderProvider implements FormBuilderProvider {
   /**
    * Generate a form from natural language prompt.
    */
-  async generateForm(options: GenerateFormOptions): Promise<GenerateFormResult> {
+  async generateForm(
+    options: GenerateFormOptions,
+  ): Promise<GenerateFormResult> {
     const { prompt, context, maxFields = 10 } = options;
 
     try {
@@ -244,7 +245,7 @@ export class JsonRenderProvider implements FormBuilderProvider {
    * Returns an async generator that yields partial forms as they're generated.
    */
   async *streamGenerateForm(
-    options: GenerateFormOptions
+    options: GenerateFormOptions,
   ): AsyncGenerator<PartialGeneratedForm, GenerateFormResult, unknown> {
     const { prompt, context, maxFields = 10 } = options;
 
@@ -266,17 +267,28 @@ export class JsonRenderProvider implements FormBuilderProvider {
     // Schema for AI SDK structured output
     const formSchema = z.object({
       name: z.string().describe("A concise, descriptive name for the form"),
-      description: z.string().optional().describe("Brief description of the form's purpose"),
-      fields: z.array(
-        z.object({
-          label: z.string().describe("The question or field label"),
-          type: FieldTypeSchema.describe("The field type"),
-          required: z.boolean().describe("Whether this field is required"),
-          options: z.array(z.string()).optional().describe("Options for SELECT/RADIO fields"),
-          placeholder: z.string().optional().describe("Placeholder text hint"),
-          helpText: z.string().optional().describe("Help text for the field"),
-        })
-      ).describe("Form fields in order"),
+      description: z
+        .string()
+        .optional()
+        .describe("Brief description of the form's purpose"),
+      fields: z
+        .array(
+          z.object({
+            label: z.string().describe("The question or field label"),
+            type: FieldTypeSchema.describe("The field type"),
+            required: z.boolean().describe("Whether this field is required"),
+            options: z
+              .array(z.string())
+              .optional()
+              .describe("Options for SELECT/RADIO fields"),
+            placeholder: z
+              .string()
+              .optional()
+              .describe("Placeholder text hint"),
+            helpText: z.string().optional().describe("Help text for the field"),
+          }),
+        )
+        .describe("Form fields in order"),
     });
 
     try {
@@ -296,7 +308,9 @@ export class JsonRenderProvider implements FormBuilderProvider {
             label: f?.label,
             type: f?.type as FieldType | undefined,
             required: f?.required,
-            options: f?.options?.filter((o): o is string => typeof o === "string"),
+            options: f?.options?.filter(
+              (o): o is string => typeof o === "string",
+            ),
             placeholder: f?.placeholder,
             helpText: f?.helpText,
             order: i,
@@ -339,12 +353,18 @@ export class JsonRenderProvider implements FormBuilderProvider {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error during streaming",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown error during streaming",
       };
     }
   }
 
-  private buildStreamingSystemPrompt(maxFields: number, context?: string): string {
+  private buildStreamingSystemPrompt(
+    maxFields: number,
+    context?: string,
+  ): string {
     return `You are a form builder assistant. Create feedback forms based on user requests.
 
 Generate a form with:
@@ -409,7 +429,7 @@ ${context ? `\nContext: ${context}` : ""}
 
   private async callAI(
     systemPrompt: string,
-    userPrompt: string
+    userPrompt: string,
   ): Promise<{
     success: boolean;
     tree?: unknown;
@@ -417,7 +437,8 @@ ${context ? `\nContext: ${context}` : ""}
     description?: string;
     error?: string;
   }> {
-    const endpoint = this.config.endpoint ?? "https://api.openai.com/v1/chat/completions";
+    const endpoint =
+      this.config.endpoint ?? "https://api.openai.com/v1/chat/completions";
     const model = this.config.model ?? "gpt-4o-mini";
 
     if (!this.config.apiKey) {
@@ -443,7 +464,10 @@ ${context ? `\nContext: ${context}` : ""}
 
     if (!response.ok) {
       const text = await response.text();
-      return { success: false, error: `API error: ${response.status} - ${text}` };
+      return {
+        success: false,
+        error: `API error: ${response.status} - ${text}`,
+      };
     }
 
     const data = await response.json();
@@ -478,6 +502,8 @@ ${context ? `\nContext: ${context}` : ""}
 /**
  * Create a JsonRenderProvider with the given config.
  */
-export function createJsonRenderProvider(config: ProviderConfig): JsonRenderProvider {
+export function createJsonRenderProvider(
+  config: ProviderConfig,
+): JsonRenderProvider {
   return new JsonRenderProvider(config);
 }
