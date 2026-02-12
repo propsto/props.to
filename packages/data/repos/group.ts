@@ -12,6 +12,8 @@ export type GroupWithMembers = Prisma.GroupGetPayload<{
   include: {
     slug: true;
     organization: { select: { id: true; name: true } };
+    parent: { select: { id: true; name: true } };
+    children: { select: { id: true; name: true; slug: { select: { slug: true } } } };
     users: {
       select: {
         id: true;
@@ -28,13 +30,15 @@ export type GroupWithMembers = Prisma.GroupGetPayload<{
         };
       };
     };
-    _count: { select: { feedbacks: true; feedbackLinks: true } };
+    _count: { select: { feedbacks: true; feedbackLinks: true; children: true } };
   };
 }>;
 
 const groupInclude = Prisma.validator<Prisma.GroupInclude>()({
   slug: true,
   organization: { select: { id: true, name: true } },
+  parent: { select: { id: true, name: true } },
+  children: { select: { id: true, name: true, slug: { select: { slug: true } } } },
   users: {
     select: {
       id: true,
@@ -51,7 +55,7 @@ const groupInclude = Prisma.validator<Prisma.GroupInclude>()({
       },
     },
   },
-  _count: { select: { feedbacks: true, feedbackLinks: true } },
+  _count: { select: { feedbacks: true, feedbackLinks: true, children: true } },
 });
 
 // Create a group
@@ -61,6 +65,7 @@ export async function createGroup(data: {
   slug?: string;
   description?: string;
   visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+  parentGroupId?: string;
   adminUserIds?: string[];
   memberUserIds?: string[];
 }): Promise<HandleEvent<GroupWithMembers>> {
@@ -68,7 +73,28 @@ export async function createGroup(data: {
     logger("createGroup", {
       name: data.name,
       organizationId: data.organizationId,
+      parentGroupId: data.parentGroupId,
     });
+
+    // Validate parent group nesting depth (max 2 levels)
+    if (data.parentGroupId) {
+      const parentGroup = await db.group.findUnique({
+        where: { id: data.parentGroupId },
+        select: { parentGroupId: true, organizationId: true },
+      });
+
+      if (!parentGroup) {
+        return handleError(new Error("Parent group not found"));
+      }
+
+      if (parentGroup.organizationId !== data.organizationId) {
+        return handleError(new Error("Parent group must be in the same organization"));
+      }
+
+      if (parentGroup.parentGroupId) {
+        return handleError(new Error("Maximum nesting depth is 2 levels (subgroups cannot have subgroups)"));
+      }
+    }
 
     // Generate slug if not provided
     const slugValue = data.slug ?? `group-${uuidv4().split("-")[0]}`;
@@ -105,6 +131,7 @@ export async function createGroup(data: {
         slugId: newSlug.id,
         description: data.description,
         visibility: data.visibility ?? "ORGANIZATION",
+        parentGroupId: data.parentGroupId,
         ...(data.memberUserIds && {
           users: { connect: data.memberUserIds.map(id => ({ id })) },
         }),
@@ -176,10 +203,47 @@ export async function updateGroup(
     name?: string;
     description?: string;
     visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+    parentGroupId?: string | null;
   },
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
     logger("updateGroup", { id, data });
+
+    // Validate parent group nesting depth if changing parent
+    if (data.parentGroupId !== undefined && data.parentGroupId !== null) {
+      const [currentGroup, parentGroup] = await Promise.all([
+        db.group.findUnique({
+          where: { id },
+          select: { organizationId: true, children: { select: { id: true } } },
+        }),
+        db.group.findUnique({
+          where: { id: data.parentGroupId },
+          select: { parentGroupId: true, organizationId: true },
+        }),
+      ]);
+
+      if (!currentGroup) {
+        return handleError(new Error("Group not found"));
+      }
+
+      if (!parentGroup) {
+        return handleError(new Error("Parent group not found"));
+      }
+
+      if (parentGroup.organizationId !== currentGroup.organizationId) {
+        return handleError(new Error("Parent group must be in the same organization"));
+      }
+
+      if (parentGroup.parentGroupId) {
+        return handleError(new Error("Maximum nesting depth is 2 levels (subgroups cannot have subgroups)"));
+      }
+
+      // Cannot set as parent if current group already has children
+      if (currentGroup.children.length > 0) {
+        return handleError(new Error("Cannot make a group with subgroups into a subgroup"));
+      }
+    }
+
     const group = await db.group.update({
       where: { id },
       data,

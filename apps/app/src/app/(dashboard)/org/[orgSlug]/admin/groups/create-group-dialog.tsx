@@ -34,20 +34,32 @@ interface MemberOption {
   image: string | null;
 }
 
+interface GroupOption {
+  id: string;
+  name: string;
+  parentGroupId: string | null;
+}
+
 interface CreateGroupDialogProps {
   organizationId: string;
   members: MemberOption[];
+  groups: GroupOption[];
 }
 
 export function CreateGroupDialog({
   organizationId,
+  groups,
 }: CreateGroupDialogProps): React.ReactNode {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<ProfileVisibility>("ORGANIZATION");
+  const [parentGroupId, setParentGroupId] = useState<string | undefined>(undefined);
   const [isPending, startTransition] = useTransition();
+
+  // Filter out groups that already have a parent (can't create subgroups of subgroups)
+  const topLevelGroups = groups.filter(g => !g.parentGroupId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +76,7 @@ export function CreateGroupDialog({
         slug: slug.trim() || undefined,
         description: description.trim() || undefined,
         visibility,
+        parentGroupId,
       });
 
       if (result.success) {
@@ -73,6 +86,7 @@ export function CreateGroupDialog({
         setSlug("");
         setDescription("");
         setVisibility("ORGANIZATION");
+        setParentGroupId(undefined);
       } else {
         toast.error(result.error ?? "Failed to create group");
       }
@@ -169,6 +183,31 @@ export function CreateGroupDialog({
                 Who can view this group&apos;s page
               </p>
             </div>
+            {topLevelGroups.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="parentGroup">Parent Group (optional)</Label>
+                <Select
+                  value={parentGroupId ?? "none"}
+                  onValueChange={(value) => setParentGroupId(value === "none" ? undefined : value)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a parent group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None (top-level group)</SelectItem>
+                    {topLevelGroups.map((group) => (
+                      <SelectItem key={group.id} value={group.id}>
+                        {group.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Create this as a subgroup within an existing group
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button

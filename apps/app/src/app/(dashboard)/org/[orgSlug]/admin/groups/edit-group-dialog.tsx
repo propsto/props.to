@@ -25,14 +25,22 @@ import { toast } from "@propsto/ui/atoms/sonner";
 import type { GroupWithMembers } from "@propsto/data/repos";
 import type { ProfileVisibility } from "@prisma/client";
 
+interface GroupOption {
+  id: string;
+  name: string;
+  parentGroupId: string | null;
+}
+
 interface EditGroupDialogProps {
   group: GroupWithMembers;
+  allGroups: GroupOption[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function EditGroupDialog({
   group,
+  allGroups,
   open,
   onOpenChange,
 }: EditGroupDialogProps): React.ReactNode {
@@ -44,7 +52,17 @@ export function EditGroupDialog({
     ((group as { visibility?: ProfileVisibility }).visibility as ProfileVisibility) ??
       "ORGANIZATION",
   );
+  const [parentGroupId, setParentGroupId] = useState<string | null>(group.parent?.id ?? null);
   const [isPending, startTransition] = useTransition();
+
+  // Filter out groups that:
+  // 1. Already have a parent (can't nest more than 2 levels)
+  // 2. Are the current group itself
+  // 3. Are children of the current group (would create circular reference)
+  const hasChildren = group._count.children > 0;
+  const topLevelGroups = allGroups.filter(
+    g => !g.parentGroupId && g.id !== group.id
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +77,7 @@ export function EditGroupDialog({
         name: name.trim(),
         description: description.trim() || undefined,
         visibility,
+        parentGroupId: parentGroupId,
       });
 
       if (result.success) {
@@ -134,6 +153,39 @@ export function EditGroupDialog({
                 Who can view this group&apos;s page
               </p>
             </div>
+            {!hasChildren && topLevelGroups.length > 0 && (
+              <div className="grid gap-2">
+                <Label htmlFor="parentGroup">Parent Group</Label>
+                <Select
+                  value={parentGroupId ?? "none"}
+                  onValueChange={(value) => setParentGroupId(value === "none" ? null : value)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a parent group" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None (top-level group)</SelectItem>
+                    {topLevelGroups.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Move this group under another group
+                </p>
+              </div>
+            )}
+            {hasChildren && (
+              <div className="grid gap-2">
+                <Label>Parent Group</Label>
+                <p className="text-sm text-muted-foreground">
+                  This group has subgroups and cannot be moved under another group.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button

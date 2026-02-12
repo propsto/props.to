@@ -20,6 +20,7 @@ export async function createGroupAction(data: {
   slug?: string;
   description?: string;
   visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+  parentGroupId?: string;
 }): Promise<ActionResult> {
   const result = await createGroup(data);
 
@@ -40,6 +41,7 @@ export async function updateGroupAction(
     name?: string;
     description?: string;
     visibility?: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
+    parentGroupId?: string | null;
   },
 ): Promise<ActionResult> {
   const result = await updateGroup(id, data);
