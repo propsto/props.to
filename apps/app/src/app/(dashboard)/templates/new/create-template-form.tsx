@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -160,14 +160,16 @@ export function CreateTemplateForm(): React.JSX.Element {
   });
 
   // Update form progressively as AI streams
-  if (aiForm) {
-    if (aiForm.name && form.getValues("name") !== aiForm.name) {
-      form.setValue("name", aiForm.name);
+  useEffect(() => {
+    if (aiForm) {
+      if (aiForm.name) {
+        form.setValue("name", aiForm.name);
+      }
+      if (aiForm.description) {
+        form.setValue("description", aiForm.description);
+      }
     }
-    if (aiForm.description && form.getValues("description") !== aiForm.description) {
-      form.setValue("description", aiForm.description);
-    }
-  }
+  }, [aiForm, form]);
 
   function addField(): void {
     append({
