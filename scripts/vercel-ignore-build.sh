@@ -32,6 +32,7 @@ CODE_PATTERNS=(
   "^apps/"
   "^packages/"
   "^e2e/"
+  "^scripts/"
   "^.github/"
   "^pnpm-lock.yaml"
   "^package.json"
