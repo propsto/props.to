@@ -13,6 +13,7 @@ import {
 } from "@propsto/ui/atoms/dialog";
 import { Input } from "@propsto/ui/atoms/input";
 import { Label } from "@propsto/ui/atoms/label";
+import { Textarea } from "@propsto/ui/atoms/textarea";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
 import { Plus } from "lucide-react";
 import { createGroupAction } from "./actions";
 import { toast } from "@propsto/ui/atoms/sonner";
+import type { ProfileVisibility } from "@prisma/client";
 
 interface MemberOption {
   id: string;
@@ -51,6 +53,8 @@ export function CreateGroupDialog({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<ProfileVisibility>("ORGANIZATION");
   const [parentGroupId, setParentGroupId] = useState<string | undefined>(undefined);
   const [isPending, startTransition] = useTransition();
 
@@ -70,6 +74,8 @@ export function CreateGroupDialog({
         name: name.trim(),
         organizationId,
         slug: slug.trim() || undefined,
+        description: description.trim() || undefined,
+        visibility,
         parentGroupId,
       });
 
@@ -78,6 +84,8 @@ export function CreateGroupDialog({
         setOpen(false);
         setName("");
         setSlug("");
+        setDescription("");
+        setVisibility("ORGANIZATION");
         setParentGroupId(undefined);
       } else {
         toast.error(result.error ?? "Failed to create group");
@@ -140,6 +148,39 @@ export function CreateGroupDialog({
               </div>
               <p className="text-xs text-muted-foreground">
                 This will be used in the group&apos;s public URL
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Optional description for the group page"
+                disabled={isPending}
+                rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="visibility">Visibility</Label>
+              <Select
+                value={visibility}
+                onValueChange={v => setVisibility(v as ProfileVisibility)}
+                disabled={isPending}
+              >
+                <SelectTrigger id="visibility">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ORGANIZATION">
+                    Organization Only
+                  </SelectItem>
+                  <SelectItem value="PUBLIC">Public</SelectItem>
+                  <SelectItem value="PRIVATE">Private</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Who can view this group&apos;s page
               </p>
             </div>
             {topLevelGroups.length > 0 && (
