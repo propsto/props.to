@@ -12,6 +12,7 @@ import {
 } from "@propsto/ui/atoms/dialog";
 import { Input } from "@propsto/ui/atoms/input";
 import { Label } from "@propsto/ui/atoms/label";
+import { Textarea } from "@propsto/ui/atoms/textarea";
 import {
   Select,
   SelectContent,
@@ -22,6 +23,7 @@ import {
 import { updateGroupAction } from "./actions";
 import { toast } from "@propsto/ui/atoms/sonner";
 import type { GroupWithMembers } from "@propsto/data/repos";
+import type { ProfileVisibility } from "@prisma/client";
 
 interface GroupOption {
   id: string;
@@ -43,6 +45,13 @@ export function EditGroupDialog({
   onOpenChange,
 }: EditGroupDialogProps): React.ReactNode {
   const [name, setName] = useState(group.name);
+  const [description, setDescription] = useState(
+    (group as { description?: string | null }).description ?? "",
+  );
+  const [visibility, setVisibility] = useState<ProfileVisibility>(
+    ((group as { visibility?: ProfileVisibility }).visibility as ProfileVisibility) ??
+      "ORGANIZATION",
+  );
   const [parentGroupId, setParentGroupId] = useState<string | null>(group.parent?.id ?? null);
   const [isPending, startTransition] = useTransition();
 
@@ -66,6 +75,8 @@ export function EditGroupDialog({
     startTransition(async () => {
       const result = await updateGroupAction(group.id, {
         name: name.trim(),
+        description: description.trim() || undefined,
+        visibility,
         parentGroupId: parentGroupId,
       });
 
@@ -107,6 +118,39 @@ export function EditGroupDialog({
               </div>
               <p className="text-xs text-muted-foreground">
                 Slugs cannot be changed after creation
+              </p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                placeholder="Optional description for the group page"
+                disabled={isPending}
+                rows={2}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-visibility">Visibility</Label>
+              <Select
+                value={visibility}
+                onValueChange={v => setVisibility(v as ProfileVisibility)}
+                disabled={isPending}
+              >
+                <SelectTrigger id="edit-visibility">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ORGANIZATION">
+                    Organization Only
+                  </SelectItem>
+                  <SelectItem value="PUBLIC">Public</SelectItem>
+                  <SelectItem value="PRIVATE">Private</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Who can view this group&apos;s page
               </p>
             </div>
             {!hasChildren && topLevelGroups.length > 0 && (
