@@ -14,8 +14,9 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   exit 1
 fi
 
-# Get changed files between this commit and main
-CHANGED_FILES=$(git diff --name-only HEAD^ HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+# Get changed files between this branch and main
+# First try comparing against origin/main (for PRs), fall back to last commit
+CHANGED_FILES=$(git diff --name-only origin/main...HEAD 2>/dev/null || git diff --name-only HEAD^ HEAD 2>/dev/null || git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
 
 if [ -z "$CHANGED_FILES" ]; then
   echo "✓ Could not determine changed files - proceeding with build"
