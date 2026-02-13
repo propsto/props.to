@@ -787,7 +787,7 @@ export async function sendPersonalEmailCodeHandler(
     if (!parsed.success) {
       return {
         success: false,
-        error: parsed.error.errors[0]?.message ?? "Invalid email",
+        error: parsed.error.issues[0]?.message ?? "Invalid email",
       };
     }
 
