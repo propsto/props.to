@@ -1,13 +1,23 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Users } from "lucide-react";
-import { resolveSlug, resolveOrgSlug } from "@propsto/data/repos";
 import {
-  getFeedbackLinkBySlug,
+  resolveSlug as _resolveSlug,
+  resolveOrgSlug as _resolveOrgSlug,
+  getFeedbackLinkBySlug as _getFeedbackLinkBySlug,
   getGroupFeedbackLinkBySlug,
   getUserFeedbackLinks,
+  getUser as _getUser,
   getGroupForPublicPage,
 } from "@propsto/data/repos";
+
+// Cache expensive queries to dedupe between generateMetadata and page render
+const resolveSlug = cache(_resolveSlug);
+const resolveOrgSlug = cache(_resolveOrgSlug);
+const getFeedbackLinkBySlug = cache(_getFeedbackLinkBySlug);
+const getUser = cache(_getUser);
 import { Button } from "@propsto/ui/atoms/button";
 import {
   Card,
@@ -22,6 +32,83 @@ import { UserProfileHeader } from "./_components/user-profile-header";
 
 interface PublicPageProps {
   params: Promise<{ slug: string[] }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PublicPageProps): Promise<Metadata> {
+  const { slug } = await params;
+
+  if (!slug || slug.length === 0) {
+    return { title: "Not Found" };
+  }
+
+  // Thank you page
+  if (slug[slug.length - 1] === "thanks") {
+    return {
+      title: "Thank You | props.to",
+      description: "Your feedback has been submitted successfully.",
+    };
+  }
+
+  // Profile page: /<username>
+  if (slug.length === 1) {
+    const slugResult = await resolveSlug(slug[0]);
+    if (slugResult.success && slugResult.data?.type === "user") {
+      const userResult = await getUser({ id: slugResult.data.userId });
+      if (userResult.success && userResult.data) {
+        const name = userResult.data.firstName ?? slug[0];
+        return {
+          title: `${name} | props.to`,
+          description: `Give feedback to ${name} on props.to`,
+        };
+      }
+    }
+    return { title: `${slug[0]} | props.to` };
+  }
+
+  // Feedback link: /<username>/<linkSlug> or /<orgSlug>/<username>
+  if (slug.length === 2) {
+    const slugResult = await resolveSlug(slug[0]);
+    if (slugResult.success && slugResult.data?.type === "user") {
+      const linkResult = await getFeedbackLinkBySlug(
+        slug[1],
+        slugResult.data.userId,
+        null,
+      );
+      if (linkResult.success && linkResult.data) {
+        const name = linkResult.data.user.firstName ?? slug[0];
+        return {
+          title: `${linkResult.data.name} - ${name} | props.to`,
+          description: `Give feedback to ${name}: ${linkResult.data.name}`,
+        };
+      }
+    }
+    return { title: `Feedback | props.to` };
+  }
+
+  // Org feedback link: /<orgSlug>/<username>/<linkSlug>
+  if (slug.length === 3) {
+    const orgUserResult = await resolveOrgSlug(slug[0], slug[1]);
+    if (orgUserResult.success && orgUserResult.data?.type === "user") {
+      const linkResult = await getFeedbackLinkBySlug(
+        slug[2],
+        orgUserResult.data.userId,
+        orgUserResult.data.organizationId,
+      );
+      if (linkResult.success && linkResult.data) {
+        const name = linkResult.data.user.firstName ?? slug[1];
+        const orgName = linkResult.data.organization?.name ?? slug[0];
+        return {
+          title: `${linkResult.data.name} - ${name} | ${orgName}`,
+          description: `Give feedback to ${name} via ${orgName}`,
+        };
+      }
+    }
+    return { title: `Feedback | props.to` };
+  }
+
+  return { title: "props.to" };
 }
 
 /**
