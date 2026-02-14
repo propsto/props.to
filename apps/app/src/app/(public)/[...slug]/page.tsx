@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Users } from "lucide-react";
 import {
-  resolveSlug,
-  resolveOrgSlug,
-  getFeedbackLinkBySlug,
+  resolveSlug as _resolveSlug,
+  resolveOrgSlug as _resolveOrgSlug,
+  getFeedbackLinkBySlug as _getFeedbackLinkBySlug,
   getGroupFeedbackLinkBySlug,
   getUserFeedbackLinks,
-  getUser,
+  getUser as _getUser,
   getGroupForPublicPage,
 } from "@propsto/data/repos";
+
+// Cache expensive queries to dedupe between generateMetadata and page render
+const resolveSlug = cache(_resolveSlug);
+const resolveOrgSlug = cache(_resolveOrgSlug);
+const getFeedbackLinkBySlug = cache(_getFeedbackLinkBySlug);
+const getUser = cache(_getUser);
 import { Button } from "@propsto/ui/atoms/button";
 import {
   Card,
