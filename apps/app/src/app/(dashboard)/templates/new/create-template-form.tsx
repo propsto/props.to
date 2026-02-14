@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
+import { experimental_useObject as useObject } from "@ai-sdk/react";
 import { Button } from "@propsto/ui/atoms/button";
 import { Input } from "@propsto/ui/atoms/input";
 import { Textarea } from "@propsto/ui/atoms/text-area";
@@ -33,8 +34,9 @@ import {
   SelectValue,
 } from "@propsto/ui/atoms/select";
 import { FeedbackType, FieldType } from "@prisma/client";
-import { Plus, Trash2, Sparkles, GripVertical } from "lucide-react";
-import { generateFormAction, createTemplateAction } from "./actions";
+import { Plus, Trash2, Sparkles, GripVertical, Loader2 } from "lucide-react";
+import { createTemplateAction } from "./actions";
+import { FieldTypeSchema } from "@propsto/forms";
 
 const fieldSchema = z.object({
   label: z.string().min(1, "Label is required"),
@@ -78,12 +80,34 @@ const fieldTypeOptions = [
   { value: "DATE", label: "Date" },
 ];
 
+// Schema for AI object streaming
+const aiFormSchema = z.object({
+  name: z.string().describe("A concise, descriptive name for the form"),
+  description: z
+    .string()
+    .optional()
+    .describe("Brief description of the form's purpose"),
+  fields: z
+    .array(
+      z.object({
+        label: z.string().describe("The question or field label"),
+        type: FieldTypeSchema.describe("The field type"),
+        required: z.boolean().describe("Whether this field is required"),
+        options: z
+          .array(z.string())
+          .optional()
+          .describe("Options for SELECT/RADIO fields"),
+        placeholder: z.string().optional().describe("Placeholder text hint"),
+        helpText: z.string().optional().describe("Help text for the field"),
+      })
+    )
+    .describe("Form fields in order"),
+});
+
 export function CreateTemplateForm(): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [isGenerating, setIsGenerating] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
-  const [aiError, setAiError] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -101,6 +125,52 @@ export function CreateTemplateForm(): React.JSX.Element {
     name: "fields",
   });
 
+  // Streaming AI form generation
+  const {
+    object: aiForm,
+    submit: submitGeneration,
+    isLoading: isGenerating,
+    error: aiError,
+  } = useObject({
+    api: "/api/generate-form",
+    schema: aiFormSchema,
+    onFinish: ({ object }) => {
+      if (object) {
+        // Apply final form values
+        form.setValue("name", object.name);
+        if (object.description) {
+          form.setValue("description", object.description);
+        }
+        if (object.fields) {
+          replace(
+            object.fields.map((f, i) => ({
+              label: f.label,
+              type: f.type as FieldType,
+              required: f.required,
+              options: f.options,
+              placeholder: f.placeholder,
+              helpText: f.helpText,
+              order: i,
+            }))
+          );
+        }
+        setAiPrompt("");
+      }
+    },
+  });
+
+  // Update form progressively as AI streams
+  useEffect(() => {
+    if (aiForm) {
+      if (aiForm.name) {
+        form.setValue("name", aiForm.name);
+      }
+      if (aiForm.description) {
+        form.setValue("description", aiForm.description);
+      }
+    }
+  }, [aiForm, form]);
+
   function addField(): void {
     append({
       label: "",
@@ -110,36 +180,9 @@ export function CreateTemplateForm(): React.JSX.Element {
     });
   }
 
-  async function handleGenerate(): Promise<void> {
-    if (!aiPrompt.trim()) return;
-
-    setIsGenerating(true);
-    setAiError(null);
-
-    const result = await generateFormAction({ prompt: aiPrompt });
-
-    if (result.success && result.form) {
-      form.setValue("name", result.form.name);
-      if (result.form.description) {
-        form.setValue("description", result.form.description);
-      }
-      replace(
-        result.form.fields.map((f, i) => ({
-          label: f.label,
-          type: f.type as FieldType,
-          required: f.required ?? false,
-          options: f.options,
-          placeholder: f.placeholder,
-          helpText: f.helpText,
-          order: i,
-        })),
-      );
-      setAiPrompt("");
-    } else {
-      setAiError(result.error ?? "Failed to generate form");
-    }
-
-    setIsGenerating(false);
+  function handleGenerate(): void {
+    if (!aiPrompt.trim() || isGenerating) return;
+    submitGeneration({ prompt: aiPrompt });
   }
 
   function onSubmit(values: FormValues): void {
@@ -191,7 +234,10 @@ export function CreateTemplateForm(): React.JSX.Element {
               disabled={isGenerating || !aiPrompt.trim()}
             >
               {isGenerating ? (
-                <>Generating...</>
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Generating...
+                </>
               ) : (
                 <>
                   <Sparkles className="mr-2 size-4" />
@@ -200,7 +246,9 @@ export function CreateTemplateForm(): React.JSX.Element {
               )}
             </Button>
             {aiError && (
-              <span className="text-sm text-destructive">{aiError}</span>
+              <span className="text-sm text-destructive">
+                {aiError.message || "Failed to generate form"}
+              </span>
             )}
           </div>
         </CardContent>

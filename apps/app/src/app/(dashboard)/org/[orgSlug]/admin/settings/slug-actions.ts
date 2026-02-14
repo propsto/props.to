@@ -33,7 +33,7 @@ export async function checkSlugAvailability(
   try {
     const parsed = slugSchema.safeParse(slug);
     if (!parsed.success) {
-      return { available: false, error: parsed.error.errors[0]?.message };
+      return { available: false, error: parsed.error.issues[0]?.message };
     }
 
     // Check reserved slugs
@@ -83,7 +83,7 @@ export async function updateOrgSlug(
     // Validate new slug
     const parsed = slugSchema.safeParse(newSlug);
     if (!parsed.success) {
-      return { success: false, error: parsed.error.errors[0]?.message };
+      return { success: false, error: parsed.error.issues[0]?.message };
     }
 
     const normalizedSlug = newSlug.toLowerCase();
