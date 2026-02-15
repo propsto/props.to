@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
-import { FeedbackStatsCards } from "@/app/_components/feedback-stats-cards";
-import { NoFeedbackState } from "@/app/_components/empty-state";
-import { getFeedbackStats } from "@propsto/data/repos";
+import { FeedbackStats } from "@/app/_components/feedback-stats";
+import { StatsCardsSkeleton } from "@/app/_components/stats-cards-skeleton";
+import { RecentFeedbackSection } from "@/app/_components/recent-feedback-section";
+import { RecentFeedbackSkeleton } from "@/app/_components/recent-feedback-skeleton";
 
 export default async function DashboardPage(): Promise<React.ReactNode> {
   const session = await auth();
@@ -11,17 +13,6 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
   }
 
   const userId = session.user.id;
-
-  // Get feedback stats for the user
-  const statsResult = await getFeedbackStats(userId);
-  const stats = statsResult.success
-    ? {
-        received: statsResult.data.received,
-        sent: statsResult.data.sent,
-        pending: statsResult.data.pendingModeration,
-        recentCount: statsResult.data.recentCount,
-      }
-    : { received: 0, sent: 0, pending: 0, recentCount: 0 };
 
   return (
     <div className="flex flex-col gap-6 py-6">
@@ -32,23 +23,15 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <FeedbackStatsCards stats={stats} />
+      {/* Stats Cards - Streamed with Suspense */}
+      <Suspense fallback={<StatsCardsSkeleton />}>
+        <FeedbackStats userId={userId} />
+      </Suspense>
 
-      {/* Recent Feedback or Empty State */}
-      <div className="px-4 lg:px-6">
-        <h2 className="mb-4 text-lg font-semibold">Recent Feedback</h2>
-        {stats.received === 0 ? (
-          <NoFeedbackState />
-        ) : (
-          <div className="text-muted-foreground">
-            You have {stats.received} feedback items.{" "}
-            <Link href="/feedback" className="text-primary underline">
-              View all
-            </Link>
-          </div>
-        )}
-      </div>
+      {/* Recent Feedback - Streamed with Suspense */}
+      <Suspense fallback={<RecentFeedbackSkeleton />}>
+        <RecentFeedbackSection userId={userId} />
+      </Suspense>
 
       {/* Quick Actions */}
       <div className="px-4 lg:px-6">
