@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getFeedbackStats } from "@propsto/data/repos";
+import { getFeedbackStats } from "./cached-queries";
 import { NoFeedbackState } from "./empty-state";
 
 interface RecentFeedbackSectionProps {

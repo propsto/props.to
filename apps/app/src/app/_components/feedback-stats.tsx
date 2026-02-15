@@ -1,4 +1,4 @@
-import { getFeedbackStats } from "@propsto/data/repos";
+import { getFeedbackStats } from "./cached-queries";
 import { FeedbackStatsCards } from "./feedback-stats-cards";
 
 interface FeedbackStatsProps {
