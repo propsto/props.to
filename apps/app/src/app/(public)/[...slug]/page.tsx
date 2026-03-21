@@ -1,23 +1,62 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { CheckCircle, Users } from "lucide-react";
 import {
   resolveSlug as _resolveSlug,
   resolveOrgSlug as _resolveOrgSlug,
+  resolveByEmail as _resolveByEmail,
   getFeedbackLinkBySlug as _getFeedbackLinkBySlug,
   getGroupFeedbackLinkBySlug,
   getUserFeedbackLinks,
   getUser as _getUser,
   getGroupForPublicPage,
 } from "@propsto/data/repos";
+import {
+  checkRateLimit,
+  EMAIL_LOOKUP_RATE_LIMIT,
+} from "@propsto/data/utils";
 
 // Cache expensive queries to dedupe between generateMetadata and page render
-const resolveSlug = cache(_resolveSlug);
+const resolveSlugBase = cache(_resolveSlug);
+const resolveByEmail = cache(_resolveByEmail);
 const resolveOrgSlug = cache(_resolveOrgSlug);
 const getFeedbackLinkBySlug = cache(_getFeedbackLinkBySlug);
 const getUser = cache(_getUser);
+
+// Email detection regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Rate-limited slug resolution.
+ * Email lookups are rate-limited to prevent enumeration attacks.
+ */
+async function resolveSlug(
+  identifier: string,
+): ReturnType<typeof resolveSlugBase> {
+  // Only apply rate limiting for email lookups
+  if (EMAIL_REGEX.test(identifier)) {
+    // Get client IP for rate limiting
+    const headersList = await headers();
+    const forwardedFor = headersList.get("x-forwarded-for");
+    const realIp = headersList.get("x-real-ip");
+    const clientIp = forwardedFor?.split(",")[0]?.trim() ?? realIp ?? "unknown";
+
+    const rateLimitKey = `email-lookup:${clientIp}`;
+    const { allowed } = checkRateLimit(rateLimitKey, EMAIL_LOOKUP_RATE_LIMIT);
+
+    if (!allowed) {
+      // Rate limited - return null to show 404 (consistent response)
+      return { success: true, data: null };
+    }
+
+    return resolveByEmail(identifier);
+  }
+
+  return resolveSlugBase(identifier);
+}
 import { Button } from "@propsto/ui/atoms/button";
 import {
   Card,
