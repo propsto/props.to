@@ -20,3 +20,4 @@ export * from "./group";
 export * from "./slug";
 export * from "./personal-email-verification";
 export * from "./org-notification-prefs";
+export * from "./organization-invite";
