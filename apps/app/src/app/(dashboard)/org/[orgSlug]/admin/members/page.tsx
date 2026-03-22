@@ -1,5 +1,9 @@
 import { auth } from "@/server/auth.server";
-import { getOrganizationBySlugWithMembers } from "@propsto/data/repos";
+import {
+  getOrganizationBySlugWithMembers,
+  listPendingOrganizationInvites,
+  verifyOrgAdminAccess,
+} from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
   Card,
@@ -18,6 +22,9 @@ import {
 } from "@propsto/ui/atoms/table";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
+import { Separator } from "@propsto/ui/atoms/separator";
+import { InviteDialog } from "./invite-dialog";
+import { PendingInvites } from "./pending-invites";
 
 interface MembersPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -40,6 +47,36 @@ export default async function OrgAdminMembers({
   }
   const org = orgResult.data;
 
+  // Check admin access for invite controls
+  const adminResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
+  const isAdmin = adminResult.success && !!adminResult.data;
+
+  // Load pending invites (only for admins)
+  let pendingInvites: {
+    id: string;
+    email: string;
+    role: string;
+    expiresAt: Date;
+    createdAt: Date;
+    invitedBy: { firstName: string | null; lastName: string | null } | null;
+  }[] = [];
+
+  if (isAdmin && adminResult.data) {
+    const invitesResult = await listPendingOrganizationInvites(
+      adminResult.data.organization.id,
+    );
+    if (invitesResult.success && invitesResult.data) {
+      pendingInvites = invitesResult.data.map(inv => ({
+        id: inv.id,
+        email: inv.email,
+        role: inv.role,
+        expiresAt: inv.expiresAt,
+        createdAt: inv.createdAt,
+        invitedBy: inv.invitedBy,
+      }));
+    }
+  }
+
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "OWNER":
@@ -53,11 +90,14 @@ export default async function OrgAdminMembers({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Members</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage organization members and their roles
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-lg font-semibold">Members</h2>
+          <p className="text-sm text-muted-foreground">
+            Manage organization members and their roles
+          </p>
+        </div>
+        {isAdmin ? <InviteDialog orgSlug={orgSlug} /> : null}
       </div>
 
       <Card>
@@ -116,6 +156,13 @@ export default async function OrgAdminMembers({
               ))}
             </TableBody>
           </Table>
+
+          {isAdmin && pendingInvites.length > 0 ? (
+            <>
+              <Separator className="my-6" />
+              <PendingInvites orgSlug={orgSlug} invites={pendingInvites} />
+            </>
+          ) : null}
         </CardContent>
       </Card>
     </div>
