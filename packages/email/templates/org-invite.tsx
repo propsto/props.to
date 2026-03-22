@@ -17,18 +17,18 @@ import {
 
 interface OrgInviteEmailProps {
   inviterName?: string;
-  orgName: string;
-  role: string;
-  inviteLink: string;
+  orgName?: string;
+  role?: string;
+  inviteLink?: string;
   message?: string;
   expiresInHours?: number;
 }
 
 export function OrgInviteEmail({
   inviterName,
-  orgName,
-  role,
-  inviteLink,
+  orgName = "your organization",
+  role = "MEMBER",
+  inviteLink = "#",
   message,
   expiresInHours = 24,
 }: OrgInviteEmailProps): React.ReactElement {
