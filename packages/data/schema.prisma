@@ -162,6 +162,9 @@ model Organization {
   // Custom feedback categories
   categories TemplateCategory[]
 
+  // Invitations
+  invites OrganizationInvite[]
+
   @@unique([id, slugId])
 }
 
@@ -273,6 +276,9 @@ model User {
 
   // Audit logs where this user was the actor
   auditLogs AuditLog[] @relation("AuditLogActor")
+
+  // Invitations sent by this user
+  sentInvites OrganizationInvite[] @relation("InvitedBy")
 
   @@unique([id, slugId])
 }
@@ -713,4 +719,24 @@ model AuditLog {
 
   @@index([organizationId, createdAt])
   @@index([actorId])
+}
+
+// Organization invite model (for email-based invitations)
+model OrganizationInvite {
+  id             String           @id @default(cuid())
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  email          String
+  role           OrganizationRole @default(MEMBER)
+  token          String           @unique @default(cuid())
+  invitedBy      User             @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById    String
+  message        String?
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@unique([organizationId, email])
+  @@index([token])
 }
