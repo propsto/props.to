@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import { auth } from "@/server/auth.server";
 import {
   getOrganizationBySlug,
@@ -36,6 +37,8 @@ export default async function OrgAdminTemplates({
   params,
 }: TemplatesPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
+  // Page-level guard: the layout's notFound does not stop this page from rendering data.
+  await requireOrgAdmin(orgSlug);
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -157,7 +160,6 @@ export default async function OrgAdminTemplates({
                         <SetDefaultTemplateButton
                           templateId={template.id}
                           templateName={template.name}
-                          organizationId={org.id}
                           orgSlug={orgSlug}
                           isDefault={isDefault}
                         />
@@ -207,7 +209,6 @@ export default async function OrgAdminTemplates({
                       <AddDefaultTemplateButton
                         templateId={template.id}
                         templateName={template.name}
-                        organizationId={org.id}
                         orgSlug={orgSlug}
                       />
                     </div>
