@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import { useState, useTransition } from "react";
 import { Button } from "@propsto/ui/atoms/button";
 import {
@@ -44,6 +46,7 @@ export function EditGroupDialog({
   open,
   onOpenChange,
 }: EditGroupDialogProps): React.ReactNode {
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const [name, setName] = useState(group.name);
   const [description, setDescription] = useState(
     (group as { description?: string | null }).description ?? "",
@@ -73,7 +76,7 @@ export function EditGroupDialog({
     }
 
     startTransition(async () => {
-      const result = await updateGroupAction(group.id, {
+      const result = await updateGroupAction(orgSlug, group.id, {
         name: name.trim(),
         description: description.trim() || undefined,
         visibility,

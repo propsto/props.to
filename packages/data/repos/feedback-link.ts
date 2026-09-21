@@ -225,7 +225,7 @@ export async function deleteFeedbackLink(
 export async function getUserFeedbackLinks(
   userId: string,
   options?: {
-    organizationId?: string;
+    organizationId?: string | null; // null = personal links only
     isActive?: boolean;
     isHidden?: boolean;
     excludeHidden?: boolean; // For public profile pages - exclude hidden links
@@ -285,45 +285,6 @@ export async function getOrganizationFeedbackLinks(
         orderBy: { createdAt: "desc" },
         skip: options?.skip,
         take: options?.take ?? 20,
-      }),
-      db.feedbackLink.count({ where }),
-    ]);
-
-    return handleSuccess({ links, total });
-  } catch (e) {
-    return handleError(e);
-  }
-}
-
-// Get all feedback links from members of an organization
-export async function getOrganizationMemberFeedbackLinks(
-  organizationId: string,
-  options?: {
-    isActive?: boolean;
-    skip?: number;
-    take?: number;
-    excludeHidden?: boolean;
-  },
-): Promise<HandleEvent<{ links: FeedbackLinkWithRelations[]; total: number }>> {
-  try {
-    logger("getOrganizationMemberFeedbackLinks", { organizationId, options });
-    const where: Prisma.FeedbackLinkWhereInput = {
-      user: {
-        organizations: {
-          some: { organizationId },
-        },
-      },
-      ...(options?.isActive !== undefined && { isActive: options.isActive }),
-      ...(options?.excludeHidden && { isHidden: false }),
-    };
-
-    const [links, total] = await Promise.all([
-      db.feedbackLink.findMany({
-        where,
-        include: feedbackLinkInclude,
-        orderBy: { createdAt: "desc" },
-        skip: options?.skip,
-        take: options?.take ?? 50,
       }),
       db.feedbackLink.count({ where }),
     ]);
@@ -466,7 +427,20 @@ const managedLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
   _count: { select: { adoptedLinks: true, feedbacks: true } },
 });
 
-// Create a managed feedback link (admin only)
+// A managed link may only use a system default template or one assigned to the org
+async function assertTemplateUsableByOrg(templateId: string, organizationId: string): Promise<void> {
+  const template = await db.feedbackTemplate.findFirst({
+    where: {
+      id: templateId,
+      deletedAt: null,
+      OR: [{ isDefault: true }, { organizations: { some: { id: organizationId } } }],
+    },
+    select: { id: true },
+  });
+  if (!template) throw new Error("Template not found for this organization");
+}
+
+// Create a managed feedback link
 export async function createManagedFeedbackLink(data: {
   organizationId: string;
   managedByUserId: string; // Admin who creates it
@@ -482,6 +456,7 @@ export async function createManagedFeedbackLink(data: {
       organizationId: data.organizationId,
       name: data.name,
     });
+    await assertTemplateUsableByOrg(data.templateId, data.organizationId);
 
     // Generate unique slug if not provided
     let slug = data.slug ?? generateLinkSlug();
@@ -684,6 +659,7 @@ export async function getAvailableManagedLinks(
 // Update a managed link (admin only)
 export async function updateManagedFeedbackLink(
   id: string,
+  organizationId: string,
   data: {
     name?: string;
     templateId?: string;
@@ -694,9 +670,10 @@ export async function updateManagedFeedbackLink(
   },
 ): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
   try {
-    logger("updateManagedFeedbackLink", { id, data });
+    logger("updateManagedFeedbackLink", { id, organizationId, data });
+    if (data.templateId) await assertTemplateUsableByOrg(data.templateId, organizationId);
     const link = await db.feedbackLink.update({
-      where: { id, isManaged: true },
+      where: { id, organizationId, isManaged: true },
       data,
       include: managedLinkInclude,
     });
@@ -709,18 +686,19 @@ export async function updateManagedFeedbackLink(
 // Delete a managed link (also removes adoption references)
 export async function deleteManagedFeedbackLink(
   id: string,
+  organizationId: string,
 ): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
   try {
-    logger("deleteManagedFeedbackLink", { id });
+    logger("deleteManagedFeedbackLink", { id, organizationId });
 
     // Clear the sourceManagedId from adopted links first
     await db.feedbackLink.updateMany({
-      where: { sourceManagedId: id },
+      where: { sourceManagedId: id, organizationId },
       data: { sourceManagedId: null },
     });
 
     const link = await db.feedbackLink.delete({
-      where: { id, isManaged: true },
+      where: { id, organizationId, isManaged: true },
       include: managedLinkInclude,
     });
     return handleSuccess(link);

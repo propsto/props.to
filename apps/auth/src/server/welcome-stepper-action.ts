@@ -30,7 +30,15 @@ import { type PersonalFormValues } from "@components/welcome-stepper/steps/perso
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
 import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
-import { updateSession, signIn } from "./auth.server";
+import { updateSession, signIn, auth } from "./auth.server";
+
+// Every handler below takes a userId from the client; it must match the signed-in user.
+async function isSessionUser(userId: string): Promise<boolean> {
+  const session = await auth();
+  return Boolean(userId) && session?.user?.id === userId;
+}
+
+const NOT_AUTHENTICATED = { success: false as const, error: "Not authenticated" };
 
 const personalServerSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
@@ -75,6 +83,7 @@ export async function personalHandler(
     Omit<PersonalFormValues, "image"> & { image?: File[] | string }
   >
 > {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   const parsed = personalServerSchema.safeParse(values);
   if (!parsed.success) {
     return {
@@ -84,7 +93,8 @@ export async function personalHandler(
     };
   }
 
-  const { image, dateOfBirth, ...rest } = parsed.data;
+  // email is display-only in this step; the primary email is never changed from the client
+  const { image, dateOfBirth, email: _email, ...rest } = parsed.data;
   const trimmedDateOfBirth = dateOfBirth?.trim();
   if (trimmedDateOfBirth && Number.isNaN(Date.parse(trimmedDateOfBirth))) {
     return {
@@ -120,6 +130,7 @@ export async function accountHandler(
   values: AccountFormValues,
   userId: string,
 ): Promise<HandleEvent<BasicUserData | null | undefined, AccountFormValues>> {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
     const parsed = accountServerSchema.safeParse(values);
     if (!parsed.success) {
@@ -252,15 +263,25 @@ export async function organizationHandler(
 ): Promise<
   HandleEvent<BasicUserData | null | undefined, OrganizationFormValues>
 > {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
     const {
       organizationName,
       organizationSlug,
-      hostedDomain,
       defaultUserSettings,
       organizationSettings,
       feedbackSettings,
     } = values;
+
+    // Only a Google Workspace admin can create an org, and only for their own verified domain
+    const dbUser = await getUser({ id: userId });
+    const hostedDomain = dbUser.data?.hostedDomain ?? null;
+    if (!dbUser.data?.isGoogleWorkspaceAdmin || !hostedDomain) {
+      return {
+        success: false,
+        error: "Only a Google Workspace admin can create an organization for their domain",
+      };
+    }
 
     const { db } = await import("@propsto/data/db");
 
@@ -310,7 +331,7 @@ export async function organizationHandler(
     const organization = await db.organization.create({
       data: {
         name: organizationName,
-        hostedDomain: hostedDomain ?? null,
+        hostedDomain,
         slug: {
           create: {
             slug: organizationSlug.toLowerCase(),
@@ -478,12 +499,17 @@ export async function organizationHandler(
 export async function organizationJoinHandler(
   _values: OrganizationJoinFormValues,
   userId: string,
-  hostedDomain: string,
-  isGoogleWorkspaceAdmin: boolean,
+  _hostedDomain: string,
+  _isGoogleWorkspaceAdmin: boolean,
 ): Promise<
   HandleEvent<BasicUserData | null | undefined, OrganizationJoinFormValues>
 > {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
+    // Domain and admin status decide the role, so they come from the DB, never the client
+    const dbUser = await getUser({ id: userId });
+    const hostedDomain = dbUser.data?.hostedDomain ?? "";
+    const isGoogleWorkspaceAdmin = dbUser.data?.isGoogleWorkspaceAdmin ?? false;
     if (!hostedDomain) {
       return {
         success: false,
@@ -779,9 +805,11 @@ export async function sendPersonalEmailCodeHandler(
   userId: string,
   userName?: string,
   workEmail?: string,
-  hostedDomain?: string,
+  _hostedDomain?: string,
 ): Promise<HandleEvent<{ sent: boolean }, PersonalEmailFormValues>> {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
+    const hostedDomain = (await getUser({ id: userId })).data?.hostedDomain;
     // Validate email format
     const parsed = personalEmailServerSchema.safeParse({ personalEmail });
     if (!parsed.success) {
@@ -870,6 +898,7 @@ export async function verifyPersonalEmailHandler(
 ): Promise<
   HandleEvent<BasicUserData | null | undefined, PersonalEmailFormValues>
 > {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
     // Verify the code
     const verification = await verifyPersonalEmailCode(userId, code);
@@ -922,6 +951,7 @@ export async function verifyPersonalEmailHandler(
 export async function completeHandler(
   userId: string,
 ): Promise<HandleEvent<BasicUserData | null | undefined, object>> {
+  if (!(await isSessionUser(userId))) return NOT_AUTHENTICATED;
   try {
     const userUpdated = await updateUser(userId, {
       onboardingCompletedAt: new Date(),

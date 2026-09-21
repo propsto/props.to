@@ -2,7 +2,7 @@ import Link from "next/link";
 import { auth } from "@/server/auth.server";
 import {
   getOrganizationBySlug,
-  getOrganizationMemberFeedbackLinks,
+  getOrganizationFeedbackLinks,
   getOrganizationManagedLinks,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
@@ -47,8 +47,8 @@ export default async function OrgAdminLinks({
   }
   const org = orgResult.data;
 
-  // Get all feedback links from org members
-  const linksResult = await getOrganizationMemberFeedbackLinks(org.id, {
+  // Links created in this org's context only; members' personal and other-org links stay private
+  const linksResult = await getOrganizationFeedbackLinks(org.id, {
     take: 100,
   });
   const links = linksResult.success ? linksResult.data.links : [];

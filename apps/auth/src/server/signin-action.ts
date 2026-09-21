@@ -25,25 +25,20 @@ export async function signInAction(
     };
   }
 
+  const { password: formPassword, signInMethod } = data;
   const user = await getUserByEmail(data.email, ["password"]);
-  if (!user.data) {
+  // Unknown email: credentials get the same error as a wrong password (no enumeration);
+  // magic link proceeds so the provider can create the account (invited newcomers).
+  if (!user.data && signInMethod === "credentials") {
     logger("signInAction > no user found");
-    return { success: false, message: "No user found" };
+    return { success: false, message: "Wrong credentials!" };
   }
 
-  const { password: formPassword, signInMethod } = data;
-  const {
-    data: { password: userPassword },
-  } = user;
+  // No password sent: always ask for one, whether or not the account exists or has one set
+  // (accounts without a password use "forgot password"). Anything else is an enumeration oracle.
   if (!formPassword && signInMethod === "credentials") {
-    if (userPassword) {
-      const out = {
-        code: "password-set",
-      };
-      logger("signInAction > password already set");
-      return out;
-    }
-    return redirect(`/reset-password?code=no-password-set&email=${data.email}`);
+    logger("signInAction > password required");
+    return { code: "password-set" };
   }
 
   let provider: string = signInMethod;

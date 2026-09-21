@@ -26,7 +26,7 @@ export async function send<T extends EmailTemplateNames>(
   const chosenTemplate = template as (...args: unknown[]) => React.ReactElement;
   logger("send", { email, subject });
   if (constServer.EMAIL_PROVIDER === "resend") {
-    return new Resend(process.env.AUTH_RESEND_KEY).emails.send({
+    return new Resend(constServer.RESEND_API_KEY).emails.send({
       from: constServer.EMAIL_FROM,
       to: [typeof email === "string" ? email : email.email],
       subject,

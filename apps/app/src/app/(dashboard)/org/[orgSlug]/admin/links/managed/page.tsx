@@ -78,7 +78,6 @@ export default async function OrgAdminManagedLinks({
         </div>
         {templates.length > 0 && (
           <CreateManagedLinkDialog
-            organizationId={org.id}
             orgSlug={orgSlug}
             templates={templates}
           />

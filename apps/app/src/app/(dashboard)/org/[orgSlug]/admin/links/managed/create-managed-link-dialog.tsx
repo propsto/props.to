@@ -31,13 +31,11 @@ interface Template {
 }
 
 interface CreateManagedLinkDialogProps {
-  organizationId: string;
   orgSlug: string;
   templates: Template[];
 }
 
 export function CreateManagedLinkDialog({
-  organizationId,
   orgSlug,
   templates,
 }: CreateManagedLinkDialogProps): React.ReactNode {
@@ -65,7 +63,6 @@ export function CreateManagedLinkDialog({
 
     startTransition(async () => {
       const result = await createManagedLinkAction({
-        organizationId,
         orgSlug,
         templateId,
         name: name.trim(),

@@ -49,7 +49,6 @@ export default async function OrgAdminGroups({
           </p>
         </div>
         <CreateGroupDialog
-          organizationId={org.id}
           members={org.members.map(m => ({
             id: m.user.id,
             firstName: m.user.firstName,

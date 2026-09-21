@@ -157,7 +157,6 @@ export default async function OrgAdminTemplates({
                         <SetDefaultTemplateButton
                           templateId={template.id}
                           templateName={template.name}
-                          organizationId={org.id}
                           orgSlug={orgSlug}
                           isDefault={isDefault}
                         />
@@ -207,7 +206,6 @@ export default async function OrgAdminTemplates({
                       <AddDefaultTemplateButton
                         templateId={template.id}
                         templateName={template.name}
-                        organizationId={org.id}
                         orgSlug={orgSlug}
                       />
                     </div>
