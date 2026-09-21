@@ -3,6 +3,7 @@
 import { type EmailConfig } from "next-auth/providers/email";
 import { createLogger } from "@propsto/logger";
 import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
+import { createOutboxEmail } from "@propsto/data/repos";
 import Passkey from "next-auth/providers/passkey";
 import { PropstoAdapter, Role } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
@@ -27,6 +28,25 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
     return Resend({
       apiKey: constServer.RESEND_API_KEY,
       from: constServer.EMAIL_FROM,
+    });
+  }
+  if (constServer.EMAIL_PROVIDER === "outbox") {
+    logger("outbox used");
+    return NodemailerProvider({
+      id: "email",
+      name: "email",
+      server: "smtp://outbox.invalid",
+      from: constServer.EMAIL_FROM,
+      // Store the magic link instead of sending it, so previews and tests can read it back
+      sendVerificationRequest: async ({ identifier, url }) => {
+        const stored = await createOutboxEmail({
+          to: identifier,
+          subject: "Sign in to Props.to",
+          html: `<p>Sign in to Props.to</p><p><a href="${url}">${url}</a></p>`,
+        });
+        if (!stored.success)
+          throw new Error(stored.error ?? "Failed to store magic link");
+      },
     });
   }
   logger("nodemailer used");

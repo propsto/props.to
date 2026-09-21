@@ -15,8 +15,10 @@ const SEED_IDS = {
   bob: "00000000-0000-0000-0000-000000000002",
   john: "00000000-0000-0000-0000-000000000003",
   jane: "00000000-0000-0000-0000-000000000004",
-  // Organization
+  carol: "00000000-0000-0000-0000-000000000005",
+  // Organizations
   acme: "00000000-0000-0000-0000-000000000010",
+  globex: "00000000-0000-0000-0000-000000000011",
   // Group
   marketing: "00000000-0000-0000-0000-000000000020",
   // Template Categories
@@ -36,6 +38,8 @@ const SEED_IDS = {
 
 async function main() {
   // Clean up existing data in reverse dependency order
+  await prisma.emailOutbox.deleteMany();
+  await prisma.organizationInvite.deleteMany(); // invitedBy is RESTRICT, so before users
   await prisma.uriClaim.deleteMany();
   await prisma.uri.deleteMany();
   await prisma.integration.deleteMany();
@@ -122,6 +126,7 @@ async function main() {
     data: {
       id: SEED_IDS.bob,
       email: "bob.jones@acme.com",
+      password: await hash("P4ssw0rd", 10),
       firstName: "Bob",
       lastName: "Jones",
       role: "USER",
@@ -153,10 +158,12 @@ async function main() {
     data: {
       id: SEED_IDS.john,
       email: "john.doe@acme.com",
+      password: await hash("P4ssw0rd", 10),
       firstName: "John",
       lastName: "Doe",
       role: "USER",
       hostedDomain: "acme.com",
+      onboardingCompletedAt: new Date(), // dual-member user signs in directly in E2E
       createdAt: new Date(),
       updatedAt: new Date(),
       slug: {
@@ -184,6 +191,7 @@ async function main() {
     data: {
       id: SEED_IDS.jane,
       email: "jane.smith@acme.com",
+      password: await hash("P4ssw0rd", 10),
       firstName: "Jane",
       lastName: "Smith",
       role: "USER",
@@ -206,6 +214,69 @@ async function main() {
       user: { connect: { id: jane.id } },
       organization: { connect: { id: acme.id } },
       role: "MEMBER",
+      joinedAt: new Date(),
+    },
+  });
+
+  // Second organization (Globex) for tenant-isolation tests.
+  // Carol owns it; John is ADMIN here and MEMBER of Acme (dual membership).
+  const globex = await prisma.organization.create({
+    data: {
+      id: SEED_IDS.globex,
+      name: "Globex Corp.",
+      hostedDomain: "globex.com",
+      slug: {
+        create: { slug: "globex", scope: "GLOBAL", scopedToOrgId: null },
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  });
+
+  const carol = await prisma.user.create({
+    data: {
+      id: SEED_IDS.carol,
+      email: "carol.white@globex.com",
+      password: await hash("P4ssw0rd", 10),
+      firstName: "Carol",
+      lastName: "White",
+      role: "USER",
+      hostedDomain: "globex.com",
+      onboardingCompletedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      slug: {
+        create: {
+          slug: "carol.white",
+          scope: "ORGANIZATION",
+          scopedToOrgId: globex.id,
+        },
+      },
+    },
+  });
+
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: carol.id } },
+      organization: { connect: { id: globex.id } },
+      role: "OWNER",
+      joinedAt: new Date(),
+    },
+  });
+
+  await prisma.slug.create({
+    data: {
+      slug: "john.doe",
+      scope: "ORGANIZATION",
+      scopedToOrgId: globex.id,
+      orgSlugOwnerId: john.id,
+    },
+  });
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: john.id } },
+      organization: { connect: { id: globex.id } },
+      role: "ADMIN",
       joinedAt: new Date(),
     },
   });
@@ -558,6 +629,28 @@ async function main() {
       visibility: "PRIVATE",
       isActive: true,
       isHidden: true,
+    },
+  });
+
+  // Org-scoped links: one per org, used by the tenant-isolation E2E
+  await prisma.feedbackLink.create({
+    data: {
+      name: "John at Acme",
+      slug: "john-acme",
+      userId: john.id,
+      organizationId: acme.id,
+      templateId: propsTemplate.id,
+      isActive: true,
+    },
+  });
+  await prisma.feedbackLink.create({
+    data: {
+      name: "Carol at Globex",
+      slug: "carol-globex",
+      userId: carol.id,
+      organizationId: globex.id,
+      templateId: propsTemplate.id,
+      isActive: true,
     },
   });
 

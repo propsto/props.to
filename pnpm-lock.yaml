@@ -642,6 +642,9 @@ importers:
       '@propsto/constants':
         specifier: workspace:*
         version: link:../constants
+      '@propsto/data':
+        specifier: workspace:*
+        version: link:../data
       '@propsto/logger':
         specifier: workspace:*
         version: link:../logger
