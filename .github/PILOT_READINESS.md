@@ -26,6 +26,30 @@ Nothing here is optional. All of these are reachable by any signed-in user today
 
 Release test: admin of org A cannot read or write anything in org B by id. A member of both orgs sees each org's links only in that org. Wrong-account invite accept is refused.
 
+## Gate 1 addendum: admin pages leaked another org's data (found by the release test)
+
+Building the two-tenant test surfaced a real leak the action/repo fixes did not cover. The org admin pages fetched org data relying only on the admin layout's `notFound()`, which in the App Router does not stop a child page from rendering, so any signed-in user could read another org's admin data by URL. Confirmed on the preview: a non-member of Globex received "Carol at Globex" in the links page.
+
+- [x] Add `apps/app/src/server/require-org-admin.ts` and call it at the top of every admin page that fetches org data, before any query. Members and audit pages already checked membership themselves. Verified on the preview: a non-member now gets no org data on links, templates, categories, settings or groups, while the owner still sees their own org. (The HTTP status is still 200 rather than 404 in the streaming case; the data no longer leaks, which is the security fix. Returning 404 is a cosmetic follow-up.)
+
+## Preview mail (answers "how do we read emails from previews")
+
+Preview and test deploys run with `EMAIL_PROVIDER=outbox`: every email, including Auth.js magic links, is stored in the `EmailOutbox` table instead of sent, and read back via `GET /api/preview-mail?to=<addr>` on the app or auth (session required, 404 on non-preview). Local dev still uses MailDev; production uses Resend. The three previews (app, auth, web) share one Neon branch per git branch, so the outbox is a single shared mailbox.
+
+Known preview flakiness: the seed runs a destructive `deleteMany` on every build, and app/auth/web build separately, so preview data can be wiped mid-test. This is the gate 2 idempotent-seed item; it makes the invite E2E occasionally flaky but is not a product bug (the invite logic was verified directly against the DB).
+
+## Focus: Google Workspace organizations
+
+The pilot targets Google Workspace companies. Admins create their org on first Google login (Workspace-admin detected via the Directory API), employees auto-join their domain's org on first login, and everyone returns via Google on later logins. This makes gate 1's "only a Workspace admin can create an org for their verified domain" the intended behavior, not a limitation. Email invites are a secondary path for non-Workspace people.
+
+Google Workspace pilot checklist (new):
+
+- [ ] Google Cloud OAuth: decide testing mode (add pilot users as test users, avoids verifying the sensitive `admin.directory.user.readonly` scope) vs full verification.
+- [ ] Set `GOOGLE_ALLOWED_HOSTED_DOMAINS` to the two pilot company domains (wired, currently empty).
+- [ ] Confirm each company's sponsor is an actual Workspace admin, or provision that org's first owner by script.
+- [ ] Walk the admin-creates-org and employee-auto-joins flows on the preview (Google login is manual; password-seeded users stay a test convenience).
+- [ ] Personal-email verification during onboarding sends via Resend in prod / outbox in preview (covered by the RESEND_API_KEY fix).
+
 Release test run on the PR #108 preview (2026-09-20), signed in as the seeded owner of Acme: invite create, revoke, re-invite of the same address, resend; invite of an existing member refused; group create, add member, delete; add default template and set as default; managed link create with an org template; feedback settings save and restore; org links page shows org links only; public profile shows personal links only; `/debug` returns 404; bogus invite token rejected; no-password and wrong-password sign-in give identical responses for a seeded and an unknown email. Not runnable on the preview: the two-tenant and dual-member checks (the seed has one org and org creation needs a Workspace admin) and wrong-account invite accept (the token is only in the email). Run those on the first real second org, or locally with a seeded second org.
 
 ## Gate 2: reproducible deployment
