@@ -26,10 +26,12 @@ Nothing here is optional. All of these are reachable by any signed-in user today
 
 Release test: admin of org A cannot read or write anything in org B by id. A member of both orgs sees each org's links only in that org. Wrong-account invite accept is refused.
 
+Release test run on the PR #108 preview (2026-09-20), signed in as the seeded owner of Acme: invite create, revoke, re-invite of the same address, resend; invite of an existing member refused; group create, add member, delete; add default template and set as default; managed link create with an org template; feedback settings save and restore; org links page shows org links only; public profile shows personal links only; `/debug` returns 404; bogus invite token rejected; no-password and wrong-password sign-in give identical responses for a seeded and an unknown email. Not runnable on the preview: the two-tenant and dual-member checks (the seed has one org and org creation needs a Workspace admin) and wrong-account invite accept (the token is only in the email). Run those on the first real second org, or locally with a seeded second org.
+
 ## Gate 2: reproducible deployment
 
 - [ ] `migrate_production.yaml` has failed on all 12 runs since January 2026. Get the logs (re-run it manually), find the real cause, fix it.
-- [ ] Migrations are split: `packages/data/migrations/` (real, 20 + lock) and `packages/data/prisma/migrations/` (2 orphans Prisma never reads). The invite migration only exists as an orphan. The default-template orphan duplicates DDL already in the real history, so delete it. Move the invite migration, then run `prisma migrate status` against a prod copy before deploying.
+- [x] Migrations are split: `packages/data/migrations/` (real, 20 + lock) and `packages/data/prisma/migrations/` (2 orphans Prisma never reads). The invite migration only exists as an orphan. The default-template orphan duplicates DDL already in the real history, so delete it. Move the invite migration, then run `prisma migrate status` against a prod copy before deploying. Done in PR #108 after the preview proved every invite failed; the "Dry-run Migration on Production Copy" check passed, so prod does not have the table yet and the migration applies cleanly.
 - [ ] Preview build swallows migration failures (`packages/data/scripts/seed-if-preview.cjs`). Fail loudly.
 - [ ] Default templates only come from `seed.ts`, which starts with `deleteMany` on every table. Add an idempotent bootstrap for global templates that is safe to run on prod.
 - [ ] `turbo.json` `globalEnv` is missing `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `OPENAI_API_KEY`, `NEXT_PUBLIC_AUTH_URL` (it lists a typo'd `PUBLIC_AUTH_URL`). Without them rate limiting silently no-ops on Vercel.
