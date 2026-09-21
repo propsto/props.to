@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth.server";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import {
   getOrganizationBySlug,
   getOrganizationManagedLinks,
@@ -33,6 +34,8 @@ export default async function OrgAdminManagedLinks({
   params,
 }: ManagedLinksPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
+  // Page-level guard: the layout's notFound does not stop this page from rendering data.
+  await requireOrgAdmin(orgSlug);
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -77,10 +80,7 @@ export default async function OrgAdminManagedLinks({
           </p>
         </div>
         {templates.length > 0 && (
-          <CreateManagedLinkDialog
-            orgSlug={orgSlug}
-            templates={templates}
-          />
+          <CreateManagedLinkDialog orgSlug={orgSlug} templates={templates} />
         )}
       </div>
 

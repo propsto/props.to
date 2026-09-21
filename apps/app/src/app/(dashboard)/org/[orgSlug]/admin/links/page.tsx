@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import { auth } from "@/server/auth.server";
 import {
   getOrganizationBySlug,
@@ -34,6 +35,8 @@ export default async function OrgAdminLinks({
   params,
 }: LinksPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
+  // Page-level guard: the layout's notFound does not stop this page from rendering data.
+  await requireOrgAdmin(orgSlug);
   const session = await auth();
 
   if (!session?.user?.id) {
