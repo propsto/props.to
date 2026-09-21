@@ -16,7 +16,7 @@ const INVITEE = "carol.white@globex.com";
 
 async function latestInviteLink(page: Page): Promise<string> {
   const res = await page.request.get(
-    `${AUTH_URL}/api/preview-mail?to=${encodeURIComponent(INVITEE)}`,
+    `${APP_URL}/api/preview-mail?to=${encodeURIComponent(INVITEE)}`,
   );
   expect(res.ok(), `preview-mail returned ${res.status()}`).toBe(true);
   const emails = (await res.json()) as {
