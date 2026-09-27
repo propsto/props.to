@@ -5,6 +5,7 @@
   "types": "./index.ts",
   "scripts": {
     "build": "node scripts/seed-if-preview.cjs",
+    "db-bootstrap": "pnpm dotenv -- tsx scripts/bootstrap.ts",
     "db-deploy": "pnpm dotenv -- prisma migrate deploy",
     "db-generate": "pnpm dotenv -- prisma generate",
     "db-migrate": "pnpm dotenv -- prisma migrate dev",
