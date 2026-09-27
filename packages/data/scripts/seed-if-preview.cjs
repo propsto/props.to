@@ -51,19 +51,30 @@ async function main() {
   // but during Vercel build not all env vars are available. prisma-migration.config.ts
   // only requires DATABASE_URL.
   console.log("[@propsto/data] Running migrations...");
-  try {
-    execSync(`npx prisma migrate deploy --config="${migrationConfigPath}"`, {
-      stdio: "inherit",
-      cwd: packageRoot,
-      env: {
-        ...process.env,
-      },
-    });
-    console.log("[@propsto/data] Migrations applied successfully!");
-  } catch (error) {
-    // A schema that did not migrate must not deploy: the app would boot against stale tables.
-    console.error("[@propsto/data] Migration failed, aborting build:", error.message);
-    process.exit(1);
+  // A freshly created Neon preview branch can take a few seconds before its endpoint
+  // accepts connections (P1001), so retry before treating it as a real failure.
+  const MIGRATE_ATTEMPTS = 5;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      execSync(`npx prisma migrate deploy --config="${migrationConfigPath}"`, {
+        stdio: "inherit",
+        cwd: packageRoot,
+        env: {
+          ...process.env,
+        },
+      });
+      console.log("[@propsto/data] Migrations applied successfully!");
+      break;
+    } catch (error) {
+      if (attempt < MIGRATE_ATTEMPTS) {
+        console.warn(`[@propsto/data] Migration attempt ${attempt} failed, retrying in 10s...`);
+        execSync("sleep 10");
+        continue;
+      }
+      // A schema that did not migrate must not deploy: the app would boot against stale tables.
+      console.error("[@propsto/data] Migration failed, aborting build:", error.message);
+      process.exit(1);
+    }
   }
 
   try {
