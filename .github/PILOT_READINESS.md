@@ -46,6 +46,7 @@ Google Workspace pilot checklist (new):
 
 - [ ] Google Cloud OAuth: decide testing mode (add pilot users as test users, avoids verifying the sensitive `admin.directory.user.readonly` scope) vs full verification.
 - [ ] Set `GOOGLE_ALLOWED_HOSTED_DOMAINS` to the two pilot company domains (wired, currently empty).
+- [x] Hosted domains are normalized (trim + lowercase) at org creation, on every lookup and in the allowlist, so a mixed-case `hd` claim cannot miss its org or slip past the allowlist (commit `c02b2fc`).
 - [ ] Confirm each company's sponsor is an actual Workspace admin, or provision that org's first owner by script.
 - [ ] Walk the admin-creates-org and employee-auto-joins flows on the preview (Google login is manual; password-seeded users stay a test convenience).
 - [ ] Personal-email verification during onboarding sends via Resend in prod / outbox in preview (covered by the RESEND_API_KEY fix).
