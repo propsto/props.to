@@ -216,7 +216,8 @@ export async function getOrganizationByHostedDomain(hostedDomain: string) {
   try {
     logger("getOrganizationByHostedDomain", { hostedDomain });
     const organization = await db.organization.findUnique({
-      where: { hostedDomain },
+      // Normalize on read so a lookup matches the normalized value stored at org creation
+      where: { hostedDomain: hostedDomain.trim().toLowerCase() },
       include: {
         slug: true,
         organizationSettings: true,
@@ -399,7 +400,7 @@ export async function isUserMemberOfDomain(
     const membership = await db.organizationMember.findFirst({
       where: {
         userId,
-        organization: { hostedDomain },
+        organization: { hostedDomain: hostedDomain.trim().toLowerCase() },
       },
       include: {
         organization: { include: { slug: true } },

@@ -38,7 +38,10 @@ async function isSessionUser(userId: string): Promise<boolean> {
   return Boolean(userId) && session?.user?.id === userId;
 }
 
-const NOT_AUTHENTICATED = { success: false as const, error: "Not authenticated" };
+const NOT_AUTHENTICATED = {
+  success: false as const,
+  error: "Not authenticated",
+};
 
 const personalServerSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
@@ -275,11 +278,14 @@ export async function organizationHandler(
 
     // Only a Google Workspace admin can create an org, and only for their own verified domain
     const dbUser = await getUser({ id: userId });
-    const hostedDomain = dbUser.data?.hostedDomain ?? null;
+    // Store the domain normalized so employee auto-join (matched by hostedDomain) is case/whitespace safe
+    const hostedDomain =
+      dbUser.data?.hostedDomain?.trim().toLowerCase() ?? null;
     if (!dbUser.data?.isGoogleWorkspaceAdmin || !hostedDomain) {
       return {
         success: false,
-        error: "Only a Google Workspace admin can create an organization for their domain",
+        error:
+          "Only a Google Workspace admin can create an organization for their domain",
       };
     }
 

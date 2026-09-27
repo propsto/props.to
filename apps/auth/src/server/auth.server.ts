@@ -60,7 +60,10 @@ function getEmailProvider(): EmailConfig | NodemailerConfig {
 
 const allowedDomains: string[] = (
   constServer.GOOGLE_ALLOWED_HOSTED_DOMAINS ?? ""
-).split(",");
+)
+  .split(",")
+  .map(d => d.trim().toLowerCase())
+  .filter(Boolean);
 
 function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
   if (constServer.GOOGLE_CLIENT_ID && constServer.GOOGLE_CLIENT_SECRET) {
@@ -79,8 +82,7 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
           // Validate hosted domain if GOOGLE_ALLOWED_HOSTED_DOMAINS is configured
           if (
             allowedDomains.length > 0 &&
-            allowedDomains[0] !== "" &&
-            (!profile.hd || !allowedDomains.includes(profile.hd))
+            (!profile.hd || !allowedDomains.includes(profile.hd.toLowerCase()))
           ) {
             throw Error("Google Hosted Domain not allowed");
           }
