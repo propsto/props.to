@@ -35,23 +35,23 @@ async function main() {
 
   console.log("[@propsto/data] Preview environment detected, seeding database...");
 
+  // This script is at packages/data/scripts, so package root is one level up
+  const packageRoot = path.resolve(__dirname, "..");
+  const seedPath = path.join(packageRoot, "seed.ts");
+  const migrationConfigPath = path.join(packageRoot, "prisma-migration.config.ts");
+  // Monorepo root is two levels up from package root
+  const monorepoRoot = path.resolve(packageRoot, "../..");
+
+  console.log(`[@propsto/data] Package root: ${packageRoot}`);
+  console.log(`[@propsto/data] Migration config: ${migrationConfigPath}`);
+  console.log(`[@propsto/data] Seed script path: ${seedPath}`);
+
+  // Step 1: Run migrations using minimal config that only requires DATABASE_URL
+  // The main prisma.config.ts uses @propsto/constants which validates all env vars,
+  // but during Vercel build not all env vars are available. prisma-migration.config.ts
+  // only requires DATABASE_URL.
+  console.log("[@propsto/data] Running migrations...");
   try {
-    // This script is at packages/data/scripts, so package root is one level up
-    const packageRoot = path.resolve(__dirname, "..");
-    const seedPath = path.join(packageRoot, "seed.ts");
-    const migrationConfigPath = path.join(packageRoot, "prisma-migration.config.ts");
-    // Monorepo root is two levels up from package root
-    const monorepoRoot = path.resolve(packageRoot, "../..");
-
-    console.log(`[@propsto/data] Package root: ${packageRoot}`);
-    console.log(`[@propsto/data] Migration config: ${migrationConfigPath}`);
-    console.log(`[@propsto/data] Seed script path: ${seedPath}`);
-
-    // Step 1: Run migrations using minimal config that only requires DATABASE_URL
-    // The main prisma.config.ts uses @propsto/constants which validates all env vars,
-    // but during Vercel build not all env vars are available. prisma-migration.config.ts
-    // only requires DATABASE_URL.
-    console.log("[@propsto/data] Running migrations...");
     execSync(`npx prisma migrate deploy --config="${migrationConfigPath}"`, {
       stdio: "inherit",
       cwd: packageRoot,
@@ -60,7 +60,13 @@ async function main() {
       },
     });
     console.log("[@propsto/data] Migrations applied successfully!");
+  } catch (error) {
+    // A schema that did not migrate must not deploy: the app would boot against stale tables.
+    console.error("[@propsto/data] Migration failed, aborting build:", error.message);
+    process.exit(1);
+  }
 
+  try {
     // Step 2: Run the seed script directly with tsx
     // DATABASE_URL is already in the environment from Vercel-Neon integration.
     console.log("[@propsto/data] Running seed script...");
