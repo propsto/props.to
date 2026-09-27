@@ -33,6 +33,18 @@ async function main() {
     return;
   }
 
+  // The seed wipes every table. Only the Neon Vercel integration provisions a
+  // per-git-branch database, and it always sets DATABASE_URL_UNPOOLED next to
+  // DATABASE_URL. A project with a hand-set DATABASE_URL (the app project pointed
+  // preview builds at production until 2026-09-27) must never be seeded.
+  // ponytail: heuristic marker; replace with an explicit PREVIEW_DB_SEED=1 once every project uses the integration
+  if (!process.env.DATABASE_URL_UNPOOLED) {
+    console.error(
+      "[@propsto/data] DATABASE_URL_UNPOOLED is not set, so this is not a Neon per-branch preview database. Refusing to migrate or seed it.",
+    );
+    return;
+  }
+
   console.log("[@propsto/data] Preview environment detected, seeding database...");
 
   // This script is at packages/data/scripts, so package root is one level up
