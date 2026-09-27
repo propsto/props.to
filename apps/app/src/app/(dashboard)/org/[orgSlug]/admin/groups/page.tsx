@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth.server";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import {
   getOrganizationBySlugWithMembers,
   getOrganizationGroups,
@@ -22,6 +23,8 @@ export default async function OrgAdminGroups({
   params,
 }: GroupsPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
+  // Page-level guard: the layout's notFound does not stop this page from rendering data.
+  await requireOrgAdmin(orgSlug);
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -37,7 +40,7 @@ export default async function OrgAdminGroups({
 
   // Get all groups for this organization
   const groupsResult = await getOrganizationGroups(org.id);
-  const groups = groupsResult.success ? groupsResult.data?.groups ?? [] : [];
+  const groups = groupsResult.success ? (groupsResult.data?.groups ?? []) : [];
 
   return (
     <div className="space-y-6">
@@ -49,7 +52,6 @@ export default async function OrgAdminGroups({
           </p>
         </div>
         <CreateGroupDialog
-          organizationId={org.id}
           members={org.members.map(m => ({
             id: m.user.id,
             firstName: m.user.firstName,

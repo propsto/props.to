@@ -9,14 +9,12 @@ import { addDefaultTemplateToOrgAction } from "./actions";
 interface AddDefaultTemplateButtonProps {
   templateId: string;
   templateName: string;
-  organizationId: string;
   orgSlug: string;
 }
 
 export function AddDefaultTemplateButton({
   templateId,
   templateName,
-  organizationId,
   orgSlug,
 }: AddDefaultTemplateButtonProps) {
   const [isPending, startTransition] = useTransition();
@@ -25,7 +23,6 @@ export function AddDefaultTemplateButton({
     startTransition(async () => {
       const result = await addDefaultTemplateToOrgAction(
         templateId,
-        organizationId,
         orgSlug,
       );
 

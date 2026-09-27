@@ -9,7 +9,6 @@ import { setDefaultTemplateAction } from "./actions";
 interface SetDefaultTemplateButtonProps {
   templateId: string;
   templateName: string;
-  organizationId: string;
   orgSlug: string;
   isDefault: boolean;
 }
@@ -17,7 +16,6 @@ interface SetDefaultTemplateButtonProps {
 export function SetDefaultTemplateButton({
   templateId,
   templateName,
-  organizationId,
   orgSlug,
   isDefault,
 }: SetDefaultTemplateButtonProps): React.ReactNode {
@@ -27,7 +25,6 @@ export function SetDefaultTemplateButton({
     startTransition(async () => {
       // If already default, unset it (pass null); otherwise set it
       const result = await setDefaultTemplateAction(
-        organizationId,
         isDefault ? null : templateId,
         orgSlug,
       );

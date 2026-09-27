@@ -17,7 +17,6 @@ import type { FormField } from "@propsto/forms";
  */
 export async function addDefaultTemplateToOrgAction(
   templateId: string,
-  organizationId: string,
   orgSlug: string,
 ): Promise<{ success: boolean; error?: string }> {
   const session = await auth();
@@ -25,14 +24,16 @@ export async function addDefaultTemplateToOrgAction(
     return { success: false, error: "Not authenticated" };
   }
 
-  // Verify admin access
+  // Verify admin access; the org id comes from the membership, never the client
   const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
   if (!membershipResult.success || !membershipResult.data) {
     return { success: false, error: "Not authorized" };
   }
 
-  // Assign template to organization
-  const result = await assignTemplateToOrganization(templateId, organizationId);
+  const result = await assignTemplateToOrganization(
+    templateId,
+    membershipResult.data.organization.id,
+  );
   if (!result.success) {
     return { success: false, error: result.error ?? "Failed to add template" };
   }
@@ -108,7 +109,6 @@ export async function createOrgTemplateAction(
  * Set or unset the default template for an organization
  */
 export async function setDefaultTemplateAction(
-  organizationId: string,
   templateId: string | null,
   orgSlug: string,
 ): Promise<{ success: boolean; error?: string }> {
@@ -117,15 +117,14 @@ export async function setDefaultTemplateAction(
     return { success: false, error: "Not authenticated" };
   }
 
-  // Verify admin access
+  // Verify admin access; the org id comes from the membership, never the client
   const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
   if (!membershipResult.success || !membershipResult.data) {
     return { success: false, error: "Not authorized" };
   }
 
-  // Set default template
   const result = await setOrganizationDefaultTemplate(
-    organizationId,
+    membershipResult.data.organization.id,
     templateId,
   );
   if (!result.success) {

@@ -9,6 +9,8 @@ import {
   listPendingOrganizationInvites,
   revokeOrganizationInvite,
   resendOrganizationInvite,
+  getUserByEmail,
+  getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { sendOrgInviteEmail } from "@propsto/email/send/org-invite";
 import { revalidatePath } from "next/cache";
@@ -76,7 +78,20 @@ export async function inviteMembersAction(
       continue;
     }
 
-    // Check for existing pending invite
+    // Already a member? (by work or personal email)
+    const existingUser = await getUserByEmail(email);
+    if (existingUser.data) {
+      const membership = await getUserOrganizationMembership({
+        userId: existingUser.data.id,
+        organizationId: orgId,
+      });
+      if (membership.data) {
+        results.push({ email, success: false, error: "Already a member" });
+        continue;
+      }
+    }
+
+    // Check for existing pending invite (expired/revoked ones are re-issued by createOrganizationInvite)
     const existingInviteResult = await getOrganizationInviteByEmail(orgId, email);
     if (existingInviteResult.success && existingInviteResult.data) {
       const existing = existingInviteResult.data;
@@ -105,7 +120,7 @@ export async function inviteMembersAction(
     const invite = inviteResult.data;
     const inviteLink = `${constServer.AUTH_URL}/invite?token=${invite.token}`;
 
-    await sendOrgInviteEmail(email, {
+    const sent = await sendOrgInviteEmail(email, {
       inviterName: userName,
       orgName: org.name,
       role: data.role,
@@ -114,7 +129,11 @@ export async function inviteMembersAction(
       expiresInHours: INVITE_EXPIRY_HOURS,
     });
 
-    results.push({ email, success: true });
+    results.push(
+      sent.success
+        ? { email, success: true }
+        : { email, success: false, error: "Invite created but the email could not be sent" },
+    );
   }
 
   revalidatePath(`/org/${orgSlug}/admin/members`);
@@ -138,7 +157,7 @@ export async function revokeInviteAction(orgSlug: string, inviteId: string) {
     return { success: false, error: error ?? "Organization not found" };
   }
 
-  const result = await revokeOrganizationInvite(inviteId);
+  const result = await revokeOrganizationInvite(inviteId, orgId);
 
   if (result.success) {
     revalidatePath(`/org/${orgSlug}/admin/members`);
@@ -163,7 +182,7 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
   const org = orgResult.data;
 
   const expiresAt = new Date(Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000);
-  const refreshResult = await resendOrganizationInvite(inviteId, expiresAt);
+  const refreshResult = await resendOrganizationInvite(inviteId, orgId, expiresAt);
 
   if (!refreshResult.success || !refreshResult.data) {
     return { success: false, error: refreshResult.error ?? "Failed to resend invite" };
@@ -172,7 +191,7 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
   const invite = refreshResult.data;
   const inviteLink = `${constServer.AUTH_URL}/invite?token=${invite.token}`;
 
-  await sendOrgInviteEmail(invite.email, {
+  const sent = await sendOrgInviteEmail(invite.email, {
     inviterName: userName,
     orgName: org.name,
     role: invite.role,
@@ -181,6 +200,9 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
   });
 
   revalidatePath(`/org/${orgSlug}/admin/members`);
+  if (!sent.success) {
+    return { success: false, error: "Invite refreshed but the email could not be sent" };
+  }
   return { success: true };
 }
 

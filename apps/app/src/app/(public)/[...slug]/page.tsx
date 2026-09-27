@@ -192,8 +192,9 @@ async function handleProfilePage(
   const resolution = slugResult.data;
 
   if (resolution.type === "user") {
-    // Show user profile with their public feedback links (exclude hidden)
+    // Show user profile with their personal public feedback links (org links live under /<org>/<user>)
     const linksResult = await getUserFeedbackLinks(resolution.userId, {
+      organizationId: null,
       isActive: true,
       excludeHidden: true,
     });

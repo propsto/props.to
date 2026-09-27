@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import { useState, useTransition } from "react";
 import { Button } from "@propsto/ui/atoms/button";
 import {
@@ -41,15 +43,14 @@ interface GroupOption {
 }
 
 interface CreateGroupDialogProps {
-  organizationId: string;
   members: MemberOption[];
   groups: GroupOption[];
 }
 
 export function CreateGroupDialog({
-  organizationId,
   groups,
 }: CreateGroupDialogProps): React.ReactNode {
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -70,9 +71,8 @@ export function CreateGroupDialog({
     }
 
     startTransition(async () => {
-      const result = await createGroupAction({
+      const result = await createGroupAction(orgSlug, {
         name: name.trim(),
-        organizationId,
         slug: slug.trim() || undefined,
         description: description.trim() || undefined,
         visibility,

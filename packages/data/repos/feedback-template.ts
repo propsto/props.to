@@ -364,8 +364,9 @@ export async function assignTemplateToOrganization(
 ): Promise<HandleEvent<FeedbackTemplateWithFields>> {
   try {
     logger("assignTemplateToOrganization", { templateId, organizationId });
+    // Only system defaults can be added; another org's private template cannot be pulled in by id
     const template = await db.feedbackTemplate.update({
-      where: { id: templateId },
+      where: { id: templateId, isDefault: true, deletedAt: null },
       data: { organizations: { connect: { id: organizationId } } },
       include: templateInclude,
     });

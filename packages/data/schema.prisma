@@ -740,3 +740,14 @@ model OrganizationInvite {
   @@unique([organizationId, email])
   @@index([token])
 }
+
+// Captured outbound email for preview deployments and tests (EMAIL_PROVIDER=outbox). Never used in production.
+model EmailOutbox {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  html      String
+  createdAt DateTime @default(now())
+
+  @@index([to, createdAt])
+}

@@ -182,9 +182,13 @@ export async function getUserByEmailAndPassword({
       where: { email },
       include: userInclude,
     });
-    if (!existingUser) throw new Error("user-invalid");
-    const isPasswordValid = await compare(password, existingUser.password!);
-    if (!isPasswordValid) throw new Error("password-invalid");
+    // Unknown user, user without a password and wrong password all fail the same way
+    // (and always run a compare) so credentials cannot be used to enumerate accounts.
+    const isPasswordValid = await compare(
+      password,
+      existingUser?.password ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalid",
+    );
+    if (!existingUser || !isPasswordValid) throw new Error("password-invalid");
     return handleSuccess(userMapper(existingUser));
   } catch (e) {
     return handleError(e);

@@ -212,9 +212,19 @@ export const nextAuthConfig = {
         }
       }
 
-      if (trigger === "update" && session) {
-        logger("authConfig:jwt:update", session.user);
-        token.user = session.user;
+      if (trigger === "update" && token.sub) {
+        // Never trust client-supplied session data: reload from DB by the immutable subject
+        logger("authConfig:jwt:update", { sub: token.sub });
+        const fresh = await getUser({ id: token.sub });
+        if (fresh.data) token.user = fresh.data;
+      }
+
+      // Identity is the subject. A token whose nested user disagrees (issued by the old
+      // client-writable update path) is dropped so the session has no user id and must re-login.
+      const nestedId = (token.user as { id?: string } | undefined)?.id;
+      if (nestedId && nestedId !== token.sub) {
+        logger("authConfig:jwt:identity-mismatch", { sub: token.sub, nestedId });
+        token.user = undefined;
       }
       return token;
     },
@@ -238,7 +248,10 @@ export const nextAuthConfig = {
         const hostname = urlObj.hostname;
 
         // Allow redirects to any subdomain of PROPSTO_HOST
-        if (hostname.endsWith(constServer.PROPSTO_HOST)) {
+        if (
+          hostname === constServer.PROPSTO_HOST ||
+          hostname.endsWith(`.${constServer.PROPSTO_HOST}`)
+        ) {
           return url;
         }
       } catch {
