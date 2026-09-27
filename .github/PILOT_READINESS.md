@@ -55,11 +55,11 @@ Release test run on the PR #108 preview (2026-09-20), signed in as the seeded ow
 
 ## Gate 2: reproducible deployment
 
-- [ ] `migrate_production.yaml` has failed on all 12 runs since January 2026. Get the logs (re-run it manually), find the real cause, fix it.
+- [x] `migrate_production.yaml` has failed on all 12 runs since January 2026. Logs and step results for every run have expired (GitHub returns 410), and runs older than 30 days cannot be re-run. Diagnosis by comparison: on 2026-03-22 the PR dry-run ran the identical command with identical setup against a Neon branch of production and passed minutes after the prod workflow failed. The only differing input is the hand-pasted `DATABASE_URL_PRODUCTION` secret (set 2026-01-24, never changed; a pooled or stale URI both break `migrate deploy`). Fix in the gate 2 PR: resolve the production URI from the Neon API at run time, exactly as the dry-run does, add `workflow_dispatch`, and run the template bootstrap after deploy. First real proof is the next run on main; delete the secret once it passes.
 - [x] Migrations are split: `packages/data/migrations/` (real, 20 + lock) and `packages/data/prisma/migrations/` (2 orphans Prisma never reads). The invite migration only exists as an orphan. The default-template orphan duplicates DDL already in the real history, so delete it. Move the invite migration, then run `prisma migrate status` against a prod copy before deploying. Done in PR #108 after the preview proved every invite failed; the "Dry-run Migration on Production Copy" check passed, so prod does not have the table yet and the migration applies cleanly.
-- [ ] Preview build swallows migration failures (`packages/data/scripts/seed-if-preview.cjs`). Fail loudly.
-- [ ] Default templates only come from `seed.ts`, which starts with `deleteMany` on every table. Add an idempotent bootstrap for global templates that is safe to run on prod.
-- [ ] `turbo.json` `globalEnv` is missing `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `OPENAI_API_KEY`, `NEXT_PUBLIC_AUTH_URL` (it lists a typo'd `PUBLIC_AUTH_URL`). Without them rate limiting silently no-ops on Vercel.
+- [x] Preview build swallows migration failures (`packages/data/scripts/seed-if-preview.cjs`). Fail loudly. Gate 2 PR: migration failure exits 1; seed failure is still tolerated because app, auth and web seed the same branch concurrently and can collide.
+- [x] Default templates only come from `seed.ts`, which starts with `deleteMany` on every table. Add an idempotent bootstrap for global templates that is safe to run on prod. Gate 2 PR: `packages/data/bootstrap.ts` upserts categories and templates by fixed id and only creates fields with a new template, so stored answers keep their field references. The seed calls it, `db-bootstrap` runs it standalone, the prod workflow runs it after deploy. The seed itself still wipes everything, so previews stay flaky until the seed is made idempotent too.
+- [x] `turbo.json` `globalEnv` is missing `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `OPENAI_API_KEY`, `NEXT_PUBLIC_AUTH_URL` (it lists a typo'd `PUBLIC_AUTH_URL`). Without them rate limiting silently no-ops on Vercel. Fixed in the gate 2 PR.
 - [x] `packages/email/send/index.ts` reads `AUTH_RESEND_KEY`, which exists nowhere. Use `constServer.RESEND_API_KEY`. Then make invite and feedback actions check the send result instead of reporting success regardless.
 - [ ] Error reporting: the logger is `debug`, silent without `DEBUG`. Add Sentry (or equivalent) to app and auth with redaction. Do not enable `DEBUG` globally: invite and auth logs include tokens and session data.
 
@@ -114,7 +114,7 @@ Goals, reports, FeedbackRequest, payments, URI claims, security headers (CSP, HS
 
 ## Git loose ends
 
-- Invite work was committed directly to main by an agent while PR #107 with the same work is open and has a failing E2E run. Close #107.
+- ~~Invite work was committed directly to main by an agent while PR #107 with the same work is open and has a failing E2E run. Close #107.~~ Closed 2026-09-27.
 - PR #106 (email-based identifiers, issue #27) is approved and unmerged. Decide after gate 3.
 - Branches `feat/org-admin-dashboard` and `feat/org-member-visibility` are stale since January. Delete or rebase.
 
