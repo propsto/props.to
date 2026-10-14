@@ -7,6 +7,8 @@ on:
     paths:
       - "packages/data/migrations/**"
       - "packages/data/schema.prisma"
+      - "packages/data/bootstrap.ts"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -25,6 +27,9 @@ jobs:
       PROPSTO_APP_URL: "https://app.example.com"
       AUTH_URL: "https://auth.example.com"
       PROPSTO_HOST: "example.com"
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      NEON_MAIN_BRANCH_ID: ${{ vars.NEON_MAIN_BRANCH_ID }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,10 +46,38 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Resolve the production connection string from the Neon API, the same way the
+      # PR dry-run does for its branch copy. This is always a direct (unpooled) URI,
+      # which prisma migrate requires, and it cannot go stale like a pasted secret.
+      - name: Resolve production connection string
+        id: neon
+        run: |
+          ENDPOINT_ID=$(curl -sf \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches/$NEON_MAIN_BRANCH_ID/endpoints" \
+            -H "Authorization: Bearer $NEON_API_KEY" | jq -r '.endpoints[0].id')
+          if [ -z "$ENDPOINT_ID" ] || [ "$ENDPOINT_ID" == "null" ]; then
+            echo "::error::No endpoint found on Neon branch $NEON_MAIN_BRANCH_ID"
+            exit 1
+          fi
+          CONNECTION_URI=$(curl -sf \
+            "https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/connection_uri?branch_id=$NEON_MAIN_BRANCH_ID&endpoint_id=$ENDPOINT_ID&database_name=${{ vars.NEON_DATABASE_NAME }}&role_name=${{ vars.NEON_ROLE_NAME }}" \
+            -H "Authorization: Bearer $NEON_API_KEY" | jq -r '.uri')
+          if [ -z "$CONNECTION_URI" ] || [ "$CONNECTION_URI" == "null" ]; then
+            echo "::error::Could not resolve a connection URI for the production branch"
+            exit 1
+          fi
+          echo "::add-mask::$CONNECTION_URI"
+          echo "connection_uri=$CONNECTION_URI" >> $GITHUB_OUTPUT
+
       - name: Run migrations
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL_PRODUCTION }}
+          DATABASE_URL: ${{ steps.neon.outputs.connection_uri }}
         run: pnpm --filter @propsto/data db-deploy
+
+      - name: Bootstrap global templates
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.connection_uri }}
+        run: pnpm --filter @propsto/data db-bootstrap
 
       - name: Notify on failure
         if: failure()
