@@ -36,6 +36,7 @@ export function AdoptManagedLinks(): React.ReactNode {
   const [loading, setLoading] = useState(true);
   const [orgLinks, setOrgLinks] = useState<OrgManagedLinks[]>([]);
   const [selectedLink, setSelectedLink] = useState<ManagedLink | null>(null);
+  const [publicPrefix, setPublicPrefix] = useState("");
   const [customSlug, setCustomSlug] = useState("");
   const [adopting, setAdopting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -76,8 +77,9 @@ export function AdoptManagedLinks(): React.ReactNode {
     setAdopting(false);
   };
 
-  const openAdoptDialog = (link: ManagedLink) => {
+  const openAdoptDialog = (link: ManagedLink, prefix: string) => {
     setSelectedLink(link);
+    setPublicPrefix(prefix);
     setCustomSlug("");
     setDialogOpen(true);
   };
@@ -144,7 +146,7 @@ export function AdoptManagedLinks(): React.ReactNode {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => openAdoptDialog(link)}
+                      onClick={() => openAdoptDialog(link, org.publicPrefix)}
                     >
                       Adopt
                     </Button>
@@ -171,7 +173,7 @@ export function AdoptManagedLinks(): React.ReactNode {
               <Label htmlFor="customSlug">Custom URL (optional)</Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  props.to/f/
+                  {publicPrefix}
                 </span>
                 <Input
                   id="customSlug"

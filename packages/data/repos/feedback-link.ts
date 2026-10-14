@@ -9,22 +9,26 @@ const logger = createLogger("data");
 
 // Types for feedback link data
 export type FeedbackLinkWithRelations = Prisma.FeedbackLinkGetPayload<{
-  include: {
-    user: {
-      select: { id: true; firstName: true; lastName: true; image: true };
-    };
-    template: { select: { id: true; name: true; feedbackType: true } };
-    organization: { select: { id: true; name: true } };
-    group: { select: { id: true; name: true } };
-    _count: { select: { feedbacks: true } };
-  };
+  include: typeof feedbackLinkInclude;
 }>;
 
+// Slugs are included so the app can build the public URL without extra queries
 const feedbackLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
-  user: { select: { id: true, firstName: true, lastName: true, image: true } },
+  user: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      image: true,
+      slug: { select: { slug: true } },
+      organizationSlugs: { select: { slug: true, scopedToOrgId: true } },
+    },
+  },
   template: { select: { id: true, name: true, feedbackType: true } },
-  organization: { select: { id: true, name: true } },
-  group: { select: { id: true, name: true } },
+  organization: {
+    select: { id: true, name: true, slug: { select: { slug: true } } },
+  },
+  group: { select: { id: true, name: true, slug: { select: { slug: true } } } },
   _count: { select: { feedbacks: true } },
 });
 

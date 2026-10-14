@@ -71,7 +71,7 @@ Release test: fresh database, `prisma migrate deploy`, bootstrap, app boots, inv
 The personal loop does not work today for any link created through the UI.
 
 - [x] Public submit validates `linkId` as UUID but links are cuid (`(public)/[...slug]/actions.ts:68` vs `schema.prisma` FeedbackLink). Only seeded links can receive feedback. Fix the validator. Gate 3 PR: `z.string().cuid()`.
-- [ ] Copy Link builds `https://props.to/f/<slug>` (`apps/app/src/app/_components/link-list.tsx:92`). No `/f` route exists. Build `/<user>/<slug>` or `/<org>/<user>/<slug>` on the app host. Same string in `links/adopt/adopt-managed-links.tsx`.
+- [x] Copy Link builds `https://props.to/f/<slug>` (`apps/app/src/app/_components/link-list.tsx:92`). No `/f` route exists. Build `/<user>/<slug>` or `/<org>/<user>/<slug>` on the app host. Same string in `links/adopt/adopt-managed-links.tsx`. Gate 3 PR: the link include now carries the user, org-scoped user, org and group slugs; `apps/app/src/lib/public-link-path.ts` builds the path and Copy/Open use it on the current origin. The adopt dialog shows the real `/<org>/<you>/` prefix.
 - [ ] Public form ignores the template (`(public)/[...slug]/_components/feedback-form.tsx`). Fetch `template.fields` in `getFeedbackLink`, render them, validate `fieldsData` server-side against the fields, and render answers with field labels on the detail page (it currently uses JSON keys and treats every number as a rating).
 - [ ] Feedback-received email reads `fieldsData.feedback`, which template-driven forms will not set. Use the first long-text field or a generic body.
 - [ ] Submit never sets `submitterId`, so signed-in submitters look anonymous and their Sent list stays empty. Set it from the session when present.
