@@ -97,7 +97,10 @@ export async function submitFeedbackAction(
   // Rate limit check
   const rateLimitResult = await checkFeedbackRateLimit();
   if (!rateLimitResult.success) {
-    return { success: false, error: "Too many requests. Please try again later." };
+    return {
+      success: false,
+      error: "Too many requests. Please try again later.",
+    };
   }
 
   // Validate and sanitize input
