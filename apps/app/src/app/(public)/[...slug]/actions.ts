@@ -142,9 +142,10 @@ export async function submitFeedbackAction(
     link.template.fields,
     sanitizedInput.fieldsData,
   );
-  if (answers.error) {
+  if (answers.error !== undefined) {
     return { success: false, error: answers.error };
   }
+  const fieldsData = answers.data;
 
   // Determine visibility
   const visibility: FeedbackVisibility = sanitizedInput.isAnonymous
@@ -169,7 +170,7 @@ export async function submitFeedbackAction(
     submitterEmail: sanitizedInput.isAnonymous
       ? undefined
       : sanitizedInput.submitterEmail,
-    fieldsData: answers.data,
+    fieldsData,
   });
 
   if (!feedbackResult.success) {
@@ -185,8 +186,13 @@ export async function submitFeedbackAction(
     if (userResult.success && userResult.data?.email) {
       const recipientName =
         userResult.data.firstName ?? userResult.data.email.split("@")[0];
-      const feedbackData = sanitizedInput.fieldsData as { feedback?: string };
-      const feedbackPreview = feedbackData?.feedback;
+      // Preview: the first long-text answer, else the first text answer, else the generic body
+      const textAnswer = (type: string): string | undefined =>
+        link.template.fields
+          .filter(f => f.type === type)
+          .map(f => fieldsData[f.id])
+          .find((v): v is string => typeof v === "string");
+      const feedbackPreview = textAnswer("TEXTAREA") ?? textAnswer("TEXT");
 
       await sendFeedbackReceivedEmail(userResult.data.email, {
         recipientName,
