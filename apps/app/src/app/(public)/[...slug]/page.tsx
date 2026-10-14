@@ -67,6 +67,10 @@ import {
 } from "@propsto/ui/atoms/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
+import { auth } from "@/server/auth.server";
+import { constServer } from "@propsto/constants/server";
+import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
+import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
 import { UserProfileHeader } from "./_components/user-profile-header";
 
 interface PublicPageProps {
@@ -480,6 +484,40 @@ async function handleGroupPage(
   );
 }
 
+// The form, or the reason the org's settings refuse this viewer (members-only, disabled)
+async function gatedFeedbackForm(
+  link: FeedbackLinkWithRelations,
+  basePath: string,
+): Promise<React.ReactNode> {
+  const session = await auth();
+  const policy = await getFeedbackPolicy(link, session?.user?.id);
+  const refusal = feedbackRefusal(policy, false);
+  if (refusal) {
+    const signIn = `${constServer.AUTH_URL}/?callbackUrl=${encodeURIComponent(`${constServer.PROPSTO_APP_URL}${basePath}`)}`;
+    return (
+      <Card className="text-center">
+        <CardHeader>
+          <CardTitle>{refusal}</CardTitle>
+        </CardHeader>
+        {policy.enabled && !session?.user && (
+          <CardContent>
+            <Button asChild>
+              <a href={signIn}>Sign in to continue</a>
+            </Button>
+          </CardContent>
+        )}
+      </Card>
+    );
+  }
+  return (
+    <FeedbackSubmissionForm
+      link={link}
+      basePath={basePath}
+      allowAnonymous={policy.allowAnonymous}
+    />
+  );
+}
+
 async function handlePersonalFeedbackLink(
   userId: string,
   username: string,
@@ -502,10 +540,7 @@ async function handlePersonalFeedbackLink(
         </h1>
         <p className="text-muted-foreground">{link.name}</p>
       </div>
-      <FeedbackSubmissionForm
-        link={link}
-        basePath={`/${username}/${linkSlug}`}
-      />
+      {await gatedFeedbackForm(link, `/${username}/${linkSlug}`)}
     </div>
   );
 }
@@ -580,10 +615,7 @@ async function handleOrgUserFeedbackLink(
           </p>
         )}
       </div>
-      <FeedbackSubmissionForm
-        link={link}
-        basePath={`/${orgSlug}/${userSlug}/${linkSlug}`}
-      />
+      {await gatedFeedbackForm(link, `/${orgSlug}/${userSlug}/${linkSlug}`)}
     </div>
   );
 }
@@ -624,10 +656,7 @@ async function handleGroupFeedbackLink(
           {group.organization.name}
         </p>
       </div>
-      <FeedbackSubmissionForm
-        link={link}
-        basePath={`/${orgSlug}/${groupSlug}/${linkSlug}`}
-      />
+      {await gatedFeedbackForm(link, `/${orgSlug}/${groupSlug}/${linkSlug}`)}
     </div>
   );
 }

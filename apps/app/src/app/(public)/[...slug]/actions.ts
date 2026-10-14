@@ -12,6 +12,7 @@ import type { Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
 import { auth } from "@/server/auth.server";
+import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
 import { z } from "zod";
 import { createLogger } from "@propsto/logger";
 import { validateFieldAnswers } from "@/lib/template-fields";
@@ -153,13 +154,19 @@ export async function submitFeedbackAction(
     ? "ANONYMOUS"
     : link.visibility;
 
-  // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
-  const session = sanitizedInput.isAnonymous ? null : await auth();
+  // Org settings: feedback enabled, members-only, anonymous allowed
+  const session = await auth();
+  const policy = await getFeedbackPolicy(link, session?.user?.id);
+  const refusal = feedbackRefusal(policy, sanitizedInput.isAnonymous);
+  if (refusal) {
+    return { success: false, error: refusal };
+  }
 
   // Create the feedback
   const feedbackResult = await createFeedback({
     userId: link.userId,
-    submitterId: session?.user?.id,
+    // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
+    submitterId: sanitizedInput.isAnonymous ? undefined : session?.user?.id,
     feedbackType: link.feedbackType,
     visibility,
     status: link.organization
