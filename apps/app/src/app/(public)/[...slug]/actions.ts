@@ -144,15 +144,18 @@ export async function submitFeedbackAction(
   }
   const fieldsData = answers.data;
 
-  // Determine visibility
-  const visibility: FeedbackVisibility = sanitizedInput.isAnonymous
+  // Effective anonymity: the toggle or an ANONYMOUS link; the org policy and the
+  // stored submitter fields must follow it, not just the toggle
+  const isAnonymous =
+    sanitizedInput.isAnonymous || link.visibility === "ANONYMOUS";
+  const visibility: FeedbackVisibility = isAnonymous
     ? "ANONYMOUS"
     : link.visibility;
 
   // Org settings: feedback enabled, members-only, anonymous allowed
   const session = await auth();
   const policy = await getFeedbackPolicy(link, session?.user?.id);
-  const refusal = feedbackRefusal(policy, sanitizedInput.isAnonymous);
+  const refusal = feedbackRefusal(policy, isAnonymous);
   if (refusal) {
     return { success: false, error: refusal };
   }
@@ -161,7 +164,7 @@ export async function submitFeedbackAction(
   const feedbackResult = await createFeedback({
     userId: link.userId,
     // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
-    submitterId: sanitizedInput.isAnonymous ? undefined : session?.user?.id,
+    submitterId: isAnonymous ? undefined : session?.user?.id,
     feedbackType: link.feedbackType,
     visibility,
     status: link.organization
@@ -171,12 +174,8 @@ export async function submitFeedbackAction(
     linkId: link.id,
     organizationId: link.organizationId ?? undefined,
     groupId: link.groupId ?? undefined,
-    submitterName: sanitizedInput.isAnonymous
-      ? undefined
-      : sanitizedInput.submitterName,
-    submitterEmail: sanitizedInput.isAnonymous
-      ? undefined
-      : sanitizedInput.submitterEmail,
+    submitterName: isAnonymous ? undefined : sanitizedInput.submitterName,
+    submitterEmail: isAnonymous ? undefined : sanitizedInput.submitterEmail,
     fieldsData,
   });
 
@@ -205,13 +204,9 @@ export async function submitFeedbackAction(
 
       await sendFeedbackReceivedEmail(userResult.data.email, {
         recipientName,
-        feedbackPreview: sanitizedInput.isAnonymous
-          ? undefined
-          : feedbackPreview,
-        senderName: sanitizedInput.isAnonymous
-          ? undefined
-          : sanitizedInput.submitterName,
-        isAnonymous: sanitizedInput.isAnonymous,
+        feedbackPreview: isAnonymous ? undefined : feedbackPreview,
+        senderName: isAnonymous ? undefined : sanitizedInput.submitterName,
+        isAnonymous,
         feedbackType: link.feedbackType.replace(/_/g, " "),
         dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
       });

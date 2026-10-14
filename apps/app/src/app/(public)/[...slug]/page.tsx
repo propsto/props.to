@@ -491,7 +491,7 @@ async function gatedFeedbackForm(
 ): Promise<React.ReactNode> {
   const session = await auth();
   const policy = await getFeedbackPolicy(link, session?.user?.id);
-  const refusal = feedbackRefusal(policy, false);
+  const refusal = feedbackRefusal(policy, link.visibility === "ANONYMOUS");
   if (refusal) {
     const signIn = `${constServer.AUTH_URL}/?callbackUrl=${encodeURIComponent(`${constServer.PROPSTO_APP_URL}${basePath}`)}`;
     return (
