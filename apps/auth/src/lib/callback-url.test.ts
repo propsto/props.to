@@ -25,6 +25,9 @@ describe("isAllowedRedirect", () => {
       false,
     );
     expect(isAllowedRedirect("//evil.com", base, "props.to")).toBe(false);
+    expect(isAllowedRedirect("/\\evil.com", base, "props.to")).toBe(false);
+    expect(isAllowedRedirect("/\\evil.com/x", base, "props.to")).toBe(false);
+    expect(isAllowedRedirect("/\\\\evil.com", base, "props.to")).toBe(false);
     expect(isAllowedRedirect("not a url", base, "props.to")).toBe(false);
     expect(isAllowedRedirect("https://app.props.to/", base, undefined)).toBe(
       false,

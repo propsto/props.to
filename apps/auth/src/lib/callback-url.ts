@@ -6,8 +6,10 @@ export function isAllowedRedirect(
   baseUrl: string,
   host: string | undefined,
 ): boolean {
-  if (url.startsWith("/") && !url.startsWith("//")) return true;
   try {
+    // A path must still resolve to this origin: "//evil.com" and "/\evil.com"
+    // are parsed by browsers as evil.com
+    if (url.startsWith("/")) return new URL(url, baseUrl).origin === baseUrl;
     const { origin, hostname } = new URL(url);
     if (origin === baseUrl) return true;
     return (
