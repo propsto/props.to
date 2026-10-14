@@ -49,6 +49,10 @@ export async function createFeedbackLink(data: {
 }): Promise<HandleEvent<FeedbackLinkWithRelations>> {
   try {
     logger("createFeedbackLink", { userId: data.userId, name: data.name });
+    await assertTemplateUsable(data.templateId, {
+      userId: data.userId,
+      organizationId: data.organizationId,
+    });
 
     // Generate unique slug if not provided
     let slug = data.slug ?? generateLinkSlug();
@@ -428,12 +432,22 @@ const managedLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
 });
 
 // A managed link may only use a system default template or one assigned to the org
-async function assertTemplateUsableByOrg(templateId: string, organizationId: string): Promise<void> {
+// A template is usable if it is a default, assigned to the user, or assigned to the org
+async function assertTemplateUsable(
+  templateId: string,
+  scope: { userId?: string; organizationId?: string },
+): Promise<void> {
   const template = await db.feedbackTemplate.findFirst({
     where: {
       id: templateId,
       deletedAt: null,
-      OR: [{ isDefault: true }, { organizations: { some: { id: organizationId } } }],
+      OR: [
+        { isDefault: true },
+        ...(scope.userId ? [{ users: { some: { id: scope.userId } } }] : []),
+        ...(scope.organizationId
+          ? [{ organizations: { some: { id: scope.organizationId } } }]
+          : []),
+      ],
     },
     select: { id: true },
   });
@@ -456,7 +470,9 @@ export async function createManagedFeedbackLink(data: {
       organizationId: data.organizationId,
       name: data.name,
     });
-    await assertTemplateUsableByOrg(data.templateId, data.organizationId);
+    await assertTemplateUsable(data.templateId, {
+      organizationId: data.organizationId,
+    });
 
     // Generate unique slug if not provided
     let slug = data.slug ?? generateLinkSlug();
@@ -671,7 +687,8 @@ export async function updateManagedFeedbackLink(
 ): Promise<HandleEvent<ManagedFeedbackLinkWithStats>> {
   try {
     logger("updateManagedFeedbackLink", { id, organizationId, data });
-    if (data.templateId) await assertTemplateUsableByOrg(data.templateId, organizationId);
+    if (data.templateId)
+      await assertTemplateUsable(data.templateId, { organizationId });
     const link = await db.feedbackLink.update({
       where: { id, organizationId, isManaged: true },
       data,
