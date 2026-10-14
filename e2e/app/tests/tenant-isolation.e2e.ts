@@ -38,13 +38,10 @@ test.describe("signed in as another tenant", () => {
     await expect(page.getByText("Carol at Globex")).toBeVisible();
     await expect(page.getByText("John at Acme")).toHaveCount(0);
 
-    const res = await page.goto(`${APP_URL}/org/acme/admin/links`);
-    const blocked =
-      res?.status() === 404 || !page.url().includes("/org/acme/admin");
-    expect(
-      blocked,
-      `expected acme admin to be blocked, got ${res?.status()} at ${page.url()}`,
-    ).toBe(true);
+    // notFound() inside a streamed Suspense boundary still answers 200, so assert on
+    // what is rendered: the not-found page and none of acme's data
+    await page.goto(`${APP_URL}/org/acme/admin/links`);
+    await expect(page.getByText("Page not found")).toBeVisible();
     await expect(page.getByText("John at Acme")).toHaveCount(0);
   });
 
@@ -59,12 +56,8 @@ test.describe("signed in as another tenant", () => {
     await expect(page.getByText("John at Acme")).toHaveCount(0);
 
     // A plain member cannot open the acme admin area either
-    const res = await page.goto(`${APP_URL}/org/acme/admin/links`);
-    const blocked =
-      res?.status() === 404 || !page.url().includes("/org/acme/admin");
-    expect(
-      blocked,
-      `expected acme admin to be blocked for a member, got ${res?.status()} at ${page.url()}`,
-    ).toBe(true);
+    await page.goto(`${APP_URL}/org/acme/admin/links`);
+    await expect(page.getByText("Page not found")).toBeVisible();
+    await expect(page.getByText("John at Acme")).toHaveCount(0);
   });
 });
