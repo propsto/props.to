@@ -46,6 +46,9 @@ export default async function FeedbackDetailPage({
   }
 
   const { feedbackId } = await params;
+  if (!/^\d{1,18}$/.test(feedbackId)) {
+    notFound(); // BigInt() throws on anything else
+  }
   const feedbackResult = await getFeedback(BigInt(feedbackId));
 
   if (!feedbackResult.success || !feedbackResult.data) {
@@ -58,6 +61,10 @@ export default async function FeedbackDetailPage({
   const isRecipient = feedback.userId === session.user.id;
   const isSender = feedback.submitterId === session.user.id;
   if (!isRecipient && !isSender) {
+    notFound();
+  }
+  // The recipient only sees approved feedback; the sender may review their own submission
+  if (!isSender && feedback.status !== "APPROVED") {
     notFound();
   }
 
