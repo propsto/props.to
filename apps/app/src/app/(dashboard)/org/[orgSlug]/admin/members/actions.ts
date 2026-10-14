@@ -54,6 +54,11 @@ export async function inviteMembersAction(
     return { success: false, error: error ?? "Organization not found" };
   }
 
+  // Server-side role check: an ADMIN must not be able to mint an OWNER invite
+  if (data.role !== "MEMBER" && data.role !== "ADMIN") {
+    return { success: false, error: "Invalid role" };
+  }
+
   // Check allowUserInvites setting
   const orgResult = await getOrganizationBySlug(orgSlug);
   if (!orgResult.success || !orgResult.data) {
@@ -62,7 +67,10 @@ export async function inviteMembersAction(
   const org = orgResult.data;
 
   if (org.organizationSettings && !org.organizationSettings.allowUserInvites) {
-    return { success: false, error: "Invitations are disabled for this organization" };
+    return {
+      success: false,
+      error: "Invitations are disabled for this organization",
+    };
   }
 
   const results: { email: string; success: boolean; error?: string }[] = [];
@@ -92,16 +100,25 @@ export async function inviteMembersAction(
     }
 
     // Check for existing pending invite (expired/revoked ones are re-issued by createOrganizationInvite)
-    const existingInviteResult = await getOrganizationInviteByEmail(orgId, email);
+    const existingInviteResult = await getOrganizationInviteByEmail(
+      orgId,
+      email,
+    );
     if (existingInviteResult.success && existingInviteResult.data) {
       const existing = existingInviteResult.data;
-      if (!existing.revokedAt && !existing.acceptedAt && existing.expiresAt > new Date()) {
+      if (
+        !existing.revokedAt &&
+        !existing.acceptedAt &&
+        existing.expiresAt > new Date()
+      ) {
         results.push({ email, success: false, error: "Already invited" });
         continue;
       }
     }
 
-    const expiresAt = new Date(Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000);
+    const expiresAt = new Date(
+      Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000,
+    );
 
     const inviteResult = await createOrganizationInvite({
       organizationId: orgId,
@@ -113,7 +130,11 @@ export async function inviteMembersAction(
     });
 
     if (!inviteResult.success || !inviteResult.data) {
-      results.push({ email, success: false, error: inviteResult.error ?? "Failed to create invite" });
+      results.push({
+        email,
+        success: false,
+        error: inviteResult.error ?? "Failed to create invite",
+      });
       continue;
     }
 
@@ -132,7 +153,11 @@ export async function inviteMembersAction(
     results.push(
       sent.success
         ? { email, success: true }
-        : { email, success: false, error: "Invite created but the email could not be sent" },
+        : {
+            email,
+            success: false,
+            error: "Invite created but the email could not be sent",
+          },
     );
   }
 
@@ -182,10 +207,17 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
   const org = orgResult.data;
 
   const expiresAt = new Date(Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000);
-  const refreshResult = await resendOrganizationInvite(inviteId, orgId, expiresAt);
+  const refreshResult = await resendOrganizationInvite(
+    inviteId,
+    orgId,
+    expiresAt,
+  );
 
   if (!refreshResult.success || !refreshResult.data) {
-    return { success: false, error: refreshResult.error ?? "Failed to resend invite" };
+    return {
+      success: false,
+      error: refreshResult.error ?? "Failed to resend invite",
+    };
   }
 
   const invite = refreshResult.data;
@@ -201,7 +233,10 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
 
   revalidatePath(`/org/${orgSlug}/admin/members`);
   if (!sent.success) {
-    return { success: false, error: "Invite refreshed but the email could not be sent" };
+    return {
+      success: false,
+      error: "Invite refreshed but the email could not be sent",
+    };
   }
   return { success: true };
 }
@@ -212,7 +247,11 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
 export async function getPendingInvitesAction(orgSlug: string) {
   const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId) {
-    return { success: false, error: error ?? "Organization not found", data: [] };
+    return {
+      success: false,
+      error: error ?? "Organization not found",
+      data: [],
+    };
   }
 
   const result = await listPendingOrganizationInvites(orgId);
