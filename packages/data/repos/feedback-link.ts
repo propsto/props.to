@@ -24,7 +24,14 @@ const feedbackLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
       organizationSlugs: { select: { slug: true, scopedToOrgId: true } },
     },
   },
-  template: { select: { id: true, name: true, feedbackType: true } },
+  template: {
+    select: {
+      id: true,
+      name: true,
+      feedbackType: true,
+      fields: { orderBy: { order: "asc" } },
+    },
+  },
   organization: {
     select: { id: true, name: true, slug: { select: { slug: true } } },
   },

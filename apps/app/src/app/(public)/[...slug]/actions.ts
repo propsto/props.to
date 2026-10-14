@@ -13,6 +13,7 @@ import { constServer } from "@propsto/constants/server";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
 import { z } from "zod";
 import { createLogger } from "@propsto/logger";
+import { validateFieldAnswers } from "@/lib/template-fields";
 
 const logger = createLogger("app:feedback");
 
@@ -136,6 +137,15 @@ export async function submitFeedbackAction(
     };
   }
 
+  // Answers must match the template that drives the form (public, unauthenticated input)
+  const answers = validateFieldAnswers(
+    link.template.fields,
+    sanitizedInput.fieldsData,
+  );
+  if (answers.error) {
+    return { success: false, error: answers.error };
+  }
+
   // Determine visibility
   const visibility: FeedbackVisibility = sanitizedInput.isAnonymous
     ? "ANONYMOUS"
@@ -159,7 +169,7 @@ export async function submitFeedbackAction(
     submitterEmail: sanitizedInput.isAnonymous
       ? undefined
       : sanitizedInput.submitterEmail,
-    fieldsData: sanitizedInput.fieldsData,
+    fieldsData: answers.data,
   });
 
   if (!feedbackResult.success) {

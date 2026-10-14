@@ -14,39 +14,61 @@ import {
 } from "@propsto/ui/atoms/card";
 import { Label } from "@propsto/ui/atoms/label";
 import { Switch } from "@propsto/ui/atoms/switch";
+import { Checkbox } from "@propsto/ui/atoms/checkbox";
+import { RadioGroup, RadioGroupItem } from "@propsto/ui/atoms/radio-group";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
+import {
+  fieldOptions,
+  SCALE_MAX,
+  validateFieldAnswers,
+  type FieldAnswer,
+  type FieldAnswers,
+  type FieldSpec,
+} from "@/lib/template-fields";
 import { submitFeedbackAction } from "../actions";
 
 interface FeedbackSubmissionFormProps {
   link: FeedbackLinkWithRelations;
   basePath: string;
+  allowAnonymous?: boolean;
 }
 
 export function FeedbackSubmissionForm({
   link,
   basePath,
+  allowAnonymous = true,
 }: FeedbackSubmissionFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isAnonymous, setIsAnonymous] = useState(
-    link.visibility === "ANONYMOUS",
+    allowAnonymous && link.visibility === "ANONYMOUS",
   );
   const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [submitterName, setSubmitterName] = useState("");
   const [submitterEmail, setSubmitterEmail] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [rating, setRating] = useState<number | null>(null);
+  const [answers, setAnswers] = useState<FieldAnswers>({});
+  const fields = link.template.fields;
+
+  const setAnswer = (id: string, value: FieldAnswer | undefined): void =>
+    setAnswers(prev => {
+      const next = { ...prev };
+      if (value === undefined || value === "") delete next[id];
+      else next[id] = value;
+      return next;
+    });
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
     setError(null);
 
-    if (!feedback.trim()) {
-      setError("Please provide your feedback");
+    const checked = validateFieldAnswers(fields, answers);
+    if (checked.error !== undefined) {
+      setError(checked.error);
       return;
     }
+    const fieldsData = checked.data;
 
     startTransition(async () => {
       const result = await submitFeedbackAction({
@@ -54,10 +76,7 @@ export function FeedbackSubmissionForm({
         submitterName: isAnonymous ? undefined : submitterName || undefined,
         submitterEmail: isAnonymous ? undefined : submitterEmail || undefined,
         isAnonymous,
-        fieldsData: {
-          feedback,
-          rating,
-        },
+        fieldsData,
       });
       if (result.success) {
         router.push(`${basePath}/thanks`);
@@ -78,7 +97,7 @@ export function FeedbackSubmissionForm({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Anonymous toggle */}
-          {link.visibility !== "ANONYMOUS" && (
+          {allowAnonymous && link.visibility !== "ANONYMOUS" && (
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <Label>Submit anonymously</Label>
@@ -115,44 +134,28 @@ export function FeedbackSubmissionForm({
             </div>
           )}
 
-          {/* Feedback fields */}
+          {/* Template fields */}
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="feedback">Your Feedback</Label>
-              <Textarea
-                id="feedback"
-                placeholder="Share your thoughts..."
-                className="min-h-[150px]"
-                value={feedback}
-                onChange={e => setFeedback(e.target.value)}
-              />
-              <p className="text-sm text-muted-foreground">
-                Be specific and constructive
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Overall Rating</Label>
-              <div className="flex gap-4">
-                {[1, 2, 3, 4, 5].map(value => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setRating(value)}
-                    className={`flex size-10 items-center justify-center rounded-full border-2 transition-colors ${
-                      rating === value
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-muted hover:border-primary/50"
-                    }`}
-                  >
-                    {value}
-                  </button>
-                ))}
+            {fields.map(field => (
+              <div key={field.id} className="space-y-2">
+                <Label htmlFor={field.id}>
+                  {field.label}
+                  {field.required && (
+                    <span className="text-destructive"> *</span>
+                  )}
+                </Label>
+                <FieldInput
+                  field={field}
+                  value={answers[field.id]}
+                  onChange={v => setAnswer(field.id, v)}
+                />
+                {field.helpText && (
+                  <p className="text-sm text-muted-foreground">
+                    {field.helpText}
+                  </p>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                1 = Needs Improvement, 5 = Excellent
-              </p>
-            </div>
+            ))}
           </div>
 
           {error && <div className="text-sm text-destructive">{error}</div>}
@@ -164,4 +167,130 @@ export function FeedbackSubmissionForm({
       </CardContent>
     </Card>
   );
+}
+
+function FieldInput({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldSpec & { placeholder: string | null };
+  value: FieldAnswer | undefined;
+  onChange: (value: FieldAnswer | undefined) => void;
+}): React.JSX.Element {
+  const inputClass =
+    "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  switch (field.type) {
+    case "TEXTAREA":
+      return (
+        <Textarea
+          id={field.id}
+          placeholder={field.placeholder ?? undefined}
+          className="min-h-[120px]"
+          value={typeof value === "string" ? value : ""}
+          onChange={e => onChange(e.target.value)}
+        />
+      );
+    case "TEXT":
+      return (
+        <Input
+          id={field.id}
+          placeholder={field.placeholder ?? undefined}
+          value={typeof value === "string" ? value : ""}
+          onChange={e => onChange(e.target.value)}
+        />
+      );
+    case "NUMBER":
+      return (
+        <Input
+          id={field.id}
+          type="number"
+          placeholder={field.placeholder ?? undefined}
+          value={typeof value === "number" ? value : ""}
+          onChange={e =>
+            onChange(e.target.value === "" ? undefined : Number(e.target.value))
+          }
+        />
+      );
+    case "DATE":
+      return (
+        <Input
+          id={field.id}
+          type="date"
+          value={typeof value === "string" ? value : ""}
+          onChange={e => onChange(e.target.value)}
+        />
+      );
+    case "RATING":
+    case "SCALE": {
+      const max = SCALE_MAX[field.type]!;
+      return (
+        <div
+          id={field.id}
+          role="radiogroup"
+          aria-label={field.label}
+          className="flex flex-wrap gap-2"
+        >
+          {Array.from({ length: max }, (_, i) => i + 1).map(n => (
+            <button
+              key={n}
+              type="button"
+              role="radio"
+              aria-checked={value === n}
+              onClick={() => onChange(n)}
+              className={`flex size-10 items-center justify-center rounded-full border-2 transition-colors ${
+                value === n
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-muted hover:border-primary/50"
+              }`}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+      );
+    }
+    case "SELECT":
+      return (
+        <select
+          id={field.id}
+          className={inputClass}
+          value={typeof value === "string" ? value : ""}
+          onChange={e => onChange(e.target.value)}
+        >
+          <option value="">{field.placeholder ?? "Select..."}</option>
+          {fieldOptions(field).map(o => (
+            <option key={o} value={o}>
+              {o}
+            </option>
+          ))}
+        </select>
+      );
+    case "RADIO":
+      return (
+        <RadioGroup
+          id={field.id}
+          value={typeof value === "string" ? value : ""}
+          onValueChange={onChange}
+        >
+          {fieldOptions(field).map(o => (
+            <div key={o} className="flex items-center gap-2">
+              <RadioGroupItem id={`${field.id}-${o}`} value={o} />
+              <Label htmlFor={`${field.id}-${o}`}>{o}</Label>
+            </div>
+          ))}
+        </RadioGroup>
+      );
+    case "CHECKBOX":
+      return (
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id={field.id}
+            checked={value === true}
+            onCheckedChange={c => onChange(c === true ? true : undefined)}
+          />
+          <Label htmlFor={field.id}>{field.placeholder ?? "Yes"}</Label>
+        </div>
+      );
+  }
 }

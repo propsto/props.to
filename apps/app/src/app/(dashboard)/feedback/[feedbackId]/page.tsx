@@ -11,7 +11,8 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { auth } from "@/server/auth.server";
-import { getFeedback } from "@propsto/data/repos";
+import { getFeedback, getFeedbackTemplate } from "@propsto/data/repos";
+import { labelAnswers, SCALE_MAX } from "@/lib/template-fields";
 import {
   Card,
   CardContent,
@@ -59,6 +60,13 @@ export default async function FeedbackDetailPage({
   if (!isRecipient && !isSender) {
     notFound();
   }
+
+  // Template fields give the stored answers their labels and types
+  const templateResult = await getFeedbackTemplate(feedback.templateId);
+  const answers = labelAnswers(
+    templateResult.data?.fields ?? [],
+    (feedback.fieldsData as Record<string, unknown> | null) ?? {},
+  );
 
   const isAnonymous =
     feedback.visibility === "ANONYMOUS" || !feedback.submitter;
@@ -123,13 +131,7 @@ export default async function FeedbackDetailPage({
               </CardHeader>
               <CardContent>
                 <Separator className="mb-6" />
-                {feedback.fieldsData ? (
-                  <FeedbackContent
-                    data={feedback.fieldsData as Record<string, unknown>}
-                  />
-                ) : (
-                  <p className="text-muted-foreground">No content available</p>
-                )}
+                <FeedbackContent answers={answers} />
               </CardContent>
             </Card>
           </div>
@@ -221,30 +223,33 @@ export default async function FeedbackDetailPage({
 }
 
 function FeedbackContent({
-  data,
+  answers,
 }: {
-  data: Record<string, unknown>;
+  answers: ReturnType<typeof labelAnswers>;
 }): React.JSX.Element {
-  const entries = Object.entries(data).filter(
-    ([, value]) => value !== null && value !== undefined && value !== "",
-  );
-
-  if (entries.length === 0) {
+  if (answers.length === 0) {
     return <p className="text-muted-foreground">No content available</p>;
   }
 
   return (
     <div className="space-y-6">
-      {entries.map(([key, value]) => (
+      {answers.map(({ key, label, type, value }) => (
         <div key={key}>
-          <h4 className="mb-2 text-sm font-medium text-muted-foreground capitalize">
-            {key.replace(/([A-Z])/g, " $1").replace(/_/g, " ")}
+          <h4 className="mb-2 text-sm font-medium text-muted-foreground">
+            {label}
           </h4>
           <div className="text-base">
-            {typeof value === "string" ? (
+            {typeof value === "number" && (type === null || SCALE_MAX[type]) ? (
+              <RatingDisplay
+                value={value}
+                max={(type && SCALE_MAX[type]) || (value > 5 ? 10 : 5)}
+              />
+            ) : typeof value === "string" ? (
               <p className="whitespace-pre-wrap">{value}</p>
+            ) : typeof value === "boolean" ? (
+              <p>{value ? "Yes" : "No"}</p>
             ) : typeof value === "number" ? (
-              <RatingDisplay value={value} />
+              <p>{value}</p>
             ) : Array.isArray(value) ? (
               <ul className="list-inside list-disc">
                 {value.map((item, i) => (
@@ -261,11 +266,13 @@ function FeedbackContent({
   );
 }
 
-function RatingDisplay({ value }: { value: number }): React.JSX.Element {
-  // Assume ratings are 1-5 or 1-10
-  const maxRating = value > 5 ? 10 : 5;
-  const percentage = (value / maxRating) * 100;
-
+function RatingDisplay({
+  value,
+  max: maxRating,
+}: {
+  value: number;
+  max: number;
+}): React.JSX.Element {
   return (
     <div className="flex items-center gap-2">
       <div className="flex gap-1">
