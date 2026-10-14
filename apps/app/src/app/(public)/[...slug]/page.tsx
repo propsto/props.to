@@ -511,7 +511,11 @@ async function gatedFeedbackForm(
   }
   return (
     <FeedbackSubmissionForm
-      link={link}
+      link={{
+        id: link.id,
+        visibility: link.visibility,
+        template: { fields: link.template.fields },
+      }}
       basePath={basePath}
       allowAnonymous={policy.allowAnonymous}
     />

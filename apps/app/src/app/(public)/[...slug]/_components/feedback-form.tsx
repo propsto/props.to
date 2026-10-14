@@ -27,8 +27,15 @@ import {
 } from "@/lib/template-fields";
 import { submitFeedbackAction } from "../actions";
 
+// Only what the form needs: the whole link (recipient id, org memberships, counts)
+// would be serialized into the public page's client payload
+export type PublicFeedbackLink = Pick<
+  FeedbackLinkWithRelations,
+  "id" | "visibility"
+> & { template: Pick<FeedbackLinkWithRelations["template"], "fields"> };
+
 interface FeedbackSubmissionFormProps {
-  link: FeedbackLinkWithRelations;
+  link: PublicFeedbackLink;
   basePath: string;
   allowAnonymous?: boolean;
 }
