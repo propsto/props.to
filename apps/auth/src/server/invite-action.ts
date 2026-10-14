@@ -7,15 +7,17 @@ import {
   acceptOrganizationInvite,
   getUser,
 } from "@propsto/data/repos";
-import { auth } from "@/server/auth.server";
+import { auth, updateSession } from "@/server/auth.server";
 import { inviteRejection } from "@/lib/invite";
 
 export type AcceptInviteState = { error?: string } | undefined;
 
 const MESSAGES = {
-  expired: "This invitation has expired. Please ask an admin to send a new one.",
+  expired:
+    "This invitation has expired. Please ask an admin to send a new one.",
   used: "This invitation has already been used or revoked.",
-  "wrong-account": "This invitation was sent to a different email address. Sign in with that account to accept it.",
+  "wrong-account":
+    "This invitation was sent to a different email address. Sign in with that account to accept it.",
 };
 
 export async function acceptInviteAction(
@@ -23,7 +25,8 @@ export async function acceptInviteAction(
   formData: FormData,
 ): Promise<AcceptInviteState> {
   const token = formData.get("token");
-  if (typeof token !== "string" || !token) return { error: "Invalid invitation." };
+  if (typeof token !== "string" || !token)
+    return { error: "Invalid invitation." };
 
   const session = await auth();
   if (!session?.user?.id) {
@@ -43,7 +46,11 @@ export async function acceptInviteAction(
 
   // Always consume the token, even for an existing member, so it cannot be reused by another account
   const accepted = await acceptOrganizationInvite(token, session.user.id);
-  if (!accepted.success) return { error: accepted.error ?? "Could not accept the invitation." };
+  if (!accepted.success)
+    return { error: accepted.error ?? "Could not accept the invitation." };
+
+  // The JWT carries the org list from sign-in; an update trigger reloads it from the DB
+  await updateSession({});
 
   // ponytail: members have no org landing page yet (gate 4), so land on the dashboard
   redirect(constServer.PROPSTO_APP_URL);
