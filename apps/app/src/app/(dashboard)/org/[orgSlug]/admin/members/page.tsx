@@ -1,8 +1,7 @@
-import { auth } from "@/server/auth.server";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import {
   getOrganizationBySlugWithMembers,
   listPendingOrganizationInvites,
-  verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
@@ -34,11 +33,7 @@ export default async function OrgAdminMembers({
   params,
 }: MembersPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return notFound();
-  }
+  const { org: adminOrg } = await requireOrgAdmin(orgSlug);
 
   // Get organization with members
   const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
@@ -47,35 +42,15 @@ export default async function OrgAdminMembers({
   }
   const org = orgResult.data;
 
-  // Check admin access for invite controls
-  const adminResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
-  const isAdmin = adminResult.success && !!adminResult.data;
-
-  // Load pending invites (only for admins)
-  let pendingInvites: {
-    id: string;
-    email: string;
-    role: string;
-    expiresAt: Date;
-    createdAt: Date;
-    invitedBy: { firstName: string | null; lastName: string | null } | null;
-  }[] = [];
-
-  if (isAdmin && adminResult.data) {
-    const invitesResult = await listPendingOrganizationInvites(
-      adminResult.data.organization.id,
-    );
-    if (invitesResult.success && invitesResult.data) {
-      pendingInvites = invitesResult.data.map(inv => ({
-        id: inv.id,
-        email: inv.email,
-        role: inv.role,
-        expiresAt: inv.expiresAt,
-        createdAt: inv.createdAt,
-        invitedBy: inv.invitedBy,
-      }));
-    }
-  }
+  const invitesResult = await listPendingOrganizationInvites(adminOrg.id);
+  const pendingInvites = (invitesResult.data ?? []).map(inv => ({
+    id: inv.id,
+    email: inv.email,
+    role: inv.role,
+    expiresAt: inv.expiresAt,
+    createdAt: inv.createdAt,
+    invitedBy: inv.invitedBy,
+  }));
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -97,7 +72,7 @@ export default async function OrgAdminMembers({
             Manage organization members and their roles
           </p>
         </div>
-        {isAdmin ? <InviteDialog orgSlug={orgSlug} /> : null}
+        <InviteDialog orgSlug={orgSlug} />
       </div>
 
       <Card>
@@ -157,7 +132,7 @@ export default async function OrgAdminMembers({
             </TableBody>
           </Table>
 
-          {isAdmin && pendingInvites.length > 0 ? (
+          {pendingInvites.length > 0 ? (
             <>
               <Separator className="my-6" />
               <PendingInvites orgSlug={orgSlug} invites={pendingInvites} />
