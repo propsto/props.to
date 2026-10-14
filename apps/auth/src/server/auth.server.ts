@@ -77,7 +77,6 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
               "openid email profile https://www.googleapis.com/auth/admin.directory.user.readonly",
           },
         },
-        checks: ["none"],
         profile: async (profile: GoogleProfile, tokens) => {
           // Validate hosted domain if GOOGLE_ALLOWED_HOSTED_DOMAINS is configured
           if (
