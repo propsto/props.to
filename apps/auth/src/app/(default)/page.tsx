@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
+import { isAllowedRedirect } from "@/lib/callback-url";
 import { auth } from "@/server/auth.server";
 import { SigninForm } from "@components/signin-form";
 import { canUserMoveOn } from "@/lib/post-auth-check";
@@ -10,10 +11,19 @@ export default async function SigninPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }>): Promise<React.ReactElement> {
   const [session, params] = await Promise.all([auth(), searchParams]);
+  const callbackUrl =
+    params.callbackUrl &&
+    isAllowedRedirect(
+      params.callbackUrl,
+      constServer.AUTH_URL,
+      constServer.PROPSTO_HOST,
+    )
+      ? params.callbackUrl
+      : undefined;
 
   if (session?.user) {
     if (canUserMoveOn(session.user)) {
-      return redirect(params.callbackUrl ?? constServer.PROPSTO_APP_URL);
+      return redirect(callbackUrl ?? constServer.PROPSTO_APP_URL);
     }
     const queryString = new URLSearchParams(
       params as Record<string, string>,
