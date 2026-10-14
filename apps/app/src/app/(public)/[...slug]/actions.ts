@@ -1,11 +1,6 @@
 "use server";
 
-import {
-  createFeedback,
-  incrementLinkResponseCount,
-  getFeedbackLink,
-  getUser,
-} from "@propsto/data/repos";
+import { createFeedback, getFeedbackLink, getUser } from "@propsto/data/repos";
 import { sendFeedbackReceivedEmail } from "@propsto/email";
 import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
@@ -186,11 +181,13 @@ export async function submitFeedbackAction(
   });
 
   if (!feedbackResult.success) {
-    return { success: false, error: "Failed to submit feedback" };
+    return {
+      success: false,
+      error: feedbackResult.error?.includes("maximum responses")
+        ? "This feedback link has reached its maximum responses"
+        : "Failed to submit feedback",
+    };
   }
-
-  // Increment the response count
-  await incrementLinkResponseCount(link.id);
 
   // Send email notification to recipient
   try {

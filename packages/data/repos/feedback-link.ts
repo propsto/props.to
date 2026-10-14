@@ -310,23 +310,6 @@ export async function getOrganizationFeedbackLinks(
   }
 }
 
-// Increment response count for a link
-export async function incrementLinkResponseCount(
-  id: string,
-): Promise<HandleEvent<FeedbackLinkWithRelations>> {
-  try {
-    logger("incrementLinkResponseCount", { id });
-    const link = await db.feedbackLink.update({
-      where: { id },
-      data: { responseCount: { increment: 1 } },
-      include: feedbackLinkInclude,
-    });
-    return handleSuccess(link);
-  } catch (e) {
-    return handleError(e);
-  }
-}
-
 // Deactivate a feedback link (pause)
 export async function deactivateFeedbackLink(
   id: string,
