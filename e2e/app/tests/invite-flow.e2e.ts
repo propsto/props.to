@@ -3,7 +3,8 @@ import { signInByPassword } from "../../auth/utils/auth-methods";
 
 /**
  * Invite lifecycle end to end (pilot readiness gate 1), using the preview outbox
- * (EMAIL_PROVIDER=outbox) to read the invite email back through /api/preview-mail.
+ * (EMAIL_PROVIDER=outbox) to read the invite email back through /api/preview-mail,
+ * which only serves mail addressed to the signed-in user (so carol reads her own invite).
  *
  * Runs as mike (Acme OWNER) and invites carol (Globex owner, not an Acme member).
  * Note: accepting makes carol an Acme member, so this file is not idempotent on a
@@ -13,6 +14,12 @@ import { signInByPassword } from "../../auth/utils/auth-methods";
 const AUTH_URL = process.env.AUTH_URL ?? "";
 const APP_URL = process.env.PROPSTO_APP_URL ?? "";
 const INVITEE = "carol.white@globex.com";
+
+async function signInAsInvitee(page: Page): Promise<void> {
+  await page.goto(AUTH_URL);
+  await signInByPassword(page, INVITEE, "P4ssw0rd");
+  await page.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
+}
 
 async function latestInviteLink(page: Page): Promise<string> {
   const res = await page.request.get(
@@ -35,7 +42,7 @@ test.describe
   .serial("invite: email captured, wrong account refused, right account joins once", () => {
   let inviteUrl = "";
 
-  test("owner invites a non-member and the email lands in the outbox", async ({
+  test("owner invites a non-member and the invite shows as pending", async ({
     page,
     baseURL,
   }) => {
@@ -48,8 +55,24 @@ test.describe
     await expect(page.getByRole("cell", { name: INVITEE })).toBeVisible({
       timeout: 20000,
     });
+  });
 
-    inviteUrl = await latestInviteLink(page);
+  test("the inviter cannot read the invitee's mailbox", async ({ page }) => {
+    const res = await page.request.get(
+      `${APP_URL}/api/preview-mail?to=${encodeURIComponent(INVITEE)}`,
+    );
+    expect(res.status()).toBe(404);
+  });
+
+  test.describe("as the invitee", () => {
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("the invitee reads the invite email from her own mailbox", async ({
+      page,
+    }) => {
+      await signInAsInvitee(page);
+      inviteUrl = await latestInviteLink(page);
+    });
   });
 
   test("the inviter (wrong account) cannot accept, and GET does not consume the token", async ({
@@ -62,15 +85,13 @@ test.describe
     ).toHaveCount(0);
   });
 
-  test.describe("as the invitee", () => {
+  test.describe("as the invitee, again", () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test("the invitee accepts once; a second use is refused", async ({
       page,
     }) => {
-      await page.goto(AUTH_URL);
-      await signInByPassword(page, INVITEE, "P4ssw0rd");
-      await page.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
+      await signInAsInvitee(page);
 
       await page.goto(inviteUrl);
       await expect(
