@@ -1,7 +1,6 @@
 "use server";
 
 import { constServer } from "@propsto/constants/server";
-import { getUserByEmail } from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
 import { redirect } from "next/navigation";
 import { signIn } from "@/server/auth.server";
@@ -35,14 +34,9 @@ export async function signInAction(
     return { code: "password-set" };
   }
 
-  // Unknown email with a password: same error as a wrong password. Magic link proceeds so
-  // the provider can create the account (invited newcomers).
-  const user = await getUserByEmail(data.email, ["password"]);
-  if (!user.data && signInMethod === "credentials") {
-    logger("signInAction > no user found");
-    return { success: false, message: "Wrong credentials!" };
-  }
-
+  // Unknown email with a password goes through the same signIn path as a wrong password
+  // (the credentials provider runs a bcrypt compare either way, so timing matches too).
+  // Magic link proceeds so the provider can create the account (invited newcomers).
   let provider: string = signInMethod;
   if (signInMethod === "email" && constServer.EMAIL_PROVIDER === "resend") {
     provider = "resend";

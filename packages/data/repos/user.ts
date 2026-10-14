@@ -3,10 +3,14 @@ import { db, Prisma } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { v4 as uuidv4 } from "uuid";
-import { compare, hash } from "bcryptjs";
+import { compare, hash, hashSync } from "bcryptjs";
 import { User } from "@prisma/client";
 
 const logger = createLogger("data");
+
+// A real cost-10 hash: bcryptjs skips hashing entirely for anything that is not 60 chars,
+// so a made-up string would answer unknown emails instantly (an enumeration oracle).
+const DUMMY_PASSWORD_HASH = hashSync("", 10);
 
 export type BasicUserData = Prisma.UserGetPayload<{
   select: {
@@ -186,7 +190,7 @@ export async function getUserByEmailAndPassword({
     // (and always run a compare) so credentials cannot be used to enumerate accounts.
     const isPasswordValid = await compare(
       password,
-      existingUser?.password ?? "$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalid",
+      existingUser?.password ?? DUMMY_PASSWORD_HASH,
     );
     if (!existingUser || !isPasswordValid) throw new Error("password-invalid");
     return handleSuccess(userMapper(existingUser));
