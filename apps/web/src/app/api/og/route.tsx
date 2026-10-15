@@ -2,7 +2,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import { examplePropsToInput } from "@propsto/constants/other";
-import Image from "next/image";
 
 export function GET(): ImageResponse {
   // process.env on purpose: constServer requires DATABASE_URL and auth vars the
@@ -39,7 +38,8 @@ export function GET(): ImageResponse {
           backgroundRepeat: "repeat",
         }}
       >
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/image is a client module and cannot render inside ImageResponse */}
+        <img
           src={`${url}/logo-color-sm.png`}
           alt="Logo"
           width={100}
