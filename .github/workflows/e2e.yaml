@@ -14,7 +14,8 @@ jobs:
     # Always run to report a status (required check can't be skipped)
     runs-on: ubuntu-latest
     concurrency:
-      group: e2e-${{ github.event.deployment.sha }}
+      # Per environment, so skip-only events (auth/web previews) can't cancel the real app run
+      group: e2e-${{ github.event.deployment.sha }}-${{ github.event.deployment.environment }}
       cancel-in-progress: true
 
     steps:
