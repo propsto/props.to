@@ -1,15 +1,18 @@
 import fs from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
-import { constServer } from "@propsto/constants/server";
 import { examplePropsToInput } from "@propsto/constants/other";
 import Image from "next/image";
 
 export function GET(): ImageResponse {
+  // process.env on purpose: constServer requires DATABASE_URL and auth vars the
+  // web project does not have, and this route only needs to know where its assets live.
   const url =
-    constServer.PROPSTO_ENV === "production"
-      ? `https://props.to`
-      : `http://localhost:3001`;
+    process.env.VERCEL_ENV === "production"
+      ? "https://props.to"
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3001";
   const calSans = fs.readFileSync(
     path.resolve("./public/fonts/CalSans-SemiBold.ttf"),
   );

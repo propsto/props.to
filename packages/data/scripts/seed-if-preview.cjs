@@ -45,6 +45,11 @@ async function main() {
     return;
   }
 
+  // Migrate and seed through the unpooled URI, not DATABASE_URL: a hand-set DATABASE_URL
+  // could still point elsewhere while the integration's unpooled one is the verified
+  // per-branch target. Prisma also wants a direct connection for migrations.
+  const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL_UNPOOLED };
+
   console.log("[@propsto/data] Preview environment detected, seeding database...");
 
   // This script is at packages/data/scripts, so package root is one level up
@@ -71,9 +76,7 @@ async function main() {
       execSync(`npx prisma migrate deploy --config="${migrationConfigPath}"`, {
         stdio: "inherit",
         cwd: packageRoot,
-        env: {
-          ...process.env,
-        },
+        env,
       });
       console.log("[@propsto/data] Migrations applied successfully!");
       break;
@@ -91,14 +94,11 @@ async function main() {
 
   try {
     // Step 2: Run the seed script directly with tsx
-    // DATABASE_URL is already in the environment from Vercel-Neon integration.
     console.log("[@propsto/data] Running seed script...");
     execSync(`npx tsx "${seedPath}"`, {
       stdio: "inherit",
       cwd: monorepoRoot,
-      env: {
-        ...process.env,
-      },
+      env,
     });
     console.log("[@propsto/data] Database seeded successfully!");
   } catch (error) {
