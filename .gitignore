@@ -51,3 +51,5 @@ e2e/*/fixtures/
 
 # prisma
 /packages/data/generated/
+# Agent memory files
+.claude/memory/
