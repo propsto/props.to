@@ -79,6 +79,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SHA: ${{ github.event.deployment.sha }}
         run: |
+          # Superseded commits never get aliased; the readiness step below skips them.
+          HEAD=$(gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }} --jq .head.sha)
+          [ "$HEAD" != "$SHA" ] && { echo "⏭️ $SHA is no longer the PR head, not waiting"; exit 0; }
+
           # True once process_preview_deployment has pointed the pr-N alias of $1 at this commit
           aliased() {
             for run in $(gh api "repos/${{ github.repository }}/actions/workflows/process_preview_deployment.yaml/runs?head_sha=$SHA&per_page=30" --jq '.workflow_runs[].id'); do
@@ -100,7 +104,17 @@ jobs:
       - name: Check if both previews are ready
         if: steps.should-run.outputs.should_run == 'true'
         id: check-previews
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # A newer push supersedes this commit; its run will test the shared preview DB.
+          HEAD=$(gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }} --jq .head.sha)
+          if [ "$HEAD" != "${{ github.event.deployment.sha }}" ]; then
+            echo "⏭️ ${{ github.event.deployment.sha }} is no longer the PR head ($HEAD), skipping"
+            echo "both_ready=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           APP_URL="${{ steps.urls.outputs.app }}"
           AUTH_URL="${{ steps.urls.outputs.auth }}"
 
