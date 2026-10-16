@@ -5,7 +5,11 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, reopened, synchronize]
+  # pull_request skips PRs with merge conflicts, so a conflicting PR closed by hand never
+  # cleaned up. pull_request_target runs from main and only calls APIs, never PR code.
+  pull_request_target:
+    types: [closed]
 
 concurrency:
   group: app-preview-db-${{ github.head_ref }}
@@ -13,7 +17,7 @@ concurrency:
 jobs:
   sync:
     name: Point app preview at the branch database
-    if: github.event.action != 'closed'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,7 +32,7 @@ jobs:
   # the plan. Deleting the branch also makes the integration drop auth's vars; app's are ours.
   cleanup:
     name: Delete the branch database
-    if: github.event.action == 'closed'
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     env:
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
