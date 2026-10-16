@@ -92,6 +92,13 @@ async function main() {
     }
   }
 
+  // Only the app build seeds (its vercel-build sets PREVIEW_SEED=1). E2E runs when the app
+  // preview deploys, so a seed from the auth build could wipe the data mid-run.
+  if (process.env.PREVIEW_SEED !== "1") {
+    console.log("[@propsto/data] PREVIEW_SEED is not 1, skipping seed (migrations only).");
+    return;
+  }
+
   try {
     // Step 2: Run the seed script directly with tsx
     console.log("[@propsto/data] Running seed script...");

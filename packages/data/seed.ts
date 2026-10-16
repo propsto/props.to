@@ -7,9 +7,8 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 // Use deterministic UUIDs for seeded entities to ensure consistency across builds.
-// This is important because both app and auth Vercel builds run seeding,
-// and we need user IDs to remain stable so sessions created during auth build
-// are still valid when the app build completes.
+// Only the app Vercel build seeds previews (PREVIEW_SEED=1), but every reseed
+// must keep user IDs stable so existing sessions stay valid.
 const SEED_IDS = {
   // Users
   mike: "00000000-0000-0000-0000-000000000001",
