@@ -54,7 +54,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           DEPLOYMENT_SHA="${{ github.event.deployment.sha }}"
-          PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq ".[0].number")
+          # A commit can be in several PRs (stacked branches); prefer the one it heads
+          PR_NUMBER=$(gh api repos/${{ github.repository }}/commits/$DEPLOYMENT_SHA/pulls --jq "(map(select(.head.sha == \"$DEPLOYMENT_SHA\")) + .)[0].number // empty")
           if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" == "null" ]; then
             echo "No PR found for this deployment"
             exit 0
