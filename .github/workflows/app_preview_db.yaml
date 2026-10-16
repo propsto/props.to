@@ -5,7 +5,11 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, reopened, synchronize]
+  # pull_request skips PRs with merge conflicts, so a conflicting PR closed by hand never
+  # cleaned up. pull_request_target runs from main and only calls APIs, never PR code.
+  pull_request_target:
+    types: [closed]
 
 concurrency:
   group: app-preview-db-${{ github.head_ref }}
@@ -13,9 +17,30 @@ concurrency:
 jobs:
   sync:
     name: Point app preview at the branch database
-    if: github.event.action != 'closed'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
+      # E2E runs are keyed by commit, so a run for the previous push keeps going while this
+      # push's app build reseeds the shared preview DB, and its writes break the next run.
+      - name: Cancel E2E runs for older commits of this PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          R=${{ github.repository }}
+          OLD=$(gh api "repos/$R/pulls/$PR/commits?per_page=100" --jq '.[].sha' | grep -vx "$HEAD_SHA" || true)
+          for status in in_progress queued; do
+            gh api "repos/$R/actions/workflows/e2e.yaml/runs?status=$status&per_page=50" --jq '.workflow_runs[]|"\(.id) \(.head_sha)"' |
+              while read -r id sha; do
+                if echo "$OLD" | grep -qx "$sha"; then
+                  gh api -X POST "repos/$R/actions/runs/$id/cancel" >/dev/null && echo "Cancelled E2E run $id for stale ${sha:0:7}"
+                fi
+              done
+          done
       - uses: actions/checkout@v4
       - run: bash scripts/sync-app-preview-db.sh
         env:
@@ -28,7 +53,7 @@ jobs:
   # the plan. Deleting the branch also makes the integration drop auth's vars; app's are ours.
   cleanup:
     name: Delete the branch database
-    if: github.event.action == 'closed'
+    if: github.event_name == 'pull_request_target'
     runs-on: ubuntu-latest
     env:
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
