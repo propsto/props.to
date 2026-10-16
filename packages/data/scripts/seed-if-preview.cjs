@@ -109,9 +109,10 @@ async function main() {
     });
     console.log("[@propsto/data] Database seeded successfully!");
   } catch (error) {
-    console.error("[@propsto/data] Failed to seed database:", error.message);
-    // Don't fail the build if seeding fails - the app should still deploy
-    // E2E tests will fail but at least we can debug
+    // Fail loudly: a tolerated failure left previews on stale data for weeks
+    // (OrganizationInvite blocked the User cleanup) while builds stayed green.
+    console.error("[@propsto/data] Failed to seed database, aborting build:", error.message);
+    process.exit(1);
   }
 }
 

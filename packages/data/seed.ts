@@ -27,6 +27,7 @@ const SEED_IDS = {
 
 async function main() {
   // Clean up existing data in reverse dependency order
+  await prisma.organizationInvite.deleteMany();
   await prisma.uriClaim.deleteMany();
   await prisma.uri.deleteMany();
   await prisma.integration.deleteMany();
