@@ -1,0 +1,24 @@
+name: App preview database
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: app-preview-db-${{ github.head_ref }}
+
+jobs:
+  sync:
+    name: Point app preview at the branch database
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/sync-app-preview-db.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          BRANCH: ${{ github.head_ref }}
+          REPO_ID: ${{ github.event.repository.id }}
