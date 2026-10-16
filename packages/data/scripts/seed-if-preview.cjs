@@ -45,6 +45,11 @@ async function main() {
     return;
   }
 
+  // Migrate and seed through the unpooled URI, not DATABASE_URL: a hand-set DATABASE_URL
+  // could still point elsewhere while the integration's unpooled one is the verified
+  // per-branch target. Prisma also wants a direct connection for migrations.
+  const env = { ...process.env, DATABASE_URL: process.env.DATABASE_URL_UNPOOLED };
+
   console.log("[@propsto/data] Preview environment detected, seeding database...");
 
   // This script is at packages/data/scripts, so package root is one level up
@@ -71,9 +76,7 @@ async function main() {
       execSync(`npx prisma migrate deploy --config="${migrationConfigPath}"`, {
         stdio: "inherit",
         cwd: packageRoot,
-        env: {
-          ...process.env,
-        },
+        env,
       });
       console.log("[@propsto/data] Migrations applied successfully!");
       break;
@@ -89,22 +92,27 @@ async function main() {
     }
   }
 
+  // Only the app build seeds (its vercel-build sets PREVIEW_SEED=1). E2E runs when the app
+  // preview deploys, so a seed from the auth build could wipe the data mid-run.
+  if (process.env.PREVIEW_SEED !== "1") {
+    console.log("[@propsto/data] PREVIEW_SEED is not 1, skipping seed (migrations only).");
+    return;
+  }
+
   try {
     // Step 2: Run the seed script directly with tsx
-    // DATABASE_URL is already in the environment from Vercel-Neon integration.
     console.log("[@propsto/data] Running seed script...");
     execSync(`npx tsx "${seedPath}"`, {
       stdio: "inherit",
       cwd: monorepoRoot,
-      env: {
-        ...process.env,
-      },
+      env,
     });
     console.log("[@propsto/data] Database seeded successfully!");
   } catch (error) {
-    console.error("[@propsto/data] Failed to seed database:", error.message);
-    // Don't fail the build if seeding fails - the app should still deploy
-    // E2E tests will fail but at least we can debug
+    // Fail loudly: a tolerated failure left previews on stale data for weeks
+    // (OrganizationInvite blocked the User cleanup) while builds stayed green.
+    console.error("[@propsto/data] Failed to seed database, aborting build:", error.message);
+    process.exit(1);
   }
 }
 
