@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { defineStepper } from "@stepperize/react";
-import { redirect, usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { type User as NextAuthUser } from "next-auth";
 import { Button, Separator, Card } from "@propsto/ui/atoms";
 import {
@@ -85,15 +85,18 @@ export function WelcomeStepper({
   initialStep,
   orgStatus,
   linkStatus = "none",
+  callbackUrl,
 }: Readonly<{
   user: WelcomeUser;
   initialStep: StepNames;
   orgStatus: OrganizationStatus;
   linkStatus?: LinkAccountStatus;
+  callbackUrl?: string; // validated by the welcome page
 }>): React.ReactElement {
   const stepper = useStepper(initialStep);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Store form data across steps
   const [formData, setFormData] = useState<StepFormStore>({});
@@ -107,9 +110,11 @@ export function WelcomeStepper({
     defaultValues,
   });
 
+  // Keep callbackUrl (and any other params) across steps
   const navigateToStep = (step: StepNames): void => {
-    const searchParams = new URLSearchParams({ step });
-    router.push(`${pathname}?${searchParams.toString()}`);
+    const next = new URLSearchParams(searchParams);
+    next.set("step", step);
+    router.push(`${pathname}?${next.toString()}`);
   };
 
   useEffect(() => {
@@ -221,7 +226,7 @@ export function WelcomeStepper({
       },
       "personal-email": async () => {
         const personalEmailValues = values as PersonalEmailFormValues;
-        
+
         // If no verification code, user hasn't sent the code yet
         // The component handles sending the code, we just verify here
         if (!personalEmailValues.verificationCode) {
@@ -236,7 +241,11 @@ export function WelcomeStepper({
           user.id,
         );
         if (result.success) {
-          const nextStep = getNextStepForUser(user, "personal-email", orgStatus);
+          const nextStep = getNextStepForUser(
+            user,
+            "personal-email",
+            orgStatus,
+          );
           navigateToStep(nextStep);
         } else {
           applyHandleEventToForm<PersonalEmailFormValues>(
@@ -300,7 +309,8 @@ export function WelcomeStepper({
         // Mark onboarding as complete before redirecting
         const result = await completeHandler(user.id);
         if (result.success) {
-          window.location.href = constClient.NEXT_PUBLIC_PROPSTO_APP_URL;
+          window.location.href =
+            callbackUrl ?? constClient.NEXT_PUBLIC_PROPSTO_APP_URL;
         } else {
           form.setError("root", {
             message: result.error ?? "Failed to complete onboarding",

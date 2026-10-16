@@ -18,6 +18,7 @@ import {
   createPendingAccountLink,
 } from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
+import { isAllowedRedirect } from "../lib/callback-url";
 
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
@@ -223,7 +224,10 @@ export const nextAuthConfig = {
       // client-writable update path) is dropped so the session has no user id and must re-login.
       const nestedId = (token.user as { id?: string } | undefined)?.id;
       if (nestedId && nestedId !== token.sub) {
-        logger("authConfig:jwt:identity-mismatch", { sub: token.sub, nestedId });
+        logger("authConfig:jwt:identity-mismatch", {
+          sub: token.sub,
+          nestedId,
+        });
         token.user = undefined;
       }
       return token;
@@ -235,30 +239,9 @@ export const nextAuthConfig = {
       };
     },
     redirect({ url, baseUrl }) {
-      // Allows relative callback URLs (but not protocol-relative like //evil.com)
-      if (url.startsWith("/") && !url.startsWith("//")) return `${baseUrl}${url}`;
-
-      // Allows callback URLs on the same origin
-      if (new URL(url).origin === baseUrl) return url;
-
-      // Allow redirects to any subdomain of PROPSTO_HOST (for preview environments)
-      // e.g., auth.props.build and auth.pr-35.props.build both under .props.build
-      try {
-        const urlObj = new URL(url);
-        const hostname = urlObj.hostname;
-
-        // Allow redirects to any subdomain of PROPSTO_HOST
-        if (
-          hostname === constServer.PROPSTO_HOST ||
-          hostname.endsWith(`.${constServer.PROPSTO_HOST}`)
-        ) {
-          return url;
-        }
-      } catch {
-        // Invalid URL, fall through to default
-      }
-
-      return baseUrl;
+      if (!isAllowedRedirect(url, baseUrl, constServer.PROPSTO_HOST))
+        return baseUrl;
+      return url.startsWith("/") ? `${baseUrl}${url}` : url;
     },
   },
   experimental: {

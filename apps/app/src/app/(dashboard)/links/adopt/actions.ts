@@ -5,6 +5,7 @@ import {
   adoptManagedLink,
   getAvailableManagedLinks,
   getUserOrganizations,
+  getUserOrgSlug,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 
@@ -29,6 +30,7 @@ export async function getAvailableManagedLinksForUser() {
   const allAvailable: Array<{
     orgId: string;
     orgName: string;
+    publicPrefix: string; // where an adopted link will live: /<org>/<you>/
     available: ManagedLinksData["available"];
     adopted: ManagedLinksData["adopted"];
   }> = [];
@@ -40,9 +42,14 @@ export async function getAvailableManagedLinksForUser() {
       membership.organization.id,
     );
     if (result.success && result.data.available.length > 0) {
+      const orgSlug = await getUserOrgSlug({
+        userId,
+        organizationId: membership.organization.id,
+      });
       allAvailable.push({
         orgId: membership.organization.id,
         orgName: membership.organization.name,
+        publicPrefix: `/${membership.organization.slug.slug}/${orgSlug.data?.slug ?? "you"}/`,
         available: result.data.available,
         adopted: result.data.adopted,
       });

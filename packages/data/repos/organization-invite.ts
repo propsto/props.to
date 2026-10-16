@@ -4,6 +4,7 @@ import { createLogger } from "@propsto/logger";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
+import { generateUniqueSlug } from "./slug";
 
 const logger = createLogger("data");
 
@@ -26,7 +27,10 @@ export async function createOrganizationInvite(data: {
 }) {
   try {
     const email = data.email.toLowerCase();
-    logger("createOrganizationInvite", { organizationId: data.organizationId, email });
+    logger("createOrganizationInvite", {
+      organizationId: data.organizationId,
+      email,
+    });
     const fields = {
       role: data.role,
       invitedById: data.invitedById,
@@ -37,7 +41,9 @@ export async function createOrganizationInvite(data: {
       revokedAt: null,
     };
     const invite = await db.organizationInvite.upsert({
-      where: { organizationId_email: { organizationId: data.organizationId, email } },
+      where: {
+        organizationId_email: { organizationId: data.organizationId, email },
+      },
       create: { organizationId: data.organizationId, email, ...fields },
       update: fields,
     });
@@ -86,7 +92,10 @@ export async function listPendingOrganizationInvites(organizationId: string) {
 }
 
 // Revoke an invite. Scoped to the org so an admin cannot revoke another org's invite by id.
-export async function revokeOrganizationInvite(inviteId: string, organizationId: string) {
+export async function revokeOrganizationInvite(
+  inviteId: string,
+  organizationId: string,
+) {
   try {
     logger("revokeOrganizationInvite", { inviteId, organizationId });
     const { count } = await db.organizationInvite.updateMany({
@@ -128,7 +137,12 @@ export async function acceptOrganizationInvite(token: string, userId: string) {
     const invite = await db.$transaction(async tx => {
       const now = new Date();
       const { count } = await tx.organizationInvite.updateMany({
-        where: { token, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
+        where: {
+          token,
+          acceptedAt: null,
+          revokedAt: null,
+          expiresAt: { gt: now },
+        },
         data: { acceptedAt: now },
       });
       if (count === 0) throw new Error("Invite is no longer valid");
@@ -138,11 +152,47 @@ export async function acceptOrganizationInvite(token: string, userId: string) {
       });
       await tx.organizationMember.upsert({
         where: {
-          userId_organizationId: { userId, organizationId: accepted.organizationId },
+          userId_organizationId: {
+            userId,
+            organizationId: accepted.organizationId,
+          },
         },
-        create: { userId, organizationId: accepted.organizationId, role: accepted.role },
+        create: {
+          userId,
+          organizationId: accepted.organizationId,
+          role: accepted.role,
+        },
         update: {},
       });
+      // The member's org-scoped username, so /<org>/<user>/<link> resolves (as on domain join)
+      const hasOrgSlug = await tx.slug.findFirst({
+        where: {
+          scope: "ORGANIZATION",
+          scopedToOrgId: accepted.organizationId,
+          orgSlugOwnerId: userId,
+        },
+        select: { id: true },
+      });
+      if (!hasOrgSlug) {
+        const user = await tx.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: { email: true },
+        });
+        const slug = await generateUniqueSlug(
+          user.email.split("@")[0] ?? "user",
+          "ORGANIZATION",
+          accepted.organizationId,
+        );
+        if (!slug.success) throw new Error(slug.error);
+        await tx.slug.create({
+          data: {
+            slug: slug.data,
+            scope: "ORGANIZATION",
+            scopedToOrgId: accepted.organizationId,
+            orgSlugOwnerId: userId,
+          },
+        });
+      }
       return accepted;
     });
     return handleSuccess(invite);
@@ -152,7 +202,10 @@ export async function acceptOrganizationInvite(token: string, userId: string) {
 }
 
 // Get existing invite for an org+email (to check for duplicates)
-export async function getOrganizationInviteByEmail(organizationId: string, email: string) {
+export async function getOrganizationInviteByEmail(
+  organizationId: string,
+  email: string,
+) {
   try {
     logger("getOrganizationInviteByEmail", { organizationId, email });
     const invite = await db.organizationInvite.findUnique({

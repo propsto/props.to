@@ -1,18 +1,16 @@
 "use server";
 
-import {
-  createFeedback,
-  incrementLinkResponseCount,
-  getFeedbackLink,
-  getUser,
-} from "@propsto/data/repos";
+import { createFeedback, getFeedbackLink, getUser } from "@propsto/data/repos";
 import { sendFeedbackReceivedEmail } from "@propsto/email";
 import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
 import { constServer } from "@propsto/constants/server";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
+import { auth } from "@/server/auth.server";
+import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
 import { z } from "zod";
 import { createLogger } from "@propsto/logger";
+import { validateFieldAnswers } from "@/lib/template-fields";
 
 const logger = createLogger("app:feedback");
 
@@ -97,7 +95,10 @@ export async function submitFeedbackAction(
   // Rate limit check
   const rateLimitResult = await checkFeedbackRateLimit();
   if (!rateLimitResult.success) {
-    return { success: false, error: "Too many requests. Please try again later." };
+    return {
+      success: false,
+      error: "Too many requests. Please try again later.",
+    };
   }
 
   // Validate and sanitize input
@@ -133,14 +134,37 @@ export async function submitFeedbackAction(
     };
   }
 
-  // Determine visibility
-  const visibility: FeedbackVisibility = sanitizedInput.isAnonymous
+  // Answers must match the template that drives the form (public, unauthenticated input)
+  const answers = validateFieldAnswers(
+    link.template.fields,
+    sanitizedInput.fieldsData,
+  );
+  if (answers.error !== undefined) {
+    return { success: false, error: answers.error };
+  }
+  const fieldsData = answers.data;
+
+  // Effective anonymity: the toggle or an ANONYMOUS link; the org policy and the
+  // stored submitter fields must follow it, not just the toggle
+  const isAnonymous =
+    sanitizedInput.isAnonymous || link.visibility === "ANONYMOUS";
+  const visibility: FeedbackVisibility = isAnonymous
     ? "ANONYMOUS"
     : link.visibility;
+
+  // Org settings: feedback enabled, members-only, anonymous allowed
+  const session = await auth();
+  const policy = await getFeedbackPolicy(link, session?.user?.id);
+  const refusal = feedbackRefusal(policy, isAnonymous);
+  if (refusal) {
+    return { success: false, error: refusal };
+  }
 
   // Create the feedback
   const feedbackResult = await createFeedback({
     userId: link.userId,
+    // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
+    submitterId: isAnonymous ? undefined : session?.user?.id,
     feedbackType: link.feedbackType,
     visibility,
     status: link.organization
@@ -150,21 +174,19 @@ export async function submitFeedbackAction(
     linkId: link.id,
     organizationId: link.organizationId ?? undefined,
     groupId: link.groupId ?? undefined,
-    submitterName: sanitizedInput.isAnonymous
-      ? undefined
-      : sanitizedInput.submitterName,
-    submitterEmail: sanitizedInput.isAnonymous
-      ? undefined
-      : sanitizedInput.submitterEmail,
-    fieldsData: sanitizedInput.fieldsData,
+    submitterName: isAnonymous ? undefined : sanitizedInput.submitterName,
+    submitterEmail: isAnonymous ? undefined : sanitizedInput.submitterEmail,
+    fieldsData,
   });
 
   if (!feedbackResult.success) {
-    return { success: false, error: "Failed to submit feedback" };
+    return {
+      success: false,
+      error: feedbackResult.error?.includes("maximum responses")
+        ? "This feedback link has reached its maximum responses"
+        : "Failed to submit feedback",
+    };
   }
-
-  // Increment the response count
-  await incrementLinkResponseCount(link.id);
 
   // Send email notification to recipient
   try {
@@ -172,18 +194,19 @@ export async function submitFeedbackAction(
     if (userResult.success && userResult.data?.email) {
       const recipientName =
         userResult.data.firstName ?? userResult.data.email.split("@")[0];
-      const feedbackData = sanitizedInput.fieldsData as { feedback?: string };
-      const feedbackPreview = feedbackData?.feedback;
+      // Preview: the first long-text answer, else the first text answer, else the generic body
+      const textAnswer = (type: string): string | undefined =>
+        link.template.fields
+          .filter(f => f.type === type)
+          .map(f => fieldsData[f.id])
+          .find((v): v is string => typeof v === "string");
+      const feedbackPreview = textAnswer("TEXTAREA") ?? textAnswer("TEXT");
 
       await sendFeedbackReceivedEmail(userResult.data.email, {
         recipientName,
-        feedbackPreview: sanitizedInput.isAnonymous
-          ? undefined
-          : feedbackPreview,
-        senderName: sanitizedInput.isAnonymous
-          ? undefined
-          : sanitizedInput.submitterName,
-        isAnonymous: sanitizedInput.isAnonymous,
+        feedbackPreview: isAnonymous ? undefined : feedbackPreview,
+        senderName: isAnonymous ? undefined : sanitizedInput.submitterName,
+        isAnonymous,
         feedbackType: link.feedbackType.replace(/_/g, " "),
         dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
       });

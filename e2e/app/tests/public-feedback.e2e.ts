@@ -85,9 +85,13 @@ test.describe("Public Feedback Submission", () => {
     // Verify the feedback form card title is present (CardTitle is a div, not heading)
     await expect(page.getByText(/share your feedback/i)).toBeVisible();
 
-    // Verify form fields are present
-    await expect(page.getByLabel(/your feedback/i)).toBeVisible();
-    await expect(page.getByText(/overall rating/i)).toBeVisible();
+    // Verify the template's fields are rendered (seeded "Quick Props" template)
+    await expect(
+      page.getByLabel(/what do you appreciate about this person/i),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel(/what values did they demonstrate/i),
+    ).toBeVisible();
 
     // Verify submit button is present
     await expect(
@@ -107,17 +111,15 @@ test.describe("Public Feedback Submission", () => {
       page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
 
-    // Fill out feedback text
-    const feedbackTextarea = page.getByLabel(/your feedback/i);
-    await feedbackTextarea.fill(
-      "Great work on the recent project! Your attention to detail and collaboration skills are excellent.",
-    );
-
-    // Select a rating (click on rating 5)
-    const ratingButtons = page.locator(
-      'button:has-text("5"):not([type="submit"])',
-    );
-    await ratingButtons.first().click();
+    // Fill out the template fields
+    await page
+      .getByLabel(/what do you appreciate about this person/i)
+      .fill(
+        "Great work on the recent project! Your attention to detail and collaboration skills are excellent.",
+      );
+    await page
+      .getByLabel(/what values did they demonstrate/i)
+      .selectOption("Excellence");
 
     // Optionally fill in name (not anonymous)
     const nameInput = page.getByLabel(/your name/i);
@@ -198,8 +200,8 @@ test.describe("Public Feedback Form Validation", () => {
     const submitButton = page.getByRole("button", { name: /submit feedback/i });
     await submitButton.click();
 
-    // Should show validation error
-    await expect(page.getByText(/please provide your feedback/i)).toBeVisible({
+    // Should show the required-field error for the template's required field
+    await expect(page.getByText(/is required/i)).toBeVisible({
       timeout: 5000,
     });
 
