@@ -11,7 +11,6 @@ import { revalidatePath } from "next/cache";
 import type { FeedbackVisibility, FeedbackType } from "@prisma/client";
 
 interface CreateManagedLinkInput {
-  organizationId: string;
   orgSlug: string;
   templateId: string;
   name: string;
@@ -35,7 +34,7 @@ export async function createManagedLinkAction(
   }
 
   const result = await createManagedFeedbackLink({
-    organizationId: input.organizationId,
+    organizationId: adminCheck.data.organization.id,
     managedByUserId: session.user.id,
     templateId: input.templateId,
     name: input.name,
@@ -76,7 +75,7 @@ export async function updateManagedLinkAction(
     return { success: false, error: "Only admins can update managed links" };
   }
 
-  const result = await updateManagedFeedbackLink(input.linkId, {
+  const result = await updateManagedFeedbackLink(input.linkId, adminCheck.data.organization.id, {
     name: input.name,
     templateId: input.templateId,
     isActive: input.isActive,
@@ -111,7 +110,10 @@ export async function deleteManagedLinkAction(
     return { success: false, error: "Only admins can delete managed links" };
   }
 
-  const result = await deleteManagedFeedbackLink(input.linkId);
+  const result = await deleteManagedFeedbackLink(
+    input.linkId,
+    adminCheck.data.organization.id,
+  );
 
   if (!result.success) {
     return { success: false, error: "Failed to delete managed link" };

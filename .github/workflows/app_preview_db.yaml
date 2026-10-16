@@ -1,0 +1,56 @@
+name: App preview database
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: app-preview-db-${{ github.head_ref }}
+
+jobs:
+  sync:
+    name: Point app preview at the branch database
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/sync-app-preview-db.sh
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          BRANCH: ${{ github.head_ref }}
+          REPO_ID: ${{ github.event.repository.id }}
+
+  # The Neon integration never deletes preview branches, and idle ones still count against
+  # the plan. Deleting the branch also makes the integration drop auth's vars; app's are ours.
+  cleanup:
+    name: Delete the branch database
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+      VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+      BRANCH: ${{ github.head_ref }}
+    steps:
+      - name: Delete Neon branch
+        run: |
+          NEON="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          ID=$(curl -sf -H "Authorization: Bearer $NEON_API_KEY" "$NEON" |
+            jq -r --arg n "preview/$BRANCH" '.branches[]|select(.name==$n)|.id')
+          [ -z "$ID" ] && { echo "No Neon branch preview/$BRANCH"; exit 0; }
+          curl -sf -X DELETE -H "Authorization: Bearer $NEON_API_KEY" "$NEON/$ID" >/dev/null
+          echo "Deleted Neon branch preview/$BRANCH ($ID)"
+      - name: Delete app preview env vars
+        run: |
+          API="https://api.vercel.com"
+          curl -sf -H "Authorization: Bearer $VERCEL_TOKEN" "$API/v10/projects/app/env?teamId=$VERCEL_TEAM_ID" |
+            jq -r --arg b "$BRANCH" '.envs[]|select(.gitBranch==$b)|.id' |
+            while read -r id; do
+              curl -sf -X DELETE -H "Authorization: Bearer $VERCEL_TOKEN" "$API/v9/projects/app/env/$id?teamId=$VERCEL_TEAM_ID" >/dev/null
+              echo "Deleted app env $id"
+            done

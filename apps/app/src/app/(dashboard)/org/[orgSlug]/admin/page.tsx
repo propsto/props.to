@@ -1,4 +1,5 @@
 import { auth } from "@/server/auth.server";
+import { requireOrgAdmin } from "@/server/require-org-admin";
 import { getOrganizationBySlugWithCounts } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import {
@@ -18,6 +19,8 @@ export default async function OrgAdminOverview({
   params,
 }: AdminPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
+  // Page-level guard: the layout's notFound does not stop this page from rendering data.
+  await requireOrgAdmin(orgSlug);
   const session = await auth();
 
   if (!session?.user?.id) {

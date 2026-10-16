@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import {
   Table,
   TableBody,
@@ -50,6 +52,7 @@ export function GroupList({
   groups,
   members,
 }: GroupListProps): React.ReactNode {
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const [editingGroup, setEditingGroup] = useState<GroupWithMembers | null>(
     null,
   );
@@ -64,7 +67,7 @@ export function GroupList({
     if (!deletingGroup) return;
 
     startTransition(async () => {
-      const result = await deleteGroupAction(deletingGroup.id);
+      const result = await deleteGroupAction(orgSlug, deletingGroup.id);
       if (result.success) {
         toast.success(`"${deletingGroup.name}" has been deleted.`);
       } else {

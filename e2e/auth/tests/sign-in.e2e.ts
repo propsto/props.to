@@ -92,24 +92,29 @@ test.describe("Password Authentication", () => {
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test("should show reset password option for user without password", async ({
-    page,
-    baseURL,
-  }) => {
-    await page.goto(baseURL ?? "");
+  // The no-password step must not reveal whether an account exists or has a password:
+  // every email gets the same password prompt, and a wrong or missing password gets the same error.
+  for (const email of [
+    "bob.jones@acme.com", // seeded, no password set
+    "nobody-here@example.com", // not seeded
+  ]) {
+    test(`should not reveal account state for ${email}`, async ({
+      page,
+      baseURL,
+    }) => {
+      await page.goto(baseURL ?? "");
+      await page.getByLabel("email").fill(email);
 
-    // Fill email for a user without password (bob.jones from seed - no password set)
-    await page.getByLabel("email").fill("bob.jones@acme.com");
+      await page.getByRole("button", { name: "Continue with password" }).click();
+      await page.getByRole("button", { name: "Continue with password" }).click();
+      await expect(page.getByLabel("password")).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/not set a password|no user found/i)).toHaveCount(0);
 
-    // Click Continue with password twice
-    await page.getByRole("button", { name: "Continue with password" }).click();
-    await page.getByRole("button", { name: "Continue with password" }).click();
-
-    // Should show message about no password set (use first() as there may be multiple matches)
-    await expect(
-      page.getByText(/not set a password|reset password/i).first(),
-    ).toBeVisible({ timeout: 10000 });
-  });
+      await page.getByLabel("password").fill("anything");
+      await page.getByRole("button", { name: "Sign in with password" }).click();
+      await expect(page.getByText(/wrong credentials/i)).toBeVisible({ timeout: 10000 });
+    });
+  }
 });
 
 test.describe("Magic Link Authentication", () => {

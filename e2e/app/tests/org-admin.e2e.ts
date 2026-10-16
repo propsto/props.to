@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 // Track JavaScript errors
 let jsErrors: string[] = [];
@@ -18,6 +18,14 @@ test.afterEach(async ({}, testInfo) => {
     console.log("JS errors during test:", jsErrors);
   }
 });
+
+// The settings page has two "Save Changes" buttons (Member Defaults and Feedback
+// Settings); the #external toggle these tests drive lives in Member Defaults.
+function memberDefaults(page: Page): Locator {
+  return page
+    .locator('[data-slot="card"]')
+    .filter({ hasText: "Member Defaults" });
+}
 
 test.describe("Organization Admin Panel", () => {
   // Mike Ryan is seeded as OWNER of acme org
@@ -51,9 +59,16 @@ test.describe("Organization Admin Panel", () => {
     const statsSection = page
       .locator(".grid")
       .filter({ hasText: "Total Members" });
-    await expect(statsSection.getByText("Total Members")).toBeVisible();
-    await expect(statsSection.getByText("Templates")).toBeVisible();
-    await expect(statsSection.getByText("Total Feedback")).toBeVisible();
+    // exact: "Templates" also matches the "Feedback templates created" description
+    await expect(
+      statsSection.getByText("Total Members", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      statsSection.getByText("Templates", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      statsSection.getByText("Total Feedback", { exact: true }),
+    ).toBeVisible();
   });
 
   test("should display members list", async ({ page, baseURL }) => {
@@ -101,7 +116,9 @@ test.describe("Organization Admin Panel", () => {
     await expect(page.getByText("Allow External Feedback")).toBeVisible();
 
     // Should see save button (disabled by default when no changes)
-    const saveButton = page.getByRole("button", { name: /save changes/i });
+    const saveButton = memberDefaults(page).getByRole("button", {
+      name: /save changes/i,
+    });
     await expect(saveButton).toBeVisible();
     await expect(saveButton).toBeDisabled();
   });
@@ -123,7 +140,9 @@ test.describe("Organization Admin Panel", () => {
     await externalToggle.click();
 
     // Save button should now be enabled
-    const saveButton = page.getByRole("button", { name: /save changes/i });
+    const saveButton = memberDefaults(page).getByRole("button", {
+      name: /save changes/i,
+    });
     await expect(saveButton).toBeEnabled();
   });
 
@@ -228,7 +247,9 @@ test.describe("Organization Admin Panel", () => {
     await externalToggle.click();
 
     // Click save
-    const saveButton = page.getByRole("button", { name: /save changes/i });
+    const saveButton = memberDefaults(page).getByRole("button", {
+      name: /save changes/i,
+    });
     await expect(saveButton).toBeEnabled();
     await saveButton.click();
 
@@ -244,7 +265,9 @@ test.describe("Organization Admin Panel", () => {
 
     // Reset the toggle back to original state for other tests
     await page.locator("#external").click();
-    await page.getByRole("button", { name: /save changes/i }).click();
+    await memberDefaults(page)
+      .getByRole("button", { name: /save changes/i })
+      .click();
   });
 
   test("should display categories page with navigation link", async ({
@@ -279,15 +302,17 @@ test.describe("Organization Admin Panel", () => {
     await page.waitForLoadState("networkidle");
 
     // Should see Custom Categories section (use heading role to avoid matching empty state text)
+    // CardTitle renders a div, not a heading
+    const cardTitles = page.locator('[data-slot="card-title"]');
     await expect(
-      page.getByRole("heading", { name: /custom categories/i }),
+      cardTitles.filter({ hasText: /custom categories/i }),
     ).toBeVisible({
       timeout: 15000,
     });
 
     // Should see System Categories section
     await expect(
-      page.getByRole("heading", { name: /system categories/i }),
+      cardTitles.filter({ hasText: /system categories/i }),
     ).toBeVisible();
 
     // Should see New Category button
@@ -315,9 +340,10 @@ test.describe("Organization Admin Panel", () => {
     await expect(page.getByText("Color")).toBeVisible();
 
     // Should see color options
-    const colorButtons = page.locator('button[type="button"]').filter({
-      has: page.locator('[style*="background-color"]'),
-    });
+    // Each swatch is a button styled with its own background color
+    const colorButtons = page
+      .getByRole("dialog")
+      .locator('button[type="button"][style*="background-color"]');
     await expect(colorButtons.first()).toBeVisible();
   });
 

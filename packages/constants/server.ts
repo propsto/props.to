@@ -2,10 +2,14 @@ import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 import { vercelPreviewEnvVars } from "./other";
 
+// "outbox" stores emails in the database instead of sending them, so preview deployments
+// and tests can read invite and magic-link emails back through /api/preview-mail.
 process.env.EMAIL_PROVIDER =
-  process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
-    ? "resend"
-    : "email";
+  process.env.VERCEL_ENV === "preview" || process.env.PROPSTO_ENV === "test"
+    ? "outbox"
+    : process.env.RESEND_API_KEY && process.env.PROPSTO_ENV === "production"
+      ? "resend"
+      : "email";
 
 export const constServer = createEnv({
   server: {

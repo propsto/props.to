@@ -6,6 +6,7 @@ import {
   isSlugAvailableExcludingOrg,
   updateOrganizationSlug,
   auditHelpers,
+  verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -68,12 +69,9 @@ export async function updateOrgSlug(
       return { success: false, error: "Not authenticated" };
     }
 
-    // Verify user is OWNER of this org (only owners can change slug)
-    const membership = session.user.organizations?.find(
-      org => org.organizationSlug === currentSlug,
-    );
-
-    if (!membership || membership.role !== "OWNER") {
+    // Verify user is OWNER of this org (only owners can change slug), from the DB not the JWT
+    const membership = await verifyOrgAdminAccess(session.user.id, currentSlug);
+    if (!membership.data || membership.data.role !== "OWNER") {
       return {
         success: false,
         error: "Only organization owners can change the URL",

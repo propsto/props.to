@@ -1,118 +1,90 @@
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
 import { auth } from "@/server/auth.server";
-import {
-  getOrganizationInviteByToken,
-  acceptOrganizationInvite,
-  addOrganizationMember,
-  getUserOrganizationMembership,
-} from "@propsto/data/repos";
+import { getOrganizationInviteByToken } from "@propsto/data/repos";
+import { inviteRejection } from "@/lib/invite";
+import { AcceptInviteForm } from "./accept-invite-form";
 
 interface InvitePageProps {
   searchParams: Promise<{ token?: string }>;
 }
 
+function Message({ title, body }: { title: string; body: string }): React.ReactElement {
+  return (
+    <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
+      <h1 className="text-xl font-semibold">{title}</h1>
+      <p className="text-sm text-muted-foreground">{body}</p>
+    </div>
+  );
+}
+
+// GET only shows the invite; accepting happens on POST so link previews and mail scanners cannot consume it.
 export default async function InvitePage({
   searchParams,
 }: InvitePageProps): Promise<React.ReactElement> {
   const { token } = await searchParams;
 
   if (!token) {
-    return (
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
-        <h1 className="text-xl font-semibold">Invalid Invitation</h1>
-        <p className="text-sm text-muted-foreground">
-          This invitation link is missing or invalid.
-        </p>
-      </div>
-    );
+    return <Message title="Invalid Invitation" body="This invitation link is missing or invalid." />;
   }
 
-  // Look up the invite
   const inviteResult = await getOrganizationInviteByToken(token);
-
   if (!inviteResult.success || !inviteResult.data) {
     return (
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
-        <h1 className="text-xl font-semibold">Invitation Not Found</h1>
-        <p className="text-sm text-muted-foreground">
-          This invitation link is invalid or has already been used.
-        </p>
-      </div>
+      <Message
+        title="Invitation Not Found"
+        body="This invitation link is invalid or has already been used."
+      />
     );
   }
-
   const invite = inviteResult.data;
 
-  // Check expiry
-  if (invite.expiresAt < new Date()) {
-    return (
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
-        <h1 className="text-xl font-semibold">Invitation Expired</h1>
-        <p className="text-sm text-muted-foreground">
-          This invitation has expired. Please ask an admin to send a new one.
-        </p>
-      </div>
-    );
-  }
-
-  // Check if already accepted or revoked
-  if (invite.acceptedAt || invite.revokedAt) {
-    return (
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
-        <h1 className="text-xl font-semibold">Invitation No Longer Valid</h1>
-        <p className="text-sm text-muted-foreground">
-          This invitation has already been used or revoked.
-        </p>
-      </div>
-    );
-  }
-
-  // Check if user is signed in
   const session = await auth();
-
   if (!session?.user?.id) {
-    // Redirect to sign-in, passing the invite token in the callbackUrl
     const callbackUrl = `${constServer.AUTH_URL}/invite?token=${token}`;
-    return redirect(`/?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+    redirect(`/?callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }
 
-  const userId = session.user.id;
-  const orgSlug = invite.organization.slug.slug;
-
-  // Check if already a member
-  const existingMembership = await getUserOrganizationMembership({
-    userId,
-    organizationId: invite.organizationId,
-  });
-
-  if (existingMembership.success && existingMembership.data) {
-    // Already a member — just redirect to the org
-    return redirect(`${constServer.PROPSTO_APP_URL}/org/${orgSlug}`);
-  }
-
-  // Accept the invite and add to org
-  const [acceptResult, memberResult] = await Promise.all([
-    acceptOrganizationInvite(token),
-    addOrganizationMember({
-      userId,
-      organizationId: invite.organizationId,
-      role: invite.role,
-    }),
-  ]);
-
-  if (!acceptResult.success || !memberResult.success) {
+  const rejection = inviteRejection(invite, session.user);
+  if (rejection === "expired") {
     return (
-      <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
-        <h1 className="text-xl font-semibold">Something Went Wrong</h1>
-        <p className="text-sm text-muted-foreground">
-          We couldn&apos;t process your invitation. Please try again or contact
-          support.
-        </p>
-      </div>
+      <Message
+        title="Invitation Expired"
+        body="This invitation has expired. Please ask an admin to send a new one."
+      />
+    );
+  }
+  if (rejection === "used") {
+    return (
+      <Message
+        title="Invitation No Longer Valid"
+        body="This invitation has already been used or revoked."
+      />
+    );
+  }
+  if (rejection === "wrong-account") {
+    return (
+      <Message
+        title="Wrong Account"
+        body={`This invitation was sent to ${invite.email}. You are signed in as ${session.user.email ?? "another account"}.`}
+      />
     );
   }
 
-  // Redirect to the org in the app
-  redirect(`${constServer.PROPSTO_APP_URL}/org/${orgSlug}`);
+  const inviter =
+    [invite.invitedBy.firstName, invite.invitedBy.lastName].filter(Boolean).join(" ") ||
+    invite.invitedBy.email;
+
+  return (
+    <div className="mx-auto text-center flex flex-col justify-center space-y-4 w-80 h-full">
+      <h1 className="text-xl font-semibold">Join {invite.organization.name}</h1>
+      <p className="text-sm text-muted-foreground">
+        {inviter} invited you to join as {invite.role.toLowerCase()}.
+      </p>
+      {invite.message ? (
+        <p className="text-sm italic text-muted-foreground">&ldquo;{invite.message}&rdquo;</p>
+      ) : null}
+      <AcceptInviteForm token={token} />
+    </div>
+  );
 }

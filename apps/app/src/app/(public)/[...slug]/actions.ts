@@ -65,7 +65,7 @@ function sanitizeFieldsData(
 
 // Input validation schema
 const submitFeedbackSchema = z.object({
-  linkId: z.string().uuid(),
+  linkId: z.string().cuid(), // FeedbackLink.id is @default(cuid())
   submitterName: z
     .string()
     .max(MAX_NAME_LENGTH)

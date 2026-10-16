@@ -60,7 +60,7 @@ test.describe("Account Switcher - Unified View", () => {
     await expect(page.getByText("Organizations")).toBeVisible({
       timeout: 5000,
     });
-    await expect(page.getByText("Acme Corp")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Acme Inc.")).toBeVisible({ timeout: 5000 });
   });
 
   test("should navigate to org admin from dropdown", async ({
@@ -80,8 +80,8 @@ test.describe("Account Switcher - Unified View", () => {
       .first();
     await switcherButton.click();
 
-    // Click Acme Corp to go to admin
-    const orgItem = page.getByRole("menuitem").filter({ hasText: "Acme Corp" });
+    // Click Acme Inc. to go to admin
+    const orgItem = page.getByRole("menuitem").filter({ hasText: "Acme Inc." });
     await expect(orgItem).toBeVisible({ timeout: 5000 });
     await orgItem.click();
 

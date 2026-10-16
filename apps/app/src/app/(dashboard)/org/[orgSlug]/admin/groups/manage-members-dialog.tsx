@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import { useState, useTransition } from "react";
 import { Button } from "@propsto/ui/atoms/button";
 import {
@@ -38,6 +40,7 @@ export function ManageMembersDialog({
   open,
   onOpenChange,
 }: ManageMembersDialogProps): React.ReactNode {
+  const { orgSlug } = useParams<{ orgSlug: string }>();
   const currentMemberIds = group.users.map(u => u.id);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(currentMemberIds),
@@ -64,7 +67,7 @@ export function ManageMembersDialog({
     }
 
     startTransition(async () => {
-      const result = await updateGroupMembersAction(group.id, {
+      const result = await updateGroupMembersAction(orgSlug, group.id, {
         addUserIds: toAdd,
         removeUserIds: toRemove,
       });

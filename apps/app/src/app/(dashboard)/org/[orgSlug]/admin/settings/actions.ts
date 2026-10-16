@@ -6,6 +6,7 @@ import {
   upsertOrganizationDefaultSettings,
   upsertOrganizationFeedbackSettings,
   auditHelpers,
+  verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -33,15 +34,9 @@ export async function updateMemberSettings(
       return { success: false, error: "Not authenticated" };
     }
 
-    // Verify user is admin of this org
-    const membership = session.user.organizations?.find(
-      org => org.organizationSlug === input.orgSlug,
-    );
-
-    if (
-      !membership ||
-      (membership.role !== "OWNER" && membership.role !== "ADMIN")
-    ) {
+    // Verify against the DB, not the JWT, so a demoted admin loses access immediately
+    const membership = await verifyOrgAdminAccess(session.user.id, input.orgSlug);
+    if (!membership.success || !membership.data) {
       return { success: false, error: "Not authorized" };
     }
 
@@ -127,15 +122,9 @@ export async function updateFeedbackSettingsAction(
       return { success: false, error: "Not authenticated" };
     }
 
-    // Verify user is admin of this org
-    const membership = session.user.organizations?.find(
-      org => org.organizationSlug === orgSlug,
-    );
-
-    if (
-      !membership ||
-      (membership.role !== "OWNER" && membership.role !== "ADMIN")
-    ) {
+    // Verify against the DB, not the JWT, so a demoted admin loses access immediately
+    const membership = await verifyOrgAdminAccess(session.user.id, orgSlug);
+    if (!membership.success || !membership.data) {
       return { success: false, error: "Not authorized" };
     }
 

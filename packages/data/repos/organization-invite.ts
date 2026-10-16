@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { OrganizationRole } from "@prisma/client";
 import { createLogger } from "@propsto/logger";
 import { db } from "../db";
@@ -6,7 +7,15 @@ import { handleSuccess } from "../utils/success-handling";
 
 const logger = createLogger("data");
 
-// Create a new organization invite
+const newToken = (): string => randomBytes(32).toString("base64url");
+
+const inviteInclude = {
+  organization: { include: { slug: true } },
+  invitedBy: { select: { firstName: true, lastName: true, email: true } },
+} as const;
+
+// Create (or re-issue) an invite. One row per org+email; an expired, revoked or
+// accepted invite is reset with a fresh token instead of failing the unique constraint.
 export async function createOrganizationInvite(data: {
   organizationId: string;
   email: string;
@@ -16,16 +25,21 @@ export async function createOrganizationInvite(data: {
   expiresAt: Date;
 }) {
   try {
-    logger("createOrganizationInvite", { organizationId: data.organizationId, email: data.email });
-    const invite = await db.organizationInvite.create({
-      data: {
-        organizationId: data.organizationId,
-        email: data.email.toLowerCase(),
-        role: data.role,
-        invitedById: data.invitedById,
-        message: data.message,
-        expiresAt: data.expiresAt,
-      },
+    const email = data.email.toLowerCase();
+    logger("createOrganizationInvite", { organizationId: data.organizationId, email });
+    const fields = {
+      role: data.role,
+      invitedById: data.invitedById,
+      message: data.message,
+      expiresAt: data.expiresAt,
+      token: newToken(),
+      acceptedAt: null,
+      revokedAt: null,
+    };
+    const invite = await db.organizationInvite.upsert({
+      where: { organizationId_email: { organizationId: data.organizationId, email } },
+      create: { organizationId: data.organizationId, email, ...fields },
+      update: fields,
     });
     return handleSuccess(invite);
   } catch (e) {
@@ -36,17 +50,10 @@ export async function createOrganizationInvite(data: {
 // Get invite by token (for accept flow)
 export async function getOrganizationInviteByToken(token: string) {
   try {
-    logger("getOrganizationInviteByToken", { token });
+    logger("getOrganizationInviteByToken");
     const invite = await db.organizationInvite.findUnique({
       where: { token },
-      include: {
-        organization: {
-          include: { slug: true },
-        },
-        invitedBy: {
-          select: { firstName: true, lastName: true, email: true },
-        },
-      },
+      include: inviteInclude,
     });
     return handleSuccess(invite);
   } catch (e) {
@@ -78,36 +85,34 @@ export async function listPendingOrganizationInvites(organizationId: string) {
   }
 }
 
-// Revoke an invite
-export async function revokeOrganizationInvite(inviteId: string) {
+// Revoke an invite. Scoped to the org so an admin cannot revoke another org's invite by id.
+export async function revokeOrganizationInvite(inviteId: string, organizationId: string) {
   try {
-    logger("revokeOrganizationInvite", { inviteId });
-    const invite = await db.organizationInvite.update({
-      where: { id: inviteId },
+    logger("revokeOrganizationInvite", { inviteId, organizationId });
+    const { count } = await db.organizationInvite.updateMany({
+      where: { id: inviteId, organizationId, acceptedAt: null },
       data: { revokedAt: new Date() },
     });
-    return handleSuccess(invite);
+    if (count === 0) throw new Error("Invite not found");
+    return handleSuccess({ id: inviteId });
   } catch (e) {
     return handleError(e);
   }
 }
 
-// Refresh an invite (update expiry and generate new token)
-export async function resendOrganizationInvite(inviteId: string, expiresAt: Date) {
+// Resend an invite: new expiry, new token, un-revoked. Scoped to the org.
+export async function resendOrganizationInvite(
+  inviteId: string,
+  organizationId: string,
+  expiresAt: Date,
+) {
   try {
-    logger("resendOrganizationInvite", { inviteId });
-    // Generate a new token by resetting the invite
+    logger("resendOrganizationInvite", { inviteId, organizationId });
+    // Single conditional update: an acceptance that lands first makes this a no-op error
     const invite = await db.organizationInvite.update({
-      where: { id: inviteId },
-      data: {
-        expiresAt,
-        revokedAt: null,
-      },
-      include: {
-        organization: {
-          include: { slug: true },
-        },
-      },
+      where: { id: inviteId, organizationId, acceptedAt: null },
+      data: { expiresAt, revokedAt: null, token: newToken() },
+      include: inviteInclude,
     });
     return handleSuccess(invite);
   } catch (e) {
@@ -115,18 +120,30 @@ export async function resendOrganizationInvite(inviteId: string, expiresAt: Date
   }
 }
 
-// Accept an invite — mark it accepted; caller must also call addOrganizationMember
-export async function acceptOrganizationInvite(token: string) {
+// Accept an invite and join the org in one transaction. The conditional update makes
+// acceptance single-use even under concurrent requests; membership is idempotent.
+export async function acceptOrganizationInvite(token: string, userId: string) {
   try {
-    logger("acceptOrganizationInvite", { token });
-    const invite = await db.organizationInvite.update({
-      where: { token },
-      data: { acceptedAt: new Date() },
-      include: {
-        organization: {
-          include: { slug: true },
+    logger("acceptOrganizationInvite", { userId });
+    const invite = await db.$transaction(async tx => {
+      const now = new Date();
+      const { count } = await tx.organizationInvite.updateMany({
+        where: { token, acceptedAt: null, revokedAt: null, expiresAt: { gt: now } },
+        data: { acceptedAt: now },
+      });
+      if (count === 0) throw new Error("Invite is no longer valid");
+      const accepted = await tx.organizationInvite.findUniqueOrThrow({
+        where: { token },
+        include: inviteInclude,
+      });
+      await tx.organizationMember.upsert({
+        where: {
+          userId_organizationId: { userId, organizationId: accepted.organizationId },
         },
-      },
+        create: { userId, organizationId: accepted.organizationId, role: accepted.role },
+        update: {},
+      });
+      return accepted;
     });
     return handleSuccess(invite);
   } catch (e) {

@@ -32,6 +32,10 @@ test.describe("Hidden Feedback Links - Dashboard", () => {
     // Fill out the form
     const uniqueName = `Hidden Test Link ${Date.now()}`;
     await page.getByLabel(/link name/i).fill(uniqueName);
+    await page.getByLabel(/url slug/i).fill(`hidden-${Date.now()}`);
+    await expect(page.locator(".text-green-500")).toBeVisible({
+      timeout: 5000,
+    });
 
     // Select template
     const templateSection = page.locator("text=Template").locator("..");
@@ -54,8 +58,8 @@ test.describe("Hidden Feedback Links - Dashboard", () => {
     await expect(submitButton).toBeEnabled({ timeout: 5000 });
     await submitButton.click();
 
-    // Wait for navigation to links page (may have query params or trailing slash)
-    await page.waitForURL(/\/links(?:\/|\?|$)/, { timeout: 20000 });
+    // Wait for navigation to the links list (not /links/new, which also matched before)
+    await page.waitForURL(/\/links\/?(?:\?|$)/, { timeout: 20000 });
 
     // Verify the link appears with the Hidden badge
     await expect(page.getByText(uniqueName).first()).toBeVisible({
