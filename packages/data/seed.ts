@@ -368,7 +368,7 @@ async function main() {
       slug: "john-acme",
       userId: john.id,
       organizationId: acme.id,
-      templateId: propsTemplate.id,
+      templateId: propsTemplate,
       isActive: true,
     },
   });
@@ -378,7 +378,7 @@ async function main() {
       slug: "carol-globex",
       userId: carol.id,
       organizationId: globex.id,
-      templateId: propsTemplate.id,
+      templateId: propsTemplate,
       isActive: true,
     },
   });
