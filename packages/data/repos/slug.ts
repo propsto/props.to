@@ -9,9 +9,12 @@ const logger = createLogger("data");
 
 // Types for slug resolution
 export type SlugResolution =
-  | { type: "user"; userId: string; slug: string }
+  | { type: "user"; userId: string; slug: string; resolvedVia?: "slug" | "email" }
   | { type: "organization"; organizationId: string; slug: string }
   | null;
+
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type OrgSlugResolution =
   | {
@@ -30,17 +33,60 @@ export type OrgSlugResolution =
     }
   | null;
 
-// Resolve a global slug (props.to/[slug])
-// Can be a user's personal username or an organization slug
-export async function resolveSlug(
-  slug: string,
+// Resolve a user by email address (props.to/john@acme.com)
+// Only matches company email or personal email
+export async function resolveByEmail(
+  email: string,
 ): Promise<HandleEvent<SlugResolution>> {
   try {
-    logger("resolveSlug", { slug });
+    logger("resolveByEmail", { email });
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Find user by company email or personal email
+    const user = await db.user.findFirst({
+      where: {
+        OR: [
+          { email: normalizedEmail },
+          { personalEmail: normalizedEmail },
+        ],
+      },
+      include: {
+        slug: { select: { slug: true } },
+      },
+    });
+
+    if (!user || !user.slug) {
+      return handleSuccess(null);
+    }
+
+    return handleSuccess({
+      type: "user" as const,
+      userId: user.id,
+      slug: user.slug.slug,
+      resolvedVia: "email" as const,
+    });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Resolve a global slug or email (props.to/[identifier])
+// Can be a user's personal username, an organization slug, or an email address
+export async function resolveSlug(
+  identifier: string,
+): Promise<HandleEvent<SlugResolution>> {
+  try {
+    logger("resolveSlug", { identifier });
+
+    // Check if identifier is an email address
+    if (EMAIL_REGEX.test(identifier)) {
+      return resolveByEmail(identifier);
+    }
 
     const slugRecord = await db.slug.findFirst({
       where: {
-        slug: slug.toLowerCase(),
+        slug: identifier.toLowerCase(),
         scope: "GLOBAL",
         scopedToOrgId: null,
       },
@@ -60,6 +106,7 @@ export async function resolveSlug(
         type: "user" as const,
         userId: slugRecord.personalSlugOwner.id,
         slug: slugRecord.slug,
+        resolvedVia: "slug" as const,
       });
     }
 
