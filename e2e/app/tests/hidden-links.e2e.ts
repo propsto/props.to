@@ -136,7 +136,9 @@ test.describe("Hidden Feedback Links - Public Profile", () => {
 
     // Verify the feedback form is functional
     await expect(page.getByText(/share your feedback/i)).toBeVisible();
-    await expect(page.getByLabel(/your feedback/i)).toBeVisible();
+    await expect(
+      page.getByLabel(/what do you appreciate about this person/i),
+    ).toBeVisible();
   });
 
   test("should be able to submit feedback through hidden link", async ({
@@ -151,17 +153,12 @@ test.describe("Hidden Feedback Links - Public Profile", () => {
       page.getByRole("heading", { name: /give feedback/i }),
     ).toBeVisible({ timeout: 15000 });
 
-    // Fill out feedback text
-    const feedbackTextarea = page.getByLabel(/your feedback/i);
-    await feedbackTextarea.fill(
-      "This is feedback submitted through a hidden link for testing purposes.",
-    );
-
-    // Select a rating
-    const ratingButtons = page.locator(
-      'button:has-text("5"):not([type="submit"])',
-    );
-    await ratingButtons.first().click();
+    // Fill out the template's required field (seeded "Quick Props" template)
+    await page
+      .getByLabel(/what do you appreciate about this person/i)
+      .fill(
+        "This is feedback submitted through a hidden link for testing purposes.",
+      );
 
     // Submit the form
     const submitButton = page.getByRole("button", { name: /submit feedback/i });

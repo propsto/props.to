@@ -14,6 +14,7 @@ import {
 } from "@propsto/data/repos";
 import { canUserMoveOn } from "@/lib/post-auth-check";
 import { constServer } from "@propsto/constants/server";
+import { isAllowedRedirect } from "@/lib/callback-url";
 
 export default async function WelcomePage({
   searchParams,
@@ -22,6 +23,16 @@ export default async function WelcomePage({
 }>): Promise<React.ReactElement> {
   const params = await searchParams;
   const session = await auth();
+  // Where to land after onboarding (an invite link, for instance); the stepper keeps it across steps
+  const callbackUrl =
+    params.callbackUrl &&
+    isAllowedRedirect(
+      params.callbackUrl,
+      constServer.AUTH_URL,
+      constServer.PROPSTO_HOST,
+    )
+      ? params.callbackUrl
+      : undefined;
   const user = session?.user as
     | (User & {
         id: string;
@@ -119,7 +130,7 @@ export default async function WelcomePage({
   // If user has completed onboarding, redirect them to the app
   // (but not if they're in the middle of account linking)
   if (linkStatus === "none" && canUserMoveOn(user!, orgStatus, linkStatus)) {
-    return redirect(params.callbackUrl ?? constServer.PROPSTO_APP_URL);
+    return redirect(callbackUrl ?? constServer.PROPSTO_APP_URL);
   }
 
   return (
@@ -131,6 +142,7 @@ export default async function WelcomePage({
       initialStep={initialStep}
       orgStatus={orgStatus}
       linkStatus={linkStatus}
+      callbackUrl={callbackUrl}
     />
   );
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { formatDistanceToNow, format } from "date-fns";
 import {
@@ -31,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@propsto/ui/atoms/dropdown-menu";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
+import { publicLinkPath } from "@/lib/public-link-path";
 
 interface LinkListProps {
   links: FeedbackLinkWithRelations[];
@@ -88,8 +91,8 @@ function LinkCard({
     link.maxResponses && link.responseCount >= link.maxResponses;
   const isAvailable = link.isActive && !isExpired && !isMaxedOut;
 
-  // Construct the public link URL
-  const publicUrl = `${process.env.NEXT_PUBLIC_WEB_URL ?? "https://props.to"}/f/${link.slug}`;
+  // Public pages live on this same host
+  const publicPath = publicLinkPath(link);
 
   return (
     <Card className={`group relative ${!link.isActive ? "opacity-75" : ""}`}>
@@ -129,13 +132,17 @@ function LinkCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(publicUrl)}
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    new URL(publicPath, window.location.origin).href,
+                  )
+                }
               >
                 <Copy className="mr-2 size-4" />
                 Copy Link
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <a href={publicUrl} target="_blank" rel="noopener noreferrer">
+                <a href={publicPath} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="mr-2 size-4" />
                   Open Link
                 </a>
@@ -173,9 +180,7 @@ function LinkCard({
         <div className="flex flex-col gap-3">
           {/* Link URL preview */}
           <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-xs">
-            <code className="truncate text-muted-foreground">
-              /f/{link.slug}
-            </code>
+            <code className="truncate text-muted-foreground">{publicPath}</code>
           </div>
 
           {/* Status badges */}

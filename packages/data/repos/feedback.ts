@@ -79,7 +79,9 @@ const feedbackInclude = Prisma.validator<Prisma.FeedbackInclude>()({
   goals: { select: { id: true, title: true } },
 });
 
-// Create feedback
+// Create feedback. With a linkId the link's responseCount is incremented in the
+// same transaction and maxResponses is enforced on the locked row, so two
+// concurrent submissions cannot both slip under the cap.
 export async function createFeedback(data: {
   userId: string; // Recipient
   templateId: string;
@@ -102,25 +104,39 @@ export async function createFeedback(data: {
       userId: data.userId,
       templateId: data.templateId,
     });
-    const feedback = await db.feedback.create({
-      data: {
-        userId: data.userId,
-        templateId: data.templateId,
-        fieldsData: data.fieldsData,
-        organizationId: data.organizationId,
-        groupId: data.groupId,
-        linkId: data.linkId,
-        submitterId: data.submitterId,
-        submitterEmail: data.submitterEmail,
-        submitterName: data.submitterName,
-        visibility: data.visibility ?? "PRIVATE",
-        feedbackType: data.feedbackType ?? "RECOGNITION",
-        status: data.status ?? "APPROVED",
-        organizationNameSnapshot: data.organizationNameSnapshot,
-        groupNameSnapshot: data.groupNameSnapshot,
-        userOrgRoleSnapshot: data.userOrgRoleSnapshot,
-      },
-      include: feedbackInclude,
+    const feedback = await db.$transaction(async tx => {
+      if (data.linkId) {
+        const link = await tx.feedbackLink.update({
+          where: { id: data.linkId },
+          data: { responseCount: { increment: 1 } },
+          select: { maxResponses: true, responseCount: true },
+        });
+        if (link.maxResponses && link.responseCount > link.maxResponses) {
+          throw new Error(
+            "This feedback link has reached its maximum responses",
+          );
+        }
+      }
+      return tx.feedback.create({
+        data: {
+          userId: data.userId,
+          templateId: data.templateId,
+          fieldsData: data.fieldsData,
+          organizationId: data.organizationId,
+          groupId: data.groupId,
+          linkId: data.linkId,
+          submitterId: data.submitterId,
+          submitterEmail: data.submitterEmail,
+          submitterName: data.submitterName,
+          visibility: data.visibility ?? "PRIVATE",
+          feedbackType: data.feedbackType ?? "RECOGNITION",
+          status: data.status ?? "APPROVED",
+          organizationNameSnapshot: data.organizationNameSnapshot,
+          groupNameSnapshot: data.groupNameSnapshot,
+          userOrgRoleSnapshot: data.userOrgRoleSnapshot,
+        },
+        include: feedbackInclude,
+      });
     });
     return handleSuccess(feedback);
   } catch (e) {
