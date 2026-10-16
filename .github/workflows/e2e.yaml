@@ -4,6 +4,7 @@ permissions:
   contents: read
   pull-requests: write
   deployments: read
+  actions: read
 
 on:
   deployment_status:
@@ -68,6 +69,32 @@ jobs:
           HOST="${{ vars.PROPSTO_HOST }}"
           echo "app=https://app.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
           echo "auth=https://auth.pr-${PR_NUM}.${HOST}" >> $GITHUB_OUTPUT
+
+      # The pr-N aliases are moved by process_preview_deployment, which runs alongside this job,
+      # and the auth build may still be running. Without this, tests can hit the previous deploy.
+      - name: Wait for previews to serve this commit
+        if: steps.should-run.outputs.should_run == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.deployment.sha }}
+        run: |
+          # True once process_preview_deployment has pointed the pr-N alias of $1 at this commit
+          aliased() {
+            for run in $(gh api "repos/${{ github.repository }}/actions/workflows/process_preview_deployment.yaml/runs?head_sha=$SHA&per_page=30" --jq '.workflow_runs[].id'); do
+              gh api "repos/${{ github.repository }}/actions/runs/$run/jobs" \
+                --jq ".jobs[]|select(.name==\"\\\"Preview – $1\\\"\")|.steps[]|select(.name==\"Get Vercel's Alias Preview URL\")|.conclusion" | grep -qx success && return 0
+            done
+            return 1
+          }
+          for project in app auth; do
+            for i in $(seq 1 40); do
+              aliased $project && { echo "✅ $project alias serves $SHA"; continue 2; }
+              echo "Attempt $i/40: $project alias not on $SHA yet, waiting 15s..."
+              sleep 15
+            done
+            echo "::error::$project preview never got aliased to $SHA (10 min)"
+            exit 1
+          done
 
       - name: Check if both previews are ready
         if: steps.should-run.outputs.should_run == 'true'
