@@ -15,6 +15,8 @@ import {
   getGroupForPublicPage,
   getOrganizationById,
   getOrganizationFeedbackLinks,
+  getOrganizationSettings,
+  getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { checkRateLimit, EMAIL_LOOKUP_RATE_LIMIT } from "@propsto/data/utils";
 
@@ -283,20 +285,44 @@ async function handleProfilePage(
 }
 
 async function handleOrgPage(organizationId: string): Promise<React.ReactNode> {
-  const [orgResult, linksResult] = await Promise.all([
+  const [orgResult, settings, session] = await Promise.all([
     getOrganizationById(organizationId),
-    // ponytail: first 50 links, add paging when an org lists more
-    getOrganizationFeedbackLinks(organizationId, {
-      publicOnly: true,
-      take: 50,
-    }),
+    getOrganizationSettings(organizationId),
+    auth(),
   ]);
   if (!orgResult.success || !orgResult.data) {
     notFound();
   }
 
+  // Don't hand outsiders the staff directory when they can't give feedback anyway
+  const enabled =
+    settings.data?.feedbackSettings?.enableOrganizationFeedback ?? true;
+  const membersOnly = !(
+    settings.data?.defaultUserSettings?.allowExternalFeedback ?? false
+  );
+  const isMember =
+    membersOnly && session?.user?.id
+      ? Boolean(
+          (
+            await getUserOrganizationMembership({
+              userId: session.user.id,
+              organizationId,
+            })
+          ).data,
+        )
+      : false;
+  const listLinks = enabled && (!membersOnly || isMember);
+
+  // ponytail: first 50 links, add paging when an org lists more
+  const linksResult = listLinks
+    ? await getOrganizationFeedbackLinks(organizationId, {
+        publicOnly: true,
+        take: 50,
+      })
+    : null;
+
   // Removed members' links are deactivated, so publicOnly leaves current members'
-  const links = (linksResult.success ? linksResult.data.links : []).map(
+  const links = (linksResult?.success ? linksResult.data.links : []).map(
     link => ({
       ...link,
       owner: [link.user.firstName, link.user.lastName]

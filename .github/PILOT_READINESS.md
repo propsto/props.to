@@ -101,7 +101,7 @@ Release test: leaked link is paused within a minute from the UI. Removed member 
 
 - [x] Hide, do not build: `/settings`, `/reports`, goals (`/goals/new`, `/goals/[id]`, edit, delete), template detail, template edit, template duplicate and delete, link edit. Done: nav entries, dashboard goal card, template card link/menu and link Edit item removed; `/goals` calls notFound(), the rest have no page and 404.
 - [x] Dashboard "recent feedback" renders only a count. Render the list or drop the card. Done: last 5 approved items plus "View all N".
-- [x] Org landing at `/<org>` on the public site is stub text. Either a real page or a redirect. Done: org name plus active, non-hidden member links (managed and group links left out).
+- [x] Org landing at `/<org>` on the public site is stub text. Either a real page or a redirect. Done: org name plus active, non-hidden member links (managed and group links left out); members-only or feedback-off orgs show outsiders the name only, and members without a PUBLIC profile are never listed.
 - [x] Rate limit is 10/min/IP on public submit. An office behind one NAT will hit it. Raise, or key on link+IP. Done: 10/min per link+IP, 120/min per-IP ceiling.
 - [ ] Rehearsal with two orgs, one dual-member user, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send.
 

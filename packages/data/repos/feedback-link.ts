@@ -299,6 +299,13 @@ export async function getOrganizationFeedbackLinks(
         isHidden: false,
         isManaged: false,
         groupId: null,
+        // Leave out members who opted out of a public profile
+        user: {
+          OR: [
+            { privacySettings: { is: null } },
+            { privacySettings: { is: { profileVisibility: "PUBLIC" } } },
+          ],
+        },
       }),
     };
 
