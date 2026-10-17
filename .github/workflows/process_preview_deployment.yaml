@@ -45,7 +45,8 @@ jobs:
         id: preview_url
         run: echo "value=${{ steps.project_name.outputs.lower }}.pr-${{steps.get_pr.outputs.pr_number}}.${{ vars.PROPSTO_HOST }}" >> $GITHUB_OUTPUT
       - name: Install Vercel CLI
-        run: npm install --global vercel@latest
+        # Retried: the global install intermittently fails with EEXIST on the runner
+        run: npm install --global vercel@latest || npm install --global --force vercel@latest
       - name: Check if cert already exists
         if: github.event.deployment_status.state == 'success'
         id: check_cert
