@@ -63,13 +63,15 @@ jobs:
         run: |
           API="https://api.vercel.com"
           H="Authorization: Bearer $VERCEL_TOKEN"
-          opened=$(( $(date -d "$PR_CREATED" +%s) * 1000 ))
-          # Newest preview of $SHA for project $1 started before the PR? (meta.githubPrId is
+          # Builds started up to a minute after the PR (e.g. the Neon integration's redeploy)
+          # can still miss the PR id
+          cutoff=$(( ($(date -d "$PR_CREATED" +%s) + 60) * 1000 ))
+          # Newest preview of $SHA for project $1 started before the cutoff? (meta.githubPrId is
           # backfilled later, so only the creation time tells)
           stale() {
             created=$(curl -sf -H "$H" "$API/v6/deployments?teamId=$VERCEL_TEAM_ID&projectId=$1&target=preview&limit=20" |
               jq --arg s "$SHA" '[.deployments[]|select(.meta.githubCommitSha==$s)][0].created // empty')
-            [ -n "$created" ] && [ "$created" -lt "$opened" ]
+            [ -n "$created" ] && [ "$created" -lt "$cutoff" ]
           }
           redeploy() {
             jq -n --arg p "$1" --arg b "$BRANCH" --arg r "$REPO_ID" \
