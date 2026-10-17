@@ -12,6 +12,7 @@ export const constClient = createEnv({
       () => vercelPreviewEnvVars.PROPSTO_APP_URL,
       z.string().url(),
     ),
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
 
   /**

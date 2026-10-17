@@ -37,6 +37,8 @@ export const constServer = createEnv({
     OPENAI_API_KEY: z.string().optional(),
     UPSTASH_REDIS_REST_URL: z.string().url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+    // Error reporting stays off until set (see packages/logger/sentry.ts).
+    SENTRY_DSN: z.string().url().optional(),
   },
 
   /**
