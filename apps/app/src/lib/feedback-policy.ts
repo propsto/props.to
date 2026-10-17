@@ -8,6 +8,7 @@ export interface FeedbackPolicy {
   allowAnonymous: boolean; // allowAnonymousFeedback (always true for personal links)
   membersOnly: boolean; // !allowExternalFeedback
   isMember: boolean;
+  moderated: boolean; // held PENDING_MODERATION until an org admin approves
 }
 
 // What an org's settings allow on one of its links. Personal links have no policy.
@@ -22,6 +23,7 @@ export async function getFeedbackPolicy(
       allowAnonymous: true,
       membersOnly: false,
       isMember: false,
+      moderated: false,
     };
   }
   const settings = await getOrganizationSettings(link.organizationId);
@@ -38,7 +40,24 @@ export async function getFeedbackPolicy(
     allowAnonymous: feedback?.allowAnonymousFeedback ?? false,
     membersOnly: !(members?.allowExternalFeedback ?? false),
     isMember: Boolean(membership?.data),
+    moderated: needsModeration(feedback, Boolean(membership?.data)),
   };
+}
+
+// Org feedback is held for moderation unless moderation is off and the submitter
+// is a member with autoApproveInternalFeedback on. External feedback always waits.
+export function needsModeration(
+  settings:
+    | {
+        enableFeedbackModeration?: boolean | null;
+        autoApproveInternalFeedback?: boolean | null;
+      }
+    | null
+    | undefined,
+  isMember: boolean,
+): boolean {
+  if (settings?.enableFeedbackModeration ?? true) return true;
+  return !(isMember && (settings?.autoApproveInternalFeedback ?? true));
 }
 
 // The reason a submission is refused, or null when it may proceed.

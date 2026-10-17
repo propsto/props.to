@@ -126,6 +126,10 @@ enum AuditAction {
   TEMPLATE_UPDATED
   TEMPLATE_DELETED
 
+  // Moderation actions
+  FEEDBACK_APPROVED
+  FEEDBACK_REJECTED
+
   // General
   OTHER
 }

@@ -13,6 +13,7 @@ import {
   Tag,
   FileText,
   Activity,
+  ShieldCheck,
 } from "lucide-react";
 import type { AuditAction } from "@prisma/client";
 
@@ -96,6 +97,16 @@ const actionConfig: Record<
   TEMPLATE_DELETED: {
     label: "Template deleted",
     icon: FileText,
+    color: "text-red-600",
+  },
+  FEEDBACK_APPROVED: {
+    label: "Feedback approved",
+    icon: ShieldCheck,
+    color: "text-green-600",
+  },
+  FEEDBACK_REJECTED: {
+    label: "Feedback rejected",
+    icon: ShieldCheck,
     color: "text-red-600",
   },
   OTHER: {

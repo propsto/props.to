@@ -308,8 +308,10 @@ export async function getFeedbackForOrganization(
 }
 
 // Get pending moderation feedback for an organization
+// excludeRecipientId: the moderator never sees pending feedback addressed to them
 export async function getPendingModerationFeedback(
   organizationId: string,
+  excludeRecipientId?: string,
 ): Promise<HandleEvent<FeedbackWithRelations[]>> {
   try {
     logger("getPendingModerationFeedback", { organizationId });
@@ -317,6 +319,7 @@ export async function getPendingModerationFeedback(
       where: {
         organizationId,
         status: "PENDING_MODERATION",
+        ...(excludeRecipientId && { userId: { not: excludeRecipientId } }),
       },
       include: feedbackInclude,
       orderBy: { createdAt: "asc" },
@@ -327,15 +330,22 @@ export async function getPendingModerationFeedback(
   }
 }
 
-// Approve feedback (moderation)
+// Approve feedback (moderation). Matches only a pending item of the given org,
+// so a cross-org, already-moderated or self-addressed id fails.
 export async function approveFeedback(
   id: bigint,
+  organizationId: string,
   moderatorId: string,
 ): Promise<HandleEvent<FeedbackWithRelations>> {
   try {
     logger("approveFeedback", { id: id.toString(), moderatorId });
     const feedback = await db.feedback.update({
-      where: { id },
+      where: {
+        id,
+        organizationId,
+        status: "PENDING_MODERATION",
+        userId: { not: moderatorId }, // nobody moderates feedback about themselves
+      },
       data: {
         status: "APPROVED",
         moderatedById: moderatorId,
@@ -349,16 +359,22 @@ export async function approveFeedback(
   }
 }
 
-// Reject feedback (moderation)
+// Reject feedback (moderation). Same pending + org binding as approve.
 export async function rejectFeedback(
   id: bigint,
+  organizationId: string,
   moderatorId: string,
   reason?: string,
 ): Promise<HandleEvent<FeedbackWithRelations>> {
   try {
     logger("rejectFeedback", { id: id.toString(), moderatorId, reason });
     const feedback = await db.feedback.update({
-      where: { id },
+      where: {
+        id,
+        organizationId,
+        status: "PENDING_MODERATION",
+        userId: { not: moderatorId }, // nobody moderates feedback about themselves
+      },
       data: {
         status: "REJECTED",
         moderatedById: moderatorId,
