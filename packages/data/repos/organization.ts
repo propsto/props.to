@@ -211,6 +211,24 @@ export async function verifyOrgAdminAccess(userId: string, orgSlug: string) {
   }
 }
 
+// Whether an OWNER/ADMIN other than userId exists, i.e. someone else can
+// moderate feedback addressed to userId
+export async function hasOtherOrgAdmin(organizationId: string, userId: string) {
+  try {
+    logger("hasOtherOrgAdmin", { organizationId, userId });
+    const count = await db.organizationMember.count({
+      where: {
+        organizationId,
+        userId: { not: userId },
+        role: { in: ["OWNER", "ADMIN"] },
+      },
+    });
+    return handleSuccess(count > 0);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Get organization by hosted domain (for Google Workspace domain matching)
 export async function getOrganizationByHostedDomain(hostedDomain: string) {
   try {

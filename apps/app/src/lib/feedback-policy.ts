@@ -1,6 +1,7 @@
 import {
   getOrganizationSettings,
   getUserOrganizationMembership,
+  hasOtherOrgAdmin,
 } from "@propsto/data/repos";
 
 export interface FeedbackPolicy {
@@ -14,7 +15,7 @@ export interface FeedbackPolicy {
 // What an org's settings allow on one of its links. Personal links have no policy.
 // Defaults mirror the schema: feedback on, anonymous off, external off.
 export async function getFeedbackPolicy(
-  link: { organizationId: string | null },
+  link: { organizationId: string | null; userId: string },
   userId?: string,
 ): Promise<FeedbackPolicy> {
   if (!link.organizationId) {
@@ -35,12 +36,17 @@ export async function getFeedbackPolicy(
         organizationId: link.organizationId,
       })
     : null;
+  // Nobody moderates feedback about themselves, so with no other OWNER/ADMIN
+  // (e.g. a new org's sole owner) holding it would strand it: approve instead
+  const moderated =
+    needsModeration(feedback, Boolean(membership?.data)) &&
+    (await hasOtherOrgAdmin(link.organizationId, link.userId)).data !== false;
   return {
     enabled: feedback?.enableOrganizationFeedback ?? true,
     allowAnonymous: feedback?.allowAnonymousFeedback ?? false,
     membersOnly: !(members?.allowExternalFeedback ?? false),
     isMember: Boolean(membership?.data),
-    moderated: needsModeration(feedback, Boolean(membership?.data)),
+    moderated,
   };
 }
 

@@ -1,7 +1,26 @@
 import { describe, expect, it, vi } from "vitest";
-import { needsModeration } from "./feedback-policy";
+import { hasOtherOrgAdmin } from "@propsto/data/repos";
+import { getFeedbackPolicy, needsModeration } from "./feedback-policy";
 
-vi.mock("@propsto/data/repos", () => ({}));
+vi.mock("@propsto/data/repos", () => ({
+  getOrganizationSettings: vi.fn(async () => ({ data: null })),
+  getUserOrganizationMembership: vi.fn(async () => ({ data: null })),
+  hasOtherOrgAdmin: vi.fn(),
+}));
+
+describe("getFeedbackPolicy moderation fallback", () => {
+  const link = { organizationId: "org", userId: "owner" };
+
+  it("holds feedback when another admin can moderate it", async () => {
+    vi.mocked(hasOtherOrgAdmin).mockResolvedValue({ data: true } as never);
+    expect((await getFeedbackPolicy(link)).moderated).toBe(true);
+  });
+
+  it("approves feedback to an org's only admin instead of stranding it", async () => {
+    vi.mocked(hasOtherOrgAdmin).mockResolvedValue({ data: false } as never);
+    expect((await getFeedbackPolicy(link)).moderated).toBe(false);
+  });
+});
 
 describe("needsModeration", () => {
   it("holds everything when moderation is on (the default)", () => {
