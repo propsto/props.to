@@ -93,7 +93,7 @@ Release test: new user receives an invite, signs up, lands in the org, creates a
 - [x] Account switcher renders member orgs as disabled items. Link them to the landing page. Done: members link to `/org/<slug>`, admins still go to `/org/<slug>/admin`.
 - [x] Received-feedback list fetches 50 with no paging. Add paging or a "load more". Done: `?page=` paging, 20 per page, via the shared `_components/pager.tsx`.
 - [x] Audit log pagination buttons are permanently disabled (`admin/audit/audit-log-list.tsx`). Wire or remove. Done: they were already links past page 1 but nothing seeded enough entries to see it; moved to the shared pager, invalid `?page=` now falls back to 1, seed adds 25 acme entries, E2E pages through.
-- [ ] Write a one-page data agreement for both companies: who owns feedback, what happens when an employee leaves, what happens when the pilot ends. The schema keeps feedback on the personal account after org deletion; make sure that is what they agree to.
+- [ ] Write a one-page data agreement for both companies: who owns feedback, what happens when an employee leaves, what happens when the pilot ends. The schema keeps feedback on the personal account after org deletion; make sure that is what they agree to. Draft written, needs founder sign-off: `docs/pilot-data-agreement.md` separates what the code does today from the decisions still open.
 
 Release test: leaked link is paused within a minute from the UI. Removed member cannot reach org pages or their old org URL. Pending feedback is invisible to the recipient until approved.
 
