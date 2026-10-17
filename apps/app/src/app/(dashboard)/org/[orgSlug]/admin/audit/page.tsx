@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@propsto/ui/atoms/card";
+import { parsePage } from "@/app/_components/pager";
 import { AuditLogList } from "./audit-log-list";
 
 interface AuditPageProps {
@@ -27,7 +28,10 @@ export default async function OrgAdminAudit({
   }
 
   // Verify user is member of this org
-  const membershipResult = await getMembershipByOrgSlug(session.user.id, orgSlug);
+  const membershipResult = await getMembershipByOrgSlug(
+    session.user.id,
+    orgSlug,
+  );
   const membership = membershipResult.success ? membershipResult.data : null;
 
   if (!membership) {
@@ -42,7 +46,7 @@ export default async function OrgAdminAudit({
   const org = membership.organization;
 
   // Parse pagination
-  const page = parseInt(search.page ?? "1", 10);
+  const page = parsePage(search.page);
   const limit = 20;
   const offset = (page - 1) * limit;
 

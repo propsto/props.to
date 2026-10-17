@@ -1,13 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Badge } from "@propsto/ui/atoms/badge";
-import { Button } from "@propsto/ui/atoms/button";
+import { Pager } from "@/app/_components/pager";
 import {
-  ChevronLeft,
-  ChevronRight,
   UserPlus,
   UserMinus,
   UserCog,
@@ -108,7 +105,11 @@ const actionConfig: Record<
   },
 };
 
-function getInitials(firstName: string | null, lastName: string | null, email: string): string {
+function getInitials(
+  firstName: string | null,
+  lastName: string | null,
+  email: string,
+): string {
   if (firstName && lastName) {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
   }
@@ -160,7 +161,7 @@ export function AuditLogList({
   return (
     <div className="space-y-4">
       <div className="divide-y">
-        {logs.map((log) => {
+        {logs.map(log => {
           const config = actionConfig[log.action];
           const Icon = config.icon;
           const detailText = formatDetails(log.action, log.details);
@@ -173,7 +174,11 @@ export function AuditLogList({
               <Avatar className="h-10 w-10">
                 <AvatarImage src={log.actor.image ?? undefined} />
                 <AvatarFallback>
-                  {getInitials(log.actor.firstName, log.actor.lastName, log.actor.email)}
+                  {getInitials(
+                    log.actor.firstName,
+                    log.actor.lastName,
+                    log.actor.email,
+                  )}
                 </AvatarFallback>
               </Avatar>
 
@@ -199,7 +204,9 @@ export function AuditLogList({
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(log.createdAt), {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
             </div>
@@ -207,42 +214,11 @@ export function AuditLogList({
         })}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t">
-          <p className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
-          </p>
-          <div className="flex gap-2">
-            {currentPage > 1 ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/org/${orgSlug}/admin/audit?page=${currentPage - 1}`}>
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" disabled>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Button>
-            )}
-            {currentPage < totalPages ? (
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/org/${orgSlug}/admin/audit?page=${currentPage + 1}`}>
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" disabled>
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      <Pager
+        basePath={`/org/${orgSlug}/admin/audit`}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
     </div>
   );
 }

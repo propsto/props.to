@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTransition } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import {
   Link as LinkIcon,
@@ -33,7 +34,13 @@ import {
   DropdownMenuTrigger,
 } from "@propsto/ui/atoms/dropdown-menu";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
+import { toast } from "@propsto/ui/atoms/sonner";
 import { publicLinkPath } from "@/lib/public-link-path";
+import {
+  deleteLinkAction,
+  pauseLinkAction,
+  resumeLinkAction,
+} from "@/app/(dashboard)/links/actions";
 
 interface LinkListProps {
   links: FeedbackLinkWithRelations[];
@@ -94,6 +101,15 @@ function LinkCard({
   // Public pages live on this same host
   const publicPath = publicLinkPath(link);
 
+  const [isPending, startTransition] = useTransition();
+  const run = (action: typeof pauseLinkAction, done: string): void => {
+    startTransition(async () => {
+      const result = await action(link.id);
+      if (result.success) toast.success(done);
+      else toast.error(result.error);
+    });
+  };
+
   return (
     <Card className={`group relative ${!link.isActive ? "opacity-75" : ""}`}>
       <CardHeader className="pb-3">
@@ -124,7 +140,7 @@ function LinkCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8 opacity-0 group-hover:opacity-100"
+                className="size-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
               >
                 <MoreHorizontal className="size-4" />
                 <span className="sr-only">Actions</span>
@@ -154,7 +170,14 @@ function LinkCard({
                   Edit
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isPending}
+                onClick={() =>
+                  link.isActive
+                    ? run(pauseLinkAction, `"${link.name}" paused`)
+                    : run(resumeLinkAction, `"${link.name}" activated`)
+                }
+              >
                 {link.isActive ? (
                   <>
                     <Pause className="mr-2 size-4" />
@@ -168,7 +191,19 @@ function LinkCard({
                 )}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem
+                className="text-destructive"
+                disabled={isPending}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete "${link.name}"? Its public URL stops working. Feedback already received is kept.`,
+                    )
+                  ) {
+                    run(deleteLinkAction, `"${link.name}" deleted`);
+                  }
+                }}
+              >
                 <Trash2 className="mr-2 size-4" />
                 Delete
               </DropdownMenuItem>
