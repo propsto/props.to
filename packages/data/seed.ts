@@ -16,6 +16,7 @@ const SEED_IDS = {
   john: "00000000-0000-0000-0000-000000000003",
   jane: "00000000-0000-0000-0000-000000000004",
   carol: "00000000-0000-0000-0000-000000000005",
+  rita: "00000000-0000-0000-0000-000000000006",
   // Organizations
   acme: "00000000-0000-0000-0000-000000000010",
   globex: "00000000-0000-0000-0000-000000000011",
@@ -212,6 +213,40 @@ async function main() {
     },
   });
 
+  // Acme MEMBER the member-management E2E removes: org-scoped slug "rita.stone"
+  // (so /acme/rita.stone/... resolves) and the org link "Rita at Acme"
+  const rita = await prisma.user.create({
+    data: {
+      id: SEED_IDS.rita,
+      email: "rita.stone@acme.com",
+      password: await hash("P4ssw0rd", 10),
+      firstName: "Rita",
+      lastName: "Stone",
+      role: "USER",
+      hostedDomain: "acme.com",
+      dateOfBirth: new Date("1992-03-10"),
+      personalEmail: "rita.personal@example.com",
+      personalEmailVerified: new Date(),
+      onboardingCompletedAt: new Date(),
+      slug: { create: { slug: "ritastone", scope: "GLOBAL" } },
+    },
+  });
+  await prisma.slug.create({
+    data: {
+      slug: "rita.stone",
+      scope: "ORGANIZATION",
+      scopedToOrgId: acme.id,
+      orgSlugOwnerId: rita.id,
+    },
+  });
+  await prisma.organizationMember.create({
+    data: {
+      user: { connect: { id: rita.id } },
+      organization: { connect: { id: acme.id } },
+      role: "MEMBER",
+    },
+  });
+
   // Second organization (Globex) for tenant-isolation tests.
   // Carol owns it; John is ADMIN here and MEMBER of Acme (dual membership).
   const globex = await prisma.organization.create({
@@ -367,6 +402,16 @@ async function main() {
       name: "John at Acme",
       slug: "john-acme",
       userId: john.id,
+      organizationId: acme.id,
+      templateId: propsTemplate,
+      isActive: true,
+    },
+  });
+  await prisma.feedbackLink.create({
+    data: {
+      name: "Rita at Acme",
+      slug: "rita-acme",
+      userId: rita.id,
       organizationId: acme.id,
       templateId: propsTemplate,
       isActive: true,

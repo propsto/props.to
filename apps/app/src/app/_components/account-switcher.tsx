@@ -101,56 +101,37 @@ export function AccountSwitcher({
                 </DropdownMenuLabel>
                 {organizations.map(org => {
                   const isAdmin = org.role === "OWNER" || org.role === "ADMIN";
-                  const content = (
-                    <>
-                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Building2 className="size-4" />
-                      </div>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <div className="flex items-center gap-2">
-                          <span className="truncate font-medium">
-                            {org.name}
-                          </span>
-                          <Badge
-                            variant="secondary"
-                            className="text-[10px] px-1 py-0"
-                          >
-                            {org.role.toLowerCase()}
-                          </Badge>
-                        </div>
-                        <span className="truncate text-xs text-muted-foreground">
-                          {userEmail}
-                        </span>
-                      </div>
-                      {isAdmin && (
-                        <ChevronRight className="ml-auto size-4 text-muted-foreground" />
-                      )}
-                    </>
-                  );
-
-                  // Admins get a link to the org admin panel
-                  if (isAdmin) {
-                    return (
-                      <DropdownMenuItem
-                        key={org.id}
-                        className="gap-3 p-2"
-                        asChild
-                      >
-                        <NextLink href={`/org/${org.slug}/admin`}>
-                          {content}
-                        </NextLink>
-                      </DropdownMenuItem>
-                    );
-                  }
-
-                  // Regular members see their org but no admin link
+                  // Admins go to the org admin panel, members to the org landing page
                   return (
                     <DropdownMenuItem
                       key={org.id}
                       className="gap-3 p-2"
-                      disabled
+                      asChild
                     >
-                      {content}
+                      <NextLink
+                        href={`/org/${org.slug}${isAdmin ? "/admin" : ""}`}
+                      >
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Building2 className="size-4" />
+                        </div>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                          <div className="flex items-center gap-2">
+                            <span className="truncate font-medium">
+                              {org.name}
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1 py-0"
+                            >
+                              {org.role.toLowerCase()}
+                            </Badge>
+                          </div>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {userEmail}
+                          </span>
+                        </div>
+                        <ChevronRight className="ml-auto size-4 text-muted-foreground" />
+                      </NextLink>
                     </DropdownMenuItem>
                   );
                 })}

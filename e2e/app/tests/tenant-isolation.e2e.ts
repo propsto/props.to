@@ -55,9 +55,13 @@ test.describe("signed in as another tenant", () => {
     // John's own acme link must stay out of the globex admin view
     await expect(page.getByText("John at Acme")).toHaveCount(0);
 
-    // A plain member cannot open the acme admin area either
+    // A plain member cannot open the acme admin area either: he lands on the
+    // member page, which has no admin view
     await page.goto(`${APP_URL}/org/acme/admin/links`);
-    await expect(page.getByText("Page not found")).toBeVisible();
-    await expect(page.getByText("John at Acme")).toHaveCount(0);
+    await page.waitForURL(`${APP_URL}/org/acme`);
+    await expect(
+      page.getByRole("heading", { name: "Your links in Acme Inc." }),
+    ).toBeVisible();
+    await expect(page.getByText("Organization Admin")).toHaveCount(0);
   });
 });

@@ -1,4 +1,4 @@
-import type { OrganizationRole } from "@prisma/client";
+import type { OrganizationRole, Prisma } from "@prisma/client";
 import { createLogger } from "@propsto/logger";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
@@ -315,7 +315,24 @@ export async function addOrganizationMember(data: {
   }
 }
 
-// Update a member's role in an organization
+// Membership changes lock the org row, so two concurrent changes (two owners
+// demoting each other) cannot both see another OWNER and leave the org with none.
+async function changeKeepingAnOwner(
+  tx: Prisma.TransactionClient,
+  organizationId: string,
+  change: () => Promise<unknown>,
+): Promise<void> {
+  await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${organizationId} FOR UPDATE`;
+  await change();
+  const owners = await tx.organizationMember.count({
+    where: { organizationId, role: "OWNER" },
+  });
+  if (owners === 0) {
+    throw new Error("The organization must keep at least one owner");
+  }
+}
+
+// Update a member's role in an organization. Refuses to demote the last OWNER.
 export async function updateOrganizationMemberRole(data: {
   userId: string;
   organizationId: string;
@@ -323,41 +340,66 @@ export async function updateOrganizationMemberRole(data: {
 }) {
   try {
     logger("updateOrganizationMemberRole", data);
-    const member = await db.organizationMember.update({
-      where: {
-        userId_organizationId: {
-          userId: data.userId,
-          organizationId: data.organizationId,
-        },
-      },
-      data: { role: data.role },
-      include: {
-        organization: { include: { slug: true } },
-        user: true,
-      },
-    });
-    return handleSuccess(member);
+    await db.$transaction(tx =>
+      changeKeepingAnOwner(tx, data.organizationId, () =>
+        tx.organizationMember.update({
+          where: {
+            userId_organizationId: {
+              userId: data.userId,
+              organizationId: data.organizationId,
+            },
+          },
+          data: { role: data.role },
+        }),
+      ),
+    );
+    return handleSuccess(true);
   } catch (e) {
     return handleError(e);
   }
 }
 
-// Remove a member from an organization
+// Remove a member from an organization: deactivates their org links, deletes
+// their org-scoped slug (so /<org>/<user>/... stops resolving) and drops them
+// from the org's groups. Refuses to remove the last OWNER.
 export async function removeOrganizationMember(data: {
   userId: string;
   organizationId: string;
 }) {
   try {
     logger("removeOrganizationMember", data);
-    const member = await db.organizationMember.delete({
-      where: {
-        userId_organizationId: {
-          userId: data.userId,
-          organizationId: data.organizationId,
-        },
-      },
-    });
-    return handleSuccess(member);
+    const { userId, organizationId } = data;
+    await db.$transaction(tx =>
+      changeKeepingAnOwner(tx, organizationId, async () => {
+        await tx.organizationMember.delete({
+          where: { userId_organizationId: { userId, organizationId } },
+        });
+        // Managed links are org templates the admin authored, not their own links
+        await tx.feedbackLink.updateMany({
+          where: { userId, organizationId, isManaged: false },
+          data: { isActive: false },
+        });
+        await tx.slug.deleteMany({
+          where: {
+            scope: "ORGANIZATION",
+            scopedToOrgId: organizationId,
+            orgSlugOwnerId: userId,
+          },
+        });
+        const groups = await tx.group.findMany({
+          where: { organizationId, users: { some: { id: userId } } },
+          select: { id: true },
+        });
+        await tx.user.update({
+          where: { id: userId },
+          data: { groups: { disconnect: groups } },
+        });
+        await tx.groupAdmin.deleteMany({
+          where: { userId, group: { organizationId } },
+        });
+      }),
+    );
+    return handleSuccess(true);
   } catch (e) {
     return handleError(e);
   }

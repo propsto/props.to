@@ -6,6 +6,7 @@ import {
   deactivateFeedbackLink,
   deleteFeedbackLink,
   getFeedbackLink,
+  getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 
@@ -15,7 +16,10 @@ type LinkActionResult = { success: true } | { success: false; error: string };
 // checking the link belongs to the session user.
 async function withOwnedLink(
   linkId: string,
-  mutate: (id: string) => Promise<{ success: boolean }>,
+  mutate: (
+    id: string,
+    link: { userId: string; organizationId: string | null },
+  ) => Promise<{ success: boolean }>,
 ): Promise<LinkActionResult> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -25,7 +29,7 @@ async function withOwnedLink(
   if (!link.success || link.data?.userId !== session.user.id) {
     return { success: false, error: "Link not found" };
   }
-  const result = await mutate(link.data.id);
+  const result = await mutate(link.data.id, link.data);
   if (!result.success) {
     return { success: false, error: "Failed to update link" };
   }
@@ -42,7 +46,17 @@ export async function pauseLinkAction(
 export async function resumeLinkAction(
   linkId: string,
 ): Promise<LinkActionResult> {
-  return withOwnedLink(linkId, activateFeedbackLink);
+  // A removed member's org links were paused on removal; they stay paused
+  return withOwnedLink(linkId, async (id, link) => {
+    if (link.organizationId) {
+      const membership = await getUserOrganizationMembership({
+        userId: link.userId,
+        organizationId: link.organizationId,
+      });
+      if (!membership.data) return { success: false };
+    }
+    return activateFeedbackLink(id);
+  });
 }
 
 // Hard delete: received feedback is kept (Feedback.linkId is SetNull) and the
