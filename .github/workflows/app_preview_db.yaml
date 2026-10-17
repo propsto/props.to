@@ -48,6 +48,44 @@ jobs:
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
           BRANCH: ${{ github.head_ref }}
           REPO_ID: ${{ github.event.repository.id }}
+      # A branch pushed before its PR is opened builds without VERCEL_GIT_PULL_REQUEST_ID, so
+      # the previews point at the base host instead of pr-N. Rebuild auth, then app (whose
+      # E2E run would otherwise test against the stale auth).
+      - name: Rebuild previews built before the PR existed
+        if: github.event.action == 'opened'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          BRANCH: ${{ github.head_ref }}
+          REPO_ID: ${{ github.event.repository.id }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          PR_CREATED: ${{ github.event.pull_request.created_at }}
+        run: |
+          API="https://api.vercel.com"
+          H="Authorization: Bearer $VERCEL_TOKEN"
+          opened=$(( $(date -d "$PR_CREATED" +%s) * 1000 ))
+          # Newest preview of $SHA for project $1 started before the PR? (meta.githubPrId is
+          # backfilled later, so only the creation time tells)
+          stale() {
+            created=$(curl -sf -H "$H" "$API/v6/deployments?teamId=$VERCEL_TEAM_ID&projectId=$1&target=preview&limit=20" |
+              jq --arg s "$SHA" '[.deployments[]|select(.meta.githubCommitSha==$s)][0].created // empty')
+            [ -n "$created" ] && [ "$created" -lt "$opened" ]
+          }
+          redeploy() {
+            jq -n --arg p "$1" --arg b "$BRANCH" --arg r "$REPO_ID" \
+              '{name:$p, project:$p, gitSource:{type:"github", ref:$b, repoId:$r}}' |
+              curl -sf -X POST -H "$H" -H "Content-Type: application/json" -d @- \
+                "$API/v13/deployments?teamId=$VERCEL_TEAM_ID" | jq -r .id
+          }
+          if ! stale auth && ! stale app; then echo "Previews were built with the PR id"; exit 0; fi
+          id=$(redeploy auth); echo "Rebuilding auth: $id"
+          for i in $(seq 1 60); do
+            state=$(curl -sf -H "$H" "$API/v13/deployments/$id?teamId=$VERCEL_TEAM_ID" | jq -r .readyState)
+            [ "$state" = READY ] && break
+            [ "$state" = ERROR ] || [ "$state" = CANCELED ] && { echo "::error::auth rebuild $state"; exit 1; }
+            sleep 15
+          done
+          echo "Rebuilding app: $(redeploy app)"
 
   # The Neon integration never deletes preview branches, and idle ones still count against
   # the plan. Deleting the branch also makes the integration drop auth's vars; app's are ours.
