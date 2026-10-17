@@ -6,13 +6,15 @@ import {
   deactivateFeedbackLink,
   deleteFeedbackLink,
   getFeedbackLink,
+  getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 
 type LinkActionResult = { success: true } | { success: false; error: string };
 
 // Owner-only: the link id comes from the client, so it is only trusted after
-// checking the link belongs to the session user.
+// checking the link belongs to the session user. An org link also needs the
+// owner to still be a member: a removed member cannot touch the org's links.
 async function withOwnedLink(
   linkId: string,
   mutate: (id: string) => Promise<{ success: boolean }>,
@@ -24,6 +26,13 @@ async function withOwnedLink(
   const link = await getFeedbackLink(linkId);
   if (!link.success || link.data?.userId !== session.user.id) {
     return { success: false, error: "Link not found" };
+  }
+  if (link.data.organizationId) {
+    const membership = await getUserOrganizationMembership({
+      userId: session.user.id,
+      organizationId: link.data.organizationId,
+    });
+    if (!membership.data) return { success: false, error: "Link not found" };
   }
   const result = await mutate(link.data.id);
   if (!result.success) {
@@ -42,6 +51,8 @@ export async function pauseLinkAction(
 export async function resumeLinkAction(
   linkId: string,
 ): Promise<LinkActionResult> {
+  // A removed member's org links were paused on removal; withOwnedLink's
+  // membership check keeps them paused
   return withOwnedLink(linkId, activateFeedbackLink);
 }
 

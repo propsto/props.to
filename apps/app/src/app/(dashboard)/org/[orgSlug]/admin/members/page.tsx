@@ -24,6 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Separator } from "@propsto/ui/atoms/separator";
 import { InviteDialog } from "./invite-dialog";
 import { PendingInvites } from "./pending-invites";
+import { MemberActions } from "./member-actions";
 
 interface MembersPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -33,7 +34,11 @@ export default async function OrgAdminMembers({
   params,
 }: MembersPageProps): Promise<React.ReactNode> {
   const { orgSlug } = await params;
-  const { org: adminOrg } = await requireOrgAdmin(orgSlug);
+  const {
+    org: adminOrg,
+    userId: actorId,
+    role: actorRole,
+  } = await requireOrgAdmin(orgSlug);
 
   // Get organization with members
   const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
@@ -91,6 +96,7 @@ export default async function OrgAdminMembers({
                 <TableHead>Username</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Joined</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -126,6 +132,21 @@ export default async function OrgAdminMembers({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {new Date(member.joinedAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {member.userId !== actorId &&
+                    (actorRole === "OWNER" || member.role !== "OWNER") ? (
+                      <MemberActions
+                        orgSlug={orgSlug}
+                        userId={member.userId}
+                        name={
+                          `${member.user.firstName ?? ""} ${member.user.lastName ?? ""}`.trim() ||
+                          member.user.email
+                        }
+                        role={member.role}
+                        canGrantOwner={actorRole === "OWNER"}
+                      />
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

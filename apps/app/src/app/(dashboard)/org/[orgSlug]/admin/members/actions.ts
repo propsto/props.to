@@ -11,6 +11,9 @@ import {
   resendOrganizationInvite,
   getUserByEmail,
   getUserOrganizationMembership,
+  updateOrganizationMemberRole,
+  removeOrganizationMember,
+  auditHelpers,
 } from "@propsto/data/repos";
 import { sendOrgInviteEmail } from "@propsto/email/send/org-invite";
 import { revalidatePath } from "next/cache";
@@ -34,6 +37,7 @@ async function verifyAdminAccess(orgSlug: string) {
     error: null,
     userId: session.user.id,
     orgId: membershipResult.data.organization.id,
+    role: membershipResult.data.role,
     userName: `${session.user.name ?? ""}`.trim() || undefined,
   };
 }
@@ -256,4 +260,94 @@ export async function getPendingInvitesAction(orgSlug: string) {
 
   const result = await listPendingOrganizationInvites(orgId);
   return result;
+}
+
+const ROLES: readonly OrganizationRole[] = ["OWNER", "ADMIN", "MEMBER"];
+
+// Who may change whom: never yourself (no self-lockout), and only an OWNER may
+// touch an OWNER or grant OWNER. The repo refuses to leave the org without an OWNER.
+async function authorizeMemberChange(
+  orgSlug: string,
+  targetUserId: string,
+  newRole?: OrganizationRole,
+): Promise<
+  | { ok: false; error: string }
+  | { ok: true; actorId: string; orgId: string; targetRole: OrganizationRole }
+> {
+  const { error, userId, orgId, role } = await verifyAdminAccess(orgSlug);
+  if (error || !userId || !orgId) {
+    return { ok: false, error: error ?? "Organization not found" };
+  }
+  if (targetUserId === userId) {
+    return { ok: false, error: "You cannot change your own membership" };
+  }
+  const target = await getUserOrganizationMembership({
+    userId: targetUserId,
+    organizationId: orgId,
+  });
+  if (!target.data) {
+    return { ok: false, error: "Member not found" };
+  }
+  if (
+    role !== "OWNER" &&
+    (target.data.role === "OWNER" || newRole === "OWNER")
+  ) {
+    return { ok: false, error: "Only an owner can change an owner" };
+  }
+  return { ok: true, actorId: userId, orgId, targetRole: target.data.role };
+}
+
+export async function changeMemberRoleAction(
+  orgSlug: string,
+  targetUserId: string,
+  newRole: OrganizationRole,
+): Promise<{ success: boolean; error?: string }> {
+  if (!ROLES.includes(newRole)) {
+    return { success: false, error: "Invalid role" };
+  }
+  const authz = await authorizeMemberChange(orgSlug, targetUserId, newRole);
+  if (!authz.ok) return { success: false, error: authz.error };
+  if (authz.targetRole === newRole) return { success: true };
+
+  const result = await updateOrganizationMemberRole({
+    userId: targetUserId,
+    organizationId: authz.orgId,
+    role: newRole,
+  });
+  if (!result.success) return { success: false, error: result.error };
+
+  await auditHelpers.logMemberAction(
+    authz.orgId,
+    authz.actorId,
+    "MEMBER_ROLE_CHANGED",
+    targetUserId,
+    { from: authz.targetRole, to: newRole },
+  );
+  revalidatePath(`/org/${orgSlug}/admin/members`);
+  return { success: true };
+}
+
+export async function removeMemberAction(
+  orgSlug: string,
+  targetUserId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const authz = await authorizeMemberChange(orgSlug, targetUserId);
+  if (!authz.ok) return { success: false, error: authz.error };
+
+  const result = await removeOrganizationMember({
+    userId: targetUserId,
+    organizationId: authz.orgId,
+    actorId: authz.actorId,
+  });
+  if (!result.success) return { success: false, error: result.error };
+
+  await auditHelpers.logMemberAction(
+    authz.orgId,
+    authz.actorId,
+    "MEMBER_REMOVED",
+    targetUserId,
+    { role: authz.targetRole },
+  );
+  revalidatePath(`/org/${orgSlug}/admin/members`);
+  return { success: true };
 }
