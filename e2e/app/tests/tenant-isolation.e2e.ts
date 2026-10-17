@@ -39,9 +39,15 @@ test.describe("signed in as another tenant", () => {
     await expect(page.getByText("John at Acme")).toHaveCount(0);
 
     // notFound() inside a streamed Suspense boundary still answers 200, so assert on
-    // what is rendered: the not-found page and none of acme's data
+    // what is rendered: no admin view and none of acme's data. (invite-flow makes
+    // carol an acme MEMBER, so she may land on the member page instead of a 404.)
     await page.goto(`${APP_URL}/org/acme/admin/links`);
-    await expect(page.getByText("Page not found")).toBeVisible();
+    await expect(
+      page
+        .getByText("Page not found")
+        .or(page.getByRole("heading", { name: "Your links in Acme Inc." })),
+    ).toBeVisible();
+    await expect(page.getByText("Organization Admin")).toHaveCount(0);
     await expect(page.getByText("John at Acme")).toHaveCount(0);
   });
 
