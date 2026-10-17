@@ -362,7 +362,7 @@ async function main() {
   });
 
   // Org-scoped links: one per org, used by the tenant-isolation E2E
-  await prisma.feedbackLink.create({
+  const johnAcmeLink = await prisma.feedbackLink.create({
     data: {
       name: "John at Acme",
       slug: "john-acme",
@@ -381,6 +381,25 @@ async function main() {
       templateId: propsTemplate,
       isActive: true,
     },
+  });
+
+  // Pending org submissions to John, held for moderation (moderation E2E
+  // approves one and rejects the other as Mike, the Acme owner)
+  await prisma.feedback.createMany({
+    data: ["approve", "reject"].map(kind => ({
+      userId: john.id,
+      submitterId: jane.id,
+      submitterEmail: jane.email!,
+      organizationId: acme.id,
+      linkId: johnAcmeLink.id,
+      feedbackType: "RECOGNITION" as const,
+      visibility: "PRIVATE" as const,
+      status: "PENDING_MODERATION" as const,
+      templateId: propsTemplate,
+      fieldsData: {
+        "What do you appreciate about this person?": `Pending feedback to ${kind}`,
+      },
+    })),
   });
 
   // Create sample feedback for Mike from Jane

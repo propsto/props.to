@@ -1,11 +1,9 @@
 "use server";
 
-import { createFeedback, getFeedbackLink, getUser } from "@propsto/data/repos";
-import { sendFeedbackReceivedEmail } from "@propsto/email";
-import { FeedbackStatus, FeedbackVisibility } from "@prisma/client";
-import type { Prisma } from "@prisma/client";
-import { constServer } from "@propsto/constants/server";
+import { createFeedback, getFeedbackLink } from "@propsto/data/repos";
+import type { FeedbackVisibility, Prisma } from "@prisma/client";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
+import { notifyFeedbackRecipient } from "@/lib/feedback-email";
 import { auth } from "@/server/auth.server";
 import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
 import { z } from "zod";
@@ -167,9 +165,7 @@ export async function submitFeedbackAction(
     submitterId: isAnonymous ? undefined : session?.user?.id,
     feedbackType: link.feedbackType,
     visibility,
-    status: link.organization
-      ? ("PENDING_MODERATION" as FeedbackStatus)
-      : ("APPROVED" as FeedbackStatus),
+    status: policy.moderated ? "PENDING_MODERATION" : "APPROVED",
     templateId: link.templateId,
     linkId: link.id,
     organizationId: link.organizationId ?? undefined,
@@ -188,32 +184,16 @@ export async function submitFeedbackAction(
     };
   }
 
-  // Send email notification to recipient
-  try {
-    const userResult = await getUser({ id: link.userId });
-    if (userResult.success && userResult.data?.email) {
-      const recipientName =
-        userResult.data.firstName ?? userResult.data.email.split("@")[0];
-      // Preview: the first long-text answer, else the first text answer, else the generic body
-      const textAnswer = (type: string): string | undefined =>
-        link.template.fields
-          .filter(f => f.type === type)
-          .map(f => fieldsData[f.id])
-          .find((v): v is string => typeof v === "string");
-      const feedbackPreview = textAnswer("TEXTAREA") ?? textAnswer("TEXT");
-
-      await sendFeedbackReceivedEmail(userResult.data.email, {
-        recipientName,
-        feedbackPreview: isAnonymous ? undefined : feedbackPreview,
-        senderName: isAnonymous ? undefined : sanitizedInput.submitterName,
-        isAnonymous,
-        feedbackType: link.feedbackType.replace(/_/g, " "),
-        dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
-      });
-    }
-  } catch (emailError) {
-    // Log but don't fail the submission if email fails
-    logger("Failed to send feedback notification email:", emailError);
+  // Moderated feedback notifies the recipient on approval instead
+  if (!policy.moderated) {
+    await notifyFeedbackRecipient({
+      recipientId: link.userId,
+      fields: link.template.fields,
+      fieldsData,
+      isAnonymous,
+      senderName: sanitizedInput.submitterName,
+      feedbackType: link.feedbackType,
+    });
   }
 
   return { success: true };
