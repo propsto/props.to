@@ -105,6 +105,18 @@ test.describe.serial("members: landing page, role change, removal", () => {
     await expect(rita.getByText(/paused links/i)).toBeVisible({
       timeout: 15000,
     });
+
+    // ...and she can no longer delete it: the org keeps its data
+    const card = rita
+      .locator('[data-slot="card"]')
+      .filter({ hasText: "Rita at Acme" });
+    rita.once("dialog", dialog => void dialog.accept());
+    await card.hover();
+    await card.getByRole("button", { name: "Actions" }).click();
+    await rita.getByRole("menuitem", { name: /^delete$/i }).click();
+    await expect(rita.getByText("Link not found")).toBeVisible();
+    await rita.reload();
+    await expect(card).toBeVisible({ timeout: 15000 });
     await rita.context().close();
   });
 });

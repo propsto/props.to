@@ -361,23 +361,29 @@ export async function updateOrganizationMemberRole(data: {
 
 // Remove a member from an organization: deactivates their org links, deletes
 // their org-scoped slug (so /<org>/<user>/... stops resolving) and drops them
-// from the org's groups. Refuses to remove the last OWNER.
+// from the org's groups. Managed links they authored pass to `actorId` so the
+// org keeps a member as owner. Refuses to remove the last OWNER.
 export async function removeOrganizationMember(data: {
   userId: string;
   organizationId: string;
+  actorId: string;
 }) {
   try {
     logger("removeOrganizationMember", data);
-    const { userId, organizationId } = data;
+    const { userId, organizationId, actorId } = data;
     await db.$transaction(tx =>
       changeKeepingAnOwner(tx, organizationId, async () => {
         await tx.organizationMember.delete({
           where: { userId_organizationId: { userId, organizationId } },
         });
-        // Managed links are org templates the admin authored, not their own links
+        // Managed links are org links the admin authored, not their own links
         await tx.feedbackLink.updateMany({
           where: { userId, organizationId, isManaged: false },
           data: { isActive: false },
+        });
+        await tx.feedbackLink.updateMany({
+          where: { userId, organizationId, isManaged: true },
+          data: { userId: actorId },
         });
         await tx.slug.deleteMany({
           where: {

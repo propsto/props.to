@@ -337,6 +337,7 @@ export async function removeMemberAction(
   const result = await removeOrganizationMember({
     userId: targetUserId,
     organizationId: authz.orgId,
+    actorId: authz.actorId,
   });
   if (!result.success) return { success: false, error: result.error };
 

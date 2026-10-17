@@ -13,13 +13,11 @@ import { revalidatePath } from "next/cache";
 type LinkActionResult = { success: true } | { success: false; error: string };
 
 // Owner-only: the link id comes from the client, so it is only trusted after
-// checking the link belongs to the session user.
+// checking the link belongs to the session user. An org link also needs the
+// owner to still be a member: a removed member cannot touch the org's links.
 async function withOwnedLink(
   linkId: string,
-  mutate: (
-    id: string,
-    link: { userId: string; organizationId: string | null },
-  ) => Promise<{ success: boolean }>,
+  mutate: (id: string) => Promise<{ success: boolean }>,
 ): Promise<LinkActionResult> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -29,7 +27,14 @@ async function withOwnedLink(
   if (!link.success || link.data?.userId !== session.user.id) {
     return { success: false, error: "Link not found" };
   }
-  const result = await mutate(link.data.id, link.data);
+  if (link.data.organizationId) {
+    const membership = await getUserOrganizationMembership({
+      userId: session.user.id,
+      organizationId: link.data.organizationId,
+    });
+    if (!membership.data) return { success: false, error: "Link not found" };
+  }
+  const result = await mutate(link.data.id);
   if (!result.success) {
     return { success: false, error: "Failed to update link" };
   }
@@ -46,17 +51,9 @@ export async function pauseLinkAction(
 export async function resumeLinkAction(
   linkId: string,
 ): Promise<LinkActionResult> {
-  // A removed member's org links were paused on removal; they stay paused
-  return withOwnedLink(linkId, async (id, link) => {
-    if (link.organizationId) {
-      const membership = await getUserOrganizationMembership({
-        userId: link.userId,
-        organizationId: link.organizationId,
-      });
-      if (!membership.data) return { success: false };
-    }
-    return activateFeedbackLink(id);
-  });
+  // A removed member's org links were paused on removal; withOwnedLink's
+  // membership check keeps them paused
+  return withOwnedLink(linkId, activateFeedbackLink);
 }
 
 // Hard delete: received feedback is kept (Feedback.linkId is SetNull) and the
