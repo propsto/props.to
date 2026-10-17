@@ -10,8 +10,11 @@ export default function GlobalError({
   reset: () => void;
 }): React.ReactNode {
   useEffect(() => {
-    // Log the error to an error reporting service
     console.error("Global error:", error);
+    // No-op unless instrumentation-client.ts initialized Sentry.
+    void import("@sentry/nextjs").then(Sentry =>
+      Sentry.captureException(error),
+    );
   }, [error]);
 
   return (

@@ -15,6 +15,7 @@
     "debug": "4.4.1"
   },
   "devDependencies": {
+    "@sentry/core": "11.8.0",
     "@types/debug": "4.1.12"
   },
   "peerDependencies": {

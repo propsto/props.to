@@ -34,7 +34,10 @@
     "GOOGLE_ALLOWED_HOSTED_DOMAINS",
     "UPSTASH_REDIS_REST_URL",
     "UPSTASH_REDIS_REST_TOKEN",
-    "OPENAI_API_KEY"
+    "OPENAI_API_KEY",
+    "SENTRY_DSN",
+    "NEXT_PUBLIC_SENTRY_DSN",
+    "NEXT_PUBLIC_VERCEL_ENV"
   ],
   "tasks": {
     "@propsto/email#maildev": {

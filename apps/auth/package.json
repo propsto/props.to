@@ -26,12 +26,13 @@
     "@propsto/email": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@sentry/nextjs": "^11.8.0",
     "@simplewebauthn/browser": "9.0.1",
     "@simplewebauthn/server": "9.0.2",
     "@stepperize/react": "4.2.0",
-    "react-confetti": "6.4.0",
     "@upstash/ratelimit": "^2.0.5",
-    "@upstash/redis": "^1.36.2"
+    "@upstash/redis": "^1.36.2",
+    "react-confetti": "6.4.0"
   },
   "peerDependencies": {
     "@types/node": "*",

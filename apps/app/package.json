@@ -28,6 +28,7 @@
     "@propsto/forms": "workspace:*",
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
+    "@sentry/nextjs": "^11.8.0",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.36.2",
     "ai": "^6.0.82",
