@@ -26,4 +26,7 @@ export const constClient = createEnv({
    * `process.env` or `import.meta.env`.
    */
   runtimeEnv: process.env,
+
+  // Treat NEXT_PUBLIC_SENTRY_DSN="" (as shipped in .env.example) as unset.
+  emptyStringAsUndefined: true,
 });

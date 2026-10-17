@@ -3,8 +3,9 @@ import type { Event, Options } from "@sentry/core";
 // Query strings carrying these (magic links, invite/reset tokens, OAuth codes,
 // redirect targets) are dropped whole from every URL Sentry sends.
 const SENSITIVE_QUERY = /token|code|callbackurl/i;
-const SENSITIVE_HEADER =
-  /^(cookie|set-cookie|authorization|proxy-authorization)$/i;
+// Headers are allowlisted: referer, next-router-state-tree, next-url and friends
+// carry full page URLs (e.g. /new-password?token=...), so anything else is dropped.
+const SAFE_HEADER = /^(user-agent|accept|accept-language|content-type|host)$/i;
 
 export function scrubUrl(url: string): string {
   const i = url.indexOf("?");
@@ -24,7 +25,7 @@ export function redactEvent<T extends Event>(event: T): T {
       delete req.query_string;
     if (req.headers)
       for (const h of Object.keys(req.headers))
-        if (SENSITIVE_HEADER.test(h)) delete req.headers[h];
+        if (!SAFE_HEADER.test(h)) delete req.headers[h];
   }
   for (const crumb of event.breadcrumbs ?? []) {
     const data = crumb.data;

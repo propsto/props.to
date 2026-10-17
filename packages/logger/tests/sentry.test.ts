@@ -24,6 +24,9 @@ describe("sentry redaction", () => {
           Cookie: "a=b",
           authorization: "Bearer t",
           "user-agent": "ua",
+          Referer: "https://auth.x/new-password?token=x",
+          "next-router-state-tree": "%5B%22token%22%2C%22x%22%5D",
+          "next-url": "/invite?token=x",
         },
       },
       breadcrumbs: [
