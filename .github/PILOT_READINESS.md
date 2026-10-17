@@ -87,12 +87,12 @@ Release test: new user receives an invite, signs up, lands in the org, creates a
 ## Gate 4: operable for a company
 
 - [ ] Moderation. Org submissions are always written `PENDING_MODERATION` and nothing approves them. `enableFeedbackModeration` defaults to true, so honoring the flag alone still strands everything. Build the minimal queue: org admin page listing pending, approve/reject using the existing repo functions, audit entry, notification email sent on approval rather than on submit. When moderation is off, honor `autoApproveInternalFeedback` for members and keep external pending.
-- [ ] Link pause and delete are dead menu items (`_components/link-list.tsx:150`). `deactivateFeedbackLink` exists. Wire them. This is the only takedown control for a leaked link, so it is not optional.
+- [x] Link pause and delete are dead menu items (`_components/link-list.tsx:150`). `deactivateFeedbackLink` exists. Wire them. This is the only takedown control for a leaked link, so it is not optional. Done: owner-only pause/resume/delete actions in `(dashboard)/links/actions.ts`; delete is hard (feedback kept, `linkId` set null) and the public URL 404s; `e2e/app/tests/link-takedown.e2e.ts` covers an already-open form being refused after pause.
 - [ ] Members page: add remove member and change role. Removal must also deactivate the member's org links and remove the scoped slug.
 - [ ] Non-admin members are redirected to `/org/[orgSlug]`, which does not exist. Add a member landing page (org templates, managed links, own org links).
 - [ ] Account switcher renders member orgs as disabled items. Link them to the landing page.
-- [ ] Received-feedback list fetches 50 with no paging. Add paging or a "load more".
-- [ ] Audit log pagination buttons are permanently disabled (`admin/audit/audit-log-list.tsx`). Wire or remove.
+- [x] Received-feedback list fetches 50 with no paging. Add paging or a "load more". Done: `?page=` paging, 20 per page, via the shared `_components/pager.tsx`.
+- [x] Audit log pagination buttons are permanently disabled (`admin/audit/audit-log-list.tsx`). Wire or remove. Done: they were already links past page 1 but nothing seeded enough entries to see it; moved to the shared pager, invalid `?page=` now falls back to 1, seed adds 25 acme entries, E2E pages through.
 - [ ] Write a one-page data agreement for both companies: who owns feedback, what happens when an employee leaves, what happens when the pilot ends. The schema keeps feedback on the personal account after org deletion; make sure that is what they agree to.
 
 Release test: leaked link is paused within a minute from the UI. Removed member cannot reach org pages or their old org URL. Pending feedback is invisible to the recipient until approved.

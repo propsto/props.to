@@ -4,6 +4,7 @@ import { Inter, Inter_Tight as InterTight } from "next/font/google";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { cn } from "@propsto/ui/lib/utils";
+import { Toaster } from "@propsto/ui/atoms/sonner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen overflow-hidden supports-[overflow:clip]:overflow-clip">
             {children}
           </div>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

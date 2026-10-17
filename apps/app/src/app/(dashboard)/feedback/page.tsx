@@ -5,19 +5,28 @@ import { FeedbackList } from "@/app/_components/feedback-list";
 import { NoFeedbackState } from "@/app/_components/empty-state";
 import { Button } from "@propsto/ui/atoms/button";
 import { Plus } from "lucide-react";
+import { Pager, parsePage } from "@/app/_components/pager";
 
-export default async function FeedbackPage(): Promise<React.ReactNode> {
+const PAGE_SIZE = 20;
+
+export default async function FeedbackPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}): Promise<React.ReactNode> {
   const session = await auth();
   if (!session?.user?.id) {
     return null;
   }
 
   const userId = session.user.id;
+  const page = parsePage((await searchParams).page);
 
   // Get feedback received by the user
   const feedbackResult = await getFeedbackForUser(userId, {
     status: ["APPROVED"],
-    take: 50,
+    skip: (page - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
   });
 
   const feedbacks = feedbackResult.success ? feedbackResult.data.feedbacks : [];
@@ -46,7 +55,14 @@ export default async function FeedbackPage(): Promise<React.ReactNode> {
         {feedbacks.length === 0 ? (
           <NoFeedbackState />
         ) : (
-          <FeedbackList feedbacks={feedbacks} />
+          <>
+            <FeedbackList feedbacks={feedbacks} />
+            <Pager
+              basePath="/feedback"
+              currentPage={page}
+              totalPages={Math.ceil(total / PAGE_SIZE)}
+            />
+          </>
         )}
       </div>
     </div>

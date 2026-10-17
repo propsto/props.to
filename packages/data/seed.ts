@@ -421,6 +421,33 @@ async function main() {
     },
   });
 
+  // Older feedback and audit entries so the received list and the audit log
+  // have more than one page (page size 20)
+  await prisma.feedback.createMany({
+    data: Array.from({ length: 22 }, (_, i) => ({
+      userId: mike.id,
+      submitterId: jane.id,
+      submitterEmail: jane.email!,
+      feedbackType: "RECOGNITION" as const,
+      visibility: "PRIVATE" as const,
+      status: "APPROVED" as const,
+      templateId: propsTemplate,
+      fieldsData: {
+        "What do you appreciate about this person?": `Older seeded feedback #${i + 1}`,
+      },
+      createdAt: new Date(Date.now() - (10 + i) * 24 * 60 * 60 * 1000),
+    })),
+  });
+  await prisma.auditLog.createMany({
+    data: Array.from({ length: 25 }, (_, i) => ({
+      organizationId: acme.id,
+      actorId: mike.id,
+      action: "SETTINGS_UPDATED" as const,
+      resourceType: "settings",
+      createdAt: new Date(Date.now() - (10 + i) * 24 * 60 * 60 * 1000),
+    })),
+  });
+
   // Create a goal for Mike
   await prisma.goal.create({
     data: {
