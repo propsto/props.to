@@ -125,13 +125,7 @@ async function main() {
       hostedDomain: "acme.com",
       createdAt: new Date(),
       updatedAt: new Date(),
-      slug: {
-        create: {
-          slug: "bob.jones",
-          scope: "ORGANIZATION",
-          scopedToOrgId: acme.id,
-        },
-      },
+      slug: { create: { slug: "bobjones", scope: "GLOBAL" } },
     },
   });
 
@@ -161,13 +155,7 @@ async function main() {
       onboardingCompletedAt: new Date(), // dual-member user signs in directly in E2E
       createdAt: new Date(),
       updatedAt: new Date(),
-      slug: {
-        create: {
-          slug: "john.doe",
-          scope: "ORGANIZATION",
-          scopedToOrgId: acme.id,
-        },
-      },
+      slug: { create: { slug: "johndoe", scope: "GLOBAL" } },
     },
   });
 
@@ -193,13 +181,7 @@ async function main() {
       hostedDomain: "acme.com",
       createdAt: new Date(),
       updatedAt: new Date(),
-      slug: {
-        create: {
-          slug: "jane.smith",
-          scope: "ORGANIZATION",
-          scopedToOrgId: acme.id,
-        },
-      },
+      slug: { create: { slug: "janesmith", scope: "GLOBAL" } },
     },
   });
 
@@ -277,13 +259,7 @@ async function main() {
       onboardingCompletedAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      slug: {
-        create: {
-          slug: "carol.white",
-          scope: "ORGANIZATION",
-          scopedToOrgId: globex.id,
-        },
-      },
+      slug: { create: { slug: "carolwhite", scope: "GLOBAL" } },
     },
   });
 
@@ -294,6 +270,20 @@ async function main() {
       role: "OWNER",
       joinedAt: new Date(),
     },
+  });
+
+  // Org-scoped slugs must be owned via orgSlugOwnerId, or /<org>/<user>/... never resolves
+  await prisma.slug.createMany({
+    data: [
+      { slug: "bob.jones", scopedToOrgId: acme.id, orgSlugOwnerId: bob.id },
+      { slug: "john.doe", scopedToOrgId: acme.id, orgSlugOwnerId: john.id },
+      { slug: "jane.smith", scopedToOrgId: acme.id, orgSlugOwnerId: jane.id },
+      {
+        slug: "carol.white",
+        scopedToOrgId: globex.id,
+        orgSlugOwnerId: carol.id,
+      },
+    ].map(s => ({ ...s, scope: "ORGANIZATION" as const })),
   });
 
   await prisma.slug.create({

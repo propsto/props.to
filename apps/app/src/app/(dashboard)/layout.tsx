@@ -4,6 +4,7 @@ import { Separator } from "@propsto/ui/atoms/separator";
 import { canUserMoveOn } from "@propsto/auth/post-auth-check";
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
+import { getUserOrganizations } from "@propsto/data/repos";
 import { auth } from "@/server/auth.server";
 import { FeedbackSidebar } from "@/app/_components/feedback-sidebar";
 
@@ -21,6 +22,9 @@ export default async function DashboardLayout({
     return redirect(constServer.AUTH_URL);
   }
 
+  // Memberships come from the DB, not the JWT, so a removed member's org disappears at once
+  const memberships = await getUserOrganizations(session.user.id);
+
   // Transform session user to sidebar user format
   const sidebarUser = {
     id: session.user.id,
@@ -32,12 +36,14 @@ export default async function DashboardLayout({
     image: session.user.image || undefined,
     username: session.user.username,
     personalEmail: session.user.personalEmail,
-    organizations: session.user.organizations?.map(org => ({
-      id: org.organizationId,
-      name: org.organizationName,
-      slug: org.organizationSlug,
-      role: org.role,
-    })),
+    organizations: memberships.success
+      ? memberships.data.map(m => ({
+          id: m.organization.id,
+          name: m.organization.name,
+          slug: m.organization.slug.slug,
+          role: m.role,
+        }))
+      : [],
   };
 
   return (
