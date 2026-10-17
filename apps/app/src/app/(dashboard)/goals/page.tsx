@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { auth } from "@/server/auth.server";
 import { getUserGoals, getGoalStats } from "@propsto/data/repos";
 import { EmptyState } from "@/app/_components/empty-state";
@@ -13,7 +14,12 @@ import {
 } from "@propsto/ui/atoms/tabs";
 import { Plus, Target } from "lucide-react";
 
+// Goals are deferred for the pilot (gate 5): the route 404s, the code stays.
+const GOALS_ENABLED = false as boolean;
+
 export default async function GoalsPage(): Promise<React.ReactNode> {
+  if (!GOALS_ENABLED) notFound();
+
   const session = await auth();
   if (!session?.user?.id) {
     return null;

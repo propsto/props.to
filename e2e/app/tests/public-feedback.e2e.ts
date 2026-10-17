@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signInByPassword } from "../../auth/utils/auth-methods";
 
 // Track JavaScript errors to catch client-side issues early
 let jsErrors: string[] = [];
@@ -270,5 +271,38 @@ test.describe("Anonymous Feedback Toggle", () => {
       // Name/email fields should be visible again
       await expect(nameField).toBeVisible({ timeout: 5000 });
     }
+  });
+});
+
+test.describe("Organization Landing", () => {
+  // Seed: Acme has default settings (external feedback off), so only members
+  // see its member directory
+  test("hides member links from signed-out visitors of a members-only org", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(`${baseURL}/acme`);
+    await expect(
+      page.getByRole("heading", { name: "Acme Inc.", level: 1 }),
+    ).toBeVisible({ timeout: 15000 });
+    await expect(
+      page.getByText("No public feedback links available"),
+    ).toBeVisible();
+    await expect(page.getByText("John at Acme")).toHaveCount(0);
+  });
+
+  test("shows a member the org's member links", async ({ page }) => {
+    const appUrl = process.env.PROPSTO_APP_URL ?? "";
+    await page.goto(process.env.AUTH_URL ?? "");
+    await signInByPassword(page, "mike.ryan@example.com", "P4ssw0rd");
+    await page.waitForURL(`${appUrl}/**`, { timeout: 30000 });
+
+    await page.goto(`${appUrl}/acme`);
+    const link = page.getByRole("link", { name: /John at Acme/ });
+    await expect(link).toHaveAttribute("href", "/acme/john.doe/john-acme", {
+      timeout: 15000,
+    });
+    // Other orgs' links never show up here
+    await expect(page.getByText("Carol at Globex")).toHaveCount(0);
   });
 });

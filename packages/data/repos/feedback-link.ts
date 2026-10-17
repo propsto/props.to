@@ -282,6 +282,9 @@ export async function getOrganizationFeedbackLinks(
   organizationId: string,
   options?: {
     isActive?: boolean;
+    // For the public org page: active member links listed on profiles only
+    // (no hidden, managed or group links)
+    publicOnly?: boolean;
     skip?: number;
     take?: number;
   },
@@ -291,6 +294,19 @@ export async function getOrganizationFeedbackLinks(
     const where: Prisma.FeedbackLinkWhereInput = {
       organizationId,
       ...(options?.isActive !== undefined && { isActive: options.isActive }),
+      ...(options?.publicOnly && {
+        isActive: true,
+        isHidden: false,
+        isManaged: false,
+        groupId: null,
+        // Leave out members who opted out of a public profile
+        user: {
+          OR: [
+            { privacySettings: { is: null } },
+            { privacySettings: { is: { profileVisibility: "PUBLIC" } } },
+          ],
+        },
+      }),
     };
 
     const [links, total] = await Promise.all([

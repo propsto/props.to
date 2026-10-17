@@ -55,15 +55,6 @@ export default async function DashboardPage(): Promise<React.ReactNode> {
               Customize your feedback forms
             </p>
           </Link>
-          <Link
-            href="/goals/new"
-            className="rounded-lg border p-4 transition-colors hover:bg-muted"
-          >
-            <h3 className="font-medium">Set a Goal</h3>
-            <p className="text-sm text-muted-foreground">
-              Track your growth with feedback
-            </p>
-          </Link>
         </div>
       </div>
     </div>

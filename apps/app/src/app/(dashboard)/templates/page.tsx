@@ -68,7 +68,7 @@ export default async function TemplatesPage(): Promise<React.ReactNode> {
               {userTemplates.length === 0 ? (
                 <NoTemplatesState />
               ) : (
-                <TemplateList templates={userTemplates} showActions />
+                <TemplateList templates={userTemplates} />
               )}
             </TabsContent>
             <TabsContent value="default" className="mt-6">
@@ -77,7 +77,7 @@ export default async function TemplatesPage(): Promise<React.ReactNode> {
                   No default templates available
                 </div>
               ) : (
-                <TemplateList templates={defaultTemplates} showDuplicate />
+                <TemplateList templates={defaultTemplates} />
               )}
             </TabsContent>
           </Tabs>
