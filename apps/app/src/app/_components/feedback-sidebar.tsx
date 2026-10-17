@@ -8,9 +8,6 @@ import {
   Send,
   FileText,
   Link as LinkIcon,
-  Target,
-  BarChart3,
-  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -61,8 +58,7 @@ const navItems: NavItem[] = [
   { title: "Sent", url: "/feedback/sent", icon: Send },
   { title: "Templates", url: "/templates", icon: FileText },
   { title: "My Links", url: "/links", icon: LinkIcon },
-  { title: "Goals", url: "/goals", icon: Target },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
+  // Goals, Reports and Settings are hidden for the pilot (gate 5)
 ];
 
 export function FeedbackSidebar({
@@ -100,21 +96,6 @@ export function FeedbackSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Account */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Settings" asChild>
-                <NextLink href="/settings">
-                  <Settings className="size-4" />
-                  <span>Settings</span>
-                </NextLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

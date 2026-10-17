@@ -1,14 +1,5 @@
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import {
-  FileText,
-  Copy,
-  Edit,
-  MoreHorizontal,
-  Trash2,
-  Globe,
-  Lock,
-} from "lucide-react";
+import { FileText, Globe, Lock } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,19 +8,10 @@ import {
   CardTitle,
 } from "@propsto/ui/atoms/card";
 import { Badge } from "@propsto/ui/atoms/badge";
-import { Button } from "@propsto/ui/atoms/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@propsto/ui/atoms/dropdown-menu";
 import type { FeedbackTemplateWithFields } from "@propsto/data/repos/feedback-template";
 
 interface TemplateListProps {
   templates: FeedbackTemplateWithFields[];
-  showActions?: boolean;
-  showDuplicate?: boolean;
 }
 
 const feedbackTypeBadgeVariant: Record<
@@ -57,8 +39,6 @@ const feedbackTypeLabel: Record<string, string> = {
 
 export function TemplateList({
   templates,
-  showActions = false,
-  showDuplicate = false,
 }: TemplateListProps): React.JSX.Element {
   if (templates.length === 0) {
     return (
@@ -71,37 +51,23 @@ export function TemplateList({
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {templates.map(template => (
-        <TemplateCard
-          key={template.id}
-          template={template}
-          showActions={showActions}
-          showDuplicate={showDuplicate}
-        />
+        <TemplateCard key={template.id} template={template} />
       ))}
     </div>
   );
 }
 
+// Detail, edit, duplicate and delete are hidden for the pilot (gate 5)
 function TemplateCard({
   template,
-  showActions,
-  showDuplicate,
 }: {
   template: FeedbackTemplateWithFields;
-  showActions: boolean;
-  showDuplicate: boolean;
 }): React.JSX.Element {
   const fieldCount = template.fields.length;
   const usageCount = template._count.feedbacks + template._count.links;
 
   return (
-    <Card className="group relative transition-colors hover:bg-muted/50">
-      <Link
-        href={`/templates/${template.id}`}
-        className="absolute inset-0 z-10"
-      >
-        <span className="sr-only">View template</span>
-      </Link>
+    <Card className="relative">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -119,49 +85,6 @@ function TemplateCard({
               </CardDescription>
             </div>
           </div>
-          {(showActions || showDuplicate) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative z-20 size-8 opacity-0 group-hover:opacity-100"
-                >
-                  <MoreHorizontal className="size-4" />
-                  <span className="sr-only">Actions</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {showActions && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href={`/templates/${template.id}/edit`}
-                        className="relative z-20"
-                      >
-                        <Edit className="mr-2 size-4" />
-                        Edit
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="relative z-20">
-                      <Copy className="mr-2 size-4" />
-                      Duplicate
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="relative z-20 text-destructive">
-                      <Trash2 className="mr-2 size-4" />
-                      Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
-                {showDuplicate && !showActions && (
-                  <DropdownMenuItem className="relative z-20">
-                    <Copy className="mr-2 size-4" />
-                    Use as Template
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </CardHeader>
       <CardContent>

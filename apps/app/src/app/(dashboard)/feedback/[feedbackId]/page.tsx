@@ -201,7 +201,7 @@ export default async function FeedbackDetailPage({
               </CardContent>
             </Card>
 
-            {/* Goals linking */}
+            {/* Goals linking (plain text: goal pages 404 for the pilot) */}
             {feedback.goals && feedback.goals.length > 0 && (
               <Card>
                 <CardHeader>
@@ -210,13 +210,12 @@ export default async function FeedbackDetailPage({
                 <CardContent>
                   <div className="space-y-2">
                     {feedback.goals.map(goal => (
-                      <Link
+                      <div
                         key={goal.id}
-                        href={`/goals/${goal.id}`}
-                        className="block rounded-md border p-2 text-sm hover:bg-muted"
+                        className="rounded-md border p-2 text-sm"
                       >
                         {goal.title}
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </CardContent>

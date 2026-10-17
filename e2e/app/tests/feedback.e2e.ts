@@ -74,9 +74,9 @@ test.describe("Feedback Links", () => {
     await page.getByLabel(/url slug/i).fill(uniqueSlug);
 
     // Wait for slug availability check to complete (shows checkmark or X)
-    await expect(
-      page.locator(".text-green-500, .text-red-500"),
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(".text-green-500, .text-red-500")).toBeVisible({
+      timeout: 5000,
+    });
 
     // Select template using label association
     // The Template label is followed by a combobox trigger
@@ -138,9 +138,9 @@ test.describe("Feedback Links", () => {
     await page.getByLabel(/url slug/i).fill(uniqueSlug);
 
     // Wait for slug availability check to complete
-    await expect(
-      page.locator(".text-green-500, .text-red-500"),
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator(".text-green-500, .text-red-500")).toBeVisible({
+      timeout: 5000,
+    });
 
     // Select template using label association
     const templateSection = page.locator("text=Template").locator("..");
@@ -234,9 +234,52 @@ test.describe("Sidebar Navigation", () => {
     await expect(page).toHaveURL(/\/templates$/);
   });
 
-  test("should navigate to goals page", async ({ page, baseURL }) => {
+  test("hides unfinished surfaces from navigation", async ({
+    page,
+    baseURL,
+  }) => {
     await page.goto(baseURL ?? "");
-    await page.getByRole("link", { name: "Goals", exact: true }).click();
-    await expect(page).toHaveURL(/\/goals$/);
+    await expect(
+      page.getByRole("link", { name: "Templates", exact: true }),
+    ).toBeVisible();
+    for (const name of ["Goals", "Reports", "Settings"]) {
+      await expect(page.getByRole("link", { name, exact: true })).toHaveCount(
+        0,
+      );
+    }
+    await expect(page.getByRole("link", { name: "Set a Goal" })).toHaveCount(0);
+  });
+
+  test("unfinished routes 404", async ({ page, baseURL }) => {
+    // notFound() inside a streamed Suspense boundary can still answer 200, so
+    // assert on what is rendered
+    for (const path of [
+      "/settings",
+      "/reports",
+      "/goals",
+      "/goals/new",
+      "/goals/some-goal",
+      "/goals/some-goal/edit",
+      "/templates/some-template",
+      "/templates/some-template/edit",
+      "/links/some-link/edit",
+    ]) {
+      await page.goto(`${baseURL}${path}`);
+      await expect(page.getByText("Page not found"), path).toBeVisible();
+    }
+  });
+});
+
+test.describe("Dashboard recent feedback", () => {
+  test("lists recent approved feedback instead of a count", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(baseURL ?? "");
+    // Mike has 20+ approved seeded items, so the card links to the full list
+    await expect(
+      page.getByRole("link", { name: /view all \d+/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/you have \d+ feedback items/i)).toHaveCount(0);
   });
 });

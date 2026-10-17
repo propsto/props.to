@@ -272,3 +272,19 @@ test.describe("Anonymous Feedback Toggle", () => {
     }
   });
 });
+
+test.describe("Organization Landing", () => {
+  test("shows the org name and its public member links", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(`${baseURL}/acme`);
+    await expect(
+      page.getByRole("heading", { name: "Acme Inc.", level: 1 }),
+    ).toBeVisible({ timeout: 15000 });
+    const link = page.getByRole("link", { name: /John at Acme/ });
+    await expect(link).toHaveAttribute("href", "/acme/john.doe/john-acme");
+    // Other orgs' links never show up here
+    await expect(page.getByText("Carol at Globex")).toHaveCount(0);
+  });
+});

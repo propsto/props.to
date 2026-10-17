@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTransition } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import {
@@ -11,7 +10,6 @@ import {
   Pause,
   Play,
   Trash2,
-  Edit,
   Building2,
   Users,
   Clock,
@@ -164,12 +162,6 @@ function LinkCard({
                 </a>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href={`/links/${link.id}/edit`}>
-                  <Edit className="mr-2 size-4" />
-                  Edit
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={isPending}
                 onClick={() =>

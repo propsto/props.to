@@ -6,19 +6,32 @@ import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("ratelimit");
 
-// Create rate limiter instance if Redis is configured
-const ratelimit =
+const redis =
   constServer.UPSTASH_REDIS_REST_URL && constServer.UPSTASH_REDIS_REST_TOKEN
+    ? new Redis({
+        url: constServer.UPSTASH_REDIS_REST_URL,
+        token: constServer.UPSTASH_REDIS_REST_TOKEN,
+      })
+    : null;
+
+// Create rate limiter instances if Redis is configured
+function createLimiter(
+  ...[tokens, window]: Parameters<typeof Ratelimit.slidingWindow>
+): Ratelimit | null {
+  return redis
     ? new Ratelimit({
-        redis: new Redis({
-          url: constServer.UPSTASH_REDIS_REST_URL,
-          token: constServer.UPSTASH_REDIS_REST_TOKEN,
-        }),
-        limiter: Ratelimit.slidingWindow(10, "1 m"),
+        redis,
+        limiter: Ratelimit.slidingWindow(tokens, window),
         analytics: true,
         prefix: "propsto:ratelimit",
       })
     : null;
+}
+
+const ratelimit = createLimiter(10, "1 m");
+// Everyone in an office behind one NAT shares an IP, so the IP-wide ceiling
+// on public submits is high; the tight limit is per link+IP
+const feedbackIpCeiling = createLimiter(120, "1 m");
 
 export interface RateLimitResult {
   success: boolean;
@@ -33,14 +46,15 @@ export interface RateLimitResult {
  */
 export async function checkRateLimit(
   identifier: string,
+  limiter: Ratelimit | null = ratelimit,
 ): Promise<RateLimitResult> {
-  if (!ratelimit) {
+  if (!limiter) {
     // Rate limiting not configured - allow all requests
     return { success: true, limit: 0, remaining: 0, reset: 0 };
   }
 
   try {
-    const result = await ratelimit.limit(identifier);
+    const result = await limiter.limit(identifier);
     return {
       success: result.success,
       limit: result.limit,
@@ -68,11 +82,17 @@ export async function getClientIp(): Promise<string> {
 
 /**
  * Rate limit check for feedback submission
- * Limit: 10 submissions per minute per IP
+ * Limit: 10 submissions per minute per link+IP, 120 per minute per IP
  */
-export async function checkFeedbackRateLimit(): Promise<RateLimitResult> {
+export async function checkFeedbackRateLimit(
+  linkId: string,
+): Promise<RateLimitResult> {
   const ip = await getClientIp();
-  return checkRateLimit(`feedback:${ip}`);
+  const ipResult = await checkRateLimit(`feedback-ip:${ip}`, feedbackIpCeiling);
+  if (!ipResult.success) {
+    return ipResult;
+  }
+  return checkRateLimit(`feedback:${linkId}:${ip}`);
 }
 
 /**

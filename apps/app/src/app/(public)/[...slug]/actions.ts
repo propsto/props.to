@@ -90,15 +90,6 @@ interface SubmitFeedbackResult {
 export async function submitFeedbackAction(
   input: SubmitFeedbackInput,
 ): Promise<SubmitFeedbackResult> {
-  // Rate limit check
-  const rateLimitResult = await checkFeedbackRateLimit();
-  if (!rateLimitResult.success) {
-    return {
-      success: false,
-      error: "Too many requests. Please try again later.",
-    };
-  }
-
   // Validate and sanitize input
   const parseResult = submitFeedbackSchema.safeParse(input);
   if (!parseResult.success) {
@@ -106,6 +97,16 @@ export async function submitFeedbackAction(
     return { success: false, error: "Invalid input" };
   }
   const sanitizedInput = parseResult.data;
+
+  // Rate limit per link+IP (with a per-IP ceiling), after validation so the
+  // key is a well-formed link id
+  const rateLimitResult = await checkFeedbackRateLimit(sanitizedInput.linkId);
+  if (!rateLimitResult.success) {
+    return {
+      success: false,
+      error: "Too many requests. Please try again later.",
+    };
+  }
   // Get the link to verify it exists and get related data
   const linkResult = await getFeedbackLink(sanitizedInput.linkId);
   if (!linkResult.success || !linkResult.data) {

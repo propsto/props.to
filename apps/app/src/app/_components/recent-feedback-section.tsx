@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getFeedbackStats } from "./cached-queries";
+import { getFeedbackForUser } from "@propsto/data/repos";
+import { FeedbackList } from "./feedback-list";
 import { NoFeedbackState } from "./empty-state";
 
 interface RecentFeedbackSectionProps {
@@ -13,21 +14,28 @@ interface RecentFeedbackSectionProps {
 export async function RecentFeedbackSection({
   userId,
 }: RecentFeedbackSectionProps): Promise<React.JSX.Element> {
-  const statsResult = await getFeedbackStats(userId);
-  const receivedCount = statsResult.success ? statsResult.data.received : 0;
+  // Same filter as /feedback: only approved feedback reaches the recipient
+  const result = await getFeedbackForUser(userId, {
+    status: ["APPROVED"],
+    take: 5,
+  });
+  const feedbacks = result.success ? result.data.feedbacks : [];
+  const total = result.success ? result.data.total : 0;
 
   return (
     <div className="px-4 lg:px-6">
-      <h2 className="mb-4 text-lg font-semibold">Recent Feedback</h2>
-      {receivedCount === 0 ? (
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Recent Feedback</h2>
+        {total > feedbacks.length && (
+          <Link href="/feedback" className="text-sm text-primary underline">
+            View all {total}
+          </Link>
+        )}
+      </div>
+      {feedbacks.length === 0 ? (
         <NoFeedbackState />
       ) : (
-        <div className="text-muted-foreground">
-          You have {receivedCount} feedback items.{" "}
-          <Link href="/feedback" className="text-primary underline">
-            View all
-          </Link>
-        </div>
+        <FeedbackList feedbacks={feedbacks} />
       )}
     </div>
   );

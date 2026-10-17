@@ -13,11 +13,10 @@ import {
   getUserFeedbackLinks,
   getUser as _getUser,
   getGroupForPublicPage,
+  getOrganizationById,
+  getOrganizationFeedbackLinks,
 } from "@propsto/data/repos";
-import {
-  checkRateLimit,
-  EMAIL_LOOKUP_RATE_LIMIT,
-} from "@propsto/data/utils";
+import { checkRateLimit, EMAIL_LOOKUP_RATE_LIMIT } from "@propsto/data/utils";
 
 // Cache expensive queries to dedupe between generateMetadata and page render
 const resolveSlugBase = cache(_resolveSlug);
@@ -70,6 +69,7 @@ import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { auth } from "@/server/auth.server";
 import { constServer } from "@propsto/constants/server";
 import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
+import { publicLinkPath } from "@/lib/public-link-path";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
 import { UserProfileHeader } from "./_components/user-profile-header";
 
@@ -276,19 +276,64 @@ async function handleProfilePage(
   }
 
   if (resolution.type === "organization") {
-    // Show organization profile (could list members or redirect)
-    return (
-      <div className="max-w-2xl mx-auto text-center">
-        <h1 className="text-3xl font-bold mb-4">Organization Profile</h1>
-        <p className="text-muted-foreground">
-          This is an organization. Visit a specific member&apos;s profile to
-          give feedback.
-        </p>
-      </div>
-    );
+    return handleOrgPage(resolution.organizationId);
   }
 
   notFound();
+}
+
+async function handleOrgPage(organizationId: string): Promise<React.ReactNode> {
+  const [orgResult, linksResult] = await Promise.all([
+    getOrganizationById(organizationId),
+    // ponytail: first 50 links, add paging when an org lists more
+    getOrganizationFeedbackLinks(organizationId, {
+      publicOnly: true,
+      take: 50,
+    }),
+  ]);
+  if (!orgResult.success || !orgResult.data) {
+    notFound();
+  }
+
+  // Removed members' links are deactivated, so publicOnly leaves current members'
+  const links = (linksResult.success ? linksResult.data.links : []).map(
+    link => ({
+      ...link,
+      owner: [link.user.firstName, link.user.lastName]
+        .filter(Boolean)
+        .join(" "),
+      href: publicLinkPath(link),
+    }),
+  );
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold">{orgResult.data.name}</h1>
+      </div>
+      {links.length > 0 ? (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Feedback Links</h2>
+          <div className="grid gap-4">
+            {links.map(link => (
+              <a
+                key={link.id}
+                href={link.href}
+                className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <h3 className="font-medium">{link.name}</h3>
+                <p className="text-sm text-muted-foreground">{link.owner}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-center text-muted-foreground">
+          No public feedback links available
+        </p>
+      )}
+    </div>
+  );
 }
 
 async function handleTwoSegments(
