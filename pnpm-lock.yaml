@@ -58,10 +58,10 @@ importers:
         version: 0.562.0(react@19.1.0)
       next:
         specifier: 16.1.4
-        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-auth:
         specifier: beta
-        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
+        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -100,8 +100,8 @@ importers:
         specifier: 16.1.4
         version: 16.1.4
       '@playwright/test':
-        specifier: 1.53.2
-        version: 1.53.2
+        specifier: 1.64.1
+        version: 1.64.1
       '@trivago/prettier-plugin-sort-imports':
         specifier: 5.2.2
         version: 5.2.2(prettier@3.6.2)
@@ -218,7 +218,7 @@ importers:
         version: link:../../packages/ui
       '@sentry/nextjs':
         specifier: ^11.8.0
-        version: 11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@6.2.2(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))
+        version: 11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@6.2.2(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))
       '@types/node':
         specifier: '*'
         version: 24.0.10
@@ -257,10 +257,10 @@ importers:
         version: 0.562.0(react@19.1.0)
       next:
         specifier: 16.1.4
-        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-auth:
         specifier: beta
-        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
+        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
       next-themes:
         specifier: '*'
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -323,7 +323,7 @@ importers:
         version: link:../../packages/ui
       '@sentry/nextjs':
         specifier: ^11.8.0
-        version: 11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.3.1(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))
+        version: 11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.3.1(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))
       '@simplewebauthn/browser':
         specifier: 9.0.1
         version: 9.0.1
@@ -371,10 +371,10 @@ importers:
         version: 0.562.0(react@19.1.0)
       next:
         specifier: 16.1.4
-        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       next-auth:
         specifier: beta
-        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
+        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
       next-themes:
         specifier: '*'
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -437,7 +437,7 @@ importers:
         version: 19.1.6(@types/react@19.1.8)
       '@vercel/analytics':
         specifier: 1.5.0
-        version: 1.5.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
+        version: 1.5.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       '@vercel/og':
         specifier: '*'
         version: 0.6.5
@@ -461,7 +461,7 @@ importers:
         version: 0.562.0(react@19.1.0)
       next:
         specifier: 16.1.4
-        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       postcss:
         specifier: '*'
         version: 8.5.3
@@ -487,8 +487,8 @@ importers:
   e2e/app:
     dependencies:
       '@playwright/test':
-        specifier: '*'
-        version: 1.51.1
+        specifier: 1.64.1
+        version: 1.64.1
       '@propsto/app':
         specifier: workspace:*
         version: link:../../apps/app
@@ -506,8 +506,8 @@ importers:
   e2e/auth:
     dependencies:
       '@playwright/test':
-        specifier: '*'
-        version: 1.51.1
+        specifier: 1.64.1
+        version: 1.64.1
       '@propsto/auth':
         specifier: workspace:*
         version: link:../../apps/auth
@@ -683,7 +683,7 @@ importers:
         version: 19.1.0(react@19.1.0)
       react-email:
         specifier: 4.0.17
-        version: 4.0.17(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 4.0.17(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       resend:
         specifier: 4.6.0
         version: 4.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -2135,14 +2135,9 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@playwright/test@1.51.1':
-    resolution: {integrity: sha512-nM+kEaTSAoVlXmMPH10017vn3FSiFqr/bh4fKg9vmAdMfd9SDqRZNvPSiAHADc/itWak+qPvMPZQOPwCBW7k7Q==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  '@playwright/test@1.53.2':
-    resolution: {integrity: sha512-tEB2U5z74ebBeyfGNZ3Jfg29AnW+5HlWhvHtb/Mqco9pFdZU1ZLNdVb2UtB5CvmiilNr2ZfVH/qMmAROG/XTzw==}
-    engines: {node: '>=18'}
+  '@playwright/test@1.64.1':
+    resolution: {integrity: sha512-IaYGml/nSOiZWROfPtuIL7neuu9qDOZ3TNvNljUIrhDMxiGTgPjzj/g9p9RxpS2tSepPDRY+UwAaEeiKtUvIAg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   '@prisma/adapter-pg@7.2.0':
@@ -5160,11 +5155,6 @@ packages:
   from@0.1.7:
     resolution: {integrity: sha512-twe20eF1OxVxp/ML/kq2p1uc6KvFK/+vs8WjEbeKmV2He22MKm7YF2ANIt+EOqhJ5L3K/SuuPhk0hWQDjOM23g==}
 
-  fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
-    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
-    os: [darwin]
-
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -6296,24 +6286,14 @@ packages:
   pkg-types@2.3.0:
     resolution: {integrity: sha512-SIqCzDRg0s9npO5XQ3tNZioRY1uK06lA41ynBC1YmFTmnY6FjUjVt6s4LoADmwoig1qqD0oK8h1p/8mlMx8Oig==}
 
-  playwright-core@1.51.1:
-    resolution: {integrity: sha512-/crRMj8+j/Nq5s8QcvegseuyeZPxpQCZb6HNk3Sos3BlZyAknRjoyJPFWkpNn8v0+P3WiwqFF8P+zQo4eqiNuw==}
-    engines: {node: '>=18'}
+  playwright-core@1.64.1:
+    resolution: {integrity: sha512-BC4s8y6SEVA6Q1rSxZTto8hI1KUI3xXlHGZgvGqP4IqPdI/a6FX9H29IDNz7vKo9l21b6LfYosScPL6M3xxyDQ==}
+    engines: {node: '>=20'}
     hasBin: true
 
-  playwright-core@1.53.2:
-    resolution: {integrity: sha512-ox/OytMy+2w1jcYEYlOo1Hhp8hZkLCximMTUTMBXjGUA1KoFfiSZ+DU+3a739jsPY0yoKH2TFy9S2fsJas8yAw==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  playwright@1.51.1:
-    resolution: {integrity: sha512-kkx+MB2KQRkyxjYPc3a0wLZZoDczmppyGJIvQ43l+aZihkaVvmu/21kiyaHeHjiFxjxNNFnUncKmcGIyOojsaw==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  playwright@1.53.2:
-    resolution: {integrity: sha512-6K/qQxVFuVQhRQhFsVZ9fGeatxirtrpPgxzBYWyZLEXJzqYwuL4fuNmfOfD5et1tJE4GScKyPNeLhZeRwuTU3A==}
-    engines: {node: '>=18'}
+  playwright@1.64.1:
+    resolution: {integrity: sha512-HCrVhHr5QQuwYoswEUGTb7gGp522yflbv/ST8nF4sFWGuLjQCt17Q/EubpGGSNKYn1tsTCPZxqHhHCfVURu7UA==}
+    engines: {node: '>=20'}
     hasBin: true
 
   possible-typed-array-names@1.1.0:
@@ -8673,13 +8653,9 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@playwright/test@1.51.1':
+  '@playwright/test@1.64.1':
     dependencies:
-      playwright: 1.51.1
-
-  '@playwright/test@1.53.2':
-    dependencies:
-      playwright: 1.53.2
+      playwright: 1.64.1
 
   '@prisma/adapter-pg@7.2.0':
     dependencies:
@@ -9831,7 +9807,7 @@ snapshots:
     dependencies:
       '@sentry/core': 11.8.0
 
-  '@sentry/nextjs@11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@6.2.2(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))':
+  '@sentry/nextjs@11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@6.2.2(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.64.9)
@@ -9846,7 +9822,7 @@ snapshots:
       '@sentry/server-runtime-injection': 11.8.0
       '@sentry/server-utils': 11.8.0
       '@sentry/vercel-edge': 11.8.0
-      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       rollup: 4.64.9
       stacktrace-parser: 0.1.11
     transitivePeerDependencies:
@@ -9858,7 +9834,7 @@ snapshots:
       - webpack
       - wrangler
 
-  '@sentry/nextjs@11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.3.1(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))':
+  '@sentry/nextjs@11.8.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(vite@7.3.1(@types/node@24.0.10)(jiti@2.4.2)(tsx@4.20.3)(yaml@2.8.2))':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.64.9)
@@ -9873,7 +9849,7 @@ snapshots:
       '@sentry/server-runtime-injection': 11.8.0
       '@sentry/server-utils': 11.8.0
       '@sentry/vercel-edge': 11.8.0
-      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       rollup: 4.64.9
       stacktrace-parser: 0.1.11
     transitivePeerDependencies:
@@ -10297,9 +10273,9 @@ snapshots:
     dependencies:
       uncrypto: 0.1.3
 
-  '@vercel/analytics@1.5.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
+  '@vercel/analytics@1.5.0(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)':
     optionalDependencies:
-      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
 
   '@vercel/blob@0.27.3':
@@ -11917,9 +11893,6 @@ snapshots:
 
   from@0.1.7: {}
 
-  fsevents@2.3.2:
-    optional: true
-
   fsevents@2.3.3:
     optional: true
 
@@ -12693,10 +12666,10 @@ snapshots:
 
   negotiator@0.6.4: {}
 
-  next-auth@5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0):
+  next-auth@5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0):
     dependencies:
       '@auth/core': 0.41.3(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(nodemailer@7.0.10)
-      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react: 19.1.0
     optionalDependencies:
       '@simplewebauthn/browser': 9.0.1
@@ -12708,7 +12681,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  next@16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@next/env': 16.1.4
       '@swc/helpers': 0.5.15
@@ -12728,7 +12701,7 @@ snapshots:
       '@next/swc-win32-arm64-msvc': 16.1.4
       '@next/swc-win32-x64-msvc': 16.1.4
       '@opentelemetry/api': 1.9.1
-      '@playwright/test': 1.53.2
+      '@playwright/test': 1.64.1
       sharp: 0.34.5
     transitivePeerDependencies:
       - '@babel/core'
@@ -13046,21 +13019,11 @@ snapshots:
       exsolve: 1.0.7
       pathe: 2.0.3
 
-  playwright-core@1.51.1: {}
+  playwright-core@1.64.1: {}
 
-  playwright-core@1.53.2: {}
-
-  playwright@1.51.1:
+  playwright@1.64.1:
     dependencies:
-      playwright-core: 1.51.1
-    optionalDependencies:
-      fsevents: 2.3.2
-
-  playwright@1.53.2:
-    dependencies:
-      playwright-core: 1.53.2
-    optionalDependencies:
-      fsevents: 2.3.2
+      playwright-core: 1.64.1
 
   possible-typed-array-names@1.1.0: {}
 
@@ -13233,7 +13196,7 @@ snapshots:
       react: 19.1.0
       scheduler: 0.26.0
 
-  react-email@4.0.17(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  react-email@4.0.17(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@babel/parser': 7.28.0
       '@babel/traverse': 7.28.0
@@ -13245,7 +13208,7 @@ snapshots:
       glob: 11.0.3
       log-symbols: 7.0.1
       mime-types: 3.0.1
-      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.53.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      next: 16.1.4(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       normalize-path: 3.0.0
       ora: 8.2.0
       socket.io: 4.8.1
