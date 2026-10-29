@@ -114,18 +114,21 @@ export async function provisionOrganization(data: {
       userId: user.id,
       organizationId: existing.id,
     });
-    if (orgSlug.success && !orgSlug.data) {
+    if (!orgSlug.success) return handleError(new Error(orgSlug.error));
+    if (!orgSlug.data) {
       const username = await generateUniqueSlug(
         orgUsernameFromEmail(user.email) ?? "user",
         "ORGANIZATION",
         existing.id,
       );
-      if (username.success) {
-        await createUserOrgSlug({
-          userId: user.id,
-          organizationId: existing.id,
-          slug: username.data,
-        });
+      if (!username.success) return handleError(new Error(username.error));
+      const createdSlug = await createUserOrgSlug({
+        userId: user.id,
+        organizationId: existing.id,
+        slug: username.data,
+      });
+      if (!createdSlug.success) {
+        return handleError(new Error(createdSlug.error));
       }
     }
 
