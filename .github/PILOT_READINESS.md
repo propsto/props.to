@@ -1,12 +1,12 @@
 # Pilot readiness plan
 
-Goal: run a controlled friends-and-family pilot with two companies (the founder's employer and a client).
+Goal: run a controlled friends-and-family pilot with one company, Juga (`jugacompany.com`). It was planned for two companies (the founder's employer and a client) and narrowed to one on 2026-10-26.
 
 This plan was produced from a code assessment on 2026-09-20 and then critiqued by two independent reviewers. The critiques changed the order: security and tenant isolation come first, the "lazy" fixes (default org feedback to approved, hide dead UI) were rejected, and several claims in the original assessment were corrected. Corrections are listed at the end.
 
 Progress: gate 1 implemented on branch `fix/pilot-gate-1-identity-and-tenancy` (2026-09-20), pending E2E on the PR. Reviewed by Codex and Grok; their findings (client-writable primary email, org creation without Workspace-admin check, raw group payloads, unscoped managed-link template, JWT keyed on nested user instead of `sub`, no-password sign-in oracle, invite resend race, already-member path leaving the token live) are fixed on the same branch.
 
-Work is organised in gates. A gate is done when every box in it is checked and its release test passes. Do not invite either company before gate 4.
+Work is organised in gates. A gate is done when every box in it is checked and its release test passes. Do not invite Juga before gate 4.
 
 ## Gate 1: identity and tenant boundaries
 
@@ -45,9 +45,9 @@ The pilot targets Google Workspace companies. Admins create their org on first G
 Google Workspace pilot checklist (new):
 
 - [ ] Google Cloud OAuth: decide testing mode (add pilot users as test users, avoids verifying the sensitive `admin.directory.user.readonly` scope) vs full verification.
-- [ ] Set `GOOGLE_ALLOWED_HOSTED_DOMAINS` to the two pilot company domains (wired, currently empty).
+- [x] Set `GOOGLE_ALLOWED_HOSTED_DOMAINS` to the pilot company domain. Done 2026-10-26: the team-level var is `props.to,jugacompany.com` in every environment (`props.to` stays for the founder's own tests); auth production redeployed.
 - [x] Hosted domains are normalized (trim + lowercase) at org creation, on every lookup and in the allowlist, so a mixed-case `hd` claim cannot miss its org or slip past the allowlist (commit `c02b2fc`).
-- [ ] Confirm each company's sponsor is an actual Workspace admin, or provision that org's first owner by script.
+- [ ] Confirm the Juga sponsor is an actual Workspace super admin, or provision the org's first owner by script.
 - [ ] Walk the admin-creates-org and employee-auto-joins flows on the preview (Google login is manual; password-seeded users stay a test convenience).
 - [ ] Personal-email verification during onboarding sends via Resend in prod / outbox in preview (covered by the RESEND_API_KEY fix).
 
@@ -56,7 +56,7 @@ Release test run on the PR #108 preview (2026-09-20), signed in as the seeded ow
 ## Gate 2: reproducible deployment
 
 - [x] **App preview builds wipe production (found 2026-09-27).** The `app` Vercel project has a single hand-set `DATABASE_URL` (created 2023-11) targeting production, preview and development, and no Neon integration. Every app preview build ran `seed-if-preview.cjs`, which `deleteMany`s every table, against the production branch `br-lively-thunder-28239235`; the PR #109 app preview did so at 14:58 UTC. Production currently holds only seed data (4 users on acme.com and example.com, 1 org), so nothing real was lost, but nothing real may enter production until this is fixed. It also means the #108 "release test on the preview" ran against production, the app E2E suite runs against production, and the "Dry-run Migration on Production Copy" check always finds nothing pending because app previews migrate production first. Only `auth` has the Neon integration with per-branch `DATABASE_URL` and `DATABASE_URL_UNPOOLED`; `web` has no `DATABASE_URL` in its project env yet its build reached a stale endpoint that belongs to no existing branch (a team-level shared var, most likely). Code-side guard in PR #109: the seed refuses to run unless `DATABASE_URL_UNPOOLED` is set, and `web` no longer depends on `@propsto/data`. Config fix, dashboard only: connect the `app` project to the Neon Vercel integration (per-branch preview databases, like `auth`), scope its hand-set `DATABASE_URL` to production only, and remove the stale shared database var from `web`. Then reseed nothing on production; run `db-bootstrap` only.
-      Fixed operationally 2026-10-16: `app` gets per-branch Neon `DATABASE_URL(_UNPOOLED)` via `.github/workflows/app_preview_db.yaml` + `scripts/sync-app-preview-db.sh`, app/auth project `DATABASE_URL` is production-only, closed-PR Neon branches are deleted. Checked 2026-10-17: the `web` project has no `DATABASE_URL` in any target, but the team-level shared `DATABASE_URL` (one preview var, one production var, both last updated January 2025) is still linked to `web`, `app` and `auth`. Harmless for `web` (no `@propsto/data`), but it is the fallback for any app/auth preview without a project-level value; unlink it from all three in the dashboard.
+      Fixed operationally 2026-10-16: `app` gets per-branch Neon `DATABASE_URL(_UNPOOLED)` via `.github/workflows/app_preview_db.yaml` + `scripts/sync-app-preview-db.sh`, app/auth project `DATABASE_URL` is production-only, closed-PR Neon branches are deleted. Checked 2026-10-17: the `web` project has no `DATABASE_URL` in any target, but the team-level shared `DATABASE_URL` (one preview var, one production var, both last updated January 2025) is still linked to `web`, `app` and `auth`. Harmless for `web` (no `@propsto/data`), but it is the fallback for any app/auth preview without a project-level value; unlink it from all three in the dashboard. Done 2026-10-17: the shared `DATABASE_URL` vars were deleted (#119 made `web`'s build stop needing one).
 - [x] `migrate_production.yaml` has failed on all 12 runs since January 2026. Logs and step results for every run have expired (GitHub returns 410), and runs older than 30 days cannot be re-run. Diagnosis by comparison: on 2026-03-22 the PR dry-run ran the identical command with identical setup against a Neon branch of production and passed minutes after the prod workflow failed. The only differing input is the hand-pasted `DATABASE_URL_PRODUCTION` secret (set 2026-01-24, never changed; a pooled or stale URI both break `migrate deploy`). Fix in the gate 2 PR: resolve the production URI from the Neon API at run time, exactly as the dry-run does, add `workflow_dispatch`, and run the template bootstrap after deploy. First real proof is the next run on main; delete the secret once it passes.
 - [x] Migrations are split: `packages/data/migrations/` (real, 20 + lock) and `packages/data/prisma/migrations/` (2 orphans Prisma never reads). The invite migration only exists as an orphan. The default-template orphan duplicates DDL already in the real history, so delete it. Move the invite migration, then run `prisma migrate status` against a prod copy before deploying. Done in PR #108 after the preview proved every invite failed; the "Dry-run Migration on Production Copy" check passed, so prod does not have the table yet and the migration applies cleanly.
 - [x] Preview build swallows migration failures (`packages/data/scripts/seed-if-preview.cjs`). Fail loudly. Gate 2 PR: migration failure exits 1; seed failure is still tolerated because app, auth and web seed the same branch concurrently and can collide.
@@ -95,7 +95,7 @@ Release test: new user receives an invite, signs up, lands in the org, creates a
 - [x] Account switcher renders member orgs as disabled items. Link them to the landing page. Done: members link to `/org/<slug>`, admins still go to `/org/<slug>/admin`.
 - [x] Received-feedback list fetches 50 with no paging. Add paging or a "load more". Done: `?page=` paging, 20 per page, via the shared `_components/pager.tsx`.
 - [x] Audit log pagination buttons are permanently disabled (`admin/audit/audit-log-list.tsx`). Wire or remove. Done: they were already links past page 1 but nothing seeded enough entries to see it; moved to the shared pager, invalid `?page=` now falls back to 1, seed adds 25 acme entries, E2E pages through.
-- [ ] Write a one-page data agreement for both companies: who owns feedback, what happens when an employee leaves, what happens when the pilot ends. The schema keeps feedback on the personal account after org deletion; make sure that is what they agree to. Draft written, needs founder sign-off: `docs/pilot-data-agreement.md` separates what the code does today from the decisions still open.
+- [ ] Write a one-page data agreement for Juga: who owns feedback, what happens when an employee leaves, what happens when the pilot ends. The schema keeps feedback on the personal account after org deletion; make sure that is what they agree to. Draft written, needs founder sign-off: `docs/pilot-data-agreement.md` separates what the code does today from the decisions still open.
 
 Release test: leaked link is paused within a minute from the UI. Removed member cannot reach org pages or their old org URL. Pending feedback is invisible to the recipient until approved.
 
@@ -105,11 +105,11 @@ Release test: leaked link is paused within a minute from the UI. Removed member 
 - [x] Dashboard "recent feedback" renders only a count. Render the list or drop the card. Done: last 5 approved items plus "View all N".
 - [x] Org landing at `/<org>` on the public site is stub text. Either a real page or a redirect. Done: org name plus active, non-hidden member links (managed and group links left out); members-only or feedback-off orgs show outsiders the name only, and members without a PUBLIC profile are never listed.
 - [x] Rate limit is 10/min/IP on public submit. An office behind one NAT will hit it. Raise, or key on link+IP. Done: 10/min per link+IP, 120/min per-IP ceiling.
-- [ ] Rehearsal with two orgs, one dual-member user, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send.
+- [ ] Rehearsal with two orgs, one dual-member user, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send. Still two orgs with one pilot company: production will hold the founder's props.to org next to Juga's, so tenant isolation has to hold. Run it on a preview with the seeded Acme and Globex.
 
 ## Decide before gate 3
 
-Org creation only happens in onboarding for Google Workspace admins who grant the Directory API scope. Email and password users, Microsoft users and non-admin Google users never see it and land on "wait for an admin". If either pilot company is not a Workspace tenant with a willing admin, there is no org at all. Options: provision the two orgs by script and make the sponsor OWNER, or add a plain "create organization" path. Provisioning by script is the smaller change and is enough for two companies.
+Org creation only happens in onboarding for Google Workspace admins who grant the Directory API scope. Email and password users, Microsoft users and non-admin Google users never see it and land on "wait for an admin". If Juga is not a Workspace tenant with a willing admin, there is no org at all. Options: provision the org by script and make the sponsor OWNER, or add a plain "create organization" path. Provisioning by script is the smaller change and is enough for one company.
 
 ## Deferred
 
