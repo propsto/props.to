@@ -3,6 +3,14 @@ import { createLogger } from "@propsto/logger";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
+import {
+  normalizeHostedDomain,
+  orgUsernameFromEmail,
+} from "../utils/provision-org";
+import {
+  defaultOrganizationCreationSettings,
+  type OrganizationCreationSettings,
+} from "./organization-settings";
 
 const logger = createLogger("data");
 
@@ -283,6 +291,61 @@ export async function createOrganization(data: {
         },
       },
       include: { slug: true },
+    });
+    return handleSuccess(organization);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Create an organization with its GLOBAL slug, settings rows and an OWNER
+// (plus their org-scoped username), as Google Workspace admin onboarding does.
+// Callers check slug and hosted-domain availability first.
+export async function createOrganizationWithOwner(data: {
+  name: string;
+  slug: string;
+  hostedDomain: string;
+  ownerId: string;
+  ownerEmail: string;
+  settings?: OrganizationCreationSettings;
+}) {
+  try {
+    logger("createOrganizationWithOwner", data);
+    const settings = data.settings ?? defaultOrganizationCreationSettings;
+    const username = orgUsernameFromEmail(data.ownerEmail);
+    const organization = await db.$transaction(async tx => {
+      const org = await tx.organization.create({
+        data: {
+          name: data.name,
+          hostedDomain: normalizeHostedDomain(data.hostedDomain),
+          slug: {
+            create: {
+              slug: data.slug.toLowerCase(),
+              scope: "GLOBAL",
+              scopedToOrgId: null,
+            },
+          },
+          defaultUserSettings: { create: settings.defaultUserSettings },
+          organizationSettings: { create: settings.organizationSettings },
+          feedbackSettings: { create: settings.feedbackSettings },
+        },
+        include: { slug: true },
+      });
+      await tx.organizationMember.create({
+        data: { userId: data.ownerId, organizationId: org.id, role: "OWNER" },
+      });
+      // A new org has no org-scoped slugs yet, so the username is free
+      if (username) {
+        await tx.slug.create({
+          data: {
+            slug: username,
+            scope: "ORGANIZATION",
+            scopedToOrgId: org.id,
+            orgSlugOwnerId: data.ownerId,
+          },
+        });
+      }
+      return org;
     });
     return handleSuccess(organization);
   } catch (e) {

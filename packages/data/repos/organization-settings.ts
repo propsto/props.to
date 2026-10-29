@@ -28,6 +28,35 @@ export type OrganizationFeedbackSettings = {
   defaultTemplateId?: string | null;
 };
 
+export type OrganizationCreationSettings = {
+  defaultUserSettings: OrganizationDefaultUserSettings;
+  organizationSettings: OrganizationGeneralSettings;
+  feedbackSettings: OrganizationFeedbackSettings;
+};
+
+// Same defaults the Google Workspace admin onboarding form starts from
+export const defaultOrganizationCreationSettings: OrganizationCreationSettings =
+  {
+    defaultUserSettings: {
+      defaultProfileVisibility: "ORGANIZATION",
+      allowExternalFeedback: false,
+      requireApprovalForPublicProfiles: true,
+    },
+    organizationSettings: {
+      allowUserInvites: true,
+      enableGroupManagement: true,
+      requireEmailVerification: true,
+      enableSSOIntegration: true,
+    },
+    feedbackSettings: {
+      enableOrganizationFeedback: true,
+      allowAnonymousFeedback: false,
+      enableFeedbackModeration: true,
+      autoApproveInternalFeedback: true,
+      allowMemberFormCreation: true,
+    },
+  };
+
 // Create or update organization default user settings
 export async function upsertOrganizationDefaultUserSettings(
   organizationId: string,
