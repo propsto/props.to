@@ -15,6 +15,7 @@ export * from "./feedback";
 export * from "./feedback-link";
 export * from "./feedback-template";
 export * from "./template-category";
+export * from "./org-value";
 export * from "./goal";
 export * from "./group";
 export * from "./slug";

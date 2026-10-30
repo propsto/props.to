@@ -15,6 +15,7 @@ import {
   LinkIcon,
   FileText,
   ShieldCheck,
+  Gem,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -88,6 +89,11 @@ export default async function OrgAdminLayout({
       icon: Tags,
     },
     {
+      href: `/org/${orgSlug}/admin/values`,
+      label: "Values",
+      icon: Gem,
+    },
+    {
       href: `/org/${orgSlug}/admin/settings`,
       label: "Settings",
       icon: Settings,
@@ -111,7 +117,7 @@ export default async function OrgAdminLayout({
         </div>
       </div>
 
-      <nav className="flex gap-2 border-b">
+      <nav className="flex flex-wrap gap-2 border-b">
         {navItems.map(item => (
           <Link
             key={item.href}
