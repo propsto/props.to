@@ -36,6 +36,7 @@ async function main() {
   await prisma.uri.deleteMany();
   await prisma.integration.deleteMany();
   await prisma.goal.deleteMany();
+  await prisma.feedbackValue.deleteMany();
   await prisma.feedback.deleteMany();
   await prisma.feedbackLink.deleteMany();
   await prisma.feedbackRequest.deleteMany();
@@ -45,6 +46,7 @@ async function main() {
   await prisma.organizationMember.deleteMany();
   await prisma.feedbackTemplate.deleteMany();
   await prisma.templateCategory.deleteMany();
+  await prisma.orgValue.deleteMany();
   await prisma.slug.deleteMany();
   await prisma.user.deleteMany();
   await prisma.organization.deleteMany();
@@ -341,6 +343,24 @@ async function main() {
         connect: { id: jane.id },
       },
     },
+  });
+
+  // Acme demo values (the values layer exists for an org when it has rows)
+  await prisma.orgValue.createMany({
+    data: [
+      {
+        name: "Ownership",
+        description: "Takes responsibility for outcomes, not just tasks",
+      },
+      {
+        name: "Candor",
+        description: "Says what they think, kindly and directly",
+      },
+      {
+        name: "Craft",
+        description: "Cares about the quality of the work",
+      },
+    ].map((value, order) => ({ ...value, order, organizationId: acme.id })),
   });
 
   // Global categories and default templates come from the shared bootstrap

@@ -15,6 +15,7 @@ import {
   LinkIcon,
   FileText,
   ShieldCheck,
+  Gem,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -86,6 +87,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/categories`,
       label: "Categories",
       icon: Tags,
+    },
+    {
+      href: `/org/${orgSlug}/admin/values`,
+      label: "Values",
+      icon: Gem,
     },
     {
       href: `/org/${orgSlug}/admin/settings`,

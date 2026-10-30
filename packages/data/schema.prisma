@@ -121,6 +121,11 @@ enum AuditAction {
   CATEGORY_UPDATED
   CATEGORY_DELETED
 
+  // Value actions
+  VALUE_CREATED
+  VALUE_UPDATED
+  VALUE_DELETED
+
   // Template actions
   TEMPLATE_CREATED
   TEMPLATE_UPDATED
@@ -165,6 +170,9 @@ model Organization {
 
   // Custom feedback categories
   categories TemplateCategory[]
+
+  // Org-defined values feedback can be tagged with
+  values OrgValue[]
 
   // Invitations
   invites OrganizationInvite[]
@@ -342,6 +350,36 @@ model TemplateCategory {
   @@unique([organizationId, name])
 }
 
+// OrgValue model (an org-defined value feedback can be tagged with)
+// The values layer exists for an org when it has rows
+model OrgValue {
+  id             String          @id @default(cuid())
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  name           String
+  description    String?
+  order          Int             @default(0)
+  feedbacks      FeedbackValue[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, order])
+}
+
+// FeedbackValue model (join between feedback and the org values it is tagged with)
+// Deleting a referenced value is refused in repos/org-value.ts; the cascade only
+// fires when the whole organization is deleted
+model FeedbackValue {
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  feedbackId BigInt
+  value      OrgValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  valueId    String
+
+  @@id([feedbackId, valueId])
+  @@index([valueId])
+}
+
 // FeedbackTemplate model (stores templates for feedback forms)
 model FeedbackTemplate {
   id            String            @id @default(cuid())
@@ -434,6 +472,9 @@ model Feedback {
   fieldsData Json? // Store the actual responses as JSON (e.g., answers to the feedback fields)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // Org values this feedback is tagged with
+  values FeedbackValue[]
 }
 
 // FeedbackLink model (shareable links for receiving feedback)

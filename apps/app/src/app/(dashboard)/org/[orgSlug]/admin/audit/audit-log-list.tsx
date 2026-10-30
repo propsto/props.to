@@ -14,6 +14,7 @@ import {
   FileText,
   Activity,
   ShieldCheck,
+  Gem,
 } from "lucide-react";
 import type { AuditAction } from "@prisma/client";
 
@@ -84,6 +85,21 @@ const actionConfig: Record<
     icon: Tag,
     color: "text-red-600",
   },
+  VALUE_CREATED: {
+    label: "Value created",
+    icon: Gem,
+    color: "text-green-600",
+  },
+  VALUE_UPDATED: {
+    label: "Value updated",
+    icon: Gem,
+    color: "text-blue-600",
+  },
+  VALUE_DELETED: {
+    label: "Value deleted",
+    icon: Gem,
+    color: "text-red-600",
+  },
   TEMPLATE_CREATED: {
     label: "Template created",
     icon: FileText,
@@ -152,6 +168,9 @@ function formatDetails(action: AuditAction, details: unknown): string | null {
       break;
     case "CATEGORY_CREATED":
     case "CATEGORY_UPDATED":
+    case "VALUE_CREATED":
+    case "VALUE_UPDATED":
+    case "VALUE_DELETED":
       if (d.name) {
         return `"${d.name}"`;
       }
