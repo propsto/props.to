@@ -45,6 +45,27 @@ export async function getOrgValues(organizationId: string) {
 }
 
 /**
+ * The org values tagged on a user's approved received feedback, for the received list filter
+ */
+export async function getReceivedFeedbackValues(userId: string) {
+  try {
+    logger("getReceivedFeedbackValues", { userId });
+
+    const values = await db.orgValue.findMany({
+      where: {
+        feedbacks: { some: { feedback: { userId, status: "APPROVED" } } },
+      },
+      orderBy: [{ order: "asc" }, { name: "asc" }],
+      select: { id: true, name: true },
+    });
+
+    return handleSuccess(values);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
  * Create a value at the end of the organization's list
  */
 export async function createOrgValue(input: CreateOrgValueInput) {

@@ -8,6 +8,9 @@ import type { PrismaClient } from "@prisma/client";
  * against those fields keep their references.
  *
  * The seed calls this too, so previews and prod share one definition.
+ *
+ * Quick Props has no values question: org values are picked on the form when
+ * the org defines them (feedback layers plan, V2).
  */
 
 export const BOOTSTRAP_IDS = {
@@ -72,21 +75,6 @@ const templates: {
         placeholder: "Share what they did well...",
         helpText: "Be specific about their actions and impact",
         order: 0,
-      },
-      {
-        label: "What values did they demonstrate?",
-        type: "SELECT",
-        required: false,
-        options: [
-          "Collaboration",
-          "Innovation",
-          "Leadership",
-          "Integrity",
-          "Excellence",
-          "Customer Focus",
-        ],
-        helpText: "Select the value that best fits",
-        order: 1,
       },
     ],
   },

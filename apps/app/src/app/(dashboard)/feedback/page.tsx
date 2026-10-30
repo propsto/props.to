@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { auth } from "@/server/auth.server";
-import { getFeedbackForUser } from "@propsto/data/repos";
+import {
+  getFeedbackForUser,
+  getReceivedFeedbackValues,
+} from "@propsto/data/repos";
 import { FeedbackList } from "@/app/_components/feedback-list";
 import { NoFeedbackState } from "@/app/_components/empty-state";
 import { Button } from "@propsto/ui/atoms/button";
+import { Badge } from "@propsto/ui/atoms/badge";
 import { Plus } from "lucide-react";
 import { Pager, parsePage } from "@/app/_components/pager";
 
@@ -12,7 +16,7 @@ const PAGE_SIZE = 20;
 export default async function FeedbackPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; value?: string }>;
 }): Promise<React.ReactNode> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -20,11 +24,19 @@ export default async function FeedbackPage({
   }
 
   const userId = session.user.id;
-  const page = parsePage((await searchParams).page);
+  const params = await searchParams;
+  const page = parsePage(params.page);
+
+  // Value filter: only values tagged on this user's received feedback are offered,
+  // and an unknown ?value= falls back to the unfiltered list
+  const valuesResult = await getReceivedFeedbackValues(userId);
+  const values = valuesResult.success ? valuesResult.data : [];
+  const activeValue = values.find(v => v.id === params.value);
 
   // Get feedback received by the user
   const feedbackResult = await getFeedbackForUser(userId, {
     status: ["APPROVED"],
+    valueId: activeValue?.id,
     skip: (page - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
   });
@@ -51,6 +63,30 @@ export default async function FeedbackPage({
         </Button>
       </div>
 
+      {values.length > 0 && (
+        <nav
+          aria-label="Filter by value"
+          className="flex flex-wrap items-center gap-2 px-4 lg:px-6"
+        >
+          <Link href="/feedback">
+            <Badge variant={activeValue ? "outline" : "default"}>All</Badge>
+          </Link>
+          {values.map(value => (
+            <Link
+              key={value.id}
+              href={`/feedback?value=${value.id}`}
+              aria-current={value.id === activeValue?.id ? "page" : undefined}
+            >
+              <Badge
+                variant={value.id === activeValue?.id ? "default" : "outline"}
+              >
+                {value.name}
+              </Badge>
+            </Link>
+          ))}
+        </nav>
+      )}
+
       <div className="px-4 lg:px-6">
         {feedbacks.length === 0 ? (
           <NoFeedbackState />
@@ -58,7 +94,9 @@ export default async function FeedbackPage({
           <>
             <FeedbackList feedbacks={feedbacks} />
             <Pager
-              basePath="/feedback"
+              basePath={
+                activeValue ? `/feedback?value=${activeValue.id}` : "/feedback"
+              }
               currentPage={page}
               totalPages={Math.ceil(total / PAGE_SIZE)}
             />

@@ -61,6 +61,7 @@ export async function moderateFeedbackAction(
       isAnonymous: feedback.visibility === "ANONYMOUS",
       senderName: feedback.submitterName ?? feedback.submitter?.firstName,
       feedbackType: feedback.feedbackType,
+      values: feedback.values.map(v => v.value.name),
     });
   }
 

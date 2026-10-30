@@ -90,9 +90,6 @@ test.describe("Public Feedback Submission", () => {
     await expect(
       page.getByLabel(/what do you appreciate about this person/i),
     ).toBeVisible();
-    await expect(
-      page.getByLabel(/what values did they demonstrate/i),
-    ).toBeVisible();
 
     // Verify submit button is present
     await expect(
@@ -118,9 +115,6 @@ test.describe("Public Feedback Submission", () => {
       .fill(
         "Great work on the recent project! Your attention to detail and collaboration skills are excellent.",
       );
-    await page
-      .getByLabel(/what values did they demonstrate/i)
-      .selectOption("Excellence");
 
     // Optionally fill in name (not anonymous)
     const nameInput = page.getByLabel(/your name/i);

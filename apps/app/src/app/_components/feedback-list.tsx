@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, User, Building2, Users } from "lucide-react";
+import { MessageSquare, User, Building2, Users, Tag } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -152,6 +152,12 @@ function FeedbackCard({
                   {feedback.groupNameSnapshot || feedback.group.name}
                 </Badge>
               )}
+              {feedback.values.map(({ value }) => (
+                <Badge key={value.id} variant="secondary" className="text-xs">
+                  <Tag className="mr-1 size-3" />
+                  {value.name}
+                </Badge>
+              ))}
               {showRecipient && feedback.user && (
                 <Badge variant="outline" className="text-xs">
                   <User className="mr-1 size-3" />

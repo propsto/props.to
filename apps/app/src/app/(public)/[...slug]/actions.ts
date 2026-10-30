@@ -1,6 +1,10 @@
 "use server";
 
-import { createFeedback, getFeedbackLink } from "@propsto/data/repos";
+import {
+  createFeedback,
+  getFeedbackLink,
+  getOrgValues,
+} from "@propsto/data/repos";
 import type { FeedbackVisibility, Prisma } from "@prisma/client";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
 import { notifyFeedbackRecipient } from "@/lib/feedback-email";
@@ -72,6 +76,7 @@ const submitFeedbackSchema = z.object({
   fieldsData: z.unknown().transform(data => {
     return sanitizeFieldsData(data as Prisma.InputJsonValue);
   }),
+  valueIds: z.array(z.string().cuid()).max(50).optional(),
 });
 
 interface SubmitFeedbackInput {
@@ -80,6 +85,7 @@ interface SubmitFeedbackInput {
   submitterEmail?: string;
   isAnonymous: boolean;
   fieldsData: Prisma.InputJsonValue;
+  valueIds?: string[];
 }
 
 interface SubmitFeedbackResult {
@@ -159,6 +165,21 @@ export async function submitFeedbackAction(
     return { success: false, error: refusal };
   }
 
+  // Value tags must be values of the link's org; personal links have none
+  const valueIds = [...new Set(sanitizedInput.valueIds ?? [])];
+  let valueNames: string[] = [];
+  if (valueIds.length > 0) {
+    const orgValues = link.organizationId
+      ? await getOrgValues(link.organizationId)
+      : null;
+    const known = orgValues?.success ? orgValues.data : [];
+    const tagged = known.filter(v => valueIds.includes(v.id));
+    if (tagged.length !== valueIds.length) {
+      return { success: false, error: "Invalid input" };
+    }
+    valueNames = tagged.map(v => v.name);
+  }
+
   // Create the feedback
   const feedbackResult = await createFeedback({
     userId: link.userId,
@@ -174,6 +195,7 @@ export async function submitFeedbackAction(
     submitterName: isAnonymous ? undefined : sanitizedInput.submitterName,
     submitterEmail: isAnonymous ? undefined : sanitizedInput.submitterEmail,
     fieldsData,
+    valueIds,
   });
 
   if (!feedbackResult.success) {
@@ -194,6 +216,7 @@ export async function submitFeedbackAction(
       isAnonymous,
       senderName: sanitizedInput.submitterName,
       feedbackType: link.feedbackType,
+      values: valueNames,
     });
   }
 

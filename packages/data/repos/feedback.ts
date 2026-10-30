@@ -36,6 +36,7 @@ export type FeedbackWithRelations = Prisma.FeedbackGetPayload<{
     group: { select: { id: true; name: true } };
     link: { select: { id: true; slug: true; name: true } };
     goals: { select: { id: true; title: true } };
+    values: { select: { value: { select: { id: true; name: true } } } };
   };
 }>;
 
@@ -77,6 +78,10 @@ const feedbackInclude = Prisma.validator<Prisma.FeedbackInclude>()({
   group: { select: { id: true, name: true } },
   link: { select: { id: true, slug: true, name: true } },
   goals: { select: { id: true, title: true } },
+  values: {
+    select: { value: { select: { id: true, name: true } } },
+    orderBy: { value: { order: "asc" } },
+  },
 });
 
 // Create feedback. With a linkId the link's responseCount is incremented in the
@@ -98,6 +103,7 @@ export async function createFeedback(data: {
   organizationNameSnapshot?: string;
   groupNameSnapshot?: string;
   userOrgRoleSnapshot?: string;
+  valueIds?: string[]; // Org values to tag, already checked against the org
 }): Promise<HandleEvent<FeedbackWithRelations>> {
   try {
     logger("createFeedback", {
@@ -134,6 +140,10 @@ export async function createFeedback(data: {
           organizationNameSnapshot: data.organizationNameSnapshot,
           groupNameSnapshot: data.groupNameSnapshot,
           userOrgRoleSnapshot: data.userOrgRoleSnapshot,
+          ...(data.valueIds &&
+            data.valueIds.length > 0 && {
+              values: { create: data.valueIds.map(valueId => ({ valueId })) },
+            }),
         },
         include: feedbackInclude,
       });
@@ -207,6 +217,7 @@ export async function getFeedbackForUser(
     status?: FeedbackStatus[];
     feedbackType?: FeedbackType[];
     organizationId?: string;
+    valueId?: string; // Only feedback tagged with this org value
   },
 ): Promise<HandleEvent<{ feedbacks: FeedbackWithRelations[]; total: number }>> {
   try {
@@ -219,6 +230,9 @@ export async function getFeedbackForUser(
       }),
       ...(options?.organizationId && {
         organizationId: options.organizationId,
+      }),
+      ...(options?.valueId && {
+        values: { some: { valueId: options.valueId } },
       }),
     };
 
