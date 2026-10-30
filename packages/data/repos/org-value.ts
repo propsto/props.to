@@ -13,8 +13,17 @@ export type CreateOrgValueInput = {
 
 export type UpdateOrgValueInput = {
   name?: string;
+  // Omitted keeps the current description; an empty string clears it
   description?: string;
 };
+
+function cleanName(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("Name is required");
+  }
+  return trimmed;
+}
 
 /**
  * Get an organization's values in display order
@@ -41,27 +50,34 @@ export async function getOrgValues(organizationId: string) {
 export async function createOrgValue(input: CreateOrgValueInput) {
   try {
     logger("createOrgValue", { input });
+    const name = cleanName(input.name);
+    const { organizationId } = input;
 
-    const existing = await db.orgValue.findFirst({
-      where: { name: input.name, organizationId: input.organizationId },
-    });
-    if (existing) {
-      throw new Error("A value with this name already exists");
-    }
+    // Lock the org row so concurrent creates append in turn instead of sharing an order
+    const value = await db.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${organizationId} FOR UPDATE`;
 
-    const last = await db.orgValue.findFirst({
-      where: { organizationId: input.organizationId },
-      orderBy: { order: "desc" },
-      select: { order: true },
-    });
+      const existing = await tx.orgValue.findFirst({
+        where: { name, organizationId },
+      });
+      if (existing) {
+        throw new Error("A value with this name already exists");
+      }
 
-    const value = await db.orgValue.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        organizationId: input.organizationId,
-        order: (last?.order ?? -1) + 1,
-      },
+      const last = await tx.orgValue.findFirst({
+        where: { organizationId },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+
+      return tx.orgValue.create({
+        data: {
+          name,
+          description: input.description?.trim() || null,
+          organizationId,
+          order: (last?.order ?? -1) + 1,
+        },
+      });
     });
 
     return handleSuccess(value);
@@ -88,9 +104,10 @@ export async function updateOrgValue(
       throw new Error("Value not found");
     }
 
-    if (input.name && input.name !== existing.name) {
+    const name = input.name === undefined ? undefined : cleanName(input.name);
+    if (name && name !== existing.name) {
       const duplicate = await db.orgValue.findFirst({
-        where: { name: input.name, organizationId, NOT: { id: valueId } },
+        where: { name, organizationId, NOT: { id: valueId } },
       });
       if (duplicate) {
         throw new Error("A value with this name already exists");
@@ -99,7 +116,13 @@ export async function updateOrgValue(
 
     const value = await db.orgValue.update({
       where: { id: valueId },
-      data: { name: input.name, description: input.description ?? null },
+      data: {
+        name,
+        description:
+          input.description === undefined
+            ? undefined
+            : input.description.trim() || null,
+      },
     });
 
     return handleSuccess(value);
@@ -151,22 +174,29 @@ export async function deleteOrgValue(valueId: string, organizationId: string) {
   try {
     logger("deleteOrgValue", { valueId, organizationId });
 
-    const existing = await db.orgValue.findFirst({
-      where: { id: valueId, organizationId },
-      include: { _count: { select: { feedbacks: true } } },
+    // Lock the value row: tagging feedback takes a key-share lock on it through the
+    // foreign key, so no tag can be added between the reference check and the delete
+    const name = await db.$transaction(async tx => {
+      const locked = await tx.$queryRaw<{ name: string }[]>`
+        SELECT name FROM "OrgValue"
+        WHERE id = ${valueId} AND "organizationId" = ${organizationId}
+        FOR UPDATE`;
+      if (locked.length === 0) {
+        throw new Error("Value not found");
+      }
+
+      const references = await tx.feedbackValue.count({ where: { valueId } });
+      if (references > 0) {
+        throw new Error(
+          "This value is used by feedback and cannot be deleted. Rename it instead.",
+        );
+      }
+
+      await tx.orgValue.delete({ where: { id: valueId } });
+      return locked[0].name;
     });
-    if (!existing) {
-      throw new Error("Value not found");
-    }
-    if (existing._count.feedbacks > 0) {
-      throw new Error(
-        "This value is used by feedback and cannot be deleted. Rename it instead.",
-      );
-    }
 
-    await db.orgValue.delete({ where: { id: valueId } });
-
-    return handleSuccess({ deleted: true, name: existing.name });
+    return handleSuccess({ deleted: true, name });
   } catch (e) {
     return handleError(e);
   }

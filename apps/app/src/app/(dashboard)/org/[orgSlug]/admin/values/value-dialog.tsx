@@ -61,7 +61,7 @@ export function ValueDialog({
     try {
       const data = {
         name: values.name.trim(),
-        description: values.description.trim() || undefined,
+        description: values.description.trim(),
       };
       const result = value
         ? await updateValueAction(orgSlug, value.id, data)
@@ -112,7 +112,9 @@ export function ValueDialog({
             <FormField
               control={form.control}
               name="name"
-              rules={{ required: "Name is required" }}
+              rules={{
+                validate: v => v.trim() !== "" || "Name is required",
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Name</FormLabel>
