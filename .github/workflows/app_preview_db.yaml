@@ -60,6 +60,7 @@ jobs:
           REPO_ID: ${{ github.event.repository.id }}
           SHA: ${{ github.event.pull_request.head.sha }}
           PR_CREATED: ${{ github.event.pull_request.created_at }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           API="https://api.vercel.com"
           H="Authorization: Bearer $VERCEL_TOKEN"
@@ -86,6 +87,14 @@ jobs:
             [ "$state" = READY ] && break
             [ "$state" = ERROR ] || [ "$state" = CANCELED ] && { echo "::error::auth rebuild $state"; exit 1; }
             sleep 15
+          done
+          # The stale app's E2E run would keep writing to the preview DB while the rebuild
+          # reseeds it (e2e.yaml's concurrency only cancels it once the rebuild is READY)
+          for status in in_progress queued; do
+            gh api "repos/${{ github.repository }}/actions/workflows/e2e.yaml/runs?head_sha=$SHA&status=$status" --jq '.workflow_runs[].id' |
+              while read -r run; do
+                gh api -X POST "repos/${{ github.repository }}/actions/runs/$run/cancel" >/dev/null && echo "Cancelled E2E run $run"
+              done
           done
           echo "Rebuilding app: $(redeploy app)"
 
