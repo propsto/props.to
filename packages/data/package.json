@@ -19,7 +19,9 @@
     "db-up": "pnpm dotenv -- docker compose up -d || docker-compose up -d",
     "dotenv": "dotenv -e ../../.env",
     "lint": "pnpm dotenv -- prisma validate",
-    "migrate:users-to-orgs": "pnpm dotenv -- tsx scripts/migrate-users-to-orgs.ts"
+    "migrate:users-to-orgs": "pnpm dotenv -- tsx scripts/migrate-users-to-orgs.ts",
+    "provision-org": "pnpm dotenv -- tsx scripts/provision-org.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@auth/core": "0.41.1",
@@ -34,7 +36,8 @@
   },
   "devDependencies": {
     "@types/uuid": "10.0.0",
-    "prisma": "7.2.0"
+    "prisma": "7.2.0",
+    "vitest": "*"
   },
   "peerDependencies": {
     "dotenv": "*",

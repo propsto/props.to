@@ -9,12 +9,10 @@ import {
   upsertNotificationPreferences,
   upsertPrivacySettings,
   upsertAccountSettings,
-  upsertOrganizationDefaultUserSettings,
-  upsertOrganizationSettings,
-  upsertOrganizationFeedbackSettings,
   addOrganizationMember,
   getUser,
   getOrganizationByHostedDomain,
+  createOrganizationWithOwner,
   getPendingAccountLink,
   consumePendingAccountLink,
   linkAccount,
@@ -332,68 +330,48 @@ export async function organizationHandler(
       }
     }
 
-    // Create organization with slug and hosted domain
-    // Organization slugs are in the GLOBAL namespace (top-level URLs like props.to/acme)
-    const organization = await db.organization.create({
-      data: {
-        name: organizationName,
-        hostedDomain,
-        slug: {
-          create: {
-            slug: organizationSlug.toLowerCase(),
-            scope: "GLOBAL",
-            scopedToOrgId: null,
-          },
+    // Create the organization (GLOBAL slug, settings rows) with the user as
+    // OWNER and their org-scoped username. Org slugs share the top-level namespace.
+    const created = await createOrganizationWithOwner({
+      name: organizationName,
+      slug: organizationSlug,
+      hostedDomain,
+      ownerId: userId,
+      ownerEmail: dbUser.data.email,
+      settings: {
+        defaultUserSettings: {
+          defaultProfileVisibility:
+            defaultUserSettings.defaultProfileVisibility.toUpperCase() as
+              | "PUBLIC"
+              | "PRIVATE"
+              | "ORGANIZATION",
+          allowExternalFeedback: defaultUserSettings.allowExternalFeedback,
+          requireApprovalForPublicProfiles:
+            defaultUserSettings.requireApprovalForPublicProfiles,
+        },
+        organizationSettings: {
+          allowUserInvites: organizationSettings.allowUserInvites,
+          enableGroupManagement: organizationSettings.enableGroupManagement,
+          requireEmailVerification:
+            organizationSettings.requireEmailVerification,
+          enableSSOIntegration: organizationSettings.enableSSOIntegration,
+        },
+        feedbackSettings: {
+          enableOrganizationFeedback:
+            feedbackSettings.enableOrganizationFeedback,
+          allowAnonymousFeedback: feedbackSettings.allowAnonymousFeedback,
+          enableFeedbackModeration: feedbackSettings.enableFeedbackModeration,
+          autoApproveInternalFeedback:
+            feedbackSettings.autoApproveInternalFeedback,
+          allowMemberFormCreation: true, // Default to allowing member form creation
         },
       },
-      include: {
-        slug: true,
-      },
     });
 
-    // Add user as organization owner
-    await addOrganizationMember({
-      userId,
-      organizationId: organization.id,
-      role: "OWNER",
-    });
-
-    // Get the user to find their email for org slug
-    const currentUser = await db.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (currentUser) {
-      // Create a SEPARATE org-scoped slug for the user (their username within this org)
-      // This is independent from their personal (GLOBAL) slug
-      const emailUsername = currentUser.email
-        .split("@")[0]
-        ?.toLowerCase()
-        .replace(/[^a-z0-9_-]/g, "");
-
-      if (emailUsername) {
-        // Check for collision within the org scope (shouldn't happen for new org, but be safe)
-        const existingOrgUserSlug = await db.slug.findFirst({
-          where: {
-            slug: emailUsername,
-            scope: "ORGANIZATION",
-            scopedToOrgId: organization.id,
-          },
-        });
-
-        if (!existingOrgUserSlug) {
-          // Create org-scoped slug for user
-          await db.slug.create({
-            data: {
-              slug: emailUsername,
-              scope: "ORGANIZATION",
-              scopedToOrgId: organization.id,
-              orgSlugOwnerId: userId,
-            },
-          });
-        }
-      }
+    if (!created.success) {
+      return { success: false, error: created.error };
     }
+    const organization = created.data;
 
     // Get updated user data
     const userUpdated = await getUser({ id: userId });
@@ -410,61 +388,6 @@ export async function organizationHandler(
       });
     }
 
-    // Store organization default user settings
-    const defaultUserSettingsResult =
-      await upsertOrganizationDefaultUserSettings(organization.id, {
-        defaultProfileVisibility:
-          defaultUserSettings.defaultProfileVisibility.toUpperCase() as
-            | "PUBLIC"
-            | "PRIVATE"
-            | "ORGANIZATION",
-        allowExternalFeedback: defaultUserSettings.allowExternalFeedback,
-        requireApprovalForPublicProfiles:
-          defaultUserSettings.requireApprovalForPublicProfiles,
-      });
-
-    if (!defaultUserSettingsResult.success) {
-      logger("error: Failed to save organization default user settings %o", {
-        error: defaultUserSettingsResult.error,
-      });
-    }
-
-    // Store organization general settings
-    const organizationSettingsResult = await upsertOrganizationSettings(
-      organization.id,
-      {
-        allowUserInvites: organizationSettings.allowUserInvites,
-        enableGroupManagement: organizationSettings.enableGroupManagement,
-        requireEmailVerification: organizationSettings.requireEmailVerification,
-        enableSSOIntegration: organizationSettings.enableSSOIntegration,
-      },
-    );
-
-    if (!organizationSettingsResult.success) {
-      logger("error: Failed to save organization settings %o", {
-        error: organizationSettingsResult.error,
-      });
-    }
-
-    // Store organization feedback settings
-    const feedbackSettingsResult = await upsertOrganizationFeedbackSettings(
-      organization.id,
-      {
-        enableOrganizationFeedback: feedbackSettings.enableOrganizationFeedback,
-        allowAnonymousFeedback: feedbackSettings.allowAnonymousFeedback,
-        enableFeedbackModeration: feedbackSettings.enableFeedbackModeration,
-        autoApproveInternalFeedback:
-          feedbackSettings.autoApproveInternalFeedback,
-        allowMemberFormCreation: true, // Default to allowing member form creation
-      },
-    );
-
-    if (!feedbackSettingsResult.success) {
-      logger("error: Failed to save organization feedback settings %o", {
-        error: feedbackSettingsResult.error,
-      });
-    }
-
     // Log successful organization creation and settings persistence
     logger(
       "info: Successfully created organization and persisted settings %o",
@@ -474,13 +397,6 @@ export async function organizationHandler(
         organizationSlug: organizationSlug.toLowerCase(),
         userId,
         accountSettings: accountResult.success ? "Saved" : "Failed",
-        defaultUserSettings: defaultUserSettingsResult.success
-          ? "Saved"
-          : "Failed",
-        organizationSettings: organizationSettingsResult.success
-          ? "Saved"
-          : "Failed",
-        feedbackSettings: feedbackSettingsResult.success ? "Saved" : "Failed",
       },
     );
 
