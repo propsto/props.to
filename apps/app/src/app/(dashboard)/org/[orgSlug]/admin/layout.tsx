@@ -117,7 +117,7 @@ export default async function OrgAdminLayout({
         </div>
       </div>
 
-      <nav className="flex gap-2 border-b">
+      <nav className="flex flex-wrap gap-2 border-b">
         {navItems.map(item => (
           <Link
             key={item.href}
