@@ -21,6 +21,7 @@ interface FeedbackReceivedEmailProps {
   senderName?: string;
   isAnonymous: boolean;
   feedbackType: string;
+  values?: string[]; // Org values the feedback is tagged with
   dashboardUrl: string;
 }
 
@@ -30,6 +31,7 @@ export function FeedbackReceivedEmail({
   senderName,
   isAnonymous = false,
   feedbackType = "recognition",
+  values = [],
   dashboardUrl = "https://app.props.to",
 }: FeedbackReceivedEmailProps): React.ReactElement {
   const previewText = isAnonymous
@@ -70,7 +72,10 @@ export function FeedbackReceivedEmail({
 
             <Text style={styles.text}>
               {isAnonymous ? (
-                <>Someone sent you anonymous {feedbackType.toLowerCase()} feedback.</>
+                <>
+                  Someone sent you anonymous {feedbackType.toLowerCase()}{" "}
+                  feedback.
+                </>
               ) : (
                 <>
                   <strong>{senderName ?? "Someone"}</strong> sent you{" "}
@@ -78,6 +83,12 @@ export function FeedbackReceivedEmail({
                 </>
               )}
             </Text>
+
+            {values.length > 0 && (
+              <Text style={styles.text}>
+                Values: <strong>{values.join(", ")}</strong>
+              </Text>
+            )}
 
             {feedbackPreview && !isAnonymous && (
               <Section style={styles.previewBox}>

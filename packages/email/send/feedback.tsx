@@ -10,6 +10,7 @@ interface SendFeedbackReceivedEmailParams {
   senderName?: string;
   isAnonymous: boolean;
   feedbackType: string;
+  values?: string[];
   dashboardUrl: string;
 }
 

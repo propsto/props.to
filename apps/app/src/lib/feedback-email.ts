@@ -15,6 +15,7 @@ export async function notifyFeedbackRecipient(input: {
   isAnonymous: boolean;
   senderName?: string | null;
   feedbackType: string;
+  values?: string[]; // Names of the org values the feedback is tagged with
 }): Promise<void> {
   try {
     const userResult = await getUser({ id: input.recipientId });
@@ -37,6 +38,7 @@ export async function notifyFeedbackRecipient(input: {
         : (input.senderName ?? undefined),
       isAnonymous: input.isAnonymous,
       feedbackType: input.feedbackType.replace(/_/g, " "),
+      values: input.values,
       dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
     });
   } catch (emailError) {

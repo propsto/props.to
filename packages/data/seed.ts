@@ -470,7 +470,6 @@ async function main() {
       fieldsData: {
         "What do you appreciate about this person?":
           "Mike always goes above and beyond to help the team succeed. His technical expertise is invaluable!",
-        "What values did they demonstrate?": "Excellence",
       },
       createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
     },
@@ -489,9 +488,31 @@ async function main() {
       fieldsData: {
         "What do you appreciate about this person?":
           "Great collaboration on the marketing project. Really appreciated the quick turnaround on deliverables.",
-        "What values did they demonstrate?": "Collaboration",
       },
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+    },
+  });
+
+  // Acme feedback to Mike tagged with a value (values layer E2E filters by it)
+  const candor = await prisma.orgValue.findFirstOrThrow({
+    where: { organizationId: acme.id, name: "Candor" },
+  });
+  await prisma.feedback.create({
+    data: {
+      userId: mike.id,
+      submitterId: john.id,
+      submitterEmail: john.email!,
+      organizationId: acme.id,
+      feedbackType: "RECOGNITION",
+      visibility: "PRIVATE",
+      status: "APPROVED",
+      templateId: propsTemplate,
+      fieldsData: {
+        "What do you appreciate about this person?":
+          "Told us early that the launch plan would slip, with a fix ready.",
+      },
+      values: { create: { valueId: candor.id } },
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
     },
   });
 

@@ -16,6 +16,7 @@ import {
   getOrganizationById,
   getOrganizationFeedbackLinks,
   getOrganizationSettings,
+  getOrgValues,
   getUserOrganizationMembership,
 } from "@propsto/data/repos";
 import { checkRateLimit, EMAIL_LOOKUP_RATE_LIMIT } from "@propsto/data/utils";
@@ -580,6 +581,17 @@ async function gatedFeedbackForm(
       </Card>
     );
   }
+  // The org's values layer: no rows, no picker
+  const valuesResult = link.organizationId
+    ? await getOrgValues(link.organizationId)
+    : null;
+  const values = valuesResult?.success
+    ? valuesResult.data.map(({ id, name, description }) => ({
+        id,
+        name,
+        description,
+      }))
+    : [];
   return (
     <FeedbackSubmissionForm
       link={{
@@ -589,6 +601,7 @@ async function gatedFeedbackForm(
       }}
       basePath={basePath}
       allowAnonymous={policy.allowAnonymous}
+      values={values}
     />
   );
 }

@@ -21,7 +21,11 @@ export function Pager({
   const link = (page: number, children: React.ReactNode): React.ReactNode =>
     page >= 1 && page <= totalPages ? (
       <Button variant="outline" size="sm" asChild>
-        <Link href={`${basePath}?page=${page}`}>{children}</Link>
+        <Link
+          href={`${basePath}${basePath.includes("?") ? "&" : "?"}page=${page}`}
+        >
+          {children}
+        </Link>
       </Button>
     ) : (
       <Button variant="outline" size="sm" disabled>

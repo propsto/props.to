@@ -9,6 +9,7 @@ import {
   User,
   Calendar,
   Link as LinkIcon,
+  Tag,
 } from "lucide-react";
 import { auth } from "@/server/auth.server";
 import { getFeedback, getFeedbackTemplate } from "@propsto/data/repos";
@@ -180,6 +181,28 @@ export default async function FeedbackDetailPage({
                     <span>
                       {feedback.groupNameSnapshot || feedback.group.name}
                     </span>
+                  </div>
+                )}
+
+                {feedback.values.length > 0 && (
+                  <div className="flex items-start gap-2 text-sm">
+                    <Tag className="mt-0.5 size-4 text-muted-foreground" />
+                    <div className="flex flex-wrap gap-1">
+                      {feedback.values.map(({ value }) =>
+                        isRecipient ? (
+                          <Link
+                            key={value.id}
+                            href={`/feedback?value=${value.id}`}
+                          >
+                            <Badge variant="secondary">{value.name}</Badge>
+                          </Link>
+                        ) : (
+                          <Badge key={value.id} variant="secondary">
+                            {value.name}
+                          </Badge>
+                        ),
+                      )}
+                    </div>
                   </div>
                 )}
 

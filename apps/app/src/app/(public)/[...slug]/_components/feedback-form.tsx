@@ -34,16 +34,24 @@ export type PublicFeedbackLink = Pick<
   "id" | "visibility"
 > & { template: Pick<FeedbackLinkWithRelations["template"], "fields"> };
 
+export type PublicOrgValue = {
+  id: string;
+  name: string;
+  description: string | null;
+};
+
 interface FeedbackSubmissionFormProps {
   link: PublicFeedbackLink;
   basePath: string;
   allowAnonymous?: boolean;
+  values?: PublicOrgValue[];
 }
 
 export function FeedbackSubmissionForm({
   link,
   basePath,
   allowAnonymous = true,
+  values = [],
 }: FeedbackSubmissionFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -56,6 +64,7 @@ export function FeedbackSubmissionForm({
   const [submitterName, setSubmitterName] = useState("");
   const [submitterEmail, setSubmitterEmail] = useState("");
   const [answers, setAnswers] = useState<FieldAnswers>({});
+  const [valueIds, setValueIds] = useState<string[]>([]);
   const fields = link.template.fields;
 
   const setAnswer = (id: string, value: FieldAnswer | undefined): void =>
@@ -84,6 +93,7 @@ export function FeedbackSubmissionForm({
         submitterEmail: isAnonymous ? undefined : submitterEmail || undefined,
         isAnonymous,
         fieldsData,
+        valueIds,
       });
       if (result.success) {
         router.push(`${basePath}/thanks`);
@@ -139,6 +149,40 @@ export function FeedbackSubmissionForm({
                 />
               </div>
             </div>
+          )}
+
+          {/* Org values picker: only when the org defines values */}
+          {values.length > 0 && (
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-medium leading-none">
+                Which values did they show?
+              </legend>
+              <div className="grid gap-2 pt-2 sm:grid-cols-2">
+                {values.map(value => (
+                  <div key={value.id} className="flex items-start gap-2">
+                    <Checkbox
+                      id={`value-${value.id}`}
+                      checked={valueIds.includes(value.id)}
+                      onCheckedChange={c =>
+                        setValueIds(prev =>
+                          c === true
+                            ? [...prev, value.id]
+                            : prev.filter(id => id !== value.id),
+                        )
+                      }
+                    />
+                    <div className="space-y-0.5">
+                      <Label htmlFor={`value-${value.id}`}>{value.name}</Label>
+                      {value.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {value.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </fieldset>
           )}
 
           {/* Template fields */}

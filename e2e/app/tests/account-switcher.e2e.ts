@@ -60,7 +60,10 @@ test.describe("Account Switcher - Unified View", () => {
     await expect(page.getByText("Organizations")).toBeVisible({
       timeout: 5000,
     });
-    await expect(page.getByText("Acme Inc.")).toBeVisible({ timeout: 5000 });
+    // Scoped to the menu: the dashboard's recent feedback can carry an org badge too
+    await expect(
+      page.getByRole("menuitem").filter({ hasText: "Acme Inc." }),
+    ).toBeVisible({ timeout: 5000 });
   });
 
   test("should navigate to org admin from dropdown", async ({
