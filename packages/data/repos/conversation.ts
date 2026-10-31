@@ -2,6 +2,7 @@ import { createLogger } from "@propsto/logger";
 import type {
   ConversationStage,
   ConversationStatus,
+  FeedbackVisibility,
   OrganizationRole,
 } from "@prisma/client";
 import { db } from "../db";
@@ -59,6 +60,10 @@ function cleanStep(step: ConversationStepInput) {
   };
 }
 
+// Feedback a lead or admin may see as evidence: approved, and shared beyond the
+// recipient. Private feedback stays the recipient's record.
+const EVIDENCE_VISIBILITIES: FeedbackVisibility[] = ["PUBLIC", "ORGANIZATION"];
+
 const conversationInclude = {
   subject: {
     select: { id: true, firstName: true, lastName: true, email: true },
@@ -76,6 +81,11 @@ const conversationInclude = {
     },
   },
   evidence: {
+    // Re-checked on read: feedback can be hidden or re-moderated after it is attached
+    where: {
+      status: "APPROVED" as const,
+      visibility: { in: EVIDENCE_VISIBILITIES },
+    },
     orderBy: { createdAt: "desc" as const },
     select: {
       id: true,
@@ -102,10 +112,16 @@ export async function getConversationViewerContext(
       subjectUserId,
     });
 
-    const [membership, lead] = await Promise.all([
+    const [membership, subjectMembership, lead] = await Promise.all([
       db.organizationMember.findUnique({
         where: { userId_organizationId: { userId: viewerId, organizationId } },
         select: { role: true },
+      }),
+      db.organizationMember.findUnique({
+        where: {
+          userId_organizationId: { userId: subjectUserId, organizationId },
+        },
+        select: { id: true },
       }),
       db.groupAdmin.findFirst({
         where: {
@@ -119,7 +135,7 @@ export async function getConversationViewerContext(
     const context: ConversationViewerContext = {
       orgRole: membership?.role ?? null,
       // Leading only counts while both are members of the organization
-      leadsSubject: Boolean(membership && lead),
+      leadsSubject: Boolean(membership && subjectMembership && lead),
     };
     return handleSuccess(context);
   } catch (e) {
@@ -212,12 +228,15 @@ export async function addConversationStep(
         throw new Error("This conversation is no longer open");
       }
 
-      const last = await tx.conversationStep.findFirst({
+      // Compare with the highest stage reached, not the latest timestamp, which
+      // can tie or invert under concurrent writes
+      const reached = await tx.conversationStep.findMany({
         where: { conversationId },
-        orderBy: { createdAt: "desc" },
+        distinct: ["stage"],
         select: { stage: true },
       });
-      if (last && STAGE_ORDER[step.stage] < STAGE_ORDER[last.stage]) {
+      const highest = Math.max(-1, ...reached.map(r => STAGE_ORDER[r.stage]));
+      if (STAGE_ORDER[step.stage] < highest) {
         throw new Error("A step cannot go back to an earlier stage");
       }
 
@@ -259,6 +278,9 @@ export async function resolveConversation(
 
 /**
  * Attach a feedback row the subject received in this organization as evidence.
+ * Only approved feedback shared beyond the recipient qualifies. Feedback already
+ * attached to another conversation is refused; re-attaching to the same one is
+ * a no-op.
  */
 export async function attachFeedbackToConversation(
   conversationId: string,
@@ -285,11 +307,28 @@ export async function attachFeedbackToConversation(
         id: feedbackId,
         organizationId,
         userId: conversation.subjectUserId,
+        status: "APPROVED",
+        visibility: { in: EVIDENCE_VISIBILITIES },
+        OR: [{ conversationId: null }, { conversationId }],
       },
       data: { conversationId },
     });
     if (result.count === 0) {
-      throw new Error("Feedback not found");
+      const attachedElsewhere = await db.feedback.findFirst({
+        where: {
+          id: feedbackId,
+          organizationId,
+          userId: conversation.subjectUserId,
+          conversationId: { not: null },
+          NOT: { conversationId },
+        },
+        select: { id: true },
+      });
+      throw new Error(
+        attachedElsewhere
+          ? "This feedback is already evidence in another conversation"
+          : "Feedback not found",
+      );
     }
 
     return handleSuccess({ attached: true });
