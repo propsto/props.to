@@ -164,6 +164,7 @@ export function WelcomeStepper({
         if (result.success) {
           if (result.data === null) {
             // Magic link was sent: stay on this step and show "check your email"
+            form.clearErrors();
             setMagicLinkSent(true);
           } else {
             // Account linked successfully, continue with personal step
@@ -178,7 +179,10 @@ export function WelcomeStepper({
           applyHandleEventToForm<LinkAccountFormValues>(
             form as unknown as FormLike<LinkAccountFormValues>,
             result,
-            ["password", "verificationMethod"],
+            // The password field is hidden in magic-link mode, so its errors go to root
+            (values as LinkAccountFormValues).verificationMethod === "password"
+              ? ["password"]
+              : [],
           );
         }
       },
@@ -432,6 +436,11 @@ export function WelcomeStepper({
 
         <div className="space-y-4">
           {stepper.switch(stepComponentsWithProps)}
+          {form.formState.errors.root?.message ? (
+            <p role="alert" className="text-sm text-destructive text-start">
+              {form.formState.errors.root.message}
+            </p>
+          ) : null}
           {!stepper.isLast ? (
             <div className="flex justify-end gap-4">
               <Button
