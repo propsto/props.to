@@ -14,9 +14,59 @@ const resolveScope = (url = "") => {
   return query ? decodeURIComponent(query) : DEFAULT_SCOPE;
 };
 
+// Keys whose values never belong in logs, wherever they sit in a logged object
+const SENSITIVE_KEY =
+  /token|secret|password|authorization|cookie|verifier|nonce|api_?key|session/i;
+// Bearer-looking strings inside free text: JWTs, Google access tokens, Google client secrets
+const SENSITIVE_VALUE =
+  /eyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,}|ya29\.[\w.-]+|GOCSPX-[\w-]+/g;
+const REDACTED = "[redacted]";
+const MAX_DEPTH = 6;
+
+// Masks secrets in anything about to be logged. Objects are copied, never mutated.
+export const redact = (value, depth = 0) => {
+  if (typeof value === "string")
+    return value.replace(SENSITIVE_VALUE, REDACTED);
+  if (!value || typeof value !== "object") return value;
+  // Past the depth limit nothing is inspected, so nothing may pass through
+  if (depth > MAX_DEPTH) return REDACTED;
+  if (value instanceof Date) return value;
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: redact(value.message),
+      // The stack repeats the message, so it gets the same treatment
+      stack: typeof value.stack === "string" ? redact(value.stack) : undefined,
+    };
+  }
+  if (Array.isArray(value)) return value.map(item => redact(item, depth + 1));
+  const copy = {};
+  for (const [key, item] of Object.entries(value)) {
+    copy[key] =
+      SENSITIVE_KEY.test(key) && item != null && item !== ""
+        ? REDACTED
+        : redact(item, depth + 1);
+  }
+  return copy;
+};
+
+// Wraps a debug instance so every call is redacted first. A Proxy keeps the
+// instance's own properties (the `enabled` accessor, namespace, color) intact.
+const withRedaction = instance =>
+  new Proxy(instance, {
+    // A disabled logger stays a no-op: no traversal, no copies
+    apply: (target, _thisArg, args) =>
+      target.enabled ? target(...args.map(arg => redact(arg))) : undefined,
+    get: (target, prop, receiver) =>
+      prop === "extend"
+        ? suffix => withRedaction(target.extend(suffix))
+        : Reflect.get(target, prop, receiver),
+  });
+
 const createConsoleLogger = namespace => {
   const label = `@propsto:${namespace}`;
-  const consoleLogger = (...args) => console.info(label, ...args);
+  const consoleLogger = (...args) =>
+    console.info(label, ...args.map(arg => redact(arg)));
   consoleLogger.log = console.info.bind(console);
   consoleLogger.namespace = label;
   consoleLogger.enabled = true;
@@ -34,7 +84,7 @@ export const createLogger = (scope = DEFAULT_SCOPE) => {
   if (hasProcess && isServerLike) {
     const loggerInstance = debug(`@propsto:${namespace}`);
     loggerInstance.log = console.info.bind(console);
-    return loggerInstance;
+    return withRedaction(loggerInstance);
   }
   return createConsoleLogger(namespace);
 };
