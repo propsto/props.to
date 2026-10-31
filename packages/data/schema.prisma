@@ -131,6 +131,11 @@ enum AuditAction {
   LEVEL_UPDATED
   MEMBER_LEVEL_CHANGED
 
+  // Conversation actions
+  CONVERSATION_OPENED
+  CONVERSATION_STEP_ADDED
+  CONVERSATION_RESOLVED
+
   // Template actions
   TEMPLATE_CREATED
   TEMPLATE_UPDATED
@@ -184,6 +189,9 @@ model Organization {
 
   // Invitations
   invites OrganizationInvite[]
+
+  // Conversations leads open about members
+  conversations Conversation[]
 
   @@unique([id, slugId])
 }
@@ -288,6 +296,11 @@ model User {
   feedbackRequestsReceived FeedbackRequest[] @relation("FeedbackRequestsReceived") // Requests received by this user
   goals                    Goal[] // User's goals
 
+  // Conversations
+  conversationsAbout  Conversation[]     @relation("ConversationSubject") // Conversations where this user is the subject
+  conversationsOpened Conversation[]     @relation("ConversationOpenedBy") // Conversations this user opened
+  conversationSteps   ConversationStep[] @relation("ConversationStepOwner") // Steps this user added
+
   // User preferences and settings relations
   notificationPreferences UserNotificationPreferences?
   privacySettings         UserPrivacySettings?
@@ -371,6 +384,7 @@ model OrgValue {
   order          Int                        @default(0)
   feedbacks      FeedbackValue[]
   expectations   OrgLevelValueExpectation[]
+  conversations  Conversation[]
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
 
@@ -421,6 +435,58 @@ model OrgLevelValueExpectation {
 
   @@id([levelId, valueId])
   @@index([valueId])
+}
+
+enum ConversationStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum ConversationStage {
+  DIRECT
+  REPEATED
+  FINAL
+}
+
+// Conversation model (a lead or admin follows up with a member through staged steps)
+// Access rules live in apps/app/src/server/conversation-access.ts
+model Conversation {
+  id                String             @id @default(cuid())
+  organization      Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String
+  subject           User               @relation("ConversationSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  subjectUserId     String
+  openedBy          User?              @relation("ConversationOpenedBy", fields: [openedById], references: [id], onDelete: SetNull)
+  openedById        String?
+  status            ConversationStatus @default(OPEN)
+  value             OrgValue?          @relation(fields: [valueId], references: [id], onDelete: SetNull)
+  valueId           String?
+  levelNameSnapshot String? // Subject's level name when the conversation was opened
+  steps             ConversationStep[]
+  evidence          Feedback[]
+  createdAt         DateTime           @default(now())
+  resolvedAt        DateTime?
+
+  @@index([organizationId, subjectUserId])
+}
+
+// ConversationStep model (one stage of a conversation)
+// sharedNote is visible to the subject; internalNote only to leads and org admins
+model ConversationStep {
+  id             String            @id @default(cuid())
+  conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  stage          ConversationStage
+  owner          User?             @relation("ConversationStepOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId        String?
+  sharedNote     String
+  internalNote   String?
+  reviewAt       DateTime?
+  consequence    String?
+  createdAt      DateTime          @default(now())
+
+  @@index([conversationId, createdAt])
 }
 
 // FeedbackTemplate model (stores templates for feedback forms)
@@ -519,6 +585,12 @@ model Feedback {
 
   // Org values this feedback is tagged with
   values FeedbackValue[]
+
+  // Conversation this feedback is attached to as evidence
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  conversationId String?
+
+  @@index([conversationId])
 }
 
 // FeedbackLink model (shareable links for receiving feedback)

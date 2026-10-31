@@ -206,10 +206,13 @@ export async function deleteOrgValue(valueId: string, organizationId: string) {
         throw new Error("Value not found");
       }
 
-      const references = await tx.feedbackValue.count({ where: { valueId } });
-      if (references > 0) {
+      const [tagged, conversations] = await Promise.all([
+        tx.feedbackValue.count({ where: { valueId } }),
+        tx.conversation.count({ where: { valueId } }),
+      ]);
+      if (tagged > 0 || conversations > 0) {
         throw new Error(
-          "This value is used by feedback and cannot be deleted. Rename it instead.",
+          "This value is used by feedback or conversations and cannot be deleted. Rename it instead.",
         );
       }
 
