@@ -123,6 +123,10 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
           }
 
           return {
+            // Auth.js stores this as the Account's providerAccountId. Without it
+            // every sign-in gets a random id, the linked-account lookup never
+            // matches, and returning Google users are sent to "link account".
+            id: profile.sub,
             firstName: profile.given_name,
             lastName: profile.family_name,
             email: profile.email,
