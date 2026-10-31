@@ -47,6 +47,7 @@ async function main() {
   await prisma.feedbackTemplate.deleteMany();
   await prisma.templateCategory.deleteMany();
   await prisma.orgValue.deleteMany();
+  await prisma.orgLevel.deleteMany();
   await prisma.slug.deleteMany();
   await prisma.user.deleteMany();
   await prisma.organization.deleteMany();
@@ -361,6 +362,35 @@ async function main() {
         description: "Cares about the quality of the work",
       },
     ].map((value, order) => ({ ...value, order, organizationId: acme.id })),
+  });
+
+  // Acme demo levels (the levels layer exists for an org when it has rows)
+  await prisma.orgLevel.createMany({
+    data: [
+      { name: "Associate", summary: "Delivers well-scoped work with guidance" },
+      {
+        name: "Senior",
+        summary: "Owns problems end to end and unblocks others",
+      },
+      {
+        name: "Lead",
+        summary: "Sets direction and grows the people around them",
+      },
+    ].map((level, order) => ({ ...level, order, organizationId: acme.id })),
+  });
+
+  // John is the one Acme member with a level assigned
+  await prisma.organizationMember.update({
+    where: {
+      userId_organizationId: { userId: john.id, organizationId: acme.id },
+    },
+    data: {
+      level: {
+        connect: {
+          organizationId_name: { organizationId: acme.id, name: "Senior" },
+        },
+      },
+    },
   });
 
   // Global categories and default templates come from the shared bootstrap

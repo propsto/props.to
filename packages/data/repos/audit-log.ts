@@ -190,7 +190,11 @@ export const auditHelpers = {
   async logMemberAction(
     organizationId: string,
     actorId: string,
-    action: "MEMBER_INVITED" | "MEMBER_REMOVED" | "MEMBER_ROLE_CHANGED",
+    action:
+      | "MEMBER_INVITED"
+      | "MEMBER_REMOVED"
+      | "MEMBER_ROLE_CHANGED"
+      | "MEMBER_LEVEL_CHANGED",
     memberId: string,
     details?: Record<string, unknown>,
     metadata?: { ipAddress?: string; userAgent?: string },
