@@ -100,6 +100,7 @@ export function WelcomeStepper({
 
   // Store form data across steps
   const [formData, setFormData] = useState<StepFormStore>({});
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const defaultValues = formDefaults[stepper.current.id](
     user,
@@ -162,13 +163,8 @@ export function WelcomeStepper({
         );
         if (result.success) {
           if (result.data === null) {
-            // Magic link was sent - stay on current step and update UI
-            // The link-account-step component will show the "check email" message
-            // when the form is submitted with magic-link method
-            form.setError("root", {
-              type: "info",
-              message: "Magic link sent! Check your email to complete linking.",
-            });
+            // Magic link was sent: stay on this step and show "check your email"
+            setMagicLinkSent(true);
           } else {
             // Account linked successfully, continue with personal step
             const nextStep = getNextStepForUser(
@@ -345,6 +341,7 @@ export function WelcomeStepper({
       <LinkAccountStepComponent
         email={user.email}
         hostedDomain={user.hostedDomain}
+        magicLinkSent={magicLinkSent}
       />
     ),
     account: () => (
@@ -446,7 +443,9 @@ export function WelcomeStepper({
               >
                 Back
               </Button>
-              <Button type="submit">Next</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? "Working…" : "Next"}
+              </Button>
             </div>
           ) : (
             <div className="flex flex-row justify-end">
