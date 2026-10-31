@@ -7,25 +7,32 @@ on:
     types: [opened, reopened, synchronize, labeled, unlabeled]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  # Vercel only reacts to pushes, so labelling a PR pushes an empty commit to build it now
+  # Vercel builds on push, so labelling a PR asks Vercel to deploy its current head.
+  # No commit is pushed: a GITHUB_TOKEN push would not trigger the PR's other workflows.
   kick:
     name: Build previews for the labelled PR
     if: github.event.action == 'labeled' && github.event.label.name == 'preview' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
+      TEAM: ${{ vars.VERCEL_TEAM_ID }}
+      REPO_ID: ${{ github.event.repository.id }}
+      REF: ${{ github.event.pull_request.head.ref }}
+      SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
       - run: |
           # The labels API lags the event by a moment; the gate script must see the label
           sleep 15
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit --allow-empty -m "chore: build previews (preview label added)"
-          git push
+          for project in app auth web; do
+            body=$(jq -n --arg p "$project" --arg ref "$REF" --arg sha "$SHA" --argjson repo "$REPO_ID" \
+              '{name: $p, project: $p, gitSource: {type: "github", repoId: $repo, ref: $ref, sha: $sha}}')
+            curl -fsS -X POST "https://api.vercel.com/v13/deployments?teamId=$TEAM" \
+              -H "Authorization: Bearer $VERCEL_TOKEN" -H "Content-Type: application/json" \
+              -d "$body" | jq -r '"\(.name): https://\(.url) \(.readyState)"'
+          done
 
   # "Run E2E Tests" is required but only runs after an app preview deploys.
   # Without the label there is no preview, so report it here instead.
