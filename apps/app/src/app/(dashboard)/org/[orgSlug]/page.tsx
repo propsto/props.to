@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Building2, Plus, Settings } from "lucide-react";
 import {
   getAvailableManagedLinks,
+  getLedMembers,
   getMemberLevel,
   getMembershipByOrgSlug,
   getOrganizationTemplates,
@@ -44,18 +45,21 @@ export default async function OrgLandingPage({
   const { organization: org, role } = membership.data;
   const isAdmin = role === "OWNER" || role === "ADMIN";
 
-  const [linksResult, managedResult, templatesResult, levelResult] =
+  const [linksResult, managedResult, templatesResult, levelResult, ledResult] =
     await Promise.all([
       getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
       getAvailableManagedLinks(userId, org.id),
       getOrganizationTemplates(org.id),
       getMemberLevel(org.id, userId),
+      getLedMembers(org.id, userId),
     ]);
   const links = linksResult.success ? linksResult.data.links : [];
   const managed = managedResult.success ? managedResult.data.available : [];
   const templates = templatesResult.success ? templatesResult.data : [];
   // The levels layer: no level assigned, no rubric card
   const level = levelResult.success ? levelResult.data : null;
+  // The process layer: group admins see the people they lead
+  const led = ledResult.success ? ledResult.data : [];
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -107,6 +111,40 @@ export default async function OrgLandingPage({
               </dl>
             </CardContent>
           ) : null}
+        </Card>
+      ) : null}
+
+      {led.length > 0 ? (
+        <Card data-testid="led-members">
+          <CardHeader>
+            <CardTitle>People you lead</CardTitle>
+            <CardDescription>
+              Members of the groups you administer. Open their conversations
+              to record feedback steps.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {led.map(person => (
+                <li
+                  key={person.id}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <span className="font-medium">
+                    {`${person.firstName ?? ""} ${person.lastName ?? ""}`.trim() ||
+                      person.email}
+                  </span>
+                  <Button asChild size="sm" variant="outline">
+                    <Link
+                      href={`/org/${orgSlug}/people/${person.slug.slug}/conversations`}
+                    >
+                      Conversations
+                    </Link>
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
         </Card>
       ) : null}
 

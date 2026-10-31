@@ -8,6 +8,7 @@ import {
   Send,
   FileText,
   Link as LinkIcon,
+  MessagesSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -49,6 +50,8 @@ type User = {
 
 interface FeedbackSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: User;
+  // Shown only to members who are the subject of at least one conversation
+  showConversations?: boolean;
 }
 
 // Unified navigation — shows everything in one view
@@ -63,8 +66,15 @@ const navItems: NavItem[] = [
 
 export function FeedbackSidebar({
   user,
+  showConversations = false,
   ...props
 }: FeedbackSidebarProps): React.JSX.Element {
+  const items: NavItem[] = showConversations
+    ? [
+        ...navItems,
+        { title: "Conversations", url: "/conversations", icon: MessagesSquare },
+      ]
+    : navItems;
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -82,7 +92,7 @@ export function FeedbackSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarMenu>
-            {navItems.map(item => (
+            {items.map(item => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
                   tooltip={item.title}

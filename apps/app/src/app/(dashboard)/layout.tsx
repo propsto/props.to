@@ -4,7 +4,10 @@ import { Separator } from "@propsto/ui/atoms/separator";
 import { canUserMoveOn } from "@propsto/auth/post-auth-check";
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
-import { getUserOrganizations } from "@propsto/data/repos";
+import {
+  getUserOrganizations,
+  userIsConversationSubject,
+} from "@propsto/data/repos";
 import { auth } from "@/server/auth.server";
 import { FeedbackSidebar } from "@/app/_components/feedback-sidebar";
 
@@ -23,7 +26,10 @@ export default async function DashboardLayout({
   }
 
   // Memberships come from the DB, not the JWT, so a removed member's org disappears at once
-  const memberships = await getUserOrganizations(session.user.id);
+  const [memberships, subjectOfConversation] = await Promise.all([
+    getUserOrganizations(session.user.id),
+    userIsConversationSubject(session.user.id),
+  ]);
 
   // Transform session user to sidebar user format
   const sidebarUser = {
@@ -48,7 +54,10 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <FeedbackSidebar user={sidebarUser} />
+      <FeedbackSidebar
+        user={sidebarUser}
+        showConversations={subjectOfConversation.data === true}
+      />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b">
           <div className="flex flex-1 items-center gap-2 px-3">
