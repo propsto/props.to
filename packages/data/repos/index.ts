@@ -17,6 +17,7 @@ export * from "./feedback-template";
 export * from "./template-category";
 export * from "./org-value";
 export * from "./org-level";
+export * from "./conversation";
 export * from "./goal";
 export * from "./group";
 export * from "./slug";

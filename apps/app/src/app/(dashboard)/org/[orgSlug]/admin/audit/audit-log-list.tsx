@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Gem,
   Layers,
+  MessagesSquare,
 } from "lucide-react";
 import type { AuditAction } from "@prisma/client";
 
@@ -114,6 +115,21 @@ const actionConfig: Record<
   MEMBER_LEVEL_CHANGED: {
     label: "Member level changed",
     icon: Layers,
+    color: "text-blue-600",
+  },
+  CONVERSATION_OPENED: {
+    label: "Conversation opened",
+    icon: MessagesSquare,
+    color: "text-green-600",
+  },
+  CONVERSATION_STEP_ADDED: {
+    label: "Conversation step added",
+    icon: MessagesSquare,
+    color: "text-orange-600",
+  },
+  CONVERSATION_RESOLVED: {
+    label: "Conversation resolved",
+    icon: MessagesSquare,
     color: "text-blue-600",
   },
   TEMPLATE_CREATED: {

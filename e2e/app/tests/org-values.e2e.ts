@@ -29,8 +29,10 @@ test.describe("Organization values admin", () => {
     // Create: appended at the end of the list
     await page.getByRole("button", { name: /new value/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await page.getByLabel("Name").fill(name);
-    await page.getByLabel("Description").fill("Created by E2E");
+    await page.getByLabel("Name", { exact: true }).fill(name);
+    await page
+      .getByLabel("Description", { exact: true })
+      .fill("Created by E2E");
     await page.getByRole("button", { name: "Create Value" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
     await expect(rows.last()).toContainText(name, { timeout: 5000 });
@@ -38,7 +40,7 @@ test.describe("Organization values admin", () => {
     // Rename
     await page.getByRole("button", { name: `Edit ${name}` }).click();
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
-    await page.getByLabel("Name").fill(renamed);
+    await page.getByLabel("Name", { exact: true }).fill(renamed);
     await page.getByRole("button", { name: "Save Changes" }).click();
     await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
     await expect(rows.last()).toContainText(renamed, { timeout: 5000 });
