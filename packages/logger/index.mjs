@@ -27,13 +27,16 @@ const MAX_DEPTH = 6;
 export const redact = (value, depth = 0) => {
   if (typeof value === "string")
     return value.replace(SENSITIVE_VALUE, REDACTED);
-  if (!value || typeof value !== "object" || depth > MAX_DEPTH) return value;
+  if (!value || typeof value !== "object") return value;
+  // Past the depth limit nothing is inspected, so nothing may pass through
+  if (depth > MAX_DEPTH) return REDACTED;
   if (value instanceof Date) return value;
   if (value instanceof Error) {
     return {
       name: value.name,
       message: redact(value.message),
-      stack: value.stack,
+      // The stack repeats the message, so it gets the same treatment
+      stack: typeof value.stack === "string" ? redact(value.stack) : undefined,
     };
   }
   if (Array.isArray(value)) return value.map(item => redact(item, depth + 1));
@@ -51,7 +54,9 @@ export const redact = (value, depth = 0) => {
 // instance's own properties (the `enabled` accessor, namespace, color) intact.
 const withRedaction = instance =>
   new Proxy(instance, {
-    apply: (target, _thisArg, args) => target(...args.map(arg => redact(arg))),
+    // A disabled logger stays a no-op: no traversal, no copies
+    apply: (target, _thisArg, args) =>
+      target.enabled ? target(...args.map(arg => redact(arg))) : undefined,
     get: (target, prop, receiver) =>
       prop === "extend"
         ? suffix => withRedaction(target.extend(suffix))

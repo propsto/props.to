@@ -202,3 +202,37 @@ describe("redact", () => {
     expect(joined).not.toContain("secret-value");
   });
 });
+
+describe("redact edge cases", () => {
+  it("fails closed past the depth limit and scrubs error stacks", async () => {
+    const { redact } = (await import("../index.mjs")) as unknown as {
+      redact: <T>(value: T) => T;
+    };
+    const deep = {
+      a: { b: { c: { d: { e: { f: { g: { password: "x" } } } } } } },
+    };
+    const out = redact(deep) as unknown as {
+      a: { b: { c: { d: { e: { f: { g: unknown } } } } } };
+    };
+    expect(JSON.stringify(out)).not.toContain('"x"');
+    const err = new Error("boom GOCSPX-leaked-secret");
+    const red = redact(err) as unknown as { message: string; stack?: string };
+    expect(red.message).toBe("boom [redacted]");
+    expect(red.stack ?? "").not.toContain("GOCSPX-leaked-secret");
+  });
+
+  it("does not traverse arguments when the logger is disabled", async () => {
+    const { createLogger } = await loadLoggerModule();
+    const log = createLogger("disabled-test");
+    log.enabled = false;
+    const trap = new Proxy(
+      {},
+      {
+        ownKeys: () => {
+          throw new Error("traversed");
+        },
+      },
+    );
+    expect(() => log("x %O", trap)).not.toThrow();
+  });
+});
