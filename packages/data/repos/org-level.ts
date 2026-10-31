@@ -167,7 +167,7 @@ export async function getOrgLevel(levelId: string, organizationId: string) {
 }
 
 /**
- * Replace a level's per-value expectation texts.
+ * Set a level's expectation text for the given values; values not listed keep theirs.
  * An empty text removes that value's expectation; values must belong to the org.
  */
 export async function setOrgLevelExpectations(
@@ -178,43 +178,43 @@ export async function setOrgLevelExpectations(
   try {
     logger("setOrgLevelExpectations", { levelId, organizationId });
 
-    const level = await db.orgLevel.findFirst({
-      where: { id: levelId, organizationId },
-      select: { id: true },
-    });
-    if (!level) {
-      throw new Error("Level not found");
-    }
-
-    const valueIds = [...new Set(expectations.map(e => e.valueId))];
-    const owned = await db.orgValue.count({
-      where: { id: { in: valueIds }, organizationId },
-    });
-    if (owned !== valueIds.length) {
-      throw new Error("Value list is out of date, reload and try again");
-    }
-
     const entries = expectations.map(e => ({
       valueId: e.valueId,
       text: e.text.trim(),
     }));
-    await db.$transaction([
-      db.orgLevelValueExpectation.deleteMany({
+    const valueIds = [...new Set(entries.map(e => e.valueId))];
+
+    // Lock the level row so concurrent saves apply one after the other
+    await db.$transaction(async tx => {
+      const locked = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM "OrgLevel"
+        WHERE id = ${levelId} AND "organizationId" = ${organizationId}
+        FOR UPDATE`;
+      if (locked.length === 0) {
+        throw new Error("Level not found");
+      }
+
+      const owned = await tx.orgValue.count({
+        where: { id: { in: valueIds }, organizationId },
+      });
+      if (owned !== valueIds.length) {
+        throw new Error("Value list is out of date, reload and try again");
+      }
+
+      await tx.orgLevelValueExpectation.deleteMany({
         where: {
           levelId,
           valueId: { in: entries.filter(e => !e.text).map(e => e.valueId) },
         },
-      }),
-      ...entries
-        .filter(e => e.text)
-        .map(e =>
-          db.orgLevelValueExpectation.upsert({
-            where: { levelId_valueId: { levelId, valueId: e.valueId } },
-            create: { levelId, valueId: e.valueId, text: e.text },
-            update: { text: e.text },
-          }),
-        ),
-    ]);
+      });
+      for (const e of entries.filter(e => e.text)) {
+        await tx.orgLevelValueExpectation.upsert({
+          where: { levelId_valueId: { levelId, valueId: e.valueId } },
+          create: { levelId, valueId: e.valueId, text: e.text },
+          update: { text: e.text },
+        });
+      }
+    });
 
     return handleSuccess({ saved: entries.filter(e => e.text).length });
   } catch (e) {

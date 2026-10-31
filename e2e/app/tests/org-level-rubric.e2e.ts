@@ -4,7 +4,9 @@ import { signInByPassword } from "../../auth/utils/auth-methods";
 /**
  * Levels layer rubric and expectations (feedback layers plan, L2).
  * Seed: Acme's Senior level has a rubric (Scope, Collaboration) and a Candor
- * expectation; John is Senior. Carol belongs to Globex only.
+ * expectation; John is Senior. Every seeded org is members-only, so an outsider
+ * never reaches an org form here: the outsider check below asserts the refusal,
+ * and showsRecipientLevel's unit test covers an outsider on an open form.
  */
 
 const AUTH_URL = process.env.AUTH_URL ?? "";
@@ -67,13 +69,10 @@ test.describe("Level rubric for the member and outsiders", () => {
   });
 
   test("outsider never sees the level panel", async ({ page }) => {
-    await page.goto(AUTH_URL);
-    await signInByPassword(page, "carol.white@globex.com", "P4ssw0rd");
-    await page.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
-
+    // Signed out, so never an Acme member whatever other specs change
     await page.goto(`${APP_URL}/acme/john.doe/john-acme`);
     await expect(
-      page.getByRole("heading", { name: /give feedback to john/i }),
+      page.getByRole("link", { name: /sign in to continue/i }),
     ).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(PANEL)).toHaveCount(0);
     await expect(page.getByText(CANDOR_AT_SENIOR)).toHaveCount(0);

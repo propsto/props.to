@@ -72,7 +72,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { auth } from "@/server/auth.server";
 import { constServer } from "@propsto/constants/server";
-import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
+import {
+  feedbackRefusal,
+  getFeedbackPolicy,
+  showsRecipientLevel,
+} from "@/lib/feedback-policy";
 import { publicLinkPath } from "@/lib/public-link-path";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
 import { UserProfileHeader } from "./_components/user-profile-header";
@@ -595,9 +599,11 @@ async function gatedFeedbackForm(
         description,
       }))
     : [];
-  // The levels layer: expectations are internal, so only org members see them
+  // The levels layer: expectations are internal, see showsRecipientLevel
   const levelResult =
-    showRecipientLevel && policy.isMember && link.organizationId
+    showRecipientLevel &&
+    link.organizationId &&
+    showsRecipientLevel(link, policy)
       ? await getMemberLevel(link.organizationId, link.userId)
       : null;
   const level = levelResult?.success ? levelResult.data : null;

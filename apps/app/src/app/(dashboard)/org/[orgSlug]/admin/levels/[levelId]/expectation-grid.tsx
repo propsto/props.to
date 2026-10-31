@@ -19,10 +19,14 @@ export function ExpectationGrid({
   levelId,
   values,
 }: ExpectationGridProps): React.ReactNode {
-  const [texts, setTexts] = useState<Record<string, string>>(() =>
-    Object.fromEntries(values.map(v => [v.id, v.text])),
-  );
+  // Local edits only; untouched rows show the server's text
+  const [edits, setEdits] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+
+  // Send only edited rows, so a save never reverts another admin's other rows
+  const dirty = values.filter(
+    v => edits[v.id] !== undefined && edits[v.id] !== v.text,
+  );
 
   const save = async () => {
     setBusy(true);
@@ -30,32 +34,34 @@ export function ExpectationGrid({
       const result = await setLevelExpectationsAction(
         orgSlug,
         levelId,
-        values.map(v => ({ valueId: v.id, text: texts[v.id] ?? "" })),
+        dirty.map(v => ({ valueId: v.id, text: edits[v.id] ?? "" })),
       );
       if (result.success) toast.success("Expectations saved");
       else toast.error(result.error ?? "Something went wrong");
+    } catch {
+      toast.error("Could not save the expectations, try again");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <fieldset disabled={busy} className="space-y-4">
       {values.map(value => (
         <div key={value.id} className="space-y-2">
           <Label htmlFor={`expectation-${value.id}`}>{value.name}</Label>
           <Textarea
             id={`expectation-${value.id}`}
-            value={texts[value.id] ?? ""}
+            value={edits[value.id] ?? value.text}
             onChange={e =>
-              setTexts(prev => ({ ...prev, [value.id]: e.target.value }))
+              setEdits(prev => ({ ...prev, [value.id]: e.target.value }))
             }
           />
         </div>
       ))}
-      <Button onClick={() => void save()} disabled={busy}>
+      <Button onClick={() => void save()} disabled={busy || dirty.length === 0}>
         {busy ? "Saving..." : "Save expectations"}
       </Button>
-    </div>
+    </fieldset>
   );
 }

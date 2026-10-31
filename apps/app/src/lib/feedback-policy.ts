@@ -78,3 +78,12 @@ export function feedbackRefusal(
     return "Anonymous feedback is not allowed for this organization";
   return null;
 }
+
+// The recipient's level expectations are internal: only for a person's own org
+// link (not a group link) and only when the viewer is a member of that org
+export function showsRecipientLevel(
+  link: { organizationId: string | null; groupId: string | null },
+  policy: Pick<FeedbackPolicy, "isMember">,
+): boolean {
+  return Boolean(link.organizationId) && !link.groupId && policy.isMember;
+}

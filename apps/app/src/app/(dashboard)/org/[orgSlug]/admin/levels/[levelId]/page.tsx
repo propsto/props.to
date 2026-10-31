@@ -61,7 +61,9 @@ export default async function OrgAdminLevelDetail({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Remount on save so untouched fields pick up the stored values */}
           <RubricEditor
+            key={level.updatedAt.toISOString()}
             orgSlug={orgSlug}
             levelId={level.id}
             summary={level.summary ?? ""}

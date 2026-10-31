@@ -33,22 +33,28 @@ export function RubricEditor({
       prev.map((s, i) => (i === index ? { ...s, ...patch } : s)),
     );
 
+  // Send only what changed, so a save never reverts another admin's edit to the other field
+  const summaryDirty = summary !== initialSummary;
+  const rubricDirty = JSON.stringify(sections) !== JSON.stringify(rubric);
+
   const save = async () => {
     setBusy(true);
     try {
       const result = await updateLevelAction(orgSlug, levelId, {
-        summary,
-        rubric: sections,
+        ...(summaryDirty && { summary }),
+        ...(rubricDirty && { rubric: sections }),
       });
       if (result.success) toast.success("Rubric saved");
       else toast.error(result.error ?? "Something went wrong");
+    } catch {
+      toast.error("Could not save the rubric, try again");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <fieldset disabled={busy} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="level-summary">Summary</Label>
         <Textarea
@@ -101,10 +107,13 @@ export function RubricEditor({
           <Plus className="mr-2 h-4 w-4" />
           Add section
         </Button>
-        <Button onClick={() => void save()} disabled={busy}>
+        <Button
+          onClick={() => void save()}
+          disabled={busy || (!summaryDirty && !rubricDirty)}
+        >
           {busy ? "Saving..." : "Save rubric"}
         </Button>
       </div>
-    </div>
+    </fieldset>
   );
 }
