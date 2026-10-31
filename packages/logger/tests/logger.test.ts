@@ -148,3 +148,91 @@ describe("@propsto/logger", () => {
     }
   });
 });
+
+describe("redact", () => {
+  it("masks secret-bearing keys and bearer-looking strings, keeps the rest", async () => {
+    const { redact } = (await import("../index.mjs")) as unknown as {
+      redact: <T>(value: T) => T;
+    };
+    const jwt =
+      "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.c2lnbmF0dXJlLXNpZ25hdHVyZS1zaWduYXR1cmU";
+    const input = {
+      email: "leo@example.com",
+      access_token: "ya29.a0AbCdEf-ghi",
+      clientSecret: "GOCSPX-abc123",
+      nested: {
+        session_token: "s3cret",
+        password: "hunter2",
+        note: `bearer ${jwt}`,
+      },
+      list: [{ id_token: jwt }, "plain"],
+      empty: "",
+      when: new Date(0),
+    };
+    const out = redact(input);
+    expect(out.email).toBe("leo@example.com");
+    expect(out.access_token).toBe("[redacted]");
+    expect(out.clientSecret).toBe("[redacted]");
+    expect(out.nested.session_token).toBe("[redacted]");
+    expect(out.nested.password).toBe("[redacted]");
+    expect(out.nested.note).toBe("bearer [redacted]");
+    expect(out.list[0]).toEqual({ id_token: "[redacted]" });
+    expect(out.list[1]).toBe("plain");
+    expect(out.empty).toBe("");
+    expect(out.when).toBeInstanceOf(Date);
+    // Never mutates the input
+    expect(input.access_token).toBe("ya29.a0AbCdEf-ghi");
+  });
+
+  it("applies to the server logger output", async () => {
+    const { createLogger } = await loadLoggerModule();
+    const { logs, restore } = collectLogs();
+    try {
+      const log = createLogger("redaction-test");
+      log.enabled = true;
+      log("linkAccount %O", {
+        access_token: "ya29.secret-value",
+        userId: "u1",
+      });
+    } finally {
+      restore();
+    }
+    const joined = logs.join("\n");
+    expect(joined).toContain("u1");
+    expect(joined).not.toContain("secret-value");
+  });
+});
+
+describe("redact edge cases", () => {
+  it("fails closed past the depth limit and scrubs error stacks", async () => {
+    const { redact } = (await import("../index.mjs")) as unknown as {
+      redact: <T>(value: T) => T;
+    };
+    const deep = {
+      a: { b: { c: { d: { e: { f: { g: { password: "x" } } } } } } },
+    };
+    const out = redact(deep) as unknown as {
+      a: { b: { c: { d: { e: { f: { g: unknown } } } } } };
+    };
+    expect(JSON.stringify(out)).not.toContain('"x"');
+    const err = new Error("boom GOCSPX-leaked-secret");
+    const red = redact(err) as unknown as { message: string; stack?: string };
+    expect(red.message).toBe("boom [redacted]");
+    expect(red.stack ?? "").not.toContain("GOCSPX-leaked-secret");
+  });
+
+  it("does not traverse arguments when the logger is disabled", async () => {
+    const { createLogger } = await loadLoggerModule();
+    const log = createLogger("disabled-test");
+    log.enabled = false;
+    const trap = new Proxy(
+      {},
+      {
+        ownKeys: () => {
+          throw new Error("traversed");
+        },
+      },
+    );
+    expect(() => log("x %O", trap)).not.toThrow();
+  });
+});

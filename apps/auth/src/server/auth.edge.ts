@@ -261,8 +261,10 @@ export const nextAuthConfig = {
       }
     },
   },
+  // Auth.js debug output prints the provider config (client secret included),
+  // PKCE cookies and tokens. Never in production; opt in elsewhere with DEBUG_AUTH.
   debug:
-    constServer.PROPSTO_ENV !== "production" ||
+    constServer.PROPSTO_ENV !== "production" &&
     process.env.DEBUG_AUTH === "true",
   // All cookies use shared domain between
   // production (auth.props.to) and preview (auth.pr-XX.props.build)
