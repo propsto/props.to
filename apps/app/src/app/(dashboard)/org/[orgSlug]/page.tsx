@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { Building2, Plus, Settings } from "lucide-react";
 import {
   getAvailableManagedLinks,
+  getMemberLevel,
   getMembershipByOrgSlug,
   getOrganizationTemplates,
   getUserFeedbackLinks,
@@ -43,14 +44,18 @@ export default async function OrgLandingPage({
   const { organization: org, role } = membership.data;
   const isAdmin = role === "OWNER" || role === "ADMIN";
 
-  const [linksResult, managedResult, templatesResult] = await Promise.all([
-    getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
-    getAvailableManagedLinks(userId, org.id),
-    getOrganizationTemplates(org.id),
-  ]);
+  const [linksResult, managedResult, templatesResult, levelResult] =
+    await Promise.all([
+      getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
+      getAvailableManagedLinks(userId, org.id),
+      getOrganizationTemplates(org.id),
+      getMemberLevel(org.id, userId),
+    ]);
   const links = linksResult.success ? linksResult.data.links : [];
   const managed = managedResult.success ? managedResult.data.available : [];
   const templates = templatesResult.success ? templatesResult.data : [];
+  // The levels layer: no level assigned, no rubric card
+  const level = levelResult.success ? levelResult.data : null;
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -79,6 +84,31 @@ export default async function OrgLandingPage({
           </Button>
         </div>
       </div>
+
+      {level ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your level: {level.name}</CardTitle>
+            {level.summary ? (
+              <CardDescription>{level.summary}</CardDescription>
+            ) : null}
+          </CardHeader>
+          {level.rubric.length > 0 ? (
+            <CardContent>
+              <dl className="space-y-3">
+                {level.rubric.map((section, index) => (
+                  <div key={index}>
+                    <dt className="font-medium">{section.title}</dt>
+                    <dd className="whitespace-pre-line text-sm text-muted-foreground">
+                      {section.body}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          ) : null}
+        </Card>
+      ) : null}
 
       <section>
         <h2 className="mb-4 text-lg font-medium">

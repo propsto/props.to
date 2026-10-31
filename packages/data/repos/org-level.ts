@@ -5,8 +5,13 @@ import { handleSuccess } from "../utils/success-handling";
 
 const logger = createLogger("data");
 
-// One rubric section; a level's rubric is an ordered list of them
-export type OrgLevelRubricSection = { title: string; body: string };
+import {
+  cleanRubric,
+  parseRubric,
+  type OrgLevelRubricSection,
+} from "../utils/rubric";
+
+export type { OrgLevelRubricSection };
 
 export type CreateOrgLevelInput = {
   name: string;
@@ -18,7 +23,11 @@ export type UpdateOrgLevelInput = {
   name?: string;
   // Omitted keeps the current summary; an empty string clears it
   summary?: string;
+  // Omitted keeps the current rubric; sections with no title and no body are dropped
+  rubric?: OrgLevelRubricSection[];
 };
+
+export type OrgLevelExpectationInput = { valueId: string; text: string };
 
 function cleanName(name: string): string {
   const trimmed = name.trim();
@@ -125,10 +134,123 @@ export async function updateOrgLevel(
           input.summary === undefined
             ? undefined
             : input.summary.trim() || null,
+        rubric:
+          input.rubric === undefined ? undefined : cleanRubric(input.rubric),
       },
     });
 
     return handleSuccess(level);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Get one level of this organization with its rubric and per-value expectations
+ */
+export async function getOrgLevel(levelId: string, organizationId: string) {
+  try {
+    logger("getOrgLevel", { levelId, organizationId });
+
+    const level = await db.orgLevel.findFirst({
+      where: { id: levelId, organizationId },
+      include: { expectations: { select: { valueId: true, text: true } } },
+    });
+    if (!level) {
+      return handleSuccess(null);
+    }
+
+    return handleSuccess({ ...level, rubric: parseRubric(level.rubric) });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Replace a level's per-value expectation texts.
+ * An empty text removes that value's expectation; values must belong to the org.
+ */
+export async function setOrgLevelExpectations(
+  levelId: string,
+  organizationId: string,
+  expectations: OrgLevelExpectationInput[],
+) {
+  try {
+    logger("setOrgLevelExpectations", { levelId, organizationId });
+
+    const level = await db.orgLevel.findFirst({
+      where: { id: levelId, organizationId },
+      select: { id: true },
+    });
+    if (!level) {
+      throw new Error("Level not found");
+    }
+
+    const valueIds = [...new Set(expectations.map(e => e.valueId))];
+    const owned = await db.orgValue.count({
+      where: { id: { in: valueIds }, organizationId },
+    });
+    if (owned !== valueIds.length) {
+      throw new Error("Value list is out of date, reload and try again");
+    }
+
+    const entries = expectations.map(e => ({
+      valueId: e.valueId,
+      text: e.text.trim(),
+    }));
+    await db.$transaction([
+      db.orgLevelValueExpectation.deleteMany({
+        where: {
+          levelId,
+          valueId: { in: entries.filter(e => !e.text).map(e => e.valueId) },
+        },
+      }),
+      ...entries
+        .filter(e => e.text)
+        .map(e =>
+          db.orgLevelValueExpectation.upsert({
+            where: { levelId_valueId: { levelId, valueId: e.valueId } },
+            create: { levelId, valueId: e.valueId, text: e.text },
+            update: { text: e.text },
+          }),
+        ),
+    ]);
+
+    return handleSuccess({ saved: entries.filter(e => e.text).length });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * A member's level in this organization with its rubric and expectations,
+ * or null when the member has no level
+ */
+export async function getMemberLevel(organizationId: string, userId: string) {
+  try {
+    logger("getMemberLevel", { organizationId, userId });
+
+    const member = await db.organizationMember.findUnique({
+      where: { userId_organizationId: { userId, organizationId } },
+      select: {
+        level: {
+          select: {
+            name: true,
+            summary: true,
+            rubric: true,
+            expectations: { select: { valueId: true, text: true } },
+          },
+        },
+      },
+    });
+    if (!member?.level) {
+      return handleSuccess(null);
+    }
+
+    return handleSuccess({
+      ...member.level,
+      rubric: parseRubric(member.level.rubric),
+    });
   } catch (e) {
     return handleError(e);
   }

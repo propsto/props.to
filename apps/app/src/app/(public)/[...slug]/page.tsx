@@ -16,6 +16,7 @@ import {
   getOrganizationById,
   getOrganizationFeedbackLinks,
   getOrganizationSettings,
+  getMemberLevel,
   getOrgValues,
   getUserOrganizationMembership,
 } from "@propsto/data/repos";
@@ -560,6 +561,8 @@ async function handleGroupPage(
 async function gatedFeedbackForm(
   link: FeedbackLinkWithRelations,
   basePath: string,
+  // The link's owner is the recipient (org user links), so their level applies
+  showRecipientLevel = false,
 ): Promise<React.ReactNode> {
   const session = await auth();
   const policy = await getFeedbackPolicy(link, session?.user?.id);
@@ -592,6 +595,12 @@ async function gatedFeedbackForm(
         description,
       }))
     : [];
+  // The levels layer: expectations are internal, so only org members see them
+  const levelResult =
+    showRecipientLevel && policy.isMember && link.organizationId
+      ? await getMemberLevel(link.organizationId, link.userId)
+      : null;
+  const level = levelResult?.success ? levelResult.data : null;
   return (
     <FeedbackSubmissionForm
       link={{
@@ -602,6 +611,17 @@ async function gatedFeedbackForm(
       basePath={basePath}
       allowAnonymous={policy.allowAnonymous}
       values={values}
+      recipientLevel={
+        level
+          ? {
+              name: level.name,
+              summary: level.summary,
+              expectations: Object.fromEntries(
+                level.expectations.map(e => [e.valueId, e.text]),
+              ),
+            }
+          : undefined
+      }
     />
   );
 }
@@ -703,7 +723,11 @@ async function handleOrgUserFeedbackLink(
           </p>
         )}
       </div>
-      {await gatedFeedbackForm(link, `/${orgSlug}/${userSlug}/${linkSlug}`)}
+      {await gatedFeedbackForm(
+        link,
+        `/${orgSlug}/${userSlug}/${linkSlug}`,
+        true,
+      )}
     </div>
   );
 }

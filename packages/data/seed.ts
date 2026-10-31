@@ -371,12 +371,39 @@ async function main() {
       {
         name: "Senior",
         summary: "Owns problems end to end and unblocks others",
+        rubric: [
+          {
+            title: "Scope",
+            body: "Leads a project from problem to launch without hand-holding",
+          },
+          {
+            title: "Collaboration",
+            body: "Reviews others' work and shares context before it is asked for",
+          },
+        ],
       },
       {
         name: "Lead",
         summary: "Sets direction and grows the people around them",
       },
     ].map((level, order) => ({ ...level, order, organizationId: acme.id })),
+  });
+
+  // What Candor looks like at Senior, shown beside the form for John
+  const seniorLevel = await prisma.orgLevel.findUniqueOrThrow({
+    where: {
+      organizationId_name: { organizationId: acme.id, name: "Senior" },
+    },
+  });
+  const candorValue = await prisma.orgValue.findFirstOrThrow({
+    where: { organizationId: acme.id, name: "Candor" },
+  });
+  await prisma.orgLevelValueExpectation.create({
+    data: {
+      levelId: seniorLevel.id,
+      valueId: candorValue.id,
+      text: "Raises risks in the open before they become surprises",
+    },
   });
 
   // John is the one Acme member with a level assigned
