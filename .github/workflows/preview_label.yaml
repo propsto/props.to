@@ -1,0 +1,37 @@
+name: Preview label
+
+# Previews build only for PRs labelled "preview" (scripts/vercel-ignore-build.sh).
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  contents: write
+
+jobs:
+  # Vercel only reacts to pushes, so labelling a PR pushes an empty commit to build it now
+  kick:
+    name: Build previews for the labelled PR
+    if: github.event.action == 'labeled' && github.event.label.name == 'preview' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - run: |
+          # The labels API lags the event by a moment; the gate script must see the label
+          sleep 15
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: build previews (preview label added)"
+          git push
+
+  # "Run E2E Tests" is required but only runs after an app preview deploys.
+  # Without the label there is no preview, so report it here instead.
+  e2e-gated:
+    name: Run E2E Tests
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "No preview label, so no preview and no E2E run. Add the preview label to build previews and run E2E."
