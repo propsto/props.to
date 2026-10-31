@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { hasOtherOrgAdmin } from "@propsto/data/repos";
-import { getFeedbackPolicy, needsModeration } from "./feedback-policy";
+import {
+  getFeedbackPolicy,
+  needsModeration,
+  showsRecipientLevel,
+} from "./feedback-policy";
 
 vi.mock("@propsto/data/repos", () => ({
   getOrganizationSettings: vi.fn(async () => ({ data: null })),
@@ -52,5 +56,32 @@ describe("needsModeration", () => {
         false,
       ),
     ).toBe(true);
+  });
+});
+
+describe("showsRecipientLevel", () => {
+  const orgLink = { organizationId: "org", groupId: null };
+
+  it("shows the level to a member on a person's org link", () => {
+    expect(showsRecipientLevel(orgLink, { isMember: true })).toBe(true);
+  });
+
+  it("hides it from outsiders, even when the org takes external feedback", () => {
+    expect(showsRecipientLevel(orgLink, { isMember: false })).toBe(false);
+  });
+
+  it("hides it on group links and personal links", () => {
+    expect(
+      showsRecipientLevel(
+        { organizationId: "org", groupId: "g" },
+        { isMember: true },
+      ),
+    ).toBe(false);
+    expect(
+      showsRecipientLevel(
+        { organizationId: null, groupId: null },
+        { isMember: true },
+      ),
+    ).toBe(false);
   });
 });

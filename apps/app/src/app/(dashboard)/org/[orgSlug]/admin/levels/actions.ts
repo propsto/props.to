@@ -7,7 +7,9 @@ import {
   createOrgLevel,
   updateOrgLevel,
   reorderOrgLevels,
+  setOrgLevelExpectations,
   type CreateOrgLevelInput,
+  type OrgLevelExpectationInput,
   type UpdateOrgLevelInput,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
@@ -63,7 +65,7 @@ export async function createLevelAction(
 }
 
 /**
- * Rename an org level or change its summary
+ * Rename an org level or change its summary or rubric
  */
 export async function updateLevelAction(
   orgSlug: string,
@@ -84,9 +86,43 @@ export async function updateLevelAction(
       action: "LEVEL_UPDATED",
       resourceType: "level",
       resourceId: levelId,
-      details: { name: result.data.name },
+      details: {
+        name: result.data.name,
+        ...(data.rubric && { rubricUpdated: true }),
+      },
     });
     revalidatePath(`/org/${orgSlug}/admin/levels`);
+    revalidatePath(`/org/${orgSlug}/admin/levels/${levelId}`);
+  }
+
+  return result;
+}
+
+/**
+ * Save what each org value looks like at this level
+ */
+export async function setLevelExpectationsAction(
+  orgSlug: string,
+  levelId: string,
+  expectations: OrgLevelExpectationInput[],
+) {
+  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
+  if (error || !orgId || !userId) {
+    return { success: false, error: error ?? "Organization not found" };
+  }
+
+  const result = await setOrgLevelExpectations(levelId, orgId, expectations);
+
+  if (result.success) {
+    await createAuditLog({
+      organizationId: orgId,
+      actorId: userId,
+      action: "LEVEL_UPDATED",
+      resourceType: "level",
+      resourceId: levelId,
+      details: { expectationsUpdated: result.data.saved },
+    });
+    revalidatePath(`/org/${orgSlug}/admin/levels/${levelId}`);
   }
 
   return result;

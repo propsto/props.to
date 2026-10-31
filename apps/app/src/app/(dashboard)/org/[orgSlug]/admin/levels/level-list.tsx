@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@propsto/ui/atoms/button";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { reorderLevelsAction } from "./actions";
@@ -43,7 +44,12 @@ export function LevelList({
             className="flex items-center justify-between py-4 first:pt-0 last:pb-0"
           >
             <div>
-              <span className="font-medium">{level.name}</span>
+              <Link
+                href={`/org/${orgSlug}/admin/levels/${level.id}`}
+                className="font-medium hover:underline"
+              >
+                {level.name}
+              </Link>
               <span className="ml-2 text-sm text-muted-foreground">
                 {level.memberCount} member{level.memberCount !== 1 ? "s" : ""}
               </span>

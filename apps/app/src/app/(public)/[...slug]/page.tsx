@@ -16,6 +16,7 @@ import {
   getOrganizationById,
   getOrganizationFeedbackLinks,
   getOrganizationSettings,
+  getMemberLevel,
   getOrgValues,
   getUserOrganizationMembership,
 } from "@propsto/data/repos";
@@ -71,7 +72,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { auth } from "@/server/auth.server";
 import { constServer } from "@propsto/constants/server";
-import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
+import {
+  feedbackRefusal,
+  getFeedbackPolicy,
+  showsRecipientLevel,
+} from "@/lib/feedback-policy";
 import { publicLinkPath } from "@/lib/public-link-path";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
 import { UserProfileHeader } from "./_components/user-profile-header";
@@ -560,6 +565,8 @@ async function handleGroupPage(
 async function gatedFeedbackForm(
   link: FeedbackLinkWithRelations,
   basePath: string,
+  // The link's owner is the recipient (org user links), so their level applies
+  showRecipientLevel = false,
 ): Promise<React.ReactNode> {
   const session = await auth();
   const policy = await getFeedbackPolicy(link, session?.user?.id);
@@ -592,6 +599,14 @@ async function gatedFeedbackForm(
         description,
       }))
     : [];
+  // The levels layer: expectations are internal, see showsRecipientLevel
+  const levelResult =
+    showRecipientLevel &&
+    link.organizationId &&
+    showsRecipientLevel(link, policy)
+      ? await getMemberLevel(link.organizationId, link.userId)
+      : null;
+  const level = levelResult?.success ? levelResult.data : null;
   return (
     <FeedbackSubmissionForm
       link={{
@@ -602,6 +617,17 @@ async function gatedFeedbackForm(
       basePath={basePath}
       allowAnonymous={policy.allowAnonymous}
       values={values}
+      recipientLevel={
+        level
+          ? {
+              name: level.name,
+              summary: level.summary,
+              expectations: Object.fromEntries(
+                level.expectations.map(e => [e.valueId, e.text]),
+              ),
+            }
+          : undefined
+      }
     />
   );
 }
@@ -703,7 +729,11 @@ async function handleOrgUserFeedbackLink(
           </p>
         )}
       </div>
-      {await gatedFeedbackForm(link, `/${orgSlug}/${userSlug}/${linkSlug}`)}
+      {await gatedFeedbackForm(
+        link,
+        `/${orgSlug}/${userSlug}/${linkSlug}`,
+        true,
+      )}
     </div>
   );
 }

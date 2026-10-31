@@ -40,11 +40,20 @@ export type PublicOrgValue = {
   description: string | null;
 };
 
+// The recipient's level as an org member sees it beside the form
+export type RecipientLevel = {
+  name: string;
+  summary: string | null;
+  // Expectation text by value id
+  expectations: Record<string, string>;
+};
+
 interface FeedbackSubmissionFormProps {
   link: PublicFeedbackLink;
   basePath: string;
   allowAnonymous?: boolean;
   values?: PublicOrgValue[];
+  recipientLevel?: RecipientLevel;
 }
 
 export function FeedbackSubmissionForm({
@@ -52,6 +61,7 @@ export function FeedbackSubmissionForm({
   basePath,
   allowAnonymous = true,
   values = [],
+  recipientLevel,
 }: FeedbackSubmissionFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -66,6 +76,11 @@ export function FeedbackSubmissionForm({
   const [answers, setAnswers] = useState<FieldAnswers>({});
   const [valueIds, setValueIds] = useState<string[]>([]);
   const fields = link.template.fields;
+  const tickedExpectations = recipientLevel
+    ? values.filter(
+        v => valueIds.includes(v.id) && recipientLevel.expectations[v.id],
+      )
+    : [];
 
   const setAnswer = (id: string, value: FieldAnswer | undefined): void =>
     setAnswers(prev => {
@@ -183,6 +198,34 @@ export function FeedbackSubmissionForm({
                 ))}
               </div>
             </fieldset>
+          )}
+
+          {/* Recipient's level expectations: org members only, see page.tsx */}
+          {recipientLevel && (
+            <details className="rounded-lg border p-4">
+              <summary className="cursor-pointer text-sm font-medium">
+                What we expect at this level
+              </summary>
+              <div className="space-y-3 pt-3 text-sm">
+                <p>
+                  <span className="font-medium">{recipientLevel.name}</span>
+                  {recipientLevel.summary && (
+                    <span className="text-muted-foreground">
+                      {" "}
+                      {recipientLevel.summary}
+                    </span>
+                  )}
+                </p>
+                {tickedExpectations.map(value => (
+                  <div key={value.id}>
+                    <p className="font-medium">{value.name}</p>
+                    <p className="whitespace-pre-line text-muted-foreground">
+                      {recipientLevel.expectations[value.id]}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </details>
           )}
 
           {/* Template fields */}
