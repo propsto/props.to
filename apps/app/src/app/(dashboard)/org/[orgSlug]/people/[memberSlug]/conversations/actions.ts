@@ -154,6 +154,7 @@ async function notify(ctx: Context, step: CleanStep): Promise<void> {
     orgSlug: ctx.orgSlug,
     memberName: personName(ctx.subject),
     memberSlug: ctx.memberSlug,
+    subjectId: ctx.subject.id,
     ownerId: ctx.actor.id,
     ownerName: ctx.actor.name,
     stage: step.stage,

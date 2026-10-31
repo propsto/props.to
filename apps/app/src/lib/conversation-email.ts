@@ -35,13 +35,15 @@ export async function notifyConversationSubject(input: {
 }
 
 // From the second step on, owners and admins hear there is a recurring
-// problem being worked on. The step owner is not mailed about their own step.
+// problem being worked on. The step owner is not mailed about their own step,
+// and a subject who is also an admin gets the subject notice instead.
 export async function notifyOrgAdminsOfEscalation(input: {
   organizationId: string;
   orgName: string;
   orgSlug: string;
   memberName: string;
   memberSlug: string;
+  subjectId: string;
   ownerId: string;
   ownerName: string;
   stage: ConversationStage;
@@ -52,7 +54,9 @@ export async function notifyOrgAdminsOfEscalation(input: {
     const url = `${constServer.PROPSTO_APP_URL}/org/${input.orgSlug}/people/${input.memberSlug}/conversations`;
     await Promise.all(
       (admins.data ?? [])
-        .filter(admin => admin.id !== input.ownerId)
+        .filter(
+          admin => admin.id !== input.ownerId && admin.id !== input.subjectId,
+        )
         .map(admin =>
           sendConversationEscalationEmail(admin.email, {
             recipientName: admin.firstName ?? admin.email.split("@")[0],

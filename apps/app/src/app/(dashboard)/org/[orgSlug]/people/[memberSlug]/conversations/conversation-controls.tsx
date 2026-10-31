@@ -135,7 +135,7 @@ export function OpenConversationDialog({
       <DialogTrigger asChild>
         <Button>Open conversation</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Open a conversation</DialogTitle>
           <DialogDescription>
@@ -205,7 +205,7 @@ export function AddStepDialog({
       <DialogTrigger asChild>
         <Button variant="outline">Add step</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add a step</DialogTitle>
           <DialogDescription>

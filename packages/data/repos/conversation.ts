@@ -528,16 +528,25 @@ export async function getOrganizationAdmins(organizationId: string) {
   }
 }
 
+// Only while the subject is still a member: a removed member keeps no access
+// to conversations about them, matching the viewer context rule.
+function subjectStillMember(userId: string) {
+  return {
+    subjectUserId: userId,
+    organization: { members: { some: { userId } } },
+  };
+}
+
 /**
- * Every conversation a user is the subject of, across organizations, newest
- * first. Unredacted, like getConversation.
+ * Every conversation a user is the subject of, across the organizations they
+ * are still a member of, newest first. Unredacted, like getConversation.
  */
 export async function getConversationsForUser(userId: string) {
   try {
     logger("getConversationsForUser", { userId });
 
     const conversations = await db.conversation.findMany({
-      where: { subjectUserId: userId },
+      where: subjectStillMember(userId),
       orderBy: { createdAt: "desc" },
       include: {
         ...conversationInclude,
@@ -554,15 +563,15 @@ export async function getConversationsForUser(userId: string) {
 }
 
 /**
- * Whether a user is the subject of any conversation, in any organization
- * (drives the "Conversations" nav entry).
+ * Whether a user is the subject of any conversation in an organization they
+ * are still a member of (drives the "Conversations" nav entry).
  */
 export async function userIsConversationSubject(userId: string) {
   try {
     logger("userIsConversationSubject", { userId });
 
     const found = await db.conversation.findFirst({
-      where: { subjectUserId: userId },
+      where: subjectStillMember(userId),
       select: { id: true },
     });
 
