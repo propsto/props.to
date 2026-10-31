@@ -37,10 +37,7 @@ export async function signInAction(
   // Unknown email with a password goes through the same signIn path as a wrong password
   // (the credentials provider runs a bcrypt compare either way, so timing matches too).
   // Magic link proceeds so the provider can create the account (invited newcomers).
-  let provider: string = signInMethod;
-  if (signInMethod === "email" && constServer.EMAIL_PROVIDER === "resend") {
-    provider = "resend";
-  }
+  const provider: string = signInMethod;
   logger("signInAction > signIn", provider);
   let result: unknown;
   try {

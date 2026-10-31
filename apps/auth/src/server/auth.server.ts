@@ -25,7 +25,10 @@ class CustomError extends CredentialsSignin {
 function getEmailProvider(): EmailConfig | NodemailerConfig {
   if (constServer.EMAIL_PROVIDER === "resend") {
     logger("resend used");
+    // Same id in every environment, so callers never have to know which transport sends
     return Resend({
+      id: "email",
+      name: "email",
       apiKey: constServer.RESEND_API_KEY,
       from: constServer.EMAIL_FROM,
     });
