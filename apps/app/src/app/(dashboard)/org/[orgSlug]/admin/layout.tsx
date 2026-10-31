@@ -16,6 +16,7 @@ import {
   FileText,
   ShieldCheck,
   Gem,
+  Layers,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -92,6 +93,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/values`,
       label: "Values",
       icon: Gem,
+    },
+    {
+      href: `/org/${orgSlug}/admin/levels`,
+      label: "Levels",
+      icon: Layers,
     },
     {
       href: `/org/${orgSlug}/admin/settings`,

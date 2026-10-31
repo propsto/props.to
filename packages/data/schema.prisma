@@ -126,6 +126,11 @@ enum AuditAction {
   VALUE_UPDATED
   VALUE_DELETED
 
+  // Level actions
+  LEVEL_CREATED
+  LEVEL_UPDATED
+  MEMBER_LEVEL_CHANGED
+
   // Template actions
   TEMPLATE_CREATED
   TEMPLATE_UPDATED
@@ -174,6 +179,9 @@ model Organization {
   // Org-defined values feedback can be tagged with
   values OrgValue[]
 
+  // Org-defined levels members can be assigned to
+  levels OrgLevel[]
+
   // Invitations
   invites OrganizationInvite[]
 
@@ -188,6 +196,8 @@ model OrganizationMember {
   organization            Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId          String
   role                    OrganizationRole            @default(MEMBER)
+  level                   OrgLevel?                   @relation(fields: [levelId], references: [id], onDelete: SetNull)
+  levelId                 String?
   joinedAt                DateTime                    @default(now())
   notificationPreferences OrgMemberNotificationPrefs?
 
@@ -353,15 +363,16 @@ model TemplateCategory {
 // OrgValue model (an org-defined value feedback can be tagged with)
 // The values layer exists for an org when it has rows
 model OrgValue {
-  id             String          @id @default(cuid())
-  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String                     @id @default(cuid())
+  organization   Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
   name           String
   description    String?
-  order          Int             @default(0)
+  order          Int                        @default(0)
   feedbacks      FeedbackValue[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  expectations   OrgLevelValueExpectation[]
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
 
   @@unique([organizationId, name])
   @@index([organizationId, order])
@@ -377,6 +388,38 @@ model FeedbackValue {
   valueId    String
 
   @@id([feedbackId, valueId])
+  @@index([valueId])
+}
+
+// OrgLevel model (an org-defined seniority level members can be assigned to)
+// The levels layer exists for an org when it has rows
+model OrgLevel {
+  id             String                     @id @default(cuid())
+  organization   Organization               @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  name           String
+  order          Int                        @default(0)
+  summary        String?
+  rubric         Json                       @default("[]") // Ordered list of { title, body } sections
+  members        OrganizationMember[]
+  expectations   OrgLevelValueExpectation[]
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  @@unique([organizationId, name])
+  @@index([organizationId, order])
+}
+
+// OrgLevelValueExpectation model (what a value looks like at a given level)
+// Only meaningful when the org has both values and levels
+model OrgLevelValueExpectation {
+  level   OrgLevel @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  levelId String
+  value   OrgValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+  valueId String
+  text    String
+
+  @@id([levelId, valueId])
   @@index([valueId])
 }
 
@@ -462,6 +505,7 @@ model Feedback {
   organizationNameSnapshot String? // Organization name at time of feedback
   groupNameSnapshot        String? // Group name at time of feedback
   userOrgRoleSnapshot      String? // User's role in org at time of feedback (OWNER/ADMIN/MEMBER)
+  recipientLevelName       String? // Recipient's org level name at time of feedback
 
   // Goals linked to this feedback
   goals Goal[] @relation("GoalFeedback")

@@ -29,13 +29,17 @@ interface InviteDialogProps {
   orgSlug: string;
 }
 
-export function InviteDialog({ orgSlug }: InviteDialogProps): React.ReactElement {
+export function InviteDialog({
+  orgSlug,
+}: InviteDialogProps): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [emailsInput, setEmailsInput] = useState("");
   const [role, setRole] = useState<OrganizationRole>("MEMBER");
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<{ email: string; success: boolean; error?: string }[]>([]);
+  const [results, setResults] = useState<
+    { email: string; success: boolean; error?: string }[]
+  >([]);
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = () => {
@@ -136,7 +140,9 @@ export function InviteDialog({ orgSlug }: InviteDialogProps): React.ReactElement
           <div className="space-y-2">
             <Label htmlFor="invite-message">
               Personal message{" "}
-              <span className="text-muted-foreground font-normal">(optional)</span>
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
             </Label>
             <Input
               id="invite-message"
@@ -147,14 +153,15 @@ export function InviteDialog({ orgSlug }: InviteDialogProps): React.ReactElement
             />
           </div>
 
-          {error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : null}
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           {results.length > 0 ? (
             <ul className="text-sm space-y-1">
               {results.map(r => (
-                <li key={r.email} className={r.success ? "text-green-600" : "text-destructive"}>
+                <li
+                  key={r.email}
+                  className={r.success ? "text-green-600" : "text-destructive"}
+                >
                   {r.email}: {r.success ? "Invited" : (r.error ?? "Failed")}
                 </li>
               ))}
@@ -163,7 +170,11 @@ export function InviteDialog({ orgSlug }: InviteDialogProps): React.ReactElement
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={isPending}
+          >
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isPending}>

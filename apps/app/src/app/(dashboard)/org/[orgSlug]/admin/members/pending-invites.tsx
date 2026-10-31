@@ -28,7 +28,10 @@ interface PendingInvitesProps {
   invites: PendingInvite[];
 }
 
-export function PendingInvites({ orgSlug, invites }: PendingInvitesProps): React.ReactElement | null {
+export function PendingInvites({
+  orgSlug,
+  invites,
+}: PendingInvitesProps): React.ReactElement | null {
   const [isPending, startTransition] = useTransition();
 
   if (invites.length === 0) return null;
@@ -49,7 +52,9 @@ export function PendingInvites({ orgSlug, invites }: PendingInvitesProps): React
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <MailIcon className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-medium">Pending Invitations ({invites.length})</h3>
+        <h3 className="text-sm font-medium">
+          Pending Invitations ({invites.length})
+        </h3>
       </div>
       <Table>
         <TableHeader>
@@ -66,13 +71,16 @@ export function PendingInvites({ orgSlug, invites }: PendingInvitesProps): React
             <TableRow key={invite.id}>
               <TableCell className="font-medium">{invite.email}</TableCell>
               <TableCell>
-                <Badge variant={invite.role === "ADMIN" ? "secondary" : "outline"}>
+                <Badge
+                  variant={invite.role === "ADMIN" ? "secondary" : "outline"}
+                >
                   {invite.role}
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">
                 {invite.invitedBy
-                  ? `${invite.invitedBy.firstName ?? ""} ${invite.invitedBy.lastName ?? ""}`.trim() || "—"
+                  ? `${invite.invitedBy.firstName ?? ""} ${invite.invitedBy.lastName ?? ""}`.trim() ||
+                    "—"
                   : "—"}
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">

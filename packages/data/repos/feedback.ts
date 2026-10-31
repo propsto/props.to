@@ -123,6 +123,18 @@ export async function createFeedback(data: {
           );
         }
       }
+      // Snapshot the recipient's level so the record keeps it after reassignment
+      const recipientMember = data.organizationId
+        ? await tx.organizationMember.findUnique({
+            where: {
+              userId_organizationId: {
+                userId: data.userId,
+                organizationId: data.organizationId,
+              },
+            },
+            select: { level: { select: { name: true } } },
+          })
+        : null;
       return tx.feedback.create({
         data: {
           userId: data.userId,
@@ -140,6 +152,7 @@ export async function createFeedback(data: {
           organizationNameSnapshot: data.organizationNameSnapshot,
           groupNameSnapshot: data.groupNameSnapshot,
           userOrgRoleSnapshot: data.userOrgRoleSnapshot,
+          recipientLevelName: recipientMember?.level?.name,
           ...(data.valueIds &&
             data.valueIds.length > 0 && {
               values: { create: data.valueIds.map(valueId => ({ valueId })) },

@@ -1,6 +1,7 @@
 import { requireOrgAdmin } from "@/server/require-org-admin";
 import {
   getOrganizationBySlugWithMembers,
+  getOrgLevels,
   listPendingOrganizationInvites,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
@@ -25,6 +26,15 @@ import { Separator } from "@propsto/ui/atoms/separator";
 import { InviteDialog } from "./invite-dialog";
 import { PendingInvites } from "./pending-invites";
 import { MemberActions } from "./member-actions";
+import { MemberLevelSelect } from "./member-level-select";
+
+function memberName(user: {
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+}): string {
+  return `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email;
+}
 
 interface MembersPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -40,14 +50,16 @@ export default async function OrgAdminMembers({
     role: actorRole,
   } = await requireOrgAdmin(orgSlug);
 
-  // Get organization with members
-  const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
+  const [orgResult, invitesResult, levelsResult] = await Promise.all([
+    getOrganizationBySlugWithMembers(orgSlug),
+    listPendingOrganizationInvites(adminOrg.id),
+    getOrgLevels(adminOrg.id),
+  ]);
   if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
   const org = orgResult.data;
 
-  const invitesResult = await listPendingOrganizationInvites(adminOrg.id);
   const pendingInvites = (invitesResult.data ?? []).map(inv => ({
     id: inv.id,
     email: inv.email,
@@ -55,6 +67,12 @@ export default async function OrgAdminMembers({
     expiresAt: inv.expiresAt,
     createdAt: inv.createdAt,
     invitedBy: inv.invitedBy,
+  }));
+
+  // The level column shows only once the org has levels
+  const levels = (levelsResult.data ?? []).map(l => ({
+    id: l.id,
+    name: l.name,
   }));
 
   const getRoleBadgeVariant = (role: string) => {
@@ -95,6 +113,7 @@ export default async function OrgAdminMembers({
                 <TableHead>Member</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Role</TableHead>
+                {levels.length > 0 ? <TableHead>Level</TableHead> : null}
                 <TableHead>Joined</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -130,6 +149,17 @@ export default async function OrgAdminMembers({
                       {member.role}
                     </Badge>
                   </TableCell>
+                  {levels.length > 0 ? (
+                    <TableCell>
+                      <MemberLevelSelect
+                        orgSlug={orgSlug}
+                        userId={member.userId}
+                        name={memberName(member.user)}
+                        levelId={member.levelId}
+                        levels={levels}
+                      />
+                    </TableCell>
+                  ) : null}
                   <TableCell className="text-muted-foreground">
                     {new Date(member.joinedAt).toLocaleDateString()}
                   </TableCell>
@@ -139,10 +169,7 @@ export default async function OrgAdminMembers({
                       <MemberActions
                         orgSlug={orgSlug}
                         userId={member.userId}
-                        name={
-                          `${member.user.firstName ?? ""} ${member.user.lastName ?? ""}`.trim() ||
-                          member.user.email
-                        }
+                        name={memberName(member.user)}
                         role={member.role}
                         canGrantOwner={actorRole === "OWNER"}
                       />

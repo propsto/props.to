@@ -13,6 +13,7 @@ import {
   getUserOrganizationMembership,
   updateOrganizationMemberRole,
   removeOrganizationMember,
+  setOrganizationMemberLevel,
   auditHelpers,
 } from "@propsto/data/repos";
 import { sendOrgInviteEmail } from "@propsto/email/send/org-invite";
@@ -349,5 +350,35 @@ export async function removeMemberAction(
     { role: authz.targetRole },
   );
   revalidatePath(`/org/${orgSlug}/admin/members`);
+  return { success: true };
+}
+
+// Any admin may set any member's level, their own and owners' included: a level
+// grants no access, so the role rules of authorizeMemberChange do not apply
+export async function changeMemberLevelAction(
+  orgSlug: string,
+  targetUserId: string,
+  levelId: string | null,
+): Promise<{ success: boolean; error?: string }> {
+  const { error, userId, orgId } = await verifyAdminAccess(orgSlug);
+  if (error || !userId || !orgId) {
+    return { success: false, error: error ?? "Organization not found" };
+  }
+
+  const result = await setOrganizationMemberLevel(orgId, targetUserId, levelId);
+  if (!result.success) return { success: false, error: result.error };
+
+  // A no-op still refreshes the page, which may show a level another admin replaced
+  if (result.data.from !== result.data.to) {
+    await auditHelpers.logMemberAction(
+      orgId,
+      userId,
+      "MEMBER_LEVEL_CHANGED",
+      targetUserId,
+      result.data,
+    );
+  }
+  revalidatePath(`/org/${orgSlug}/admin/members`);
+  revalidatePath(`/org/${orgSlug}/admin/levels`);
   return { success: true };
 }

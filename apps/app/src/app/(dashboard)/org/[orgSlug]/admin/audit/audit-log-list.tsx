@@ -15,6 +15,7 @@ import {
   Activity,
   ShieldCheck,
   Gem,
+  Layers,
 } from "lucide-react";
 import type { AuditAction } from "@prisma/client";
 
@@ -100,6 +101,21 @@ const actionConfig: Record<
     icon: Gem,
     color: "text-red-600",
   },
+  LEVEL_CREATED: {
+    label: "Level created",
+    icon: Layers,
+    color: "text-green-600",
+  },
+  LEVEL_UPDATED: {
+    label: "Level updated",
+    icon: Layers,
+    color: "text-blue-600",
+  },
+  MEMBER_LEVEL_CHANGED: {
+    label: "Member level changed",
+    icon: Layers,
+    color: "text-blue-600",
+  },
   TEMPLATE_CREATED: {
     label: "Template created",
     icon: FileText,
@@ -166,11 +182,15 @@ function formatDetails(action: AuditAction, details: unknown): string | null {
         return `${d.oldRole} → ${d.newRole}`;
       }
       break;
+    case "MEMBER_LEVEL_CHANGED":
+      return `${typeof d.from === "string" ? d.from : "No level"} → ${typeof d.to === "string" ? d.to : "No level"}`;
     case "CATEGORY_CREATED":
     case "CATEGORY_UPDATED":
     case "VALUE_CREATED":
     case "VALUE_UPDATED":
     case "VALUE_DELETED":
+    case "LEVEL_CREATED":
+    case "LEVEL_UPDATED":
       if (d.name) {
         return `"${d.name}"`;
       }
