@@ -182,33 +182,45 @@ export async function setOrganizationMemberLevel(
   try {
     logger("setOrganizationMemberLevel", { organizationId, userId, levelId });
 
-    const member = await db.organizationMember.findUnique({
-      where: { userId_organizationId: { userId, organizationId } },
-      select: { id: true, level: { select: { name: true } } },
-    });
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Lock the member row so the returned previous level is the one this write replaced
+    const change = await db.$transaction(async tx => {
+      const locked = await tx.$queryRaw<
+        { id: string; levelId: string | null }[]
+      >`
+        SELECT id, "levelId" FROM "OrganizationMember"
+        WHERE "userId" = ${userId} AND "organizationId" = ${organizationId}
+        FOR UPDATE`;
+      if (locked.length === 0) {
+        throw new Error("Member not found");
+      }
+      const member = locked[0];
 
-    const level = levelId
-      ? await db.orgLevel.findFirst({
-          where: { id: levelId, organizationId },
-          select: { id: true, name: true },
-        })
-      : null;
-    if (levelId && !level) {
-      throw new Error("Level not found");
-    }
+      const previous = member.levelId
+        ? await tx.orgLevel.findUnique({
+            where: { id: member.levelId },
+            select: { name: true },
+          })
+        : null;
 
-    await db.organizationMember.update({
-      where: { id: member.id },
-      data: { levelId: level?.id ?? null },
+      const level = levelId
+        ? await tx.orgLevel.findFirst({
+            where: { id: levelId, organizationId },
+            select: { id: true, name: true },
+          })
+        : null;
+      if (levelId && !level) {
+        throw new Error("Level not found");
+      }
+
+      await tx.organizationMember.update({
+        where: { id: member.id },
+        data: { levelId: level?.id ?? null },
+      });
+
+      return { from: previous?.name ?? null, to: level?.name ?? null };
     });
 
-    return handleSuccess({
-      from: member.level?.name ?? null,
-      to: level?.name ?? null,
-    });
+    return handleSuccess(change);
   } catch (e) {
     return handleError(e);
   }

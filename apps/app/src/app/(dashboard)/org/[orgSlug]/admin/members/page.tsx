@@ -50,14 +50,16 @@ export default async function OrgAdminMembers({
     role: actorRole,
   } = await requireOrgAdmin(orgSlug);
 
-  // Get organization with members
-  const orgResult = await getOrganizationBySlugWithMembers(orgSlug);
+  const [orgResult, invitesResult, levelsResult] = await Promise.all([
+    getOrganizationBySlugWithMembers(orgSlug),
+    listPendingOrganizationInvites(adminOrg.id),
+    getOrgLevels(adminOrg.id),
+  ]);
   if (!orgResult.success || !orgResult.data) {
     return notFound();
   }
   const org = orgResult.data;
 
-  const invitesResult = await listPendingOrganizationInvites(adminOrg.id);
   const pendingInvites = (invitesResult.data ?? []).map(inv => ({
     id: inv.id,
     email: inv.email,
@@ -68,7 +70,6 @@ export default async function OrgAdminMembers({
   }));
 
   // The level column shows only once the org has levels
-  const levelsResult = await getOrgLevels(adminOrg.id);
   const levels = (levelsResult.data ?? []).map(l => ({
     id: l.id,
     name: l.name,

@@ -367,15 +367,17 @@ export async function changeMemberLevelAction(
 
   const result = await setOrganizationMemberLevel(orgId, targetUserId, levelId);
   if (!result.success) return { success: false, error: result.error };
-  if (result.data.from === result.data.to) return { success: true };
 
-  await auditHelpers.logMemberAction(
-    orgId,
-    userId,
-    "MEMBER_LEVEL_CHANGED",
-    targetUserId,
-    result.data,
-  );
+  // A no-op still refreshes the page, which may show a level another admin replaced
+  if (result.data.from !== result.data.to) {
+    await auditHelpers.logMemberAction(
+      orgId,
+      userId,
+      "MEMBER_LEVEL_CHANGED",
+      targetUserId,
+      result.data,
+    );
+  }
   revalidatePath(`/org/${orgSlug}/admin/members`);
   revalidatePath(`/org/${orgSlug}/admin/levels`);
   return { success: true };
