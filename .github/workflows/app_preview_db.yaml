@@ -5,7 +5,7 @@ permissions:
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, labeled]
   # pull_request skips PRs with merge conflicts, so a conflicting PR closed by hand never
   # cleaned up. pull_request_target runs from main and only calls APIs, never PR code.
   pull_request_target:
@@ -17,7 +17,9 @@ concurrency:
 jobs:
   sync:
     name: Point app preview at the branch database
-    if: github.event_name == 'pull_request'
+    # Only labelled PRs get previews (preview_label.yaml), and the Neon integration only
+    # creates the branch database when an auth preview deploys
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'preview')
     runs-on: ubuntu-latest
     permissions:
       contents: read
