@@ -109,6 +109,7 @@ function parseStep(
   }
   const sharedNote = payload.sharedNote.trim();
   if (!sharedNote) return { error: "What the member hears is required" };
+  // Stored as UTC midnight of the picked day; every display formats in UTC
   const reviewAt = payload.reviewAt
     ? new Date(`${payload.reviewAt}T00:00:00Z`)
     : null;
