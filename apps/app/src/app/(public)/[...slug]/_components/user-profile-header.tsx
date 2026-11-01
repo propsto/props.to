@@ -1,6 +1,7 @@
 import { getUser, getOrganizationById } from "@propsto/data/repos";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Badge } from "@propsto/ui/atoms/badge";
+import { OrgLogo } from "@/app/_components/org-logo";
 
 interface UserProfileHeaderProps {
   userId: string;
@@ -42,7 +43,12 @@ export async function UserProfileHeader({
       <h1 className="text-3xl font-bold mt-4">{displayName}</h1>
       <p className="text-muted-foreground">@{slug}</p>
       {organization && (
-        <Badge variant="outline" className="mt-2">
+        <Badge variant="outline" className="mt-2 gap-1.5 py-1">
+          <OrgLogo
+            name={organization.name}
+            hostedDomain={organization.hostedDomain}
+            className="size-4 rounded-sm"
+          />
           {organization.name}
         </Badge>
       )}

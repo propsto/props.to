@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import NextLink from "next/link";
-import { Building2, User, ChevronRight } from "lucide-react";
+import { User, ChevronRight } from "lucide-react";
 import {
   SidebarMenu,
   SidebarMenuItem,
@@ -19,12 +19,14 @@ import {
 } from "@propsto/ui/atoms/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Badge } from "@propsto/ui/atoms/badge";
+import { OrgLogo } from "./org-logo";
 
 type Organization = {
   id: string;
   name: string;
   slug: string;
   role: string;
+  hostedDomain?: string | null;
 };
 
 interface AccountSwitcherProps {
@@ -43,6 +45,11 @@ export function AccountSwitcher({
   organizations = [],
 }: AccountSwitcherProps): React.JSX.Element {
   const { isMobile } = useSidebar();
+  // Only the org whose Workspace domain is the signed-in email's domain
+  const emailDomain = userEmail.split("@")[1]?.toLowerCase();
+  const workOrg = organizations.find(
+    org => org.hostedDomain?.toLowerCase() === emailDomain,
+  );
 
   return (
     <SidebarMenu>
@@ -53,12 +60,22 @@ export function AccountSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="size-8 rounded-lg">
-                <AvatarImage src={userImage} alt={userName} />
-                <AvatarFallback className="rounded-lg">
-                  {userName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar className="size-8 rounded-lg">
+                  <AvatarImage src={userImage} alt={userName} />
+                  <AvatarFallback className="rounded-lg">
+                    {userName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {/* Which company the signed-in work account belongs to */}
+                {workOrg ? (
+                  <OrgLogo
+                    name={workOrg.name}
+                    hostedDomain={workOrg.hostedDomain}
+                    className="absolute right-0 bottom-0 size-3.5 rounded-sm ring-2 ring-sidebar"
+                  />
+                ) : null}
+              </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">Props.to</span>
                 <span className="truncate text-xs text-muted-foreground">
@@ -111,9 +128,10 @@ export function AccountSwitcher({
                       <NextLink
                         href={`/org/${org.slug}${isAdmin ? "/admin" : ""}`}
                       >
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                          <Building2 className="size-4" />
-                        </div>
+                        <OrgLogo
+                          name={org.name}
+                          hostedDomain={org.hostedDomain}
+                        />
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <div className="flex items-center gap-2">
                             <span className="truncate font-medium">

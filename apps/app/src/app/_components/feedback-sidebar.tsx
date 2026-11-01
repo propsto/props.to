@@ -36,6 +36,7 @@ type Organization = {
   name: string;
   slug: string;
   role: string;
+  hostedDomain?: string | null;
 };
 
 type User = {

@@ -46,6 +46,7 @@ export default async function DashboardLayout({
       ? memberships.data.map(m => ({
           id: m.organization.id,
           name: m.organization.name,
+          hostedDomain: m.organization.hostedDomain,
           slug: m.organization.slug.slug,
           role: m.role,
         }))
