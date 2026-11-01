@@ -2,7 +2,6 @@ import dynamicLoad from "next/dynamic";
 import { PricingTabs } from "@components/pricing-tabs";
 import { FAQs } from "@components/faqs";
 import TheProblem from "@components/the-problem";
-import RoleExplorer from "@components/role-explorer";
 import HowItWorks from "@components/how-it-works";
 
 const Hero = dynamicLoad(() =>
@@ -36,8 +35,7 @@ export default function HomePage(): React.ReactElement {
       <Hero />
       <TheProblem />
       <TheSolution />
-      <HowItWorks />
-      <RoleExplorer feedbackUrl={diagramFeedbackUrl()} />
+      <HowItWorks feedbackUrl={diagramFeedbackUrl()} />
       <PricingTabs />
       <FAQs />
     </>
