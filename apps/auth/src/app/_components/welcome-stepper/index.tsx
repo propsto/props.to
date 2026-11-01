@@ -101,6 +101,8 @@ export function WelcomeStepper({
   // Store form data across steps
   const [formData, setFormData] = useState<StepFormStore>({});
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  // Own flag: onSubmit updates formData, whose reset effect clears RHF's isSubmitting mid-request
+  const [submitting, setSubmitting] = useState(false);
 
   const defaultValues = formDefaults[stepper.current.id](
     user,
@@ -147,7 +149,7 @@ export function WelcomeStepper({
     }));
   };
 
-  const onSubmit = async (values: GenericFormValues): Promise<void> => {
+  const submitStep = async (values: GenericFormValues): Promise<void> => {
     // Save current step data before proceeding
     setFormData(prev => ({
       ...prev,
@@ -320,6 +322,16 @@ export function WelcomeStepper({
     });
   };
 
+  const onSubmit = async (values: GenericFormValues): Promise<void> => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await submitStep(values);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleStepClick = (stepId: StepNames): void => {
     // Check if user can access this step
     if (!canUserAccessStep(user, stepId, orgStatus, linkStatus)) {
@@ -452,8 +464,8 @@ export function WelcomeStepper({
               >
                 Back
               </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Working…" : "Next"}
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Working…" : "Next"}
               </Button>
             </div>
           ) : (
