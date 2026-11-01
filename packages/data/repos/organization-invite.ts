@@ -5,6 +5,7 @@ import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { generateUniqueSlug } from "./slug";
+import { ensureOrgFeedbackLink } from "./feedback-link";
 
 const logger = createLogger("data");
 
@@ -195,6 +196,8 @@ export async function acceptOrganizationInvite(token: string, userId: string) {
       }
       return accepted;
     });
+    // Best effort: accepting must not fail when the receiving link can't be made
+    await ensureOrgFeedbackLink(userId, invite.organizationId);
     return handleSuccess(invite);
   } catch (e) {
     return handleError(e);

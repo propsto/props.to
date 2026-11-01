@@ -103,6 +103,12 @@ test.describe
       // now a member: the acme admin area is still closed to a MEMBER, but the org is joined
       await page.goto(inviteUrl);
       await expect(page.getByText("Invitation No Longer Valid")).toBeVisible();
+
+      // Joining gave her a link to receive Acme feedback on
+      await page.goto(`${APP_URL}/links`);
+      await expect(page.getByText("Carol at Acme")).toBeVisible({
+        timeout: 15000,
+      });
     });
   });
 });
