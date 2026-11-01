@@ -64,6 +64,23 @@ export function Footer(): React.ReactElement {
                 </a>
               </li>
             </ul>
+            <nav
+              aria-label="Legal"
+              className="mt-4 flex gap-4 text-sm text-zinc-700"
+            >
+              <Link
+                className="hover:text-zinc-950 hover:underline"
+                href="/privacy"
+              >
+                Privacy
+              </Link>
+              <Link
+                className="hover:text-zinc-950 hover:underline"
+                href="/terms"
+              >
+                Terms
+              </Link>
+            </nav>
           </div>
 
           {/* 2nd block 

@@ -500,7 +500,7 @@ export default function HowItWorks({
   };
 
   return (
-    <section id="how-it-works" className="relative bg-white">
+    <section id="how-it-works" className="relative bg-gray-50">
       <div className="py-16 sm:py-24">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
           <p className="text-center text-base [line-height:1.75rem] font-semibold text-zinc-600 uppercase">

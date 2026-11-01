@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { SpeechBubbles } from "@propsto/ui/molecules/speech-bubbles";
 import { Button } from "@propsto/ui/atoms/button";
+import { AppWindow } from "./product-tour";
 
 export function Hero(): React.ReactElement {
   const ref = useRef<HTMLDivElement>(null);
@@ -68,6 +69,14 @@ export function Hero(): React.ReactElement {
                 </div>
               </div>
             </div>
+          </div>
+          <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+            <AppWindow
+              address="app.props.to/feedback"
+              src="/images/app/inbox.png"
+              alt="Mike's received feedback: notes from teammates with names, dates, links and values"
+              priority
+            />
           </div>
         </div>
       </div>
