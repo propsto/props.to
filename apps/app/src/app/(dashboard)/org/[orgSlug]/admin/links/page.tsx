@@ -143,13 +143,13 @@ export default async function OrgAdminLinks({
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={link.user.image ?? undefined} />
+                          <AvatarImage src={link.user?.image ?? undefined} />
                           <AvatarFallback>
-                            {link.user.firstName?.[0] ?? "?"}
+                            {link.user?.firstName?.[0] ?? "?"}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">
-                          {link.user.firstName} {link.user.lastName}
+                          {link.user?.firstName} {link.user?.lastName}
                         </span>
                       </div>
                     </TableCell>

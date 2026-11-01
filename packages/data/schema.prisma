@@ -145,6 +145,12 @@ enum AuditAction {
   FEEDBACK_APPROVED
   FEEDBACK_REJECTED
 
+  // Entity actions
+  ENTITY_CREATED
+  ENTITY_UPDATED
+  ENTITY_DELETED
+  ENTITY_LINK_CREATED
+
   // General
   OTHER
 }
@@ -192,6 +198,9 @@ model Organization {
 
   // Conversations leads open about members
   conversations Conversation[]
+
+  // Named things (products, events, services) the org collects feedback on
+  entities Entity[]
 
   @@unique([id, slugId])
 }
@@ -254,6 +263,24 @@ model Group {
 }
 
 // User model (user with personal account, can belong to multiple organizations)
+// A named thing an org collects feedback about (a product, event, service).
+// Its feedback belongs to the org and never reaches a person's record.
+model Entity {
+  id             String         @id @default(cuid())
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  slug           Slug           @relation(fields: [slugId], references: [id], onDelete: Cascade)
+  slugId         String         @unique // Org-scoped slug, shared namespace with members and groups
+  name           String
+  description    String?
+  feedbackLinks  FeedbackLink[]
+  feedbacks      Feedback[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([organizationId])
+}
+
 model User {
   id                     String               @id @default(cuid())
   email                  String               @unique
@@ -337,6 +364,7 @@ model Slug {
 
   organization Organization? @relation("OrganizationSlug")
   group        Group[]
+  entity       Entity?
   integration  Integration[]
 
   // Slug uniqueness is scoped: GLOBAL slugs are globally unique,
@@ -536,9 +564,13 @@ model TemplateField {
 // Feedback is ALWAYS tied to a user's personal account for permanent traceability
 model Feedback {
   id             BigInt           @id @default(autoincrement())
-  // User is REQUIRED - feedback always belongs to a personal account (the recipient)
-  user           User             @relation("ReceivedFeedback", fields: [userId], references: [id])
-  userId         String
+  // The recipient person. Null exactly when entityId is set (DB check constraint):
+  // feedback about an entity belongs to the org, never to a person's record
+  user           User?            @relation("ReceivedFeedback", fields: [userId], references: [id], onDelete: Restrict)
+  userId         String?
+  entity         Entity?          @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId       String?
+  context        String?          @db.VarChar(300) // What the visitor was looking at (?context=), entity links only
   group          Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
   groupId        String?
   organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: SetNull)
@@ -591,6 +623,7 @@ model Feedback {
   conversationId String?
 
   @@index([conversationId])
+  @@index([entityId])
 }
 
 // FeedbackLink model (shareable links for receiving feedback)
@@ -598,8 +631,11 @@ model FeedbackLink {
   id             String             @id @default(cuid())
   slug           String // Short URL slug (e.g., "leadership-2024")
   name           String // User-friendly name for the link
-  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String
+  // The person the link collects feedback for. Null exactly when entityId is set (DB check constraint)
+  user           User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String?
+  entity         Entity?            @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  entityId       String?
   organization   Organization?      @relation(fields: [organizationId], references: [id], onDelete: SetNull)
   organizationId String?
   group          Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
@@ -627,6 +663,7 @@ model FeedbackLink {
 
   // Slug is unique per user+org context (same slug can be used by different users)
   @@unique([userId, organizationId, slug])
+  @@unique([entityId, slug])
   @@index([organizationId, isManaged])
 }
 

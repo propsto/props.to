@@ -37,8 +37,26 @@ const feedbackLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
     select: { id: true, name: true, slug: { select: { slug: true } } },
   },
   group: { select: { id: true, name: true, slug: { select: { slug: true } } } },
+  entity: {
+    select: { id: true, name: true, slug: { select: { slug: true } } },
+  },
   _count: { select: { feedbacks: true } },
 });
+
+// A link that can no longer take responses resolves to nothing on public pages
+function openOrNull<
+  T extends {
+    isActive: boolean;
+    expiresAt: Date | null;
+    maxResponses: number | null;
+    responseCount: number;
+  },
+>(link: T | null): T | null {
+  if (!link || !link.isActive) return null;
+  if (link.expiresAt && link.expiresAt < new Date()) return null;
+  if (link.maxResponses && link.responseCount >= link.maxResponses) return null;
+  return link;
+}
 
 // Generate a unique slug for feedback links
 function generateLinkSlug(): string {
@@ -139,21 +157,63 @@ export async function getFeedbackLinkBySlug(
       include: feedbackLinkInclude,
     });
 
-    // Check if link is active and not expired
-    if (link) {
-      const now = new Date();
-      if (!link.isActive) {
-        return handleSuccess(null);
-      }
-      if (link.expiresAt && link.expiresAt < now) {
-        return handleSuccess(null);
-      }
-      if (link.maxResponses && link.responseCount >= link.maxResponses) {
-        return handleSuccess(null);
-      }
-    }
+    return handleSuccess(openOrNull(link));
+  } catch (e) {
+    return handleError(e);
+  }
+}
 
+// Create a link collecting feedback about an entity. It has no owner person
+// (userId null), so no member's link list, removal or deletion touches it.
+export async function createEntityFeedbackLink(data: {
+  entityId: string;
+  organizationId: string;
+  templateId: string;
+  name: string;
+  slug?: string;
+}): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  try {
+    logger("createEntityFeedbackLink", { entityId: data.entityId });
+    const template = await assertTemplateUsable(data.templateId, {
+      organizationId: data.organizationId,
+    });
+    const slug = data.slug ?? generateLinkSlug();
+    const taken = await db.feedbackLink.findFirst({
+      where: { entityId: data.entityId, slug },
+      select: { id: true },
+    });
+    if (taken) throw new Error("That link slug is already used");
+    const link = await db.feedbackLink.create({
+      data: {
+        slug,
+        name: data.name,
+        entityId: data.entityId,
+        organizationId: data.organizationId,
+        templateId: data.templateId,
+        feedbackType: template.feedbackType,
+        // Entity links are public by design (see getFeedbackPolicy)
+        visibility: "PUBLIC",
+      },
+      include: feedbackLinkInclude,
+    });
     return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Get an open feedback link by slug for an entity
+export async function getEntityFeedbackLinkBySlug(
+  slug: string,
+  entityId: string,
+): Promise<HandleEvent<FeedbackLinkWithRelations | null>> {
+  try {
+    logger("getEntityFeedbackLinkBySlug", { slug, entityId });
+    const link = await db.feedbackLink.findFirst({
+      where: { slug, entityId },
+      include: feedbackLinkInclude,
+    });
+    return handleSuccess(openOrNull(link));
   } catch (e) {
     return handleError(e);
   }
@@ -174,21 +234,7 @@ export async function getGroupFeedbackLinkBySlug(
       include: feedbackLinkInclude,
     });
 
-    // Check if link is active and not expired
-    if (link) {
-      const now = new Date();
-      if (!link.isActive) {
-        return handleSuccess(null);
-      }
-      if (link.expiresAt && link.expiresAt < now) {
-        return handleSuccess(null);
-      }
-      if (link.maxResponses && link.responseCount >= link.maxResponses) {
-        return handleSuccess(null);
-      }
-    }
-
-    return handleSuccess(link);
+    return handleSuccess(openOrNull(link));
   } catch (e) {
     return handleError(e);
   }
@@ -294,6 +340,8 @@ export async function getOrganizationFeedbackLinks(
     logger("getOrganizationFeedbackLinks", { organizationId, options });
     const where: Prisma.FeedbackLinkWhereInput = {
       organizationId,
+      // Member and group links only; entity links are listed on their entity
+      entityId: null,
       ...(options?.isActive !== undefined && { isActive: options.isActive }),
       ...(options?.publicOnly && {
         isActive: true,
@@ -447,7 +495,7 @@ const managedLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
 async function assertTemplateUsable(
   templateId: string,
   scope: { userId?: string; organizationId?: string },
-): Promise<void> {
+): Promise<{ feedbackType: FeedbackType }> {
   const template = await db.feedbackTemplate.findFirst({
     where: {
       id: templateId,
@@ -460,9 +508,10 @@ async function assertTemplateUsable(
           : []),
       ],
     },
-    select: { id: true },
+    select: { feedbackType: true },
   });
   if (!template) throw new Error("Template not found for this organization");
+  return template;
 }
 
 // Create a managed feedback link
@@ -743,7 +792,7 @@ export async function getManagedLinkAdoptionStats(
     totalAdoptions: number;
     totalResponses: number;
     adoptedBy: Array<{
-      userId: string;
+      userId: string | null;
       userName: string;
       linkId: string;
       responseCount: number;
@@ -768,7 +817,7 @@ export async function getManagedLinkAdoptionStats(
     const adoptedBy = adoptedLinks.map(link => ({
       userId: link.userId,
       userName:
-        [link.user.firstName, link.user.lastName].filter(Boolean).join(" ") ||
+        [link.user?.firstName, link.user?.lastName].filter(Boolean).join(" ") ||
         "Unknown",
       linkId: link.id,
       responseCount: link.responseCount,

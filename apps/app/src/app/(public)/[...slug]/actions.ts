@@ -20,6 +20,7 @@ const logger = createLogger("app:feedback");
 const MAX_NAME_LENGTH = 100;
 const MAX_EMAIL_LENGTH = 254;
 const MAX_FIELD_TEXT_LENGTH = 10000;
+const MAX_CONTEXT_LENGTH = 300; // Feedback.context is VARCHAR(300)
 
 /**
  * Strips HTML tags from a string to prevent XSS attacks.
@@ -77,6 +78,16 @@ const submitFeedbackSchema = z.object({
     return sanitizeFieldsData(data as Prisma.InputJsonValue);
   }),
   valueIds: z.array(z.string().cuid()).max(50).optional(),
+  // Entity links: what the visitor was looking at (?context=), plain text.
+  // Over-long input is cut, not refused: the visitor did not type it.
+  context: z
+    .string()
+    .max(2000)
+    .transform(
+      s =>
+        sanitizeText(s.replace(/\s+/g, " "), MAX_CONTEXT_LENGTH) || undefined,
+    )
+    .optional(),
 });
 
 interface SubmitFeedbackInput {
@@ -86,6 +97,7 @@ interface SubmitFeedbackInput {
   isAnonymous: boolean;
   fieldsData: Prisma.InputJsonValue;
   valueIds?: string[];
+  context?: string;
 }
 
 interface SubmitFeedbackResult {
@@ -181,8 +193,12 @@ export async function submitFeedbackAction(
   }
 
   // Create the feedback
+  // Entity feedback has no recipient person: it belongs to the entity alone
+  const recipient = link.entityId
+    ? { entityId: link.entityId, context: sanitizedInput.context }
+    : { userId: link.userId ?? undefined };
   const feedbackResult = await createFeedback({
-    userId: link.userId,
+    ...recipient,
     // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
     submitterId: isAnonymous ? undefined : session?.user?.id,
     feedbackType: link.feedbackType,

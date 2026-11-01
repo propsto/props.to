@@ -17,6 +17,7 @@ import {
   Gem,
   Layers,
   MessagesSquare,
+  Box,
 } from "lucide-react";
 import type { AuditAction } from "@prisma/client";
 
@@ -157,6 +158,26 @@ const actionConfig: Record<
     icon: ShieldCheck,
     color: "text-red-600",
   },
+  ENTITY_CREATED: {
+    label: "Entity created",
+    icon: Box,
+    color: "text-green-600",
+  },
+  ENTITY_UPDATED: {
+    label: "Entity updated",
+    icon: Box,
+    color: "text-blue-600",
+  },
+  ENTITY_DELETED: {
+    label: "Entity deleted",
+    icon: Box,
+    color: "text-red-600",
+  },
+  ENTITY_LINK_CREATED: {
+    label: "Entity link created",
+    icon: Box,
+    color: "text-green-600",
+  },
   OTHER: {
     label: "Other action",
     icon: Activity,
@@ -207,6 +228,10 @@ function formatDetails(action: AuditAction, details: unknown): string | null {
     case "VALUE_DELETED":
     case "LEVEL_CREATED":
     case "LEVEL_UPDATED":
+    case "ENTITY_CREATED":
+    case "ENTITY_UPDATED":
+    case "ENTITY_DELETED":
+    case "ENTITY_LINK_CREATED":
       if (d.name) {
         return `"${d.name}"`;
       }
