@@ -66,22 +66,26 @@ export function ManageMembersDialog({
     setSelectedIds(newSelected);
   };
 
-  const handleSubmit = () => {
-    const toAdd = [...selectedIds].filter(id => !currentMemberIds.includes(id));
-    const toRemove = currentMemberIds.filter(id => !selectedIds.has(id));
-    // Only selected members can lead; removing a member also drops their lead role
-    const desiredLeads = [...leadIds].filter(id => selectedIds.has(id));
-    const leadsToAdd = desiredLeads.filter(id => !currentLeadIds.includes(id));
-    const leadsToRemove = currentLeadIds.filter(
-      id => !desiredLeads.includes(id) && selectedIds.has(id),
-    );
+  // Leads are normally members, but a lead can exist without membership (seeded
+  // or legacy rows); they can still be demoted without being added as members.
+  const canLead = (id: string) =>
+    selectedIds.has(id) ||
+    (currentLeadIds.includes(id) && !currentMemberIds.includes(id));
+  const isLead = (id: string) => leadIds.has(id) && canLead(id);
 
-    if (
-      toAdd.length === 0 &&
-      toRemove.length === 0 &&
-      leadsToAdd.length === 0 &&
-      leadsToRemove.length === 0
-    ) {
+  const toAdd = [...selectedIds].filter(id => !currentMemberIds.includes(id));
+  const toRemove = currentMemberIds.filter(id => !selectedIds.has(id));
+  const desiredLeads = [...leadIds].filter(isLead);
+  const leadsToAdd = desiredLeads.filter(id => !currentLeadIds.includes(id));
+  // Removing a member already drops their lead role
+  const leadsToRemove = currentLeadIds.filter(
+    id => !desiredLeads.includes(id) && !toRemove.includes(id),
+  );
+  const changesCount =
+    toAdd.length + toRemove.length + leadsToAdd.length + leadsToRemove.length;
+
+  const handleSubmit = () => {
+    if (changesCount === 0) {
       onOpenChange(false);
       return;
     }
@@ -102,16 +106,6 @@ export function ManageMembersDialog({
       }
     });
   };
-
-  const isLead = (id: string) => leadIds.has(id) && selectedIds.has(id);
-  const changesCount =
-    [...selectedIds].filter(id => !currentMemberIds.includes(id)).length +
-    currentMemberIds.filter(id => !selectedIds.has(id)).length +
-    [...selectedIds].filter(
-      id =>
-        currentMemberIds.includes(id) &&
-        isLead(id) !== currentLeadIds.includes(id),
-    ).length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -153,7 +147,7 @@ export function ManageMembersDialog({
                       {member.email}
                     </p>
                   </div>
-                  {isSelected && (
+                  {canLead(member.id) && (
                     <Button
                       type="button"
                       size="sm"
