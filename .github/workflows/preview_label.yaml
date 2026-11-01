@@ -32,6 +32,8 @@ jobs:
       SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       - run: |
+          # A refused deployment (e.g. the daily limit, HTTP 402) must fail the job
+          set -o pipefail
           # The labels API lags the event by a moment; the gate script must see the label
           sleep 15
           for project in app auth web; do
