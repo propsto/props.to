@@ -66,6 +66,24 @@ test.describe("Password Authentication", () => {
     expect(sessionCookie).toBeDefined();
   });
 
+  // Someone who left a Google Workspace company can't use the work account any more,
+  // but keeps their feedback through the personal email verified during onboarding.
+  test("should sign in with a verified personal email", async ({
+    page,
+    baseURL,
+  }) => {
+    await page.goto(baseURL ?? "");
+    await signInByPassword(page, "john.personal@example.com", "P4ssw0rd");
+
+    await expect
+      .poll(async () =>
+        (await page.context().cookies()).some(c =>
+          c.name.includes("authjs.session-token"),
+        ),
+      )
+      .toBe(true);
+  });
+
   test("should show error for invalid credentials", async ({
     page,
     baseURL,
@@ -105,14 +123,22 @@ test.describe("Password Authentication", () => {
       await page.goto(baseURL ?? "");
       await page.getByLabel("email").fill(email);
 
-      await page.getByRole("button", { name: "Continue with password" }).click();
-      await page.getByRole("button", { name: "Continue with password" }).click();
+      await page
+        .getByRole("button", { name: "Continue with password" })
+        .click();
+      await page
+        .getByRole("button", { name: "Continue with password" })
+        .click();
       await expect(page.getByLabel("password")).toBeVisible({ timeout: 10000 });
-      await expect(page.getByText(/not set a password|no user found/i)).toHaveCount(0);
+      await expect(
+        page.getByText(/not set a password|no user found/i),
+      ).toHaveCount(0);
 
       await page.getByLabel("password").fill("anything");
       await page.getByRole("button", { name: "Sign in with password" }).click();
-      await expect(page.getByText(/wrong credentials/i)).toBeVisible({ timeout: 10000 });
+      await expect(page.getByText(/wrong credentials/i)).toBeVisible({
+        timeout: 10000,
+      });
     });
   }
 });
