@@ -95,7 +95,10 @@ export default async function ConversationsPage(): Promise<React.ReactNode> {
                   <p className="whitespace-pre-line">{step.sharedNote}</p>
                   {step.reviewAt ? (
                     <p className="text-sm text-muted-foreground">
-                      Review date: {step.reviewAt.toLocaleDateString()}
+                      Review date:{" "}
+                      {step.reviewAt.toLocaleDateString(undefined, {
+                        timeZone: "UTC",
+                      })}
                     </p>
                   ) : null}
                   {step.consequence ? (
