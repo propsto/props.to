@@ -13,7 +13,6 @@ import {
   InfoIcon,
   CheckCircleIcon,
 } from "lucide-react";
-import { useState } from "react";
 
 const linkAccountSchema = z.object({
   verificationMethod: z.enum(["password", "magic-link"]).default("password"),
@@ -26,13 +25,12 @@ interface StepComponentProps {
   email?: string | null;
   hostedDomain?: string | null;
   magicLinkSent?: boolean;
-  onMagicLinkSent?: () => void;
 }
 
 export function StepComponent({
   email,
   hostedDomain,
-  magicLinkSent: initialMagicLinkSent = false,
+  magicLinkSent = false,
 }: StepComponentProps): React.ReactElement {
   const {
     register,
@@ -41,14 +39,10 @@ export function StepComponent({
     watch,
   } = useFormContext<LinkAccountFormValues>();
 
-  const [magicLinkSent, setMagicLinkSent] = useState(initialMagicLinkSent);
   const verificationMethod = watch("verificationMethod") ?? "password";
 
   const handleMethodChange = (method: "password" | "magic-link") => {
     setValue("verificationMethod", method);
-    if (method === "password") {
-      setMagicLinkSent(false);
-    }
   };
 
   // Extract organization name from domain
@@ -146,6 +140,10 @@ export function StepComponent({
                     We&apos;ve sent a verification link to{" "}
                     <strong>{email}</strong>. Click the link in the email to
                     complete account linking.
+                  </p>
+                  <p className="mt-2 text-sm">
+                    Nothing after a few minutes? Check spam, or click{" "}
+                    <strong>Next</strong> to send a new link.
                   </p>
                 </div>
               </div>
