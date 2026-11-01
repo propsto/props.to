@@ -33,19 +33,30 @@ function center(index: number, count: number): number {
   return ((index + 0.5) / count) * 100;
 }
 
+function describeStep(step: Step, actors: Actor[]): string {
+  const from = actors[step.from]?.name ?? "";
+  const to = actors[step.to]?.name ?? "";
+  const kind = step.kind ?? "message";
+  if (kind === "note" || step.from === step.to) return `note on ${from}`;
+  if (kind === "talk") return `${from} and ${to} talk, outside props.to`;
+  if (kind === "end") return `${from} to ${to}, access ends`;
+  return `${from} to ${to}, in props.to`;
+}
+
 function StepRow({
   step,
-  count,
+  actors,
   index,
   state,
   onSelect,
 }: {
   step: Step;
-  count: number;
+  actors: Actor[];
   index: number;
   state: "hidden" | "shown" | "active";
   onSelect: () => void;
 }): React.ReactElement {
+  const count = actors.length;
   const kind = step.kind ?? "message";
   const left = Math.min(center(step.from, count), center(step.to, count));
   const width = Math.abs(center(step.to, count) - center(step.from, count));
@@ -67,13 +78,14 @@ function StepRow({
         inert={state === "hidden"}
         aria-current={state === "active" ? "step" : undefined}
         className={cn(
-          "group relative block h-16 w-full rounded-lg text-left transition-all duration-500 focus-visible:outline-2 focus-visible:outline-primary",
-          state === "hidden" && "pointer-events-none opacity-0 translate-y-1",
+          "group relative block h-16 w-full rounded-lg text-left transition-all duration-500 focus-visible:outline-2 focus-visible:outline-primary motion-reduce:transition-none",
+          state === "hidden" &&
+            "pointer-events-none opacity-0 translate-y-1 motion-reduce:translate-y-0",
           state === "shown" && "opacity-60 hover:opacity-100",
           state === "active" && "opacity-100 bg-white/70 shadow-sm",
         )}
       >
-        <span className="sr-only">{`Step ${String(index + 1)}: `}</span>
+        <span className="sr-only">{`Step ${String(index + 1)} (${describeStep(step, actors)}): `}</span>
         {isNote ? (
           <span
             className="absolute top-1/2 flex -translate-y-1/2 justify-center"
@@ -189,16 +201,18 @@ export function SequenceDiagram({
 
   useEffect(() => {
     if (!playing) return;
-    if (visible >= total) {
+    if (active >= total - 1) {
       setPlaying(false);
       return;
     }
+    // Advance from the active step, so resuming after Previous skips nothing
     const timer = setTimeout(() => {
-      setVisible(v => v + 1);
-      setActive(visible);
+      const next = active + 1;
+      setActive(next);
+      setVisible(v => Math.max(v, next + 1));
     }, STEP_MS);
     return () => clearTimeout(timer);
-  }, [playing, visible, total]);
+  }, [playing, active, total]);
 
   const go = (index: number) => {
     const next = Math.min(Math.max(index, 0), total - 1);
@@ -207,8 +221,10 @@ export function SequenceDiagram({
     setVisible(v => Math.max(v, next + 1));
   };
 
+  const atEnd = visible >= total && active >= total - 1;
+
   const togglePlay = () => {
-    if (visible >= total) {
+    if (atEnd) {
       setVisible(1);
       setActive(0);
       setPlaying(true);
@@ -280,7 +296,7 @@ export function SequenceDiagram({
                 <StepRow
                   key={s.label}
                   step={s}
-                  count={count}
+                  actors={actors}
                   index={i}
                   state={
                     i >= visible ? "hidden" : i === active ? "active" : "shown"
@@ -323,12 +339,12 @@ export function SequenceDiagram({
             >
               {playing ? (
                 <PauseIcon className="size-4" />
-              ) : visible >= total ? (
+              ) : atEnd ? (
                 <RotateCcwIcon className="size-4" />
               ) : (
                 <PlayIcon className="size-4" />
               )}
-              {playing ? "Pause" : visible >= total ? "Replay" : "Play"}
+              {playing ? "Pause" : atEnd ? "Replay" : "Play"}
             </button>
             <button
               type="button"
