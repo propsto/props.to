@@ -16,7 +16,7 @@ export function FAQs(): React.ReactNode {
     },
     {
       title: "Can I use props.to for free?",
-      text: "Yes! props.to is open source and always free to use, whether you’re collecting feedback for yourself or your team. Other features are optional and usually paid.",
+      text: "Yes. Personal use is free forever, and the code is open source if you host it yourself. Hosted company features are free for 3 months during the pilot, then US$4 per member a month. Owners and admins are free.",
     },
     {
       title: "Can I self-host props.to?",
