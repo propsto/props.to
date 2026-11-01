@@ -13,6 +13,10 @@ permissions:
   contents: read
   statuses: write
 
+# One run per PR at a time, so an older run cannot overwrite statuses a newer one set
+concurrency:
+  group: preview-label-${{ github.event.pull_request.number }}
+
 jobs:
   # Deploy the PR head when the label is added and on every push while it is there.
   # No commit is pushed: a GITHUB_TOKEN push would not trigger the PR's other workflows.
@@ -30,10 +34,18 @@ jobs:
       REPO_ID: ${{ github.event.repository.id }}
       REF: ${{ github.event.pull_request.head.ref }}
       SHA: ${{ github.event.pull_request.head.sha }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - run: |
           # A refused deployment (e.g. the daily limit, HTTP 402) must fail the job
           set -o pipefail
+          # Replace any no-preview successes on this head, so a refused deployment
+          # leaves the required checks pending instead of green
+          for project in web app auth; do
+            gh api -X POST "repos/${{ github.repository }}/statuses/$SHA" \
+              -f state=pending -f context="Vercel – $project" \
+              -f description="Preview deployment requested" >/dev/null
+          done
           # The labels API lags the event by a moment; the gate script must see the label
           sleep 15
           for project in app auth web; do
@@ -55,10 +67,19 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SHA: ${{ github.event.pull_request.head.sha }}
     steps:
-      - run: |
+      # Fork PRs get a read-only token and never get previews; a maintainer handles them
+      - if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          # The event's labels can be stale by the time this queued run starts
+          PR=${{ github.event.pull_request.number }}
+          if gh api "repos/${{ github.repository }}/issues/$PR/labels" --jq '.[].name' | grep -qx preview; then
+            echo "Labelled since this event, so the preview deployment reports these statuses"
+            exit 0
+          fi
           for project in web app auth; do
             gh api -X POST "repos/${{ github.repository }}/statuses/$SHA" \
               -f state=success -f context="Vercel – $project" \
               -f description="No preview label, so no preview build" >/dev/null
           done
+      - run: |
           echo "No preview label, so no preview and no E2E run. Add the preview label to build previews and run E2E."
