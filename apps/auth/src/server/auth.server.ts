@@ -109,13 +109,10 @@ function getGoogleProvider(): [OAuthConfig<GoogleProfile>] | [] {
                   string,
                   unknown
                 >;
-                logger("Admin directory response:", adminData);
+                // Keep only the admin flag; never log the directory record.
                 isGoogleWorkspaceAdmin = Boolean(adminData?.isAdmin);
               } else {
-                const errorText = await response.text();
-                logger(
-                  `Admin directory API returned ${response.status}: ${errorText}`,
-                );
+                logger(`Admin directory API returned ${response.status}`);
               }
             }
           } catch (error) {

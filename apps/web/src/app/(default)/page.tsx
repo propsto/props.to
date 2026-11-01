@@ -3,12 +3,11 @@ import { PricingTabs } from "@components/pricing-tabs";
 import { FAQs } from "@components/faqs";
 import TheProblem from "@components/the-problem";
 import HowItWorks from "@components/how-it-works";
+import ProductTour from "@components/product-tour";
+import Portability from "@components/portability";
 
 const Hero = dynamicLoad(() =>
   import("@components/hero").then(mod => mod.Hero),
-);
-const TheSolution = dynamicLoad(() =>
-  import("@components/the-solution").then(mod => mod.default),
 );
 
 export const dynamic = "force-dynamic";
@@ -34,8 +33,9 @@ export default function HomePage(): React.ReactElement {
     <>
       <Hero />
       <TheProblem />
-      <TheSolution />
+      <ProductTour />
       <HowItWorks feedbackUrl={diagramFeedbackUrl()} />
+      <Portability />
       <PricingTabs />
       <FAQs />
     </>

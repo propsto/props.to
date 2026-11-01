@@ -87,7 +87,6 @@ export const nextAuthConfig = {
         // already has a personal account created via email/password
         if (existingUser.data && !existingGoogleAccount?.data) {
           logger("signIn: Existing user needs account linking", {
-            email,
             hasExistingUser: true,
             hasLinkedGoogle: false,
           });
@@ -253,7 +252,7 @@ export const nextAuthConfig = {
   },
   events: {
     linkAccount: async ({ user }) => {
-      logger("authConfig:events:linkAccount", { user });
+      logger("authConfig:events:linkAccount", { userId: user.id });
       if (user.id) {
         await updateUser(user.id, {
           emailVerified: new Date(),
