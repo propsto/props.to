@@ -27,17 +27,17 @@ const useCases = [
       "Teams rely heavily on scheduled conversations to exchange feedback.",
       "One on ones. Reviews. Retrospectives.",
       "But most feedback does not happen on a calendar.",
-      "Props.to enables feedback to happen asynchronously, while the work is still recent and relevant.",
+      "Props.to enables feedback to happen asynchronously, while the work is still recent and relevant, and gives your one on ones something real to talk about.",
     ],
     points: [
       { text: "Capture feedback outside meetings", icon: CalendarArrowUpIcon },
-      {
-        text: "Reduce emotional pressure in conversations",
-        icon: CircleGaugeIcon,
-      },
       { text: "Support one on ones with real signals", icon: SpeechIcon },
       {
-        text: "Encourage continuous improvement, not yearly reviews",
+        text: "Tag feedback with your company values",
+        icon: CircleGaugeIcon,
+      },
+      {
+        text: "Show each level's expectations, and a fair escalation path",
         icon: ChartSplineIcon,
       },
     ],

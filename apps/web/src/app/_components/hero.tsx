@@ -48,7 +48,8 @@ export function Hero(): React.ReactElement {
               {/* Supporting Line */}
               <p className="mb-10 text-balance text-sm text-muted-foreground md:text-base">
                 Designed for moments that require clarity, not constant
-                feedback.
+                feedback. A companion to your one on ones, never a replacement,
+                and your feedback stays yours wherever you work.
               </p>
 
               {/* CTA Buttons */}

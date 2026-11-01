@@ -3,6 +3,7 @@ import { PricingTabs } from "@components/pricing-tabs";
 import { FAQs } from "@components/faqs";
 import TheProblem from "@components/the-problem";
 import UseCases from "@components/use-cases";
+import HowItWorks from "@components/how-it-works";
 
 const Hero = dynamicLoad(() =>
   import("@components/hero").then(mod => mod.Hero),
@@ -20,6 +21,7 @@ export default function HomePage(): React.ReactElement {
       <Hero />
       <TheProblem />
       <TheSolution />
+      <HowItWorks />
       <UseCases />
       <PricingTabs />
       <FAQs />
