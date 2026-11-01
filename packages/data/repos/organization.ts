@@ -161,6 +161,7 @@ export async function getMembershipByOrgSlug(userId: string, orgSlug: string) {
             id: true,
             name: true,
             slug: true,
+            hostedDomain: true,
           },
         },
       },
