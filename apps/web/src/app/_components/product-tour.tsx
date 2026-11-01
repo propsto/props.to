@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "@propsto/ui/lib/utils";
 
@@ -90,6 +90,22 @@ export function AppWindow({
 export default function ProductTour(): React.ReactElement {
   const [current, setCurrent] = useState<string>(screens[0].id);
   const screen = screens.find(s => s.id === current) ?? screens[0];
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Tablist keyboard pattern: arrows move between tabs, Home/End jump to the
+  // ends, and only the selected tab sits in the Tab order.
+  function onTabKeyDown(e: React.KeyboardEvent, index: number): void {
+    const last = screens.length - 1;
+    let next: number;
+    if (e.key === "ArrowRight") next = index === last ? 0 : index + 1;
+    else if (e.key === "ArrowLeft") next = index === 0 ? last : index - 1;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = last;
+    else return;
+    e.preventDefault();
+    setCurrent(screens[next].id);
+    tabRefs.current[next]?.focus();
+  }
 
   return (
     <section id="product" className="relative bg-white">
@@ -111,15 +127,20 @@ export default function ProductTour(): React.ReactElement {
             aria-label="Product screens"
             className="mb-4 flex flex-wrap justify-center gap-2"
           >
-            {screens.map(s => (
+            {screens.map((s, i) => (
               <button
                 key={s.id}
+                ref={el => {
+                  tabRefs.current[i] = el;
+                }}
                 type="button"
                 role="tab"
                 id={`tab-${s.id}`}
                 aria-selected={s.id === current}
                 aria-controls="product-screen"
+                tabIndex={s.id === current ? 0 : -1}
                 onClick={() => setCurrent(s.id)}
+                onKeyDown={e => onTabKeyDown(e, i)}
                 className={cn(
                   "min-h-11 rounded-full border px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   s.id === current

@@ -90,8 +90,11 @@ export default function PrivacyPage(): React.ReactElement {
       <h2>Who we share it with</h2>
       <p>
         Inside your organization, feedback is visible to the person it is about.
-        Admins see feedback waiting for moderation. Leads and admins see the
-        conversations they take part in.
+        Admins see feedback waiting for moderation. Conversations about a
+        member, including internal notes, are visible to the organization&apos;s
+        owners and admins and to the leads of that member&apos;s groups. The
+        member can read the shared parts of those conversations, but not the
+        internal notes.
       </p>
       <p>
         These providers process data on our behalf: Vercel (hosting), Neon
