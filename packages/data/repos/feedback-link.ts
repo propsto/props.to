@@ -4,6 +4,7 @@ import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import { BOOTSTRAP_IDS } from "../bootstrap";
 
 const logger = createLogger("data");
 
@@ -778,6 +779,64 @@ export async function getManagedLinkAdoptionStats(
       totalResponses,
       adoptedBy,
     });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Every org member gets a link to receive feedback on, so colleagues can give
+// props from day one. No-op when they already have a personal (non-group) link
+// in the org. Uses the org's default template, else Quick Props.
+export async function ensureOrgFeedbackLink(
+  userId: string,
+  organizationId: string,
+): Promise<HandleEvent<{ id: string } | null>> {
+  try {
+    logger("ensureOrgFeedbackLink", { userId, organizationId });
+    const existing = await db.feedbackLink.findFirst({
+      where: { userId, organizationId, groupId: null, isActive: true },
+      select: { id: true },
+    });
+    if (existing) return handleSuccess(null);
+
+    const [user, org] = await Promise.all([
+      db.user.findUnique({
+        where: { id: userId },
+        select: { firstName: true },
+      }),
+      db.organization.findUnique({
+        where: { id: organizationId },
+        select: {
+          name: true,
+          feedbackSettings: { select: { defaultTemplateId: true } },
+        },
+      }),
+    ]);
+    if (!org) return handleSuccess(null);
+    const candidates = [
+      org.feedbackSettings?.defaultTemplateId,
+      BOOTSTRAP_IDS.propsTemplate,
+    ].filter((id): id is string => Boolean(id));
+    const templates = await db.feedbackTemplate.findMany({
+      where: { id: { in: candidates }, deletedAt: null },
+      select: { id: true },
+    });
+    const template = candidates
+      .map(id => templates.find(t => t.id === id))
+      .find(Boolean);
+    if (!template) return handleSuccess(null);
+
+    const link = await db.feedbackLink.create({
+      data: {
+        slug: generateLinkSlug(),
+        name: user?.firstName ? `${user.firstName} at ${org.name}` : org.name,
+        userId,
+        organizationId,
+        templateId: template.id,
+      },
+      select: { id: true },
+    });
+    return handleSuccess(link);
   } catch (e) {
     return handleError(e);
   }

@@ -11,6 +11,7 @@ import {
   defaultOrganizationCreationSettings,
   type OrganizationCreationSettings,
 } from "./organization-settings";
+import { ensureOrgFeedbackLink } from "./feedback-link";
 
 const logger = createLogger("data");
 
@@ -347,6 +348,8 @@ export async function createOrganizationWithOwner(data: {
       }
       return org;
     });
+    // Best effort: joining must not fail when the receiving link can't be made
+    await ensureOrgFeedbackLink(data.ownerId, organization.id);
     return handleSuccess(organization);
   } catch (e) {
     return handleError(e);
@@ -372,6 +375,8 @@ export async function addOrganizationMember(data: {
         user: true,
       },
     });
+    // Best effort: joining must not fail when the receiving link can't be made
+    await ensureOrgFeedbackLink(data.userId, data.organizationId);
     return handleSuccess(member);
   } catch (e) {
     return handleError(e);
