@@ -8,13 +8,13 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage(): React.ReactElement {
   return (
-    <LegalPage title="Privacy policy" updated="[LAST UPDATED]">
+    <LegalPage title="Privacy policy" updated="November 1, 2026">
       <p>
-        This policy explains how [LEGAL ENTITY NAME] (&quot;props.to&quot;,
-        &quot;we&quot;) handles information when you use props.to, app.props.to
-        and auth.props.to (the &quot;Service&quot;). In short: we collect
-        what&apos;s needed to sign you in and deliver feedback. We don&apos;t
-        sell your data, show ads, or use your feedback to train AI models.
+        This policy explains how Props.to (&quot;we&quot;) handles information
+        when you use props.to, app.props.to and auth.props.to (the
+        &quot;Service&quot;). In short: we collect what&apos;s needed to sign
+        you in and deliver feedback. We don&apos;t sell your data, show ads, or
+        use your feedback to train AI models.
       </p>
 
       <h2>What we collect</h2>
@@ -101,12 +101,12 @@ export default function PrivacyPage(): React.ReactElement {
 
       <h2>Storage and retention</h2>
       <p>
-        Data is stored in [REGION] and encrypted in transit. We keep your
-        account and feedback while your account is active. When you leave an
-        organization, your personal feedback stays in your account and the
-        organization keeps the feedback shared with it. When you delete your
-        account, we delete your personal data within 30 days, except where the
-        law requires us to keep it.
+        Data is stored in the United States (AWS us-east-2, Ohio) and encrypted
+        in transit. We keep your account and feedback while your account is
+        active. When you leave an organization, your personal feedback stays in
+        your account and the organization keeps the feedback shared with it.
+        When you delete your account, we delete your personal data within 30
+        days, except where the law requires us to keep it.
       </p>
 
       <h2>Your choices</h2>
@@ -135,7 +135,9 @@ export default function PrivacyPage(): React.ReactElement {
       </p>
 
       <h2>Contact</h2>
-      <p>[LEGAL ENTITY NAME], [POSTAL ADDRESS]. Email [PRIVACY EMAIL].</p>
+      <p>
+        Email us at <a href="mailto:hello@props.to">hello@props.to</a>.
+      </p>
     </LegalPage>
   );
 }

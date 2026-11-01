@@ -363,7 +363,7 @@ function FieldInput({
       return (
         <select
           id={field.id}
-          className={inputClass}
+          className={inputClass.replace("px-3", "pr-8 pl-3")}
           value={typeof value === "string" ? value : ""}
           onChange={e => onChange(e.target.value)}
         >

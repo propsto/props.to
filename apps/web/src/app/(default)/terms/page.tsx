@@ -9,18 +9,18 @@ export const metadata: Metadata = {
 
 export default function TermsPage(): React.ReactElement {
   return (
-    <LegalPage title="Terms of service" updated="[LAST UPDATED]">
+    <LegalPage title="Terms of service" updated="November 1, 2026">
       <p>
-        These terms are an agreement between you and [LEGAL ENTITY NAME]
-        (&quot;props.to&quot;, &quot;we&quot;) for using props.to, app.props.to
-        and auth.props.to (the &quot;Service&quot;). By using the Service you
-        agree to them and to our <Link href="/privacy">privacy policy</Link>.
+        These terms are an agreement between you and Props.to (&quot;we&quot;)
+        for using props.to, app.props.to and auth.props.to (the
+        &quot;Service&quot;). By using the Service you agree to them and to our{" "}
+        <Link href="/privacy">privacy policy</Link>.
       </p>
 
       <h2>Accounts</h2>
       <p>
         You must be at least 16 to use the Service. Keep your sign-in secure and
-        tell us at [SUPPORT EMAIL] if you think someone else used your account.
+        tell us at hello@props.to if you think someone else used your account.
         You&apos;re responsible for what happens under your account.
       </p>
 
@@ -80,11 +80,13 @@ export default function TermsPage(): React.ReactElement {
         You can stop using the Service and ask us to delete your account at any
         time. We may suspend or end access if you break these terms. We post
         changes to these terms here and email you before significant changes
-        take effect. These terms are governed by the laws of [JURISDICTION].
+        take effect. These terms are governed by the laws of Uruguay.
       </p>
 
       <h2>Contact</h2>
-      <p>[LEGAL ENTITY NAME], [POSTAL ADDRESS]. Email [SUPPORT EMAIL].</p>
+      <p>
+        Email us at <a href="mailto:hello@props.to">hello@props.to</a>.
+      </p>
     </LegalPage>
   );
 }
