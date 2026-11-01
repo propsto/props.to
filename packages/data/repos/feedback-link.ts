@@ -786,7 +786,8 @@ export async function getManagedLinkAdoptionStats(
 
 // Every org member gets a link to receive feedback on, so colleagues can give
 // props from day one. No-op when they already have a personal (non-group) link
-// in the org. Uses the org's default template, else Quick Props.
+// in the org. Uses the org's default template, else Quick Props; when members
+// may only use org-provided templates, only a template assigned to the org.
 export async function ensureOrgFeedbackLink(
   userId: string,
   organizationId: string,
@@ -794,7 +795,13 @@ export async function ensureOrgFeedbackLink(
   try {
     logger("ensureOrgFeedbackLink", { userId, organizationId });
     const existing = await db.feedbackLink.findFirst({
-      where: { userId, organizationId, groupId: null, isActive: true },
+      where: {
+        userId,
+        organizationId,
+        groupId: null,
+        isActive: true,
+        isManaged: false,
+      },
       select: { id: true },
     });
     if (existing) return handleSuccess(null);
@@ -808,7 +815,9 @@ export async function ensureOrgFeedbackLink(
         where: { id: organizationId },
         select: {
           name: true,
-          feedbackSettings: { select: { defaultTemplateId: true } },
+          feedbackSettings: {
+            select: { defaultTemplateId: true, allowMemberFormCreation: true },
+          },
         },
       }),
     ]);
@@ -818,8 +827,14 @@ export async function ensureOrgFeedbackLink(
       BOOTSTRAP_IDS.propsTemplate,
     ].filter((id): id is string => Boolean(id));
     const templates = await db.feedbackTemplate.findMany({
-      where: { id: { in: candidates }, deletedAt: null },
-      select: { id: true },
+      where: {
+        id: { in: candidates },
+        deletedAt: null,
+        ...(org.feedbackSettings?.allowMemberFormCreation === false && {
+          organizations: { some: { id: organizationId } },
+        }),
+      },
+      select: { id: true, feedbackType: true },
     });
     const template = candidates
       .map(id => templates.find(t => t.id === id))
@@ -833,6 +848,7 @@ export async function ensureOrgFeedbackLink(
         userId,
         organizationId,
         templateId: template.id,
+        feedbackType: template.feedbackType,
       },
       select: { id: true },
     });
