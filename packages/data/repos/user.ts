@@ -153,16 +153,26 @@ export async function getUser(data: { id: string }) {
   }
 }
 
+// The primary email first, then a verified personal email: a Google Workspace user who left
+// the company can no longer use the work account, but keeps their feedback through the
+// personal email they verified during onboarding.
+async function findUserBySignInEmail(email: string) {
+  return (
+    (await db.user.findUnique({ where: { email }, include: userInclude })) ??
+    (await db.user.findFirst({
+      where: { personalEmail: email, personalEmailVerified: { not: null } },
+      include: userInclude,
+    }))
+  );
+}
+
 export async function getUserByEmail<T extends (keyof User)[]>(
   email: string,
   addOns?: T,
 ): Promise<HandleEvent<UserMapperReturnType & Pick<User, T[number]>>> {
   try {
     logger("getUserByEmail", email);
-    const existingUser = await db.user.findUnique({
-      where: { email },
-      include: userInclude,
-    });
+    const existingUser = await findUserBySignInEmail(email);
 
     const result = userMapper(existingUser, addOns);
     return handleSuccess(
@@ -182,10 +192,7 @@ export async function getUserByEmailAndPassword({
 }) {
   try {
     logger("getUserByEmailAndPassword", { email });
-    const existingUser = await db.user.findUnique({
-      where: { email },
-      include: userInclude,
-    });
+    const existingUser = await findUserBySignInEmail(email);
     // Unknown user, user without a password and wrong password all fail the same way
     // (and always run a compare) so credentials cannot be used to enumerate accounts.
     const isPasswordValid = await compare(
