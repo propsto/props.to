@@ -87,3 +87,24 @@ test.describe
     await john.context().close();
   });
 });
+
+// Acme moderates with auto-approve on (the onboarding default), so a member's
+// props reach the recipient without waiting for an admin.
+test("member feedback skips the moderation queue", async ({
+  page,
+  browser,
+}) => {
+  const text = `Member props, no queue ${Date.now()}`;
+  await page.goto(`${APP_URL}/acme/john.doe/john-acme`);
+  await page.getByLabel(/what do you appreciate about this person/i).fill(text);
+  await page.getByRole("button", { name: /submit feedback/i }).click();
+  await page.waitForURL(/\/john-acme\/thanks/, { timeout: 20000 });
+
+  await page.goto(`${APP_URL}/org/acme/admin/moderation`);
+  await expect(page.getByText(text)).toHaveCount(0);
+
+  const john = await recipientPage(browser);
+  await john.goto(`${APP_URL}/feedback`);
+  await expect(john.getByText(text)).toBeVisible({ timeout: 15000 });
+  await john.context().close();
+});
