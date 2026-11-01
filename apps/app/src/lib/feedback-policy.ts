@@ -50,8 +50,9 @@ export async function getFeedbackPolicy(
   };
 }
 
-// Org feedback is held for moderation unless moderation is off and the submitter
-// is a member with autoApproveInternalFeedback on. External feedback always waits.
+// External feedback always waits for an admin. Member feedback waits only when
+// moderation is on and autoApproveInternalFeedback is off: with moderation on,
+// auto-approve is what lets colleagues' props through without an admin.
 export function needsModeration(
   settings:
     | {
@@ -62,8 +63,9 @@ export function needsModeration(
     | undefined,
   isMember: boolean,
 ): boolean {
-  if (settings?.enableFeedbackModeration ?? true) return true;
-  return !(isMember && (settings?.autoApproveInternalFeedback ?? true));
+  if (!isMember) return true;
+  if (!(settings?.enableFeedbackModeration ?? true)) return false;
+  return !(settings?.autoApproveInternalFeedback ?? true);
 }
 
 // The reason a submission is refused, or null when it may proceed.
