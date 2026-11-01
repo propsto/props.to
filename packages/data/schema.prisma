@@ -760,6 +760,16 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+// Google sign-in waiting for the user to prove they own the existing account.
+// The OAuth tokens stay here; the link sent to the user only carries the id.
+model PendingAccountLink {
+  token     String   @id
+  email     String   @unique
+  data      Json
+  expires   DateTime
+  createdAt DateTime @default(now())
+}
+
 // Authenticator model (optional for WebAuthn support)
 model Authenticator {
   credentialID         String  @unique

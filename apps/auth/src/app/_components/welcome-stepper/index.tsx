@@ -100,6 +100,9 @@ export function WelcomeStepper({
 
   // Store form data across steps
   const [formData, setFormData] = useState<StepFormStore>({});
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  // Own flag: onSubmit updates formData, whose reset effect clears RHF's isSubmitting mid-request
+  const [submitting, setSubmitting] = useState(false);
 
   const defaultValues = formDefaults[stepper.current.id](
     user,
@@ -146,7 +149,7 @@ export function WelcomeStepper({
     }));
   };
 
-  const onSubmit = async (values: GenericFormValues): Promise<void> => {
+  const submitStep = async (values: GenericFormValues): Promise<void> => {
     // Save current step data before proceeding
     setFormData(prev => ({
       ...prev,
@@ -162,13 +165,9 @@ export function WelcomeStepper({
         );
         if (result.success) {
           if (result.data === null) {
-            // Magic link was sent - stay on current step and update UI
-            // The link-account-step component will show the "check email" message
-            // when the form is submitted with magic-link method
-            form.setError("root", {
-              type: "info",
-              message: "Magic link sent! Check your email to complete linking.",
-            });
+            // Magic link was sent: stay on this step and show "check your email"
+            form.clearErrors();
+            setMagicLinkSent(true);
           } else {
             // Account linked successfully, continue with personal step
             const nextStep = getNextStepForUser(
@@ -182,7 +181,10 @@ export function WelcomeStepper({
           applyHandleEventToForm<LinkAccountFormValues>(
             form as unknown as FormLike<LinkAccountFormValues>,
             result,
-            ["password", "verificationMethod"],
+            // The password field is hidden in magic-link mode, so its errors go to root
+            (values as LinkAccountFormValues).verificationMethod === "password"
+              ? ["password"]
+              : [],
           );
         }
       },
@@ -320,6 +322,16 @@ export function WelcomeStepper({
     });
   };
 
+  const onSubmit = async (values: GenericFormValues): Promise<void> => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await submitStep(values);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleStepClick = (stepId: StepNames): void => {
     // Check if user can access this step
     if (!canUserAccessStep(user, stepId, orgStatus, linkStatus)) {
@@ -345,6 +357,7 @@ export function WelcomeStepper({
       <LinkAccountStepComponent
         email={user.email}
         hostedDomain={user.hostedDomain}
+        magicLinkSent={magicLinkSent}
       />
     ),
     account: () => (
@@ -435,6 +448,11 @@ export function WelcomeStepper({
 
         <div className="space-y-4">
           {stepper.switch(stepComponentsWithProps)}
+          {form.formState.errors.root?.message ? (
+            <p role="alert" className="text-sm text-destructive text-start">
+              {form.formState.errors.root.message}
+            </p>
+          ) : null}
           {!stepper.isLast ? (
             <div className="flex justify-end gap-4">
               <Button
@@ -446,7 +464,9 @@ export function WelcomeStepper({
               >
                 Back
               </Button>
-              <Button type="submit">Next</Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Working…" : "Next"}
+              </Button>
             </div>
           ) : (
             <div className="flex flex-row justify-end">

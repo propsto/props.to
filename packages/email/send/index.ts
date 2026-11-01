@@ -45,6 +45,7 @@ export async function send<T extends EmailTemplateNames>(
       to: [typeof email === "string" ? email : email.email],
       subject,
       react: chosenTemplate(...emailArgs),
+      text: await render(chosenTemplate(...emailArgs), { plainText: true }),
     });
   }
   const transporter = createTransport(constServer.EMAIL_SERVER);
@@ -53,5 +54,6 @@ export async function send<T extends EmailTemplateNames>(
     to: [typeof email === "string" ? email : email.email],
     subject,
     html: await render(chosenTemplate(...emailArgs)),
+    text: await render(chosenTemplate(...emailArgs), { plainText: true }),
   });
 }

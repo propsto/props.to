@@ -647,11 +647,20 @@ export async function linkAccountHandler(
     } else {
       // Magic link verification
       // Send magic link with callback to complete linking
-      await signIn("email", {
+      // With redirect: false a failed send comes back as an error URL, not a throw
+      const sent: unknown = await signIn("email", {
         email: pendingData.email,
         redirect: false,
         callbackUrl: `/welcome?step=link-account&token=${pendingLinkToken}&verified=true`,
       });
+      if (typeof sent === "string" && sent.includes("error=")) {
+        console.error("linkAccountHandler: magic link not sent", sent);
+        return {
+          success: false,
+          error:
+            "We couldn't send the magic link. Try again, or use your password.",
+        };
+      }
 
       // Return success with null data to indicate magic link was sent
       // The UI should check for null data and show the "check your email" message
