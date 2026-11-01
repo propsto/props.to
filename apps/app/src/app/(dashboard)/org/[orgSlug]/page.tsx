@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { Building2, Plus, Settings } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
+import { OrgLogo } from "@/app/_components/org-logo";
 import {
   getAvailableManagedLinks,
   getLedMembers,
@@ -65,7 +66,11 @@ export default async function OrgLandingPage({
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Building2 className="h-8 w-8" />
+          <OrgLogo
+            name={org.name}
+            hostedDomain={org.hostedDomain}
+            className="size-10"
+          />
           <div>
             <h1 className="text-2xl font-semibold">{org.name}</h1>
             <Badge variant="secondary">{role.toLowerCase()}</Badge>
@@ -119,8 +124,8 @@ export default async function OrgLandingPage({
           <CardHeader>
             <CardTitle>People you lead</CardTitle>
             <CardDescription>
-              Members of the groups you administer. Open their conversations
-              to record feedback steps.
+              Members of the groups you administer. Open their conversations to
+              record feedback steps.
             </CardDescription>
           </CardHeader>
           <CardContent>

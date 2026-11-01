@@ -5,7 +5,6 @@ import { getMembershipByOrgSlug } from "@propsto/data/repos";
 import { constServer } from "@propsto/constants/server";
 import { cn } from "@propsto/ui/lib/utils";
 import {
-  Building2,
   Users,
   UsersRound,
   Settings,
@@ -18,6 +17,7 @@ import {
   Gem,
   Layers,
 } from "lucide-react";
+import { OrgLogo } from "@/app/_components/org-logo";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -114,7 +114,11 @@ export default async function OrgAdminLayout({
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center gap-3">
-        <Building2 className="h-8 w-8" />
+        <OrgLogo
+          name={membership.organization.name}
+          hostedDomain={membership.organization.hostedDomain}
+          className="size-10"
+        />
         <div>
           <h1 className="text-2xl font-semibold">
             {membership.organization.name}
