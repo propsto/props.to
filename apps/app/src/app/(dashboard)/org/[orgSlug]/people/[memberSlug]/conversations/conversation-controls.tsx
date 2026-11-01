@@ -30,7 +30,7 @@ type Ctx = { orgSlug: string; memberSlug: string };
 type ActionResult = { success: boolean; error?: string };
 
 const selectClass =
-  "h-9 w-full rounded-md border bg-transparent pr-8 pl-2 text-sm";
+  "h-9 w-full rounded-md border bg-transparent py-0 pr-8 pl-2 text-sm";
 
 function readStep(form: HTMLFormElement): StepPayload {
   const data = new FormData(form);

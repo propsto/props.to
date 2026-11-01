@@ -25,7 +25,7 @@ export function MemberLevelSelect({
   return (
     <select
       aria-label={`Level for ${name}`}
-      className="h-8 rounded-md border bg-transparent pr-8 pl-2 text-sm"
+      className="h-8 rounded-md border bg-transparent py-0 pr-8 pl-2 text-sm"
       value={levelId ?? ""}
       disabled={isPending}
       onChange={e => {
