@@ -45,6 +45,11 @@ export function AccountSwitcher({
   organizations = [],
 }: AccountSwitcherProps): React.JSX.Element {
   const { isMobile } = useSidebar();
+  // Only the org whose Workspace domain is the signed-in email's domain
+  const emailDomain = userEmail.split("@")[1]?.toLowerCase();
+  const workOrg = organizations.find(
+    org => org.hostedDomain?.toLowerCase() === emailDomain,
+  );
 
   return (
     <SidebarMenu>
@@ -63,11 +68,11 @@ export function AccountSwitcher({
                   </AvatarFallback>
                 </Avatar>
                 {/* Which company the signed-in work account belongs to */}
-                {organizations[0] ? (
+                {workOrg ? (
                   <OrgLogo
-                    name={organizations[0].name}
-                    hostedDomain={organizations[0].hostedDomain}
-                    className="absolute -right-1 -bottom-1 size-4 rounded-sm ring-2 ring-sidebar"
+                    name={workOrg.name}
+                    hostedDomain={workOrg.hostedDomain}
+                    className="absolute right-0 bottom-0 size-3.5 rounded-sm ring-2 ring-sidebar"
                   />
                 ) : null}
               </div>
