@@ -45,7 +45,16 @@ export function ManageMembersDialog({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(currentMemberIds),
   );
+  const currentLeadIds = group.admins.map(a => a.userId);
+  const [leadIds, setLeadIds] = useState<Set<string>>(new Set(currentLeadIds));
   const [isPending, startTransition] = useTransition();
+
+  const handleLeadToggle = (memberId: string) => {
+    const next = new Set(leadIds);
+    if (next.has(memberId)) next.delete(memberId);
+    else next.add(memberId);
+    setLeadIds(next);
+  };
 
   const handleToggle = (memberId: string) => {
     const newSelected = new Set(selectedIds);
@@ -57,11 +66,26 @@ export function ManageMembersDialog({
     setSelectedIds(newSelected);
   };
 
-  const handleSubmit = () => {
-    const toAdd = [...selectedIds].filter(id => !currentMemberIds.includes(id));
-    const toRemove = currentMemberIds.filter(id => !selectedIds.has(id));
+  // Leads are normally members, but a lead can exist without membership (seeded
+  // or legacy rows); they can still be demoted without being added as members.
+  const canLead = (id: string) =>
+    selectedIds.has(id) ||
+    (currentLeadIds.includes(id) && !currentMemberIds.includes(id));
+  const isLead = (id: string) => leadIds.has(id) && canLead(id);
 
-    if (toAdd.length === 0 && toRemove.length === 0) {
+  const toAdd = [...selectedIds].filter(id => !currentMemberIds.includes(id));
+  const toRemove = currentMemberIds.filter(id => !selectedIds.has(id));
+  const desiredLeads = [...leadIds].filter(isLead);
+  const leadsToAdd = desiredLeads.filter(id => !currentLeadIds.includes(id));
+  // Removing a member already drops their lead role
+  const leadsToRemove = currentLeadIds.filter(
+    id => !desiredLeads.includes(id) && !toRemove.includes(id),
+  );
+  const changesCount =
+    toAdd.length + toRemove.length + leadsToAdd.length + leadsToRemove.length;
+
+  const handleSubmit = () => {
+    if (changesCount === 0) {
       onOpenChange(false);
       return;
     }
@@ -70,6 +94,8 @@ export function ManageMembersDialog({
       const result = await updateGroupMembersAction(orgSlug, group.id, {
         addUserIds: toAdd,
         removeUserIds: toRemove,
+        addLeadIds: leadsToAdd,
+        removeLeadIds: leadsToRemove,
       });
 
       if (result.success) {
@@ -81,17 +107,14 @@ export function ManageMembersDialog({
     });
   };
 
-  const changesCount =
-    [...selectedIds].filter(id => !currentMemberIds.includes(id)).length +
-    currentMemberIds.filter(id => !selectedIds.has(id)).length;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Manage Members</DialogTitle>
           <DialogDescription>
-            Select organization members to add to &quot;{group.name}&quot;
+            Select organization members to add to &quot;{group.name}&quot;.
+            Leads can open conversations with the other members of the group.
           </DialogDescription>
         </DialogHeader>
         <div className="max-h-[300px] overflow-y-auto pr-4">
@@ -124,6 +147,21 @@ export function ManageMembersDialog({
                       {member.email}
                     </p>
                   </div>
+                  {canLead(member.id) && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isLead(member.id) ? "default" : "outline"}
+                      aria-pressed={isLead(member.id)}
+                      aria-label={`Lead: ${member.firstName ?? member.email ?? ""}`}
+                      onClick={e => {
+                        e.preventDefault();
+                        handleLeadToggle(member.id);
+                      }}
+                    >
+                      Lead
+                    </Button>
+                  )}
                   {hasChanged && (
                     <Badge variant={isSelected ? "default" : "destructive"}>
                       {isSelected ? "Adding" : "Removing"}
