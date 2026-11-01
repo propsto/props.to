@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { CheckCircle, Users } from "lucide-react";
@@ -8,6 +8,7 @@ import {
   resolveSlug as _resolveSlug,
   resolveOrgSlug as _resolveOrgSlug,
   resolveByEmail as _resolveByEmail,
+  getEmailProfilePath,
   getFeedbackLinkBySlug as _getFeedbackLinkBySlug,
   getGroupFeedbackLinkBySlug,
   getEntityFeedbackLinkBySlug,
@@ -30,6 +31,18 @@ const resolveByEmail = cache(_resolveByEmail);
 const resolveOrgSlug = cache(_resolveOrgSlug);
 const getFeedbackLinkBySlug = cache(_getFeedbackLinkBySlug);
 const getUser = cache(_getUser);
+
+// Next.js keeps segments percent-encoded (an "@" arrives as "%40"), so decode
+// them before matching usernames or emails. Malformed escapes stay as they are.
+function decodeSegments(segments: string[] | undefined): string[] | undefined {
+  return segments?.map(segment => {
+    try {
+      return decodeURIComponent(segment);
+    } catch {
+      return segment;
+    }
+  });
+}
 
 // Email detection regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -98,7 +111,7 @@ function readContext(raw: string | string[] | undefined): string | undefined {
 export async function generateMetadata({
   params,
 }: PublicPageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const slug = decodeSegments((await params).slug);
 
   if (!slug || slug.length === 0) {
     return { title: "Not Found" };
@@ -192,7 +205,7 @@ export default async function PublicPage({
   params,
   searchParams,
 }: PublicPageProps): Promise<React.ReactNode> {
-  const { slug } = await params;
+  const slug = decodeSegments((await params).slug);
 
   if (!slug || slug.length === 0) {
     notFound();
@@ -262,6 +275,12 @@ async function handleProfilePage(
   }
 
   const resolution = slugResult.data;
+
+  // props.to/<email> is a shortcut: send it to the real address
+  if (resolution.type === "user" && resolution.resolvedVia === "email") {
+    const path = await getEmailProfilePath(resolution.userId, firstSegment);
+    redirect(path.success && path.data ? path.data : `/${resolution.slug}`);
+  }
 
   if (resolution.type === "user") {
     // Show user profile with their personal public feedback links (org links live under /<org>/<user>)

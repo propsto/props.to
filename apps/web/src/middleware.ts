@@ -9,9 +9,13 @@ import { isReservedSlug } from "@propsto/constants/other";
  * - props.to/<username> → app.props.to/<username>
  * - props.to/<username>/<link-slug> → app.props.to/<username>/<link-slug>
  * - props.to/<org>/<username>/<link-slug> → app.props.to/<org>/<username>/<link-slug>
+ * - props.to/<email> → app.props.to/<email>, which redirects to the member's page
  *
  * Reserved paths (e.g., /request-early-access, /api/*) are not rewritten.
  */
+const STATIC_FILE =
+  /\.(?:png|jpe?g|gif|webp|avif|svg|ico|txt|xml|json|webmanifest|css|js|map|woff2?|ttf|otf|pdf)$/i;
+
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
@@ -20,11 +24,12 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
-  // Skip static files and Next.js internals
+  // Skip static files and Next.js internals. Match file extensions, not any
+  // dot: usernames (/acme/john.doe) and emails (/leo@cresteo.com) have dots.
   if (
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/fonts/") ||
-    pathname.includes(".")
+    STATIC_FILE.test(pathname)
   ) {
     return NextResponse.next();
   }

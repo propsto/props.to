@@ -434,3 +434,46 @@ export async function updateOrganizationSlug(
 
 // Re-export the centralized isReservedSlug function
 export { isReservedSlug } from "@propsto/constants/other";
+
+// Where props.to/<email> should send a visitor, for a user already resolved
+// by email. A company email whose domain is an org's Workspace domain goes to
+// the member's org page (props.to/<org>/<username>); anything else goes to the
+// personal profile (props.to/<username>).
+export async function getEmailProfilePath(
+  userId: string,
+  email: string,
+): Promise<HandleEvent<string | null>> {
+  try {
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { email: true, slug: { select: { slug: true } } },
+    });
+    if (!user) return handleSuccess(null);
+
+    if (user.email === normalizedEmail) {
+      const domain = normalizedEmail.split("@")[1];
+      const org = await db.organization.findFirst({
+        where: { hostedDomain: domain, members: { some: { userId } } },
+        select: { id: true, slug: { select: { slug: true } } },
+      });
+      if (org) {
+        const memberSlug = await db.slug.findFirst({
+          where: {
+            scope: "ORGANIZATION",
+            scopedToOrgId: org.id,
+            orgSlugOwnerId: userId,
+          },
+          select: { slug: true },
+        });
+        if (memberSlug) {
+          return handleSuccess(`/${org.slug.slug}/${memberSlug.slug}`);
+        }
+      }
+    }
+
+    return handleSuccess(`/${user.slug.slug}`);
+  } catch (e) {
+    return handleError(e);
+  }
+}
