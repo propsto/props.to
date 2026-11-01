@@ -3,6 +3,18 @@ import { cn } from "@propsto/ui/lib/utils";
 export function FAQs(): React.ReactNode {
   const faqs = [
     {
+      title: "Does props.to replace one on ones?",
+      text: "No. Props.to is a companion to your one on ones, never a replacement. It captures feedback while it's fresh, so the conversation has something real to work with. Even the escalation path starts with a face-to-face talk.",
+    },
+    {
+      title: "What happens to my feedback when I change jobs?",
+      text: "You keep it. Feedback about you lives in your personal account. When you leave a company, sign in with your personal email and everything you received is still there, ready to grow at your next job.",
+    },
+    {
+      title: "What are values, levels and escalation?",
+      text: "Optional layers a company can turn on. Values let people tag feedback with what the company cares about, levels show what's expected at each career step, and the escalation path documents a fair, visible process when something needs to change.",
+    },
+    {
       title: "Can I use props.to for free?",
       text: "Yes! props.to is open source and always free to use, whether you’re collecting feedback for yourself or your team. Other features are optional and usually paid.",
     },
