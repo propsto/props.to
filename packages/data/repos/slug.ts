@@ -9,7 +9,12 @@ const logger = createLogger("data");
 
 // Types for slug resolution
 export type SlugResolution =
-  | { type: "user"; userId: string; slug: string; resolvedVia?: "slug" | "email" }
+  | {
+      type: "user";
+      userId: string;
+      slug: string;
+      resolvedVia?: "slug" | "email";
+    }
   | { type: "organization"; organizationId: string; slug: string }
   | null;
 
@@ -31,6 +36,13 @@ export type OrgSlugResolution =
       groupSlug: string;
       organizationId: string;
     }
+  | {
+      type: "entity";
+      entityId: string;
+      orgSlug: string;
+      entitySlug: string;
+      organizationId: string;
+    }
   | null;
 
 // Resolve a user by email address (props.to/john@acme.com)
@@ -46,10 +58,7 @@ export async function resolveByEmail(
     // Find user by company email or personal email
     const user = await db.user.findFirst({
       where: {
-        OR: [
-          { email: normalizedEmail },
-          { personalEmail: normalizedEmail },
-        ],
+        OR: [{ email: normalizedEmail }, { personalEmail: normalizedEmail }],
       },
       include: {
         slug: { select: { slug: true } },
@@ -162,6 +171,7 @@ export async function resolveOrgSlug(
       include: {
         orgSlugOwner: { select: { id: true } },
         group: { select: { id: true } },
+        entity: { select: { id: true } },
       },
     });
 
@@ -187,6 +197,16 @@ export async function resolveOrgSlug(
         groupId: scopedSlugRecord.group[0].id,
         orgSlug: orgSlug.toLowerCase(),
         groupSlug: userOrGroupSlug.toLowerCase(),
+        organizationId,
+      });
+    }
+
+    if (scopedSlugRecord.entity) {
+      return handleSuccess({
+        type: "entity" as const,
+        entityId: scopedSlugRecord.entity.id,
+        orgSlug: orgSlug.toLowerCase(),
+        entitySlug: userOrGroupSlug.toLowerCase(),
         organizationId,
       });
     }

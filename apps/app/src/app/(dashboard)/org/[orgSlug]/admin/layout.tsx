@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Gem,
   Layers,
+  Box,
 } from "lucide-react";
 import { OrgLogo } from "@/app/_components/org-logo";
 
@@ -68,6 +69,11 @@ export default async function OrgAdminLayout({
       href: `/org/${orgSlug}/admin/groups`,
       label: "Groups",
       icon: UsersRound,
+    },
+    {
+      href: `/org/${orgSlug}/admin/entities`,
+      label: "Entities",
+      icon: Box,
     },
     {
       href: `/org/${orgSlug}/admin/links`,

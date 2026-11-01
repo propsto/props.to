@@ -54,7 +54,8 @@ export async function getOrganizationBySlugWithCounts(slug: string) {
           select: {
             members: true,
             templates: true,
-            feedbacks: true,
+            // People feedback; entity feedback is counted on its entity
+            feedbacks: { where: { entityId: null } },
           },
         },
       },

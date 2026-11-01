@@ -54,6 +54,8 @@ interface FeedbackSubmissionFormProps {
   allowAnonymous?: boolean;
   values?: PublicOrgValue[];
   recipientLevel?: RecipientLevel;
+  // Entity links: what the visitor is giving feedback on (?context=), read-only
+  context?: string;
 }
 
 export function FeedbackSubmissionForm({
@@ -62,6 +64,7 @@ export function FeedbackSubmissionForm({
   allowAnonymous = true,
   values = [],
   recipientLevel,
+  context,
 }: FeedbackSubmissionFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -109,6 +112,7 @@ export function FeedbackSubmissionForm({
         isAnonymous,
         fieldsData,
         valueIds,
+        context,
       });
       if (result.success) {
         router.push(`${basePath}/thanks`);
@@ -128,6 +132,17 @@ export function FeedbackSubmissionForm({
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {context && (
+            <p
+              className="rounded-lg border bg-muted/50 p-4 text-sm"
+              data-testid="feedback-context"
+            >
+              <span className="font-medium">
+                You&apos;re giving feedback on:
+              </span>{" "}
+              {context}
+            </p>
+          )}
           {/* Anonymous toggle */}
           {allowAnonymous && link.visibility !== "ANONYMOUS" && (
             <div className="flex items-center justify-between rounded-lg border p-4">

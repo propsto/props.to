@@ -78,7 +78,9 @@ export default async function OrgAdminModeration({
               <CardHeader className="flex flex-row items-start justify-between gap-4">
                 <div>
                   <CardTitle className="text-base">
-                    To {personName(feedback.user)}
+                    {feedback.entity
+                      ? `About ${feedback.entity.name}`
+                      : `To ${personName(feedback.user)}`}
                   </CardTitle>
                   <CardDescription>
                     From {from}
@@ -94,6 +96,11 @@ export default async function OrgAdminModeration({
                 />
               </CardHeader>
               <CardContent className="space-y-2">
+                {feedback.context && (
+                  <p className="text-sm text-muted-foreground">
+                    On: {feedback.context}
+                  </p>
+                )}
                 {answers.map(a => (
                   <div key={a.key}>
                     <p className="text-sm font-medium">{a.label}</p>

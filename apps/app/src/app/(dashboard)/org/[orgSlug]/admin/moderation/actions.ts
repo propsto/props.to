@@ -49,7 +49,9 @@ export async function moderateFeedbackAction(
     action: decision === "approve" ? "FEEDBACK_APPROVED" : "FEEDBACK_REJECTED",
     resourceType: "feedback",
     resourceId: feedbackId,
-    details: { recipientId: feedback.userId },
+    details: feedback.entityId
+      ? { entityId: feedback.entityId }
+      : { recipientId: feedback.userId },
   });
 
   if (decision === "approve") {
