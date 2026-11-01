@@ -430,7 +430,7 @@ function Blank({
         aria-label={label}
         value={value}
         onChange={event => onChange(event.target.value)}
-        className="cursor-pointer appearance-none rounded-lg border-b-2 border-gray-900 bg-amber-100/70 py-0.5 pr-7 pl-2 font-semibold text-gray-950 hover:bg-amber-200/70 focus-visible:outline-2 focus-visible:outline-primary"
+        className="cursor-pointer appearance-none rounded-lg bg-none border-b-2 border-gray-900 bg-amber-100/70 py-0.5 pr-7 pl-2 font-semibold text-gray-950 hover:bg-amber-200/70 focus-visible:outline-2 focus-visible:outline-primary"
       >
         {options.map(o => (
           <option key={o.value} value={o.value}>
