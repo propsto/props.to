@@ -95,6 +95,8 @@ const features: FeatureItem[] = [
     "Custom feedback values",
     ["no", ["yes", "High-level"], ["yes", "Low-level"]],
   ],
+  ["Keep your feedback across companies", ["yes", "yes", "yes"]],
+  ["Values, levels and escalation layers", ["no", "yes", "yes"]],
   ["App store", ["yes", "yes", "yes"]],
   ["Single Sign-On", ["no", "yes", "yes"]],
   ["AI assistence", ["no", "yes", "yes"]],
