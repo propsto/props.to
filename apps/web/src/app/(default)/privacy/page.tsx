@@ -115,8 +115,8 @@ export default function PrivacyPage(): React.ReactElement {
       <h2>Your choices</h2>
       <ul>
         <li>
-          Access, correct, export or delete your data by emailing [PRIVACY
-          EMAIL].
+          Access, correct, export or delete your data by emailing{" "}
+          <a href="mailto:hello@props.to">hello@props.to</a>.
         </li>
         <li>
           Remove props.to&apos;s access to your Google account at any time in
