@@ -13,7 +13,13 @@ import {
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Button } from "@propsto/ui/atoms/button";
-import { ChevronRight, MoreHorizontal, Pencil, Trash2, Users } from "lucide-react";
+import {
+  ChevronRight,
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Users,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -105,7 +111,8 @@ export function GroupList({
                       <p className="font-medium">{group.name}</p>
                       {group._count.children > 0 && (
                         <Badge variant="secondary" className="text-xs">
-                          {group._count.children} subgroup{group._count.children !== 1 ? "s" : ""}
+                          {group._count.children} subgroup
+                          {group._count.children !== 1 ? "s" : ""}
                         </Badge>
                       )}
                     </div>
@@ -114,15 +121,13 @@ export function GroupList({
                         Under: {group.parent.name}
                       </p>
                     )}
-                    {!group.parent && group.admins.length > 0 && (
+                    {group.admins.length > 0 && (
                       <p className="text-xs text-muted-foreground">
-                        Admin:{" "}
+                        Lead:{" "}
                         {group.admins
                           .map(
                             a =>
-                              a.user.firstName ??
-                              a.user.lastName ??
-                              "Unknown",
+                              a.user.firstName ?? a.user.lastName ?? "Unknown",
                           )
                           .join(", ")}
                       </p>
@@ -137,7 +142,10 @@ export function GroupList({
                 <div className="flex items-center gap-1">
                   <div className="flex -space-x-2">
                     {group.users.slice(0, 3).map(user => (
-                      <Avatar key={user.id} className="h-6 w-6 border-2 border-background">
+                      <Avatar
+                        key={user.id}
+                        className="h-6 w-6 border-2 border-background"
+                      >
                         <AvatarImage src={user.image ?? undefined} />
                         <AvatarFallback className="text-xs">
                           {user.firstName?.[0] ?? user.email?.[0] ?? "?"}
@@ -215,7 +223,9 @@ export function GroupList({
           group={managingMembersGroup}
           allMembers={members}
           open={!!managingMembersGroup}
-          onOpenChange={(open: boolean) => !open && setManagingMembersGroup(null)}
+          onOpenChange={(open: boolean) =>
+            !open && setManagingMembersGroup(null)
+          }
         />
       )}
 
@@ -227,8 +237,8 @@ export function GroupList({
           <DialogHeader>
             <DialogTitle>Delete group?</DialogTitle>
             <DialogDescription>
-              This will permanently delete &quot;{deletingGroup?.name}&quot; and remove
-              all member associations. This action cannot be undone.
+              This will permanently delete &quot;{deletingGroup?.name}&quot; and
+              remove all member associations. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
