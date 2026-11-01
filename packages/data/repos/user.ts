@@ -160,7 +160,11 @@ async function findUserBySignInEmail(email: string) {
   return (
     (await db.user.findUnique({ where: { email }, include: userInclude })) ??
     (await db.user.findFirst({
-      where: { personalEmail: email, personalEmailVerified: { not: null } },
+      // Onboarding stores the address as typed but checks availability ignoring case
+      where: {
+        personalEmail: { equals: email, mode: "insensitive" },
+        personalEmailVerified: { not: null },
+      },
       include: userInclude,
     }))
   );
@@ -219,10 +223,7 @@ export async function verifyUserPassword({
 }): Promise<HandleEvent<boolean>> {
   try {
     logger("verifyUserPassword", { email });
-    const existingUser = await db.user.findUnique({
-      where: { email },
-      select: { password: true },
-    });
+    const existingUser = await findUserBySignInEmail(email);
     if (!existingUser?.password) {
       return handleSuccess(false);
     }
