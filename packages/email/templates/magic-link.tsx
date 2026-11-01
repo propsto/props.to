@@ -151,7 +151,7 @@ const styles = {
   fallbackLink: { color: "#6b7280", wordBreak: "break-all" as const },
   hr: { borderColor: "#e5e7eb", margin: "32px 48px" },
   footer: { padding: "0 48px" },
-  footerText: { color: "#9ca3af", fontSize: "12px", lineHeight: "1.5" },
+  footerText: { color: "#6b7280", fontSize: "12px", lineHeight: "1.5" },
 };
 
 export default MagicLinkEmail;
