@@ -51,7 +51,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  * Rate-limited slug resolution.
  * Email lookups are rate-limited to prevent enumeration attacks.
  */
-async function resolveSlug(
+const resolveSlug = cache(async function resolveSlugLimited(
   identifier: string,
 ): ReturnType<typeof resolveSlugBase> {
   // Only apply rate limiting for email lookups
@@ -74,7 +74,7 @@ async function resolveSlug(
   }
 
   return resolveSlugBase(identifier);
-}
+});
 import { Button } from "@propsto/ui/atoms/button";
 import {
   Card,
@@ -115,6 +115,12 @@ export async function generateMetadata({
 
   if (!slug || slug.length === 0) {
     return { title: "Not Found" };
+  }
+
+  // props.to/<email> only redirects; skip the lookup so it uses one
+  // rate-limit slot (the page's), not two
+  if (EMAIL_REGEX.test(slug[0])) {
+    return { title: "props.to" };
   }
 
   // Thank you page
