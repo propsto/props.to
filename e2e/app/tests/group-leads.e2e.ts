@@ -51,7 +51,7 @@ test("admin assigns a group lead who then leads its members", async ({
   });
   const jane = await context.newPage();
   await jane.goto(AUTH_URL);
-  await signInByPassword(jane, "jane.jones@acme.com", "P4ssw0rd");
+  await signInByPassword(jane, "jane.smith@acme.com", "P4ssw0rd");
   await jane.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
   await jane.goto(`${APP_URL}/org/acme`);
   await expect(jane.getByTestId("led-members")).toContainText("John Doe", {
