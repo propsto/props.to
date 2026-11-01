@@ -29,6 +29,11 @@ export function canUserMoveOn(
     orgStatus,
     linkStatus,
   );
-  logger("canUserMoveOn", { user, orgStatus, linkStatus, result });
+  logger("canUserMoveOn", {
+    userId: user.id,
+    orgStatus,
+    linkStatus,
+    result,
+  });
   return result;
 }
