@@ -25,7 +25,9 @@ export async function notifyConversationSubject(input: {
         input.subject.firstName ?? input.subject.email.split("@")[0],
       orgName: input.orgName,
       stageLabel: STAGE_LABELS[input.stage],
-      reviewDate: input.reviewAt?.toLocaleDateString(),
+      reviewDate: input.reviewAt?.toLocaleDateString(undefined, {
+        timeZone: "UTC",
+      }),
       hasConsequence: input.hasConsequence,
       url: `${constServer.PROPSTO_APP_URL}/conversations`,
     });
