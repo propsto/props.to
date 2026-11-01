@@ -404,6 +404,183 @@ export async function hasConversationsAsSubject(
   }
 }
 
+/**
+ * One member of an organization by the user's personal slug, for the
+ * /org/<org>/people/<slug> pages. Null when they are not a member.
+ */
+export async function getOrgMemberBySlug(
+  organizationId: string,
+  userSlug: string,
+) {
+  try {
+    logger("getOrgMemberBySlug", { organizationId, userSlug });
+
+    const member = await db.organizationMember.findFirst({
+      where: {
+        organizationId,
+        user: { slug: { slug: userSlug.toLowerCase(), scope: "GLOBAL" } },
+      },
+      select: {
+        role: true,
+        user: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+      },
+    });
+
+    return handleSuccess(member);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Members the viewer leads in an organization: everyone in a group of that
+ * organization the viewer administers, except the viewer.
+ */
+export async function getLedMembers(organizationId: string, viewerId: string) {
+  try {
+    logger("getLedMembers", { organizationId, viewerId });
+
+    const members = await db.organizationMember.findMany({
+      where: {
+        organizationId,
+        userId: { not: viewerId },
+        user: {
+          groups: {
+            some: { organizationId, admins: { some: { userId: viewerId } } },
+          },
+        },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            slug: { select: { slug: true } },
+          },
+        },
+      },
+      orderBy: { joinedAt: "asc" },
+    });
+
+    return handleSuccess(members.map(m => m.user));
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Feedback about the subject that may still be attached as evidence: approved,
+ * shared beyond the recipient, received in this organization, not attached yet.
+ */
+export async function getAttachableFeedback(
+  organizationId: string,
+  subjectUserId: string,
+) {
+  try {
+    logger("getAttachableFeedback", { organizationId, subjectUserId });
+
+    const feedback = await db.feedback.findMany({
+      where: {
+        organizationId,
+        userId: subjectUserId,
+        status: "APPROVED",
+        visibility: { in: EVIDENCE_VISIBILITIES },
+        conversationId: null,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: {
+        id: true,
+        createdAt: true,
+        feedbackType: true,
+        template: { select: { name: true } },
+      },
+    });
+
+    return handleSuccess(feedback);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Owners and admins of an organization: the people the escalation path keeps
+ * in the loop from the second step on.
+ */
+export async function getOrganizationAdmins(organizationId: string) {
+  try {
+    logger("getOrganizationAdmins", { organizationId });
+
+    const admins = await db.organizationMember.findMany({
+      where: { organizationId, role: { in: ["OWNER", "ADMIN"] } },
+      select: {
+        user: { select: { id: true, email: true, firstName: true } },
+      },
+    });
+
+    return handleSuccess(admins.map(a => a.user));
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Only while the subject is still a member: a removed member keeps no access
+// to conversations about them, matching the viewer context rule.
+function subjectStillMember(userId: string) {
+  return {
+    subjectUserId: userId,
+    organization: { members: { some: { userId } } },
+  };
+}
+
+/**
+ * Every conversation a user is the subject of, across the organizations they
+ * are still a member of, newest first. Unredacted, like getConversation.
+ */
+export async function getConversationsForUser(userId: string) {
+  try {
+    logger("getConversationsForUser", { userId });
+
+    const conversations = await db.conversation.findMany({
+      where: subjectStillMember(userId),
+      orderBy: { createdAt: "desc" },
+      include: {
+        ...conversationInclude,
+        organization: {
+          select: { id: true, name: true, slug: { select: { slug: true } } },
+        },
+      },
+    });
+
+    return handleSuccess(conversations);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Whether a user is the subject of any conversation in an organization they
+ * are still a member of (drives the "Conversations" nav entry).
+ */
+export async function userIsConversationSubject(userId: string) {
+  try {
+    logger("userIsConversationSubject", { userId });
+
+    const found = await db.conversation.findFirst({
+      where: subjectStillMember(userId),
+      select: { id: true },
+    });
+
+    return handleSuccess(Boolean(found));
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 export type ConversationWithDetails = NonNullable<
   Awaited<ReturnType<typeof getConversation>>["data"]
 >;

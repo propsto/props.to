@@ -21,6 +21,7 @@ export const BOOTSTRAP_IDS = {
   anonymousTemplate: "00000000-0000-0000-0000-000000000042",
   leadershipTemplate: "00000000-0000-0000-0000-000000000043",
   peerReviewTemplate: "00000000-0000-0000-0000-000000000044",
+  directFeedbackTemplate: "00000000-0000-0000-0000-000000000045",
 } as const;
 
 const categories = [
@@ -40,7 +41,7 @@ const categories = [
 
 type FieldSeed = {
   label: string;
-  type: "TEXTAREA" | "SELECT" | "RATING" | "SCALE" | "RADIO";
+  type: "TEXTAREA" | "SELECT" | "RATING" | "SCALE" | "RADIO" | "DATE";
   required: boolean;
   options?: string[];
   placeholder?: string;
@@ -243,6 +244,45 @@ const templates: {
         type: "TEXTAREA",
         required: false,
         placeholder: "Additional thoughts...",
+        order: 3,
+      },
+    ],
+  },
+  {
+    // Step 1 of the escalation path: the fact, when, its impact, the change asked
+    id: BOOTSTRAP_IDS.directFeedbackTemplate,
+    name: "Direct feedback",
+    description:
+      "A lead's same-day feedback on a concrete problem: the fact, its impact, and the adjustment needed.",
+    feedbackType: "MANAGER_FEEDBACK",
+    categoryId: BOOTSTRAP_IDS.reviewCategory,
+    fields: [
+      {
+        label: "Fact",
+        type: "TEXTAREA",
+        required: true,
+        placeholder: "What happened, concretely",
+        helpText: "A fact, not an impression",
+        order: 0,
+      },
+      {
+        label: "Date",
+        type: "DATE",
+        required: true,
+        order: 1,
+      },
+      {
+        label: "Impact",
+        type: "TEXTAREA",
+        required: true,
+        placeholder: "Who or what it affected, and how",
+        order: 2,
+      },
+      {
+        label: "Adjustment needed",
+        type: "TEXTAREA",
+        required: true,
+        placeholder: "The change expected from now on",
         order: 3,
       },
     ],

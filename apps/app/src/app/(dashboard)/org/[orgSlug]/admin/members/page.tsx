@@ -5,6 +5,7 @@ import {
   listPendingOrganizationInvites,
 } from "@propsto/data/repos";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -163,7 +164,16 @@ export default async function OrgAdminMembers({
                   <TableCell className="text-muted-foreground">
                     {new Date(member.joinedAt).toLocaleDateString()}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
+                    {member.userId !== actorId ? (
+                      <Link
+                        href={`/org/${orgSlug}/people/${member.user.slug.slug}/conversations`}
+                        className="mr-2 text-sm underline-offset-4 hover:underline"
+                        aria-label={`Conversations about ${memberName(member.user)}`}
+                      >
+                        Conversations
+                      </Link>
+                    ) : null}
                     {member.userId !== actorId &&
                     (actorRole === "OWNER" || member.role !== "OWNER") ? (
                       <MemberActions

@@ -182,6 +182,10 @@ async function main() {
       lastName: "Smith",
       role: "USER",
       hostedDomain: "acme.com",
+      dateOfBirth: new Date("1991-06-20"),
+      personalEmail: "jane.personal@example.com",
+      personalEmailVerified: new Date(),
+      onboardingCompletedAt: new Date(), // conversation subject signs in directly in E2E
       createdAt: new Date(),
       updatedAt: new Date(),
       slug: { create: { slug: "janesmith", scope: "GLOBAL" } },
