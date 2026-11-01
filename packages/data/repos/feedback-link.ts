@@ -174,7 +174,7 @@ export async function createEntityFeedbackLink(data: {
 }): Promise<HandleEvent<FeedbackLinkWithRelations>> {
   try {
     logger("createEntityFeedbackLink", { entityId: data.entityId });
-    await assertTemplateUsable(data.templateId, {
+    const template = await assertTemplateUsable(data.templateId, {
       organizationId: data.organizationId,
     });
     const slug = data.slug ?? generateLinkSlug();
@@ -190,6 +190,7 @@ export async function createEntityFeedbackLink(data: {
         entityId: data.entityId,
         organizationId: data.organizationId,
         templateId: data.templateId,
+        feedbackType: template.feedbackType,
         // Entity links are public by design (see getFeedbackPolicy)
         visibility: "PUBLIC",
       },
@@ -494,7 +495,7 @@ const managedLinkInclude = Prisma.validator<Prisma.FeedbackLinkInclude>()({
 async function assertTemplateUsable(
   templateId: string,
   scope: { userId?: string; organizationId?: string },
-): Promise<void> {
+): Promise<{ feedbackType: FeedbackType }> {
   const template = await db.feedbackTemplate.findFirst({
     where: {
       id: templateId,
@@ -507,9 +508,10 @@ async function assertTemplateUsable(
           : []),
       ],
     },
-    select: { id: true },
+    select: { feedbackType: true },
   });
   if (!template) throw new Error("Template not found for this organization");
+  return template;
 }
 
 // Create a managed feedback link

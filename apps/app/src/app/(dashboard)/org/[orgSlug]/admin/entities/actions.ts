@@ -144,6 +144,10 @@ export async function createEntityLinkAction(
       error: "Slug must be 3-30 lowercase letters, numbers or dashes",
     };
   }
+  // The public route serves "thanks" as the confirmation page
+  if (slug === "thanks") {
+    return { success: false, error: "That slug is reserved" };
+  }
 
   // The repo refuses a template that is neither a default nor the org's
   const result = await createEntityFeedbackLink({
