@@ -328,6 +328,8 @@ function StepRow({
       <button
         type="button"
         onClick={onSelect}
+        // Unrevealed steps stay out of the tab order and accessibility tree
+        inert={state === "hidden"}
         aria-current={state === "active" ? "step" : undefined}
         className={cn(
           "group relative block h-16 w-full rounded-lg text-left transition-all duration-500 focus-visible:outline-2 focus-visible:outline-primary",
@@ -460,10 +462,40 @@ export default function HowItWorks(): React.ReactElement {
   }, [playing, visible, total]);
 
   const choose = (id: string) => {
+    const steps = (scenarios.find(s => s.id === id) ?? scenarios[0]).steps;
     setScenarioId(id);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(steps.length);
+      setActive(steps.length - 1);
+      setPlaying(false);
+      return;
+    }
     setVisible(1);
     setActive(0);
     setPlaying(true);
+  };
+
+  // Arrow keys, Home and End move between tabs (roving tabIndex)
+  const onTabKeyDown = (event: React.KeyboardEvent, index: number) => {
+    const last = scenarios.length - 1;
+    const next =
+      event.key === "ArrowRight"
+        ? index === last
+          ? 0
+          : index + 1
+        : event.key === "ArrowLeft"
+          ? index === 0
+            ? last
+            : index - 1
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? last
+              : -1;
+    if (next < 0) return;
+    event.preventDefault();
+    choose(scenarios[next].id);
+    document.getElementById(`how-it-works-tab-${scenarios[next].id}`)?.focus();
   };
 
   const go = (index: number) => {
@@ -511,8 +543,12 @@ export default function HowItWorks(): React.ReactElement {
                 key={s.id}
                 type="button"
                 role="tab"
+                id={`how-it-works-tab-${s.id}`}
                 aria-selected={s.id === scenarioId}
+                aria-controls="how-it-works-panel"
+                tabIndex={s.id === scenarioId ? 0 : -1}
                 onClick={() => choose(s.id)}
+                onKeyDown={event => onTabKeyDown(event, i)}
                 className={cn(
                   "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                   s.id === scenarioId
@@ -542,6 +578,8 @@ export default function HowItWorks(): React.ReactElement {
 
           <div
             role="tabpanel"
+            id="how-it-works-panel"
+            aria-labelledby={`how-it-works-tab-${scenario.id}`}
             className="rounded-[2rem] border border-black/5 bubble-bg-3 p-4 shadow-md sm:p-8"
           >
             <div className="mx-auto mb-8 max-w-3xl text-center">
