@@ -162,7 +162,10 @@ export default async function MemberConversationsPage({
                     ) : null}
                     {step.reviewAt ? (
                       <p className="text-sm text-muted-foreground">
-                        Review date: {step.reviewAt.toLocaleDateString()}
+                        Review date:{" "}
+                        {step.reviewAt.toLocaleDateString(undefined, {
+                          timeZone: "UTC",
+                        })}
                       </p>
                     ) : null}
                     {step.consequence ? (

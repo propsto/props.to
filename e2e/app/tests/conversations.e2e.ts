@@ -99,7 +99,8 @@ test.describe
     await expect(stepDialog).not.toBeVisible({ timeout: 10000 });
     await expect(card.getByText(REPEATED_NOTE)).toBeVisible({ timeout: 15000 });
     await expect(card.getByText("Repeated without change")).toBeVisible();
-    await expect(card.getByText(/Review date/)).toBeVisible();
+    // The picked day itself, not the day before in a timezone west of UTC
+    await expect(card.getByText(/Review date: .*\b15\b/)).toBeVisible();
     await john.context().close();
   });
 
