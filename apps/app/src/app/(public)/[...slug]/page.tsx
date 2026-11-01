@@ -10,6 +10,8 @@ import {
   resolveByEmail as _resolveByEmail,
   getFeedbackLinkBySlug as _getFeedbackLinkBySlug,
   getGroupFeedbackLinkBySlug,
+  getEntityFeedbackLinkBySlug,
+  getEntityForPublicPage,
   getUserFeedbackLinks,
   getUser as _getUser,
   getGroupForPublicPage,
@@ -83,6 +85,14 @@ import { UserProfileHeader } from "./_components/user-profile-header";
 
 interface PublicPageProps {
   params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ context?: string | string[] }>;
+}
+
+// ?context= on entity links: what the visitor was looking at. Shown as plain
+// text (React escapes it) and re-sanitized server-side on submit.
+function readContext(raw: string | string[] | undefined): string | undefined {
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  return value?.replace(/\s+/g, " ").trim().slice(0, 300) || undefined;
 }
 
 export async function generateMetadata({
@@ -128,7 +138,7 @@ export async function generateMetadata({
         null,
       );
       if (linkResult.success && linkResult.data) {
-        const name = linkResult.data.user.firstName ?? slug[0];
+        const name = linkResult.data.user?.firstName ?? slug[0];
         return {
           title: `${linkResult.data.name} - ${name} | props.to`,
           description: `Give feedback to ${name}: ${linkResult.data.name}`,
@@ -148,11 +158,20 @@ export async function generateMetadata({
         orgUserResult.data.organizationId,
       );
       if (linkResult.success && linkResult.data) {
-        const name = linkResult.data.user.firstName ?? slug[1];
+        const name = linkResult.data.user?.firstName ?? slug[1];
         const orgName = linkResult.data.organization?.name ?? slug[0];
         return {
           title: `${linkResult.data.name} - ${name} | ${orgName}`,
           description: `Give feedback to ${name} via ${orgName}`,
+        };
+      }
+    }
+    if (orgUserResult.success && orgUserResult.data?.type === "entity") {
+      const entity = await getEntityForPublicPage(orgUserResult.data.entityId);
+      if (entity.success && entity.data) {
+        return {
+          title: `${entity.data.name} | ${entity.data.organization.name}`,
+          description: `Give feedback on ${entity.data.name}`,
         };
       }
     }
@@ -171,6 +190,7 @@ export async function generateMetadata({
  */
 export default async function PublicPage({
   params,
+  searchParams,
 }: PublicPageProps): Promise<React.ReactNode> {
   const { slug } = await params;
 
@@ -195,8 +215,9 @@ export default async function PublicPage({
   }
 
   if (slug.length === 3) {
-    // /<orgSlug>/<userSlug>/<linkSlug> OR /<orgSlug>/<groupSlug>/<linkSlug>
-    return handleThreeSegments(slug[0], slug[1], slug[2]);
+    // /<orgSlug>/<userSlug|groupSlug|entitySlug>/<linkSlug>
+    const { context } = await searchParams;
+    return handleThreeSegments(slug[0], slug[1], slug[2], readContext(context));
   }
 
   notFound();
@@ -331,7 +352,7 @@ async function handleOrgPage(organizationId: string): Promise<React.ReactNode> {
   const links = (linksResult?.success ? linksResult.data.links : []).map(
     link => ({
       ...link,
-      owner: [link.user.firstName, link.user.lastName]
+      owner: [link.user?.firstName, link.user?.lastName]
         .filter(Boolean)
         .join(" "),
       href: publicLinkPath(link),
@@ -567,6 +588,8 @@ async function gatedFeedbackForm(
   basePath: string,
   // The link's owner is the recipient (org user links), so their level applies
   showRecipientLevel = false,
+  // Entity links: what the visitor is giving feedback on
+  context?: string,
 ): Promise<React.ReactNode> {
   const session = await auth();
   const policy = await getFeedbackPolicy(link, session?.user?.id);
@@ -603,6 +626,7 @@ async function gatedFeedbackForm(
   const levelResult =
     showRecipientLevel &&
     link.organizationId &&
+    link.userId &&
     showsRecipientLevel(link, policy)
       ? await getMemberLevel(link.organizationId, link.userId)
       : null;
@@ -628,6 +652,7 @@ async function gatedFeedbackForm(
             }
           : undefined
       }
+      context={context}
     />
   );
 }
@@ -650,7 +675,7 @@ async function handlePersonalFeedbackLink(
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          Give Feedback to {link.user.firstName || username}
+          Give Feedback to {link.user?.firstName || username}
         </h1>
         <p className="text-muted-foreground">{link.name}</p>
       </div>
@@ -663,6 +688,7 @@ async function handleThreeSegments(
   orgSlug: string,
   secondSegment: string,
   linkSlug: string,
+  context?: string,
 ): Promise<React.ReactNode> {
   // Resolve the second segment - could be a user or a group
   const resolution = await resolveOrgSlug(orgSlug, secondSegment);
@@ -693,7 +719,57 @@ async function handleThreeSegments(
     );
   }
 
+  if (resolution.data.type === "entity") {
+    // /<orgSlug>/<entitySlug>/<linkSlug> - Entity feedback link
+    return handleEntityFeedbackLink(
+      orgSlug,
+      secondSegment,
+      linkSlug,
+      resolution.data.entityId,
+      context,
+    );
+  }
+
   notFound();
+}
+
+async function handleEntityFeedbackLink(
+  orgSlug: string,
+  entitySlug: string,
+  linkSlug: string,
+  entityId: string,
+  context?: string,
+): Promise<React.ReactNode> {
+  const [entityResult, linkResult] = await Promise.all([
+    getEntityForPublicPage(entityId),
+    getEntityFeedbackLinkBySlug(linkSlug, entityId),
+  ]);
+  if (!entityResult.data || !linkResult.data) {
+    notFound();
+  }
+  const entity = entityResult.data;
+
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">
+          Give feedback on {entity.name}
+        </h1>
+        {entity.description && (
+          <p className="text-muted-foreground">{entity.description}</p>
+        )}
+        <p className="text-sm text-muted-foreground mt-1">
+          {entity.organization.name}
+        </p>
+      </div>
+      {await gatedFeedbackForm(
+        linkResult.data,
+        `/${orgSlug}/${entitySlug}/${linkSlug}`,
+        false,
+        context,
+      )}
+    </div>
+  );
 }
 
 async function handleOrgUserFeedbackLink(
@@ -720,7 +796,7 @@ async function handleOrgUserFeedbackLink(
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          Give Feedback to {link.user.firstName || userSlug}
+          Give Feedback to {link.user?.firstName || userSlug}
         </h1>
         <p className="text-muted-foreground">{link.name}</p>
         {link.organization && (

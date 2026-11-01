@@ -34,6 +34,7 @@ export type FeedbackWithRelations = Prisma.FeedbackGetPayload<{
     template: { select: { id: true; name: true; feedbackType: true } };
     organization: { select: { id: true; name: true } };
     group: { select: { id: true; name: true } };
+    entity: { select: { id: true; name: true } };
     link: { select: { id: true; slug: true; name: true } };
     goals: { select: { id: true; title: true } };
     values: { select: { value: { select: { id: true; name: true } } } };
@@ -76,6 +77,7 @@ const feedbackInclude = Prisma.validator<Prisma.FeedbackInclude>()({
   template: { select: { id: true, name: true, feedbackType: true } },
   organization: { select: { id: true, name: true } },
   group: { select: { id: true, name: true } },
+  entity: { select: { id: true, name: true } },
   link: { select: { id: true, slug: true, name: true } },
   goals: { select: { id: true, title: true } },
   values: {
@@ -88,7 +90,11 @@ const feedbackInclude = Prisma.validator<Prisma.FeedbackInclude>()({
 // same transaction and maxResponses is enforced on the locked row, so two
 // concurrent submissions cannot both slip under the cap.
 export async function createFeedback(data: {
-  userId: string; // Recipient
+  // Exactly one: the recipient person, or the entity the feedback is about
+  // (entity feedback has no recipient, so it never reaches a personal record)
+  userId?: string;
+  entityId?: string;
+  context?: string; // Entity feedback only: what the visitor was looking at
   templateId: string;
   fieldsData?: Prisma.InputJsonValue;
   organizationId?: string;
@@ -108,8 +114,12 @@ export async function createFeedback(data: {
   try {
     logger("createFeedback", {
       userId: data.userId,
+      entityId: data.entityId,
       templateId: data.templateId,
     });
+    if (Boolean(data.userId) === Boolean(data.entityId)) {
+      throw new Error("Feedback needs a recipient or an entity, not both");
+    }
     const feedback = await db.$transaction(async tx => {
       if (data.linkId) {
         const link = await tx.feedbackLink.update({
@@ -124,20 +134,23 @@ export async function createFeedback(data: {
         }
       }
       // Snapshot the recipient's level so the record keeps it after reassignment
-      const recipientMember = data.organizationId
-        ? await tx.organizationMember.findUnique({
-            where: {
-              userId_organizationId: {
-                userId: data.userId,
-                organizationId: data.organizationId,
+      const recipientMember =
+        data.organizationId && data.userId
+          ? await tx.organizationMember.findUnique({
+              where: {
+                userId_organizationId: {
+                  userId: data.userId,
+                  organizationId: data.organizationId,
+                },
               },
-            },
-            select: { level: { select: { name: true } } },
-          })
-        : null;
+              select: { level: { select: { name: true } } },
+            })
+          : null;
       return tx.feedback.create({
         data: {
           userId: data.userId,
+          entityId: data.entityId,
+          context: data.entityId ? data.context : undefined,
           templateId: data.templateId,
           fieldsData: data.fieldsData,
           organizationId: data.organizationId,
@@ -310,6 +323,7 @@ export async function getFeedbackForOrganization(
     logger("getFeedbackForOrganization", { organizationId, options });
     const where: Prisma.FeedbackWhereInput = {
       organizationId,
+      entityId: null, // feedback about people; entity feedback lives on its entity
       ...(options?.status && { status: { in: options.status } }),
       ...(options?.feedbackType && {
         feedbackType: { in: options.feedbackType },
@@ -346,7 +360,10 @@ export async function getPendingModerationFeedback(
       where: {
         organizationId,
         status: "PENDING_MODERATION",
-        ...(excludeRecipientId && { userId: { not: excludeRecipientId } }),
+        // `not` alone would drop entity feedback (userId NULL), which any admin moderates
+        ...(excludeRecipientId && {
+          OR: [{ userId: null }, { userId: { not: excludeRecipientId } }],
+        }),
       },
       include: feedbackInclude,
       orderBy: { createdAt: "asc" },
@@ -371,7 +388,8 @@ export async function approveFeedback(
         id,
         organizationId,
         status: "PENDING_MODERATION",
-        userId: { not: moderatorId }, // nobody moderates feedback about themselves
+        // nobody moderates feedback about themselves; entity feedback has no recipient
+        OR: [{ userId: null }, { userId: { not: moderatorId } }],
       },
       data: {
         status: "APPROVED",
@@ -400,7 +418,8 @@ export async function rejectFeedback(
         id,
         organizationId,
         status: "PENDING_MODERATION",
-        userId: { not: moderatorId }, // nobody moderates feedback about themselves
+        // nobody moderates feedback about themselves; entity feedback has no recipient
+        OR: [{ userId: null }, { userId: { not: moderatorId } }],
       },
       data: {
         status: "REJECTED",
@@ -472,18 +491,22 @@ export async function getOrganizationFeedbackStats(
       membersWithFeedback,
       feedbackByTypeRaw,
     ] = await Promise.all([
-      db.feedback.count({ where: { organizationId, status: "APPROVED" } }),
+      db.feedback.count({
+        where: { organizationId, entityId: null, status: "APPROVED" },
+      }),
       db.feedback.count({
         where: {
+          entityId: null,
           submitter: { organizations: { some: { organizationId } } },
         },
       }),
       db.feedback.count({
-        where: { organizationId, status: "PENDING_MODERATION" },
+        where: { organizationId, entityId: null, status: "PENDING_MODERATION" },
       }),
       db.feedback.count({
         where: {
           organizationId,
+          entityId: null,
           status: "APPROVED",
           createdAt: { gte: thirtyDaysAgo },
         },
@@ -492,13 +515,13 @@ export async function getOrganizationFeedbackStats(
       db.feedback
         .groupBy({
           by: ["userId"],
-          where: { organizationId },
+          where: { organizationId, entityId: null },
           _count: true,
         })
         .then(res => res.length),
       db.feedback.groupBy({
         by: ["feedbackType"],
-        where: { organizationId },
+        where: { organizationId, entityId: null },
         _count: true,
       }),
     ]);

@@ -20,6 +20,7 @@ export * from "./org-level";
 export * from "./conversation";
 export * from "./goal";
 export * from "./group";
+export * from "./entity";
 export * from "./slug";
 export * from "./personal-email-verification";
 export * from "./org-notification-prefs";

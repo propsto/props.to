@@ -8,8 +8,9 @@ const logger = createLogger("app:feedback");
 // Tells the recipient they have feedback. Sent when feedback becomes visible to
 // them: on submit for unmoderated feedback, on approval for moderated feedback.
 // Never throws; a failed send must not fail the submission or the approval.
+// Entity feedback has no recipient (null): nobody gets a "you got feedback" email.
 export async function notifyFeedbackRecipient(input: {
-  recipientId: string;
+  recipientId: string | null;
   fields: { id: string; type: string }[];
   fieldsData: Record<string, unknown>;
   isAnonymous: boolean;
@@ -17,6 +18,7 @@ export async function notifyFeedbackRecipient(input: {
   feedbackType: string;
   values?: string[]; // Names of the org values the feedback is tagged with
 }): Promise<void> {
+  if (!input.recipientId) return;
   try {
     const userResult = await getUser({ id: input.recipientId });
     if (!userResult.success || !userResult.data?.email) return;

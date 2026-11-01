@@ -14,8 +14,13 @@ export interface FeedbackPolicy {
 
 // What an org's settings allow on one of its links. Personal links have no policy.
 // Defaults mirror the schema: feedback on, anonymous off, external off.
+// Entity links are public by design: see the entity branch below.
 export async function getFeedbackPolicy(
-  link: { organizationId: string | null; userId: string },
+  link: {
+    organizationId: string | null;
+    userId: string | null;
+    entityId?: string | null;
+  },
   userId?: string,
 ): Promise<FeedbackPolicy> {
   if (!link.organizationId) {
@@ -36,16 +41,32 @@ export async function getFeedbackPolicy(
         organizationId: link.organizationId,
       })
     : null;
+  const isMember = Boolean(membership?.data);
+  const enabled = feedback?.enableOrganizationFeedback ?? true;
+  // Entity links (feedback on a product, event, service) take anyone: signed in
+  // or not, named or anonymous, whatever the member settings say. Outsiders'
+  // submissions always wait for an admin; there is no recipient to exempt.
+  if (link.entityId) {
+    return {
+      enabled,
+      allowAnonymous: true,
+      membersOnly: false,
+      isMember,
+      moderated: needsModeration(feedback, isMember),
+    };
+  }
   // Nobody moderates feedback about themselves, so with no other OWNER/ADMIN
   // (e.g. a new org's sole owner) holding it would strand it: approve instead
   const moderated =
-    needsModeration(feedback, Boolean(membership?.data)) &&
-    (await hasOtherOrgAdmin(link.organizationId, link.userId)).data !== false;
+    needsModeration(feedback, isMember) &&
+    (!link.userId ||
+      (await hasOtherOrgAdmin(link.organizationId, link.userId)).data !==
+        false);
   return {
-    enabled: feedback?.enableOrganizationFeedback ?? true,
+    enabled,
     allowAnonymous: feedback?.allowAnonymousFeedback ?? false,
     membersOnly: !(members?.allowExternalFeedback ?? false),
-    isMember: Boolean(membership?.data),
+    isMember,
     moderated,
   };
 }
@@ -82,10 +103,19 @@ export function feedbackRefusal(
 }
 
 // The recipient's level expectations are internal: only for a person's own org
-// link (not a group link) and only when the viewer is a member of that org
+// link (not a group or entity link) and only when the viewer is a member of that org
 export function showsRecipientLevel(
-  link: { organizationId: string | null; groupId: string | null },
+  link: {
+    organizationId: string | null;
+    groupId: string | null;
+    entityId?: string | null;
+  },
   policy: Pick<FeedbackPolicy, "isMember">,
 ): boolean {
-  return Boolean(link.organizationId) && !link.groupId && policy.isMember;
+  return (
+    Boolean(link.organizationId) &&
+    !link.groupId &&
+    !link.entityId &&
+    policy.isMember
+  );
 }

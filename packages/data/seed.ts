@@ -499,6 +499,33 @@ async function main() {
     },
   });
 
+  // An Acme entity: feedback about the website, never about a person
+  // (entity-links E2E submits to /acme/website/feedback)
+  await prisma.entity.create({
+    data: {
+      name: "Acme Website",
+      description: "Tell us what you think of acme.com",
+      organization: { connect: { id: acme.id } },
+      slug: {
+        create: {
+          slug: "website",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
+        },
+      },
+      feedbackLinks: {
+        create: {
+          name: "Website feedback",
+          slug: "feedback",
+          organizationId: acme.id,
+          templateId: propsTemplate,
+          visibility: "PUBLIC",
+          isActive: true,
+        },
+      },
+    },
+  });
+
   // Pending org submissions to John, held for moderation (moderation E2E
   // approves one and rejects the other as Mike, the Acme owner)
   await prisma.feedback.createMany({
