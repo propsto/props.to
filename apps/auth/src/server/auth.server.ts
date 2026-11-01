@@ -3,7 +3,7 @@
 import { type EmailConfig } from "next-auth/providers/email";
 import { createLogger } from "@propsto/logger";
 import { getUserByEmailAndPassword } from "@propsto/data/repos/user";
-import { createOutboxEmail } from "@propsto/data/repos";
+import { sendMagicLinkEmail } from "@propsto/email";
 import Passkey from "next-auth/providers/passkey";
 import { PropstoAdapter, Role } from "@propsto/data";
 import Credentials from "next-auth/providers/credentials";
@@ -22,42 +22,42 @@ class CustomError extends CredentialsSignin {
   code = "custom";
 }
 
+// Every transport sends the props.to template; send() picks Resend, outbox or SMTP
+async function sendVerificationRequest({
+  identifier,
+  url,
+  expires,
+}: {
+  identifier: string;
+  url: string;
+  expires: Date;
+}): Promise<void> {
+  const sent = await sendMagicLinkEmail(identifier, url, expires);
+  if (!sent.success) throw new Error(sent.error ?? "Failed to send magic link");
+}
+
 function getEmailProvider(): EmailConfig | NodemailerConfig {
+  logger(`${constServer.EMAIL_PROVIDER} used`);
+  // Same id in every environment, so callers never have to know which transport sends
   if (constServer.EMAIL_PROVIDER === "resend") {
-    logger("resend used");
-    // Same id in every environment, so callers never have to know which transport sends
     return Resend({
       id: "email",
       name: "email",
       apiKey: constServer.RESEND_API_KEY,
       from: constServer.EMAIL_FROM,
+      sendVerificationRequest,
     });
   }
-  if (constServer.EMAIL_PROVIDER === "outbox") {
-    logger("outbox used");
-    return NodemailerProvider({
-      id: "email",
-      name: "email",
-      server: "smtp://outbox.invalid",
-      from: constServer.EMAIL_FROM,
-      // Store the magic link instead of sending it, so previews and tests can read it back
-      sendVerificationRequest: async ({ identifier, url }) => {
-        const stored = await createOutboxEmail({
-          to: identifier,
-          subject: "Sign in to Props.to",
-          html: `<p>Sign in to Props.to</p><p><a href="${url}">${url}</a></p>`,
-        });
-        if (!stored.success)
-          throw new Error(stored.error ?? "Failed to store magic link");
-      },
-    });
-  }
-  logger("nodemailer used");
   return NodemailerProvider({
     id: "email",
     name: "email",
-    server: constServer.EMAIL_SERVER,
+    // outbox never connects: send() stores the email instead
+    server:
+      constServer.EMAIL_PROVIDER === "outbox"
+        ? "smtp://outbox.invalid"
+        : constServer.EMAIL_SERVER,
     from: constServer.EMAIL_FROM,
+    sendVerificationRequest,
   });
 }
 

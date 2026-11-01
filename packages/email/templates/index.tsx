@@ -4,3 +4,4 @@ export * from "./password-changed";
 export * from "./feedback-received";
 export * from "./personal-email-verification";
 export * from "./org-invite";
+export * from "./magic-link";
