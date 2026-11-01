@@ -52,7 +52,9 @@ jobs:
       # the previews point at the base host instead of pr-N. Rebuild auth, then app (whose
       # E2E run would otherwise test against the stale auth).
       - name: Rebuild previews built before the PR existed
-        if: github.event.action == 'opened'
+        # Only labelled PRs get previews (preview_label.yaml); rebuilding an unlabelled one
+        # is skipped by the ignore step and reports as a failure here
+        if: github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'preview')
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_ACCESS_TOKEN }}
           VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
