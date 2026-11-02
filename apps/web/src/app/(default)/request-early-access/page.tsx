@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useRef } from "react";
 import dynamic from "next/dynamic";
 import { Form } from "./form";
@@ -40,12 +42,16 @@ export default function RequestEarlyAccess(): React.ReactElement {
               <div className="text-center mt-6">
                 <div className="text-xs text-zinc-500">
                   By submitting you agree with our{" "}
-                  <a
+                  <Link className="underline hover:no-underline" href="/terms">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link
                     className="underline hover:no-underline"
-                    href="https://docs.props.to/legals/terms-and-conditions"
+                    href="/privacy"
                   >
-                    Terms & Conditions
-                  </a>
+                    Privacy policy
+                  </Link>
                 </div>
               </div>
             </div>

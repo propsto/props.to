@@ -178,7 +178,7 @@ export function Footer(): React.ReactElement {
               <li>
                 <a
                   className="text-zinc-500 hover:text-zinc-900 transition"
-                  href="https://docs.props.to/terms-and-conditions"
+                  href="/terms"
                 >
                   Terms & Conditions
                 </a>

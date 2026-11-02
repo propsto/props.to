@@ -15,12 +15,15 @@ export async function requestEarlyAccess(
   const comingData = Object.fromEntries(
     formData.entries(),
   ) as RequestEarlyAccessFormType;
-  logger("requestEarlyAccess submit %O", comingData);
+  logger("requestEarlyAccess submit");
   // Parse the form data against expected schema
   const { success, error, data } =
     RequestEarlyAccessFormSchema.safeParse(comingData);
   if (!success) {
-    logger("signUpAction %O %O", error.flatten().fieldErrors);
+    logger(
+      "requestEarlyAccess invalid fields %O",
+      Object.keys(error.flatten().fieldErrors),
+    );
     return {
       errors: error.flatten().fieldErrors,
       success: false,

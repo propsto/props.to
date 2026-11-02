@@ -4,4 +4,5 @@
 
 ## ⚖️ Legals
 
-- [Terms & Conditions](legals/terms-and-conditions.md)
+- [Terms of service](https://props.to/terms)
+- [Privacy policy](https://props.to/privacy)
