@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage(): React.ReactElement {
   return (
-    <LegalPage title="Privacy policy" updated="November 1, 2026">
+    <LegalPage title="Privacy policy" updated="November 2, 2026">
       <p>
         This policy explains how Props.to (&quot;we&quot;) handles information
         when you use props.to, app.props.to and auth.props.to (the
@@ -35,6 +35,11 @@ export default function PrivacyPage(): React.ReactElement {
         <li>
           <strong>Anonymous feedback:</strong> when you send feedback
           anonymously, your identity is hidden from the recipient.
+        </li>
+        <li>
+          <strong>Early access requests:</strong> the name, email and message
+          you send through the request early access form, used only to contact
+          you about access.
         </li>
         <li>
           <strong>Technical data:</strong> IP address, browser type and request
@@ -98,8 +103,9 @@ export default function PrivacyPage(): React.ReactElement {
       </p>
       <p>
         These providers process data on our behalf: Vercel (hosting), Neon
-        (database), Resend (email) and Google (sign-in). We may disclose
-        information if the law requires it, or to protect people or the Service.
+        (database), Resend (email), Google (sign-in) and Zoho (early access
+        requests). We may disclose information if the law requires it, or to
+        protect people or the Service.
       </p>
 
       <h2>Storage and retention</h2>
