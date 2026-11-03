@@ -20,6 +20,7 @@ export type FeedbackStats = {
   sent: number;
   pending: number;
   recentCount: number;
+  activeLinks: number;
 };
 
 interface FeedbackStatsCardsProps {
@@ -46,7 +47,7 @@ export function FeedbackStatsCards({
             {stats.recentCount > 0 ? (
               <>
                 <TrendingUp className="size-4 text-green-500" />+
-                {stats.recentCount} this month
+                {stats.recentCount} in the last 30 days
               </>
             ) : (
               <>
@@ -111,7 +112,7 @@ export function FeedbackStatsCards({
         <CardHeader className="relative">
           <CardDescription>Active Links</CardDescription>
           <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            0
+            {stats.activeLinks}
           </CardTitle>
           <div className="absolute right-4 top-4">
             <Star className="size-5 text-muted-foreground" />
@@ -119,7 +120,9 @@ export function FeedbackStatsCards({
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Create a feedback link to get started
+            {stats.activeLinks > 0
+              ? "Links currently accepting feedback"
+              : "Create a feedback link to get started"}
           </div>
           <div className="text-muted-foreground">
             Share links to receive feedback

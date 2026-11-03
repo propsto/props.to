@@ -47,6 +47,7 @@ export type FeedbackStats = {
   pendingModeration: number;
   averageRating: number | null;
   recentCount: number; // Last 30 days
+  activeLinks: number;
 };
 
 export type OrgFeedbackStats = FeedbackStats & {
@@ -444,18 +445,20 @@ export async function getFeedbackStats(
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const [received, sent, pendingModeration, recentCount] = await Promise.all([
-      db.feedback.count({ where: { userId, status: "APPROVED" } }),
-      db.feedback.count({ where: { submitterId: userId } }),
-      db.feedback.count({ where: { userId, status: "PENDING_MODERATION" } }),
-      db.feedback.count({
-        where: {
-          userId,
-          status: "APPROVED",
-          createdAt: { gte: thirtyDaysAgo },
-        },
-      }),
-    ]);
+    const [received, sent, pendingModeration, recentCount, activeLinks] =
+      await Promise.all([
+        db.feedback.count({ where: { userId, status: "APPROVED" } }),
+        db.feedback.count({ where: { submitterId: userId } }),
+        db.feedback.count({ where: { userId, status: "PENDING_MODERATION" } }),
+        db.feedback.count({
+          where: {
+            userId,
+            status: "APPROVED",
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        db.feedbackLink.count({ where: { userId, isActive: true } }),
+      ]);
 
     // Calculate average rating from fieldsData if rating field exists
     // This is a simplified version - in production you'd want to query the actual rating field
@@ -467,6 +470,7 @@ export async function getFeedbackStats(
       pendingModeration,
       averageRating,
       recentCount,
+      activeLinks,
     });
   } catch (e) {
     return handleError(e);
@@ -490,6 +494,7 @@ export async function getOrganizationFeedbackStats(
       totalMembers,
       membersWithFeedback,
       feedbackByTypeRaw,
+      activeLinks,
     ] = await Promise.all([
       db.feedback.count({
         where: { organizationId, entityId: null, status: "APPROVED" },
@@ -524,6 +529,7 @@ export async function getOrganizationFeedbackStats(
         where: { organizationId, entityId: null },
         _count: true,
       }),
+      db.feedbackLink.count({ where: { organizationId, isActive: true } }),
     ]);
 
     const feedbackByType = feedbackByTypeRaw.reduce(
@@ -540,6 +546,7 @@ export async function getOrganizationFeedbackStats(
       pendingModeration,
       averageRating: null,
       recentCount,
+      activeLinks,
       totalMembers,
       membersWithFeedback,
       feedbackByType,
