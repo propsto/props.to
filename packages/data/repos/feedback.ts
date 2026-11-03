@@ -457,6 +457,10 @@ export async function getFeedbackStats(
             createdAt: { gte: thirtyDaysAgo },
           },
         }),
+        // "Active" means enabled (isActive), matching the Links page's "Active
+        // Links" section. Expiry/response caps are a per-submission check
+        // (canLinkAcceptResponses), deliberately not folded in here so the
+        // dashboard and the Links list always agree.
         db.feedbackLink.count({ where: { userId, isActive: true } }),
       ]);
 

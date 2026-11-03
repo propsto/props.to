@@ -121,7 +121,7 @@ export function FeedbackStatsCards({
         <CardFooter className="flex-col items-start gap-1 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             {stats.activeLinks > 0
-              ? "Links currently accepting feedback"
+              ? "Links you've enabled"
               : "Create a feedback link to get started"}
           </div>
           <div className="text-muted-foreground">
