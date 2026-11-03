@@ -70,8 +70,10 @@ export async function signInAction(
     }
     // Magic link requested: the email provider's only success URL is
     // verify-request, so show "check your email" instead of a silent reload.
+    // The `button` label keeps useResetableActionState from auto-clearing the
+    // confirmation after a few seconds, and relabels submit to a resend.
     if (signInMethod === "email") {
-      return { code: "verify-request", values: data };
+      return { code: "verify-request", values: data, button: "Resend link" };
     }
     // Only allow relative URLs (not protocol-relative like //evil.com) or URLs to our domain
     const isRelativeUrl = result.startsWith("/") && !result.startsWith("//");

@@ -1,30 +1,43 @@
 /* eslint-disable -- test-only DB setup helper, not part of the shipped app */
-import postgres from "postgres";
+import postgres, { type Sql } from "postgres";
 
 /**
  * Direct database access for E2E setup that no UI or API can create, such as a
  * pending Google account link (normally minted only by a real Google sign-in).
- * Uses DATABASE_URL, which the E2E run already provides (dotenv locally, the
- * branch database in CI). Raw SQL on purpose: importing @propsto/data pulls
- * Prisma + ESM-only logger into the Playwright runner, which does not load.
+ * Uses DATABASE_URL. The specs that need it skip when it is absent (see
+ * hasDbUrl), so importing this file never aborts collection in a CI run that
+ * does not provide a database. Raw SQL on purpose: importing @propsto/data
+ * pulls Prisma + an ESM-only logger into the Playwright runner, which fails.
  */
-const rawUrl = process.env.DATABASE_URL;
-if (!rawUrl) throw new Error("DATABASE_URL is required for E2E DB helpers");
+export const hasDbUrl = Boolean(process.env.DATABASE_URL);
 
-// Prisma URLs carry ?schema=public, which postgres.js rejects as a connection
-// parameter. Strip it and translate it into a search_path instead.
-const parsed = new URL(rawUrl);
-const schema = parsed.searchParams.get("schema") ?? "public";
-parsed.search = "";
+// Lazily created so a missing DATABASE_URL does not throw at import time, and
+// recreated after closeDb so a Playwright worker reused across spec files (one
+// file's afterAll ends the client) still gets a live connection.
+let client: Sql | null = null;
 
-// max: 1 keeps a single short-lived connection; tests close it in afterAll.
-export const sql = postgres(parsed.toString(), {
-  max: 1,
-  connection: { search_path: schema },
-});
+function conn(): Sql {
+  if (client) return client;
+  const rawUrl = process.env.DATABASE_URL;
+  if (!rawUrl) throw new Error("DATABASE_URL is required for E2E DB helpers");
+  // Prisma URLs carry ?schema=public, which postgres.js rejects as a connection
+  // parameter. Drop only that one and translate it to a search_path, keeping
+  // the rest of the query (e.g. sslmode=require for a TLS-only branch database).
+  const parsed = new URL(rawUrl);
+  const schema = parsed.searchParams.get("schema") ?? "public";
+  parsed.searchParams.delete("schema");
+  client = postgres(parsed.toString(), {
+    max: 1,
+    connection: { search_path: schema },
+  });
+  return client;
+}
 
 export async function closeDb(): Promise<void> {
-  await sql.end({ timeout: 5 });
+  if (client) {
+    await client.end({ timeout: 5 });
+    client = null;
+  }
 }
 
 /**
@@ -38,6 +51,7 @@ export async function seedPendingGoogleLink(opts: {
   isGoogleWorkspaceAdmin?: boolean;
   token?: string;
 }): Promise<string> {
+  const sql = conn();
   const token = opts.token ?? `e2e-pending-${Date.now()}`;
   const data = {
     email: opts.email,
@@ -60,6 +74,7 @@ export async function seedPendingGoogleLink(opts: {
 export async function isGoogleLinked(
   providerAccountId: string,
 ): Promise<boolean> {
+  const sql = conn();
   const rows = await sql`
     SELECT 1 FROM "Account"
     WHERE provider = 'google' AND "providerAccountId" = ${providerAccountId}
@@ -69,6 +84,7 @@ export async function isGoogleLinked(
 }
 
 export async function pendingLinkCount(email: string): Promise<number> {
+  const sql = conn();
   const rows = await sql`
     SELECT count(*)::int AS n FROM "PendingAccountLink" WHERE email = ${email}
   `;
@@ -80,6 +96,7 @@ export async function latestOutboxLink(
   to: string,
   pattern: RegExp,
 ): Promise<string | null> {
+  const sql = conn();
   const rows = await sql<{ html: string }[]>`
     SELECT html FROM "EmailOutbox"
     WHERE lower("to") = ${to.toLowerCase()}
@@ -95,11 +112,22 @@ export async function latestOutboxLink(
   return null;
 }
 
+/** Remove the Google link + pending row so the linking tests can re-run on a dirty DB. */
+export async function resetGoogleLink(
+  email: string,
+  providerAccountId: string,
+): Promise<void> {
+  const sql = conn();
+  await sql`DELETE FROM "Account" WHERE provider = 'google' AND "providerAccountId" = ${providerAccountId}`;
+  await sql`DELETE FROM "PendingAccountLink" WHERE email = ${email}`;
+  await sql`DELETE FROM "EmailOutbox" WHERE lower("to") = ${email.toLowerCase()}`;
+}
+
 /**
  * Seed a password user whose Google Workspace domain already has an org but who
  * is not yet a member, so the onboarding "join organization" step applies. The
  * password hash is copied from an existing seeded user so no bcrypt is needed
- * in the test runner. Reuse `orgHostedDomain` of a seeded org (e.g. acme.com).
+ * in the test runner. Reuse `hostedDomain` of a seeded org (e.g. acme.com).
  */
 export async function seedJoinableUser(opts: {
   id: string;
@@ -112,6 +140,7 @@ export async function seedJoinableUser(opts: {
   copyPasswordFromEmail: string;
 }): Promise<void> {
   await resetJoinableUser(opts.id, opts.slug);
+  const sql = conn();
   await sql`
     INSERT INTO "Slug" (id, slug, scope, "updatedAt")
     VALUES (${opts.slugId}, ${opts.slug}, 'GLOBAL', now())
@@ -132,6 +161,7 @@ export async function memberRoleOf(
   userId: string,
   hostedDomain: string,
 ): Promise<string | null> {
+  const sql = conn();
   const rows = await sql<{ role: string }[]>`
     SELECT om.role FROM "OrganizationMember" om
     JOIN "Organization" o ON o.id = om."organizationId"
@@ -146,19 +176,10 @@ export async function resetJoinableUser(
   userId: string,
   slug: string,
 ): Promise<void> {
+  const sql = conn();
   await sql`DELETE FROM "OrganizationMember" WHERE "userId" = ${userId}`;
   await sql`DELETE FROM "Slug" WHERE "orgSlugOwnerId" = ${userId}`;
   await sql`DELETE FROM "Account" WHERE "userId" = ${userId}`;
   await sql`DELETE FROM "User" WHERE id = ${userId}`;
   await sql`DELETE FROM "Slug" WHERE slug = ${slug} AND scope = 'GLOBAL'`;
-}
-
-/** Remove the Google link + pending row so the linking tests can re-run on a dirty DB. */
-export async function resetGoogleLink(
-  email: string,
-  providerAccountId: string,
-): Promise<void> {
-  await sql`DELETE FROM "Account" WHERE provider = 'google' AND "providerAccountId" = ${providerAccountId}`;
-  await sql`DELETE FROM "PendingAccountLink" WHERE email = ${email}`;
-  await sql`DELETE FROM "EmailOutbox" WHERE lower("to") = ${email.toLowerCase()}`;
 }

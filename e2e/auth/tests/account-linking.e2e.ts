@@ -6,6 +6,7 @@ import {
   pendingLinkCount,
   resetGoogleLink,
   closeDb,
+  hasDbUrl,
 } from "../utils/db";
 
 /**
@@ -16,18 +17,23 @@ import {
  * Bob is seeded with a password (bob.jones@acme.com / P4ssw0rd) and is an Acme
  * member, so after linking he continues onboarding rather than finishing.
  * Both tests reset Bob's Google link first so they survive a non-reseeded DB.
+ *
+ * Needs direct DB setup, so it skips when DATABASE_URL is absent (CI runs E2E
+ * against a deployed preview with no DB for the runner); runs locally.
  */
 const BOB = "bob.jones@acme.com";
 const PROVIDER_ID = "e2e-google-bob-link";
 
-test.afterAll(async () => {
-  await resetGoogleLink(BOB, PROVIDER_ID);
-  await closeDb();
-});
-
 test.describe.serial("Google account linking", () => {
+  test.skip(!hasDbUrl, "requires DATABASE_URL for DB setup");
+
   test.beforeEach(async () => {
     await resetGoogleLink(BOB, PROVIDER_ID);
+  });
+
+  test.afterAll(async () => {
+    await resetGoogleLink(BOB, PROVIDER_ID);
+    await closeDb();
   });
 
   test("magic link finishes linking and targets the completion route", async ({
