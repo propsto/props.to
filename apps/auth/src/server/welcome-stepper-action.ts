@@ -14,8 +14,6 @@ import {
   getOrganizationByHostedDomain,
   createOrganizationWithOwner,
   getPendingAccountLink,
-  consumePendingAccountLink,
-  linkAccount,
   getUserByEmail,
   verifyUserPassword,
   createPersonalEmailVerification,
@@ -29,6 +27,7 @@ import { type AccountFormValues } from "@components/welcome-stepper/steps/accoun
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
 import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
 import { updateSession, signIn, auth } from "./auth.server";
+import { completeAccountLink } from "./complete-account-link";
 
 // Every handler below takes a userId from the client; it must match the signed-in user.
 async function isSessionUser(userId: string): Promise<boolean> {
@@ -651,7 +650,7 @@ export async function linkAccountHandler(
       const sent: unknown = await signIn("email", {
         email: pendingData.email,
         redirect: false,
-        callbackUrl: `/welcome?step=link-account&token=${pendingLinkToken}&verified=true`,
+        redirectTo: `/api/link-account/complete?token=${pendingLinkToken}`,
       });
       if (typeof sent === "string" && sent.includes("error=")) {
         console.error("linkAccountHandler: magic link not sent", sent);
@@ -670,40 +669,13 @@ export async function linkAccountHandler(
       };
     }
 
-    // Password verification successful - link the OAuth account
-    const linkResult = await linkAccount({
-      userId: existingUser.data.id!,
-      type: "oauth",
-      provider: pendingData.provider,
-      providerAccountId: pendingData.providerAccountId,
-      access_token: pendingData.accessToken ?? undefined,
-      refresh_token: pendingData.refreshToken ?? undefined,
-      expires_at: pendingData.expiresAt ?? undefined,
-    });
-
-    if (!linkResult.success) {
-      return {
-        success: false,
-        error: "Failed to link account. Please try again.",
-      };
-    }
-
-    // Update user with Google Workspace data
-    const userUpdated = await updateUser(existingUser.data.id!, {
-      emailVerified: new Date(),
-      hostedDomain: pendingData.hostedDomain,
-      isGoogleWorkspaceAdmin: pendingData.isGoogleWorkspaceAdmin ?? false,
-    });
-
-    // Consume the pending link token
-    await consumePendingAccountLink(pendingLinkToken);
-
-    // Log successful account linking
-    logger("info: Successfully linked Google account %o", {
-      userId: existingUser.data.id,
-      provider: pendingData.provider,
-      hostedDomain: pendingData.hostedDomain,
-    });
+    // Password verified: link the OAuth account
+    const userUpdated = await completeAccountLink(
+      existingUser.data.id!,
+      pendingData,
+      pendingLinkToken,
+    );
+    if (!userUpdated.success) return userUpdated;
 
     // Update session with new user data
     if (userUpdated.data) {
