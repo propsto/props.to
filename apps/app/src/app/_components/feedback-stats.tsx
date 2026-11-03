@@ -19,8 +19,9 @@ export async function FeedbackStats({
         sent: statsResult.data.sent,
         pending: statsResult.data.pendingModeration,
         recentCount: statsResult.data.recentCount,
+        activeLinks: statsResult.data.activeLinks,
       }
-    : { received: 0, sent: 0, pending: 0, recentCount: 0 };
+    : { received: 0, sent: 0, pending: 0, recentCount: 0, activeLinks: 0 };
 
   return <FeedbackStatsCards stats={stats} />;
 }
