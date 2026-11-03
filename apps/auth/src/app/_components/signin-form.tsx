@@ -39,6 +39,18 @@ export function SigninForm({
   return (
     <div className={cn("grid gap-6 relative", className)} {...props}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {result?.code === "verify-request" ? (
+          <div
+            role="status"
+            className="rounded-md border border-green-600/30 bg-green-500/10 p-3 text-sm text-start"
+          >
+            <p className="font-medium">Check your email</p>
+            <p className="mt-1">
+              We sent a sign-in link to <strong>{result.values?.email}</strong>.
+              Nothing after a few minutes? Check spam, or request a new link.
+            </p>
+          </div>
+        ) : null}
         <div className="grid gap-2">
           <FormInputError
             controlName="email"

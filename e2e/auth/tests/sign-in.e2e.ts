@@ -144,24 +144,23 @@ test.describe("Password Authentication", () => {
 });
 
 test.describe("Magic Link Authentication", () => {
-  test("should initiate magic link flow", async ({ page, baseURL }) => {
+  test("shows a check-your-email confirmation after requesting a link", async ({
+    page,
+    baseURL,
+  }) => {
     await page.goto(baseURL ?? "");
 
-    // Fill email
     await page.getByLabel("email").fill("test-magic-link@example.com");
-
-    // Click magic link button
     await page
       .getByRole("button", { name: "Continue with magic link" })
       .click();
 
-    // Should show confirmation or redirect to check email page
-    // The exact behavior depends on implementation
-    await page.waitForTimeout(2000);
-
-    // Page should show some indication that email was sent or form should change
-    const pageContent = await page.textContent("body");
-    expect(pageContent).toBeTruthy();
+    // Requesting a magic link used to silently reload the same form with no
+    // feedback; the user must now see an explicit confirmation naming the email.
+    await expect(page.getByText(/check your email/i)).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.getByText("test-magic-link@example.com")).toBeVisible();
   });
 });
 

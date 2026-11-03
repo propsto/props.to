@@ -63,6 +63,18 @@ export async function signInAction(
 
   // Validate redirect URL before using it
   if (typeof result === "string" && result.length > 0) {
+    // Auth.js with redirect:false returns a URL; failures come back as ?error=
+    if (result.includes("error=")) {
+      logger("signInAction > provider returned error url");
+      return { success: false, message: "Sign in failed. Please try again." };
+    }
+    // Magic link requested: the email provider's only success URL is
+    // verify-request, so show "check your email" instead of a silent reload.
+    // The `button` label keeps useResetableActionState from auto-clearing the
+    // confirmation after a few seconds, and relabels submit to a resend.
+    if (signInMethod === "email") {
+      return { code: "verify-request", values: data, button: "Resend link" };
+    }
     // Only allow relative URLs (not protocol-relative like //evil.com) or URLs to our domain
     const isRelativeUrl = result.startsWith("/") && !result.startsWith("//");
     if (isRelativeUrl || result.startsWith(constServer.PROPSTO_APP_URL)) {
