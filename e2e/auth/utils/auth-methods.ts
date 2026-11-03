@@ -30,10 +30,13 @@ export async function signInByPassword(
  */
 export async function waitForPostLoginRedirect(page: Page): Promise<void> {
   const appUrl = process.env.PROPSTO_APP_URL ?? "http://localhost:3000";
-  const appHost = new URL(appUrl).hostname;
+  // Compare the full origin (host + port). Using only the hostname matches the
+  // auth app too when both run on localhost, so this returned before the
+  // redirect finished and the caller saw the sign-in page.
+  const appOrigin = new URL(appUrl).origin;
 
   await page.waitForURL(
-    url => url.href.includes("/welcome") || url.hostname.includes(appHost),
-    { timeout: 15000 }
+    url => url.href.includes("/welcome") || url.origin === appOrigin,
+    { timeout: 15000 },
   );
 }

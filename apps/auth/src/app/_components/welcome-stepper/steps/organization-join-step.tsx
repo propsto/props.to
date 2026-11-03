@@ -93,7 +93,9 @@ export function StepComponent({
 
       <div className="flex items-center justify-center pt-4">
         <Button
-          type="button"
+          // Submits the stepper form, which runs the join. A plain type="button"
+          // here made the step's main call-to-action a no-op.
+          type="submit"
           variant={confirmJoin ? "default" : "outline"}
           onClick={() => {
             setValue("confirmJoin", true);

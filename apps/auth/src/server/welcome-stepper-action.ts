@@ -647,6 +647,12 @@ export async function linkAccountHandler(
       // Magic link verification
       // Send magic link with callback to complete linking
       // With redirect: false a failed send comes back as an error URL, not a throw
+      // next-auth v5 names the post-verification redirect `redirectTo`; the v4
+      // `callbackUrl` is ignored, so the magic link fell back to the current
+      // page and linking never ran. This lands it on the completion route.
+      // next-auth v5 names the post-verification redirect `redirectTo`; the v4
+      // `callbackUrl` is ignored, so the magic link fell back to the current
+      // page and linking never ran. This lands it on the completion route.
       const sent: unknown = await signIn("email", {
         email: pendingData.email,
         redirect: false,
@@ -676,6 +682,15 @@ export async function linkAccountHandler(
       pendingLinkToken,
     );
     if (!userUpdated.success) return userUpdated;
+
+    // The user reached this step signed out (the Google sign-in was parked for
+    // linking), so proving the password must also create their session, or the
+    // next step bounces to /error?code=InvalidSession.
+    await signIn("credentials", {
+      email: pendingData.email,
+      password: password ?? "",
+      redirect: false,
+    });
 
     // Update session with new user data
     if (userUpdated.data) {
