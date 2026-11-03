@@ -19,7 +19,12 @@ export async function GET(request: Request): Promise<NextResponse> {
   if (!pending.success || !pending.data) {
     return to("/error?code=AccountLinkingExpired");
   }
-  if (pending.data.email.toLowerCase() !== session.user.email.toLowerCase()) {
+  // The magic link may have gone to a verified personal email, which signs in the same user
+  const own = [
+    session.user.email,
+    session.user.personalEmailVerified ? session.user.personalEmail : null,
+  ].map(e => e?.toLowerCase());
+  if (!own.includes(pending.data.email.toLowerCase())) {
     return to("/error?code=AccountLinkingFailed");
   }
 

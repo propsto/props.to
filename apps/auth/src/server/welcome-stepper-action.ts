@@ -650,7 +650,7 @@ export async function linkAccountHandler(
       const sent: unknown = await signIn("email", {
         email: pendingData.email,
         redirect: false,
-        callbackUrl: `/api/link-account/complete?token=${pendingLinkToken}`,
+        redirectTo: `/api/link-account/complete?token=${pendingLinkToken}`,
       });
       if (typeof sent === "string" && sent.includes("error=")) {
         console.error("linkAccountHandler: magic link not sent", sent);
