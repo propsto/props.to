@@ -46,13 +46,6 @@ export function middleware(request: NextRequest): NextResponse {
     return NextResponse.next();
   }
 
-  // The app zone serves its assets under /app-static (see app's next.config
-  // assetPrefix). Forward those to the app: the apex URL stays on props.to
-  // during the profile rewrite, so these must not be served by the web zone.
-  if (pathname.startsWith("/app-static/")) {
-    return rewriteToApp(request);
-  }
-
   // Skip static files and Next.js internals. Public files live at the root or
   // under /images and /fonts. Other dotted paths are profiles: member usernames
   // (/acme/john.doe, even /acme/john.js) and emails (/leo@cresteo.com).

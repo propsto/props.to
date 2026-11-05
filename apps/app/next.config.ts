@@ -7,19 +7,19 @@ export default {
   },
   // The web zone proxies props.to/<user> to this app while keeping the apex
   // URL, so relative /_next/* asset URLs would resolve against props.to (the
-  // web zone) and 404. Serve this zone's assets under a unique prefix the web
-  // middleware forwards here, and map it back to /_next so direct app.props.to
-  // visits still resolve. (Next.js Multi-Zones asset routing.)
-  assetPrefix: "/app-static",
-  async rewrites() {
-    return {
-      beforeFiles: [
-        { source: "/app-static/_next/:path*", destination: "/_next/:path*" },
-      ],
-    };
-  },
+  // web zone) and 404. Emit asset URLs against this zone's own origin instead,
+  // so the browser loads /_next/* straight from app.props.to (which has them).
+  // A relative prefix doesn't survive Vercel's asset CDN in production, so this
+  // must be the absolute origin. (Next.js Multi-Zones asset routing.)
+  assetPrefix: vercelPreviewEnvVars.PROPSTO_APP_URL,
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    // Feedback submit (and other public-page Server Actions) run in this zone
+    // but are posted from the apex/preview origin the page is proxied under, so
+    // the action's same-origin check must allow those hosts. (Multi-Zones.)
+    serverActions: {
+      allowedOrigins: ["props.to", "*.props.build"],
+    },
   },
   reactStrictMode: true,
 } satisfies NextConfig;
