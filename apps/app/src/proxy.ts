@@ -13,9 +13,12 @@ import { auth } from "@/server/auth.edge";
 export default function proxy(request: NextRequest): Response {
   const { pathname } = request.nextUrl;
 
-  // Skip static files and Next.js internals
+  // Skip static files and Next.js internals. /app-static is this zone's
+  // assetPrefix (see next.config); its requests are public assets, never
+  // auth-gated routes, so let them reach the rewrite that maps them to /_next.
   if (
     pathname.startsWith("/_next/") ||
+    pathname.startsWith("/app-static/") ||
     pathname.startsWith("/api/") ||
     pathname.includes(".")
   ) {
