@@ -1,6 +1,17 @@
 # .kodiak.toml
-# Minimal config. version is the only required field.
+# https://kodiakhq.com/docs/config-reference
 version = 1
+
+[merge]
+# Fast path: add the `automerge` label to a PR and Kodiak merges it as soon as
+# required checks pass, instead of waiting for the hourly merge routine.
+require_automerge_label = true
+automerge_label = "automerge"
+# `hold` still opts a PR out of any auto-merge.
+blocking_labels = ["hold"]
+# Match the repo's squash history and keep merged branches tidy.
+method = "squash"
+delete_branch_on_merge = true
 
 [update]
 always = true
