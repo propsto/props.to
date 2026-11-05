@@ -115,6 +115,7 @@ export const reservedSlugs = [
   "media",
   "downloads",
   "files",
+  "app-static", // app zone assetPrefix (see apps/app/next.config.ts)
 
   // Props.to specific
   "props",
