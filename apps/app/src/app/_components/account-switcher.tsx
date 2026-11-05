@@ -19,6 +19,7 @@ import {
 } from "@propsto/ui/atoms/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Badge } from "@propsto/ui/atoms/badge";
+import { Logo } from "@propsto/ui/atoms/logo";
 import { OrgLogo } from "./org-logo";
 
 type Organization = {
@@ -60,26 +61,24 @@ export function AccountSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="relative">
-                <Avatar className="size-8 rounded-lg">
-                  <AvatarImage src={userImage} alt={userName} />
-                  <AvatarFallback className="rounded-lg">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                {/* Which company the signed-in work account belongs to */}
-                {workOrg ? (
-                  <OrgLogo
-                    name={workOrg.name}
-                    hostedDomain={workOrg.hostedDomain}
-                    className="absolute right-0 bottom-0 size-3.5 rounded-sm ring-2 ring-sidebar"
-                  />
-                ) : null}
-              </div>
+              {/* Brand/context mark: the company in a work context, else the
+                  Props.to mark. The signed-in person's avatar already shows in
+                  the footer account switcher, so don't repeat it here. */}
+              {workOrg ? (
+                <OrgLogo
+                  name={workOrg.name}
+                  hostedDomain={workOrg.hostedDomain}
+                  className="size-8"
+                />
+              ) : (
+                <Logo className="size-8 rounded-lg" />
+              )}
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">Props.to</span>
+                <span className="truncate font-semibold">
+                  {workOrg ? workOrg.name : "Props.to"}
+                </span>
                 <span className="truncate text-xs text-muted-foreground">
-                  {userName}
+                  {workOrg ? "Props.to" : userName}
                 </span>
               </div>
             </SidebarMenuButton>
