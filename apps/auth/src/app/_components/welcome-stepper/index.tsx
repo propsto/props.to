@@ -150,6 +150,21 @@ export function WelcomeStepper({
   };
 
   const submitStep = async (values: GenericFormValues): Promise<void> => {
+    // Backup Email without a code: the user hasn't sent/entered one yet. The
+    // verificationCode field only renders after a code is sent, so surface the
+    // next action on the always-rendered root alert. Checked before updating
+    // formData, whose reset effect would otherwise clear this error.
+    if (
+      stepper.current.id === "personal-email" &&
+      !(values as PersonalEmailFormValues).verificationCode
+    ) {
+      form.setError("root", {
+        message:
+          "Enter your personal email, send the verification code, then enter the 6-digit code to continue.",
+      });
+      return;
+    }
+
     // Save current step data before proceeding
     setFormData(prev => ({
       ...prev,
@@ -227,22 +242,12 @@ export function WelcomeStepper({
         }
       },
       "personal-email": async () => {
-        const personalEmailValues = values as PersonalEmailFormValues;
-
-        // If no verification code, the user hasn't sent/entered one yet.
-        // The verificationCode field only renders after a code is sent, so an
-        // error on it would be invisible — the step would look like a dead end.
-        // Surface it on the always-rendered root alert with the next action.
-        if (!personalEmailValues.verificationCode) {
-          form.setError("root", {
-            message:
-              "Enter your personal email, send the verification code, then enter the 6-digit code to continue.",
-          });
-          return;
-        }
+        const { verificationCode } = values as PersonalEmailFormValues;
+        // A missing code is surfaced at the top of submitStep
+        if (!verificationCode) return;
 
         const result = await verifyPersonalEmailHandler(
-          personalEmailValues.verificationCode,
+          verificationCode,
           user.id,
         );
         if (result.success) {
