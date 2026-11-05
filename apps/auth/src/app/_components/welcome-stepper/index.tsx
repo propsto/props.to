@@ -229,11 +229,14 @@ export function WelcomeStepper({
       "personal-email": async () => {
         const personalEmailValues = values as PersonalEmailFormValues;
 
-        // If no verification code, user hasn't sent the code yet
-        // The component handles sending the code, we just verify here
+        // If no verification code, the user hasn't sent/entered one yet.
+        // The verificationCode field only renders after a code is sent, so an
+        // error on it would be invisible — the step would look like a dead end.
+        // Surface it on the always-rendered root alert with the next action.
         if (!personalEmailValues.verificationCode) {
-          form.setError("verificationCode", {
-            message: "Please enter the verification code sent to your email",
+          form.setError("root", {
+            message:
+              "Enter your personal email, send the verification code, then enter the 6-digit code to continue.",
           });
           return;
         }
