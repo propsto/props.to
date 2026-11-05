@@ -16,12 +16,41 @@ import { isReservedSlug } from "@propsto/constants/other";
 const ROOT_FILE =
   /^\/[^/]+\.(?:png|jpe?g|gif|webp|avif|svg|ico|txt|xml|json|webmanifest|css|js|map|woff2?|ttf|otf|pdf)$/i;
 
+// Resolve the app zone's origin for the current host, so profile rewrites work
+// in production (props.to → app.props.to) and previews (pr-69.props.build →
+// app.pr-69.props.build) alike.
+function resolveAppUrl(host: string): string {
+  if (process.env.PROPSTO_APP_URL) {
+    return process.env.PROPSTO_APP_URL;
+  }
+  if (host.includes(".props.build") || host.includes(".props.to")) {
+    return `https://app.${host}`;
+  }
+  return "https://app.props.to";
+}
+
+function rewriteToApp(request: NextRequest): NextResponse {
+  const rewriteUrl = new URL(
+    request.nextUrl.pathname,
+    resolveAppUrl(request.headers.get("host") ?? ""),
+  );
+  rewriteUrl.search = request.nextUrl.search;
+  return NextResponse.rewrite(rewriteUrl);
+}
+
 export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   // Skip API routes
   if (pathname.startsWith("/api/")) {
     return NextResponse.next();
+  }
+
+  // The app zone serves its assets under /app-static (see app's next.config
+  // assetPrefix). Forward those to the app: the apex URL stays on props.to
+  // during the profile rewrite, so these must not be served by the web zone.
+  if (pathname.startsWith("/app-static/")) {
+    return rewriteToApp(request);
   }
 
   // Skip static files and Next.js internals. Public files live at the root or
@@ -56,27 +85,7 @@ export function middleware(request: NextRequest): NextResponse {
   }
 
   // Rewrite to the app for user/org profile pages
-  // Compute app URL dynamically based on request host to support preview environments
-  // e.g., pr-69.props.build → app.pr-69.props.build
-  //       props.to → app.props.to
-  const host = request.headers.get("host") ?? "";
-  let appUrl: string;
-
-  if (process.env.PROPSTO_APP_URL) {
-    // Use env var if explicitly set
-    appUrl = process.env.PROPSTO_APP_URL;
-  } else if (host.includes(".props.build") || host.includes(".props.to")) {
-    // Preview or production - compute app URL from host
-    appUrl = `https://app.${host}`;
-  } else {
-    // Fallback
-    appUrl = "https://app.props.to";
-  }
-
-  const rewriteUrl = new URL(pathname, appUrl);
-  rewriteUrl.search = request.nextUrl.search;
-
-  return NextResponse.rewrite(rewriteUrl);
+  return rewriteToApp(request);
 }
 
 export const config = {
