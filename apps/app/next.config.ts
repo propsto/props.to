@@ -15,10 +15,12 @@ export default {
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
     // Feedback submit (and other public-page Server Actions) run in this zone
-    // but are posted from the apex/preview origin the page is proxied under, so
-    // the action's same-origin check must allow those hosts. (Multi-Zones.)
+    // but are posted from the apex origin the page is proxied under, so the
+    // action's same-origin check must allow it: props.to in prod, and the
+    // web-zone preview apex web.pr-N.props.build (the allowedOrigins wildcard
+    // matches a single label, so web.*.props.build, not *.props.build).
     serverActions: {
-      allowedOrigins: ["props.to", "*.props.build"],
+      allowedOrigins: ["props.to", "web.*.props.build"],
     },
   },
   reactStrictMode: true,
