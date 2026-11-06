@@ -14,11 +14,16 @@ import { signInByPassword } from "../../auth/utils/auth-methods";
 const AUTH_URL = process.env.AUTH_URL ?? "";
 const APP_URL = process.env.PROPSTO_APP_URL ?? "";
 const INVITEE = "carol.white@globex.com";
+const INVITER = "mike.ryan@example.com";
+
+async function signInAs(page: Page, email: string): Promise<void> {
+  await page.goto(AUTH_URL);
+  await signInByPassword(page, email, "P4ssw0rd");
+  await page.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
+}
 
 async function signInAsInvitee(page: Page): Promise<void> {
-  await page.goto(AUTH_URL);
-  await signInByPassword(page, INVITEE, "P4ssw0rd");
-  await page.waitForURL(`${APP_URL}/**`, { timeout: 30000 });
+  await signInAs(page, INVITEE);
 }
 
 async function latestInviteLink(page: Page): Promise<string> {
@@ -83,6 +88,30 @@ test.describe
     await expect(
       page.getByRole("button", { name: "Accept invitation" }),
     ).toHaveCount(0);
+  });
+
+  test.describe("signed in as the wrong account", () => {
+    // Fresh context: signing out here must not touch the shared owner session.
+    test.use({ storageState: { cookies: [], origins: [] } });
+
+    test("switching account signs out and returns to the invite", async ({
+      page,
+    }) => {
+      await signInAs(page, INVITER);
+
+      await page.goto(inviteUrl);
+      await expect(page.getByText("Wrong Account")).toBeVisible();
+      await page
+        .getByRole("button", { name: "Sign out and switch account" })
+        .click();
+
+      // Signed out, the invite sends the visitor to sign in and back again
+      await expect(page.getByLabel("email")).toBeVisible({ timeout: 30000 });
+      await signInByPassword(page, INVITEE, "P4ssw0rd");
+      await expect(
+        page.getByRole("heading", { name: /Join Acme/ }),
+      ).toBeVisible({ timeout: 30000 });
+    });
   });
 
   test.describe("as the invitee, again", () => {
