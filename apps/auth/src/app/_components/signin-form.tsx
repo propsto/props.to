@@ -11,8 +11,11 @@ import { signInAction } from "@/server/signin-action";
 
 export function SigninForm({
   className,
+  callbackUrl,
   ...props
-}: Readonly<React.HTMLAttributes<HTMLDivElement>>): React.ReactNode {
+}: Readonly<
+  React.HTMLAttributes<HTMLDivElement> & { callbackUrl?: string }
+>): React.ReactNode {
   const [result, action, isPending, progress] = useResetableActionState(
     signInAction,
     undefined,
@@ -70,6 +73,9 @@ export function SigninForm({
             />
           ) : null}
           <input type="hidden" name="signInMethod" value={signInMethod} />
+          {callbackUrl ? (
+            <input type="hidden" name="callbackUrl" value={callbackUrl} />
+          ) : null}
           <SubmitButton
             result={result}
             isPending={isPending}
