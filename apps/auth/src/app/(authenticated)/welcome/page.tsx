@@ -137,7 +137,12 @@ export default async function WelcomePage({
 
   // Determine initial step based on link status and query param
   const defaultStep = linkStatus === "pending" ? "link-account" : "personal";
-  const queryStep = params.step ?? defaultStep;
+  const requestedStep = params.step ?? defaultStep;
+  // An invite-only user resuming ?step=organization-join gets the pending step instead
+  const queryStep =
+    orgInviteOnly && requestedStep === "organization-join"
+      ? "pending-organization"
+      : requestedStep;
   const initialStep = stepNames.includes(queryStep) ? queryStep : defaultStep;
 
   // If user has completed onboarding, redirect them to the app
