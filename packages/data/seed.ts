@@ -17,6 +17,7 @@ const SEED_IDS = {
   jane: "00000000-0000-0000-0000-000000000004",
   carol: "00000000-0000-0000-0000-000000000005",
   rita: "00000000-0000-0000-0000-000000000006",
+  dana: "00000000-0000-0000-0000-000000000007",
   // Organizations
   acme: "00000000-0000-0000-0000-000000000010",
   globex: "00000000-0000-0000-0000-000000000011",
@@ -233,6 +234,23 @@ async function main() {
       user: { connect: { id: rita.id } },
       organization: { connect: { id: acme.id } },
       role: "MEMBER",
+    },
+  });
+
+  // acme.com address that is not an Acme member, for the invite E2E: a Workspace
+  // org only accepts company-domain invites. Password account (no hostedDomain),
+  // so sign-in goes straight to the app instead of the domain-join step.
+  await prisma.user.create({
+    data: {
+      id: SEED_IDS.dana,
+      email: "dana.price@acme.com",
+      password: await hash("P4ssw0rd", 10),
+      firstName: "Dana",
+      lastName: "Price",
+      role: "USER",
+      dateOfBirth: new Date("1991-09-12"),
+      onboardingCompletedAt: new Date(),
+      slug: { create: { slug: "danaprice", scope: "GLOBAL" } },
     },
   });
 
