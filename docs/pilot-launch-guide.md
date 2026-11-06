@@ -2,7 +2,7 @@
 
 Written 2026-10-17, after gates 1–5 of `.github/PILOT_READINESS.md` were merged. The code side of the plan is done. What is left needs your accounts, your decisions, or the pilot company. Two items at the top (1 and 2) are new: they turned up while preparing this guide and they block the pilot.
 
-Do them in order. Steps 1–4 are configuration (about an hour in total), step 5 is the first real test, and steps 6–9 can run in parallel with Juga's paperwork.
+Do them in order. Steps 1–4 are configuration (about an hour in total), step 5 is the first real test, and steps 6–9 can run in parallel with Cresteo's paperwork.
 
 ---
 
@@ -61,7 +61,7 @@ Claude can do option A for you. Say "do option A".
 1. https://console.cloud.google.com → pick the project that owns the OAuth client in Vercel's `GOOGLE_CLIENT_ID`.
 2. APIs & Services → Library → search "Admin SDK API" → **Enable**. Without it the admin check silently fails and nobody can create an org.
 3. Google Auth Platform (formerly "OAuth consent screen") → **Audience**: user type **External**, publishing status **Testing**.
-4. Same page → **Test users** → add the work email of every pilot person: the Juga sponsor and every employee who should join. Anyone not on the list is refused by Google.
+4. Same page → **Test users** → add the work email of every pilot person: the Cresteo sponsor and every employee who should join. Anyone not on the list is refused by Google.
 5. Google Auth Platform → **Clients** → your web client → **Authorized redirect URIs** must include:
 
 ```
@@ -72,9 +72,9 @@ https://auth.props.to/api/auth/callback/google
 
 ## 4. Allow the pilot domain
 
-**Done 2026-10-26.** The pilot is down to one company, `jugacompany.com`. The team-level `GOOGLE_ALLOWED_HOSTED_DOMAINS` is now `props.to,jugacompany.com` (all environments) and auth production was redeployed. Steps 3, 6, 8 and 9, the data agreement and `.github/PILOT_READINESS.md` now say Juga.
+**Refocus 2026-11-06: the pilot is now Cresteo (`cresteo.com`), the founder's employer.** On 2026-10-26 the team-level `GOOGLE_ALLOWED_HOSTED_DOMAINS` was set to `props.to,jugacompany.com` (all environments, auth production redeployed) while the pilot was Juga. It must now change to `props.to,cresteo.com` — do the steps below and redeploy auth. Steps 3, 6, 8 and 9, the data agreement and `.github/PILOT_READINESS.md` now say Cresteo.
 
-**Why.** `GOOGLE_ALLOWED_HOSTED_DOMAINS` is the server-side gate on which Google Workspace domains may sign in at all. It is currently set team-wide to `props.to` only (the readiness plan said "empty", which was wrong). So Juga employees would be turned away even after step 3.
+**Why.** `GOOGLE_ALLOWED_HOSTED_DOMAINS` is the server-side gate on which Google Workspace domains may sign in at all. It is currently set team-wide to `props.to` only (the readiness plan said "empty", which was wrong). So Cresteo employees would be turned away even after step 3.
 
 **Steps.**
 
@@ -82,7 +82,7 @@ https://auth.props.to/api/auth/callback/google
 2. Set it to a comma-separated list. Keep `props.to` so you can test with your own Workspace:
 
 ```
-props.to,jugacompany.com
+props.to,cresteo.com
 ```
 
 3. Redeploy **auth**. The variable is read when the server starts.
@@ -99,9 +99,9 @@ props.to,jugacompany.com
 4. As the admin: create an org link from a template, copy it, submit feedback to it from the second account, approve it in Org admin → Moderation, and check that the recipient gets the email (that tests step 2).
 5. If anything fails, note the time and tell Claude. Logs are in Vercel → auth/app → Logs.
 
-## 6. Confirm the Juga sponsor is a Workspace super admin
+## 6. Confirm the Cresteo sponsor is a Workspace super admin
 
-**Why.** Only a Google Workspace **super admin** (`isAdmin` in the Directory API, not a delegated admin) is offered org creation. If the sponsor isn't one, Juga gets no org and every employee lands on "wait for an admin".
+**Why.** Only a Google Workspace **super admin** (`isAdmin` in the Directory API, not a delegated admin) is offered org creation. If the sponsor isn't one, Cresteo gets no org and every employee lands on "wait for an admin".
 
 **Steps.**
 
@@ -128,7 +128,7 @@ NEXT_PUBLIC_SENTRY_DSN=<the DSN>
 
 ## 8. Settle the data agreement
 
-**Why.** Juga needs to know who owns feedback about their employees, what happens when someone leaves, and what happens when the pilot ends. The draft in `docs/pilot-data-agreement.md` separates what the product does (Facts, checked against the code) from what you must decide. The pilot can't start until Juga accepts it.
+**Why.** Cresteo needs to know who owns feedback about their employees, what happens when someone leaves, and what happens when the pilot ends. The draft in `docs/pilot-data-agreement.md` separates what the product does (Facts, checked against the code) from what you must decide. The pilot can't start until Cresteo accepts it.
 
 **Decisions to make** (each is a marked "Decision" in the draft):
 
@@ -141,11 +141,11 @@ NEXT_PUBLIC_SENTRY_DSN=<the DSN>
 7. Whether people get an export. No export feature exists; it would be a manual dump.
 8. Fill in the hosting facts: Vercel and Neon, region `us-east-2` (AWS), backup retention per your Neon plan, and a contact email for data requests.
 
-**Steps.** Edit the draft, remove the Fact/Decision labels once settled, send it to the Juga sponsor, then tick the item in `.github/PILOT_READINESS.md`.
+**Steps.** Edit the draft, remove the Fact/Decision labels once settled, send it to the Cresteo sponsor, then tick the item in `.github/PILOT_READINESS.md`.
 
 ## 9. Final rehearsal
 
-**Why.** It's the last gate: one pass through every edge case with real people roles before inviting Juga. It still means two orgs (your props.to org will sit next to Juga's in production), a person in both, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send.
+**Why.** It's the last gate: one pass through every edge case with real people roles before inviting Cresteo. It still means two orgs (your props.to org will sit next to Cresteo's in production), a person in both, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send.
 
 **Steps.** Almost all of it can run on a PR preview with the seeded password users, and Claude can run that part. Say "run the gate 5 rehearsal on a preview". Only the Google-specific part needs you, and step 5 covers it. Tick the item when both are done.
 
@@ -169,4 +169,4 @@ neonctl auth
 
 ## After all of this
 
-Invite Juga (gate 4 says not before), then watch Sentry and the moderation queues for the first week.
+Invite Cresteo (gate 4 says not before), then watch Sentry and the moderation queues for the first week.

@@ -1,6 +1,6 @@
 # Feedback layers plan: values, levels, process
 
-Written 2026-10-29. Follows `.github/PILOT_READINESS.md` (gates 1 to 5, code side done) and `docs/pilot-launch-guide.md` (founder side, partly done). Design reference is a client company's framework: a five-dimension code of conduct, four seniority categories each with a rubric, and a three-step escalation path. Test audiences for the MVP are the props.to Workspace org (internal, all layers) and jugacompany.com (pilot, whichever layers they want).
+Written 2026-10-29. Follows `.github/PILOT_READINESS.md` (gates 1 to 5, code side done) and `docs/pilot-launch-guide.md` (founder side, partly done). Design reference is Cresteo's framework: a five-dimension code of conduct, four seniority categories each with a rubric, and a three-step escalation path. Test audiences for the MVP are the props.to Workspace org (internal, all layers) and cresteo.com (pilot, whichever layers they want).
 
 ## Principles
 
