@@ -51,8 +51,8 @@ const W = 760;
 const H = 460;
 const NODE_W = 128;
 const NODE_H = 52;
-// How far from a node's centre an edge starts/ends, and the collision radius.
-const EDGE_GAP = 46;
+// Clearance so an arrowhead sits just outside a card, and the collision radius.
+const MARKER_GAP = 10;
 const COLLIDE_R = 82;
 
 interface GNode extends SimulationNodeDatum {
@@ -77,8 +77,25 @@ const KIND_COLOR: Record<StepKind, string> = {
   end: "#e11d48", // rose-600
 };
 
-// A quadratic curve between two points, bowed to one side so antiparallel
-// arrows (A→B and B→A) separate, with the ends pulled back off the nodes.
+// Where a ray leaving a card's centre crosses the card's rectangle (plus a
+// little clearance), so an arrow meets the card's edge — not its hidden
+// centre — at any angle, horizontal cards included.
+function cardEdge(
+  cx: number,
+  cy: number,
+  ux: number,
+  uy: number,
+): { x: number; y: number } {
+  const hw = NODE_W / 2 + MARKER_GAP;
+  const hh = NODE_H / 2 + MARKER_GAP;
+  const tx = Math.abs(ux) < 1e-6 ? Infinity : hw / Math.abs(ux);
+  const ty = Math.abs(uy) < 1e-6 ? Infinity : hh / Math.abs(uy);
+  const t = Math.min(tx, ty);
+  return { x: cx + ux * t, y: cy + uy * t };
+}
+
+// A quadratic curve between two cards, bowed to one side so antiparallel arrows
+// (A→B and B→A) separate, with the ends trimmed to each card's edge.
 function edgePath(
   ax: number,
   ay: number,
@@ -90,11 +107,8 @@ function edgePath(
   const len = Math.hypot(dx, dy) || 1;
   const ux = dx / len;
   const uy = dy / len;
-  // Trim both ends so the line meets the node edge, not its centre.
-  const sx = ax + ux * EDGE_GAP;
-  const sy = ay + uy * EDGE_GAP;
-  const ex = bx - ux * EDGE_GAP;
-  const ey = by - uy * EDGE_GAP;
+  const { x: sx, y: sy } = cardEdge(ax, ay, ux, uy);
+  const { x: ex, y: ey } = cardEdge(bx, by, -ux, -uy);
   // Control point bowed left of travel; the perpendicular flips with direction.
   const bow = Math.min(len * 0.22, 70);
   const cx = (sx + ex) / 2 + -uy * bow;
@@ -291,13 +305,18 @@ export function FlowGraph({
       const node = nodesRef.current[id];
       if (!sim || !node) return;
       dragId.current = id;
-      event.currentTarget.setPointerCapture(event.pointerId);
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // pointer capture may be unavailable; dragging still works without it
+      }
       sim.alphaTarget(0.25).restart();
       const p = toSvg(event);
       if (p) {
         node.fx = p.x;
         node.fy = p.y;
       }
+      setFrame(f => f + 1);
     };
   const onNodeMove =
     (id: number) =>
@@ -308,20 +327,28 @@ export function FlowGraph({
       if (!node || !p) return;
       node.fx = p.x;
       node.fy = p.y;
+      // Re-render directly: in reduced-motion mode no tick callback is running.
+      setFrame(f => f + 1);
     };
-  const onNodeUp =
+  // Shared cleanup for pointerup, pointercancel and lost capture, so a cancelled
+  // drag never leaves a node pinned with the simulation spinning.
+  const onNodeEnd =
     (id: number) =>
     (event: ReactPointerEvent): void => {
       if (dragId.current !== id) return;
       dragId.current = null;
-      event.currentTarget.releasePointerCapture(event.pointerId);
-      const sim = simRef.current;
+      try {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      } catch {
+        // capture may already be gone (e.g. on pointercancel)
+      }
       const node = nodesRef.current[id];
       if (node) {
         node.fx = null;
         node.fy = null;
       }
-      sim?.alphaTarget(0);
+      simRef.current?.alphaTarget(0);
+      setFrame(f => f + 1);
     };
 
   const nodes = nodesRef.current;
@@ -368,149 +395,155 @@ export function FlowGraph({
     <div ref={rootRef}>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div>
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${W} ${H}`}
-            className="h-auto w-full touch-none select-none overflow-visible"
-            role="img"
-            aria-label={`${label}. Step ${active + 1} of ${total}: ${step ? describeStep(step, actors) : ""}`}
-          >
-            <defs>
-              {(Object.keys(KIND_COLOR) as StepKind[]).map(k => (
-                <marker
-                  key={k}
-                  id={`fg-arrow-${k}`}
-                  viewBox="0 0 10 10"
-                  refX="8"
-                  refY="5"
-                  markerWidth="7"
-                  markerHeight="7"
-                  orient="auto-start-reverse"
-                >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill={KIND_COLOR[k]} />
-                </marker>
-              ))}
-            </defs>
+          {/* Scrolls on narrow screens so the labels stay legible rather than
+              shrinking with the viewBox. */}
+          <div className="overflow-x-auto pb-1">
+            <svg
+              ref={svgRef}
+              viewBox={`0 0 ${W} ${H}`}
+              className="h-auto w-full min-w-[600px] select-none overflow-visible"
+              role="img"
+              aria-label={`${label}. Step ${active + 1} of ${total}: ${step ? describeStep(step, actors) : ""}`}
+            >
+              <defs>
+                {(Object.keys(KIND_COLOR) as StepKind[]).map(k => (
+                  <marker
+                    key={k}
+                    id={`fg-arrow-${k}`}
+                    viewBox="0 0 10 10"
+                    refX="8"
+                    refY="5"
+                    markerWidth="7"
+                    markerHeight="7"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill={KIND_COLOR[k]} />
+                  </marker>
+                ))}
+              </defs>
 
-            {/* Static map: faint links between actors that interact at all */}
-            <g stroke="#cbd5e1" strokeWidth={1.5} fill="none">
-              {pairs.map(([a, b]) => {
-                const na = nodeAt(a);
-                const nb = nodeAt(b);
-                if (!na || !nb) return null;
-                const key = a < b ? `${a}-${b}` : `${b}-${a}`;
-                // Hold the link back until its step introduces it.
-                if (visible <= (pairReveal.get(key) ?? Infinity)) return null;
-                const touched =
-                  step &&
-                  ((step.from === a && step.to === b) ||
-                    (step.from === b && step.to === a));
-                return (
-                  <line
-                    key={`${a}-${b}`}
-                    x1={na.x}
-                    y1={na.y}
-                    x2={nb.x}
-                    y2={nb.y}
-                    strokeOpacity={touched ? 0 : 0.7}
+              {/* Static map: faint links between actors that interact at all */}
+              <g stroke="#cbd5e1" strokeWidth={1.5} fill="none">
+                {pairs.map(([a, b]) => {
+                  const na = nodeAt(a);
+                  const nb = nodeAt(b);
+                  if (!na || !nb) return null;
+                  const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+                  // Hold the link back until its step introduces it.
+                  if (visible <= (pairReveal.get(key) ?? Infinity)) return null;
+                  const touched =
+                    step &&
+                    ((step.from === a && step.to === b) ||
+                      (step.from === b && step.to === a));
+                  return (
+                    <line
+                      key={`${a}-${b}`}
+                      x1={na.x}
+                      y1={na.y}
+                      x2={nb.x}
+                      y2={nb.y}
+                      strokeOpacity={touched ? 0 : 0.7}
+                    />
+                  );
+                })}
+              </g>
+
+              {/* The current action: a curved, labelled, animated arrow */}
+              {arrow && step && visible > active ? (
+                <g key={active}>
+                  <path
+                    d={arrow.d}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={2.75}
+                    strokeLinecap="round"
+                    pathLength={1}
+                    markerEnd={`url(#fg-arrow-${kind})`}
+                    markerStart={
+                      kind === "talk" ? `url(#fg-arrow-${kind})` : undefined
+                    }
+                    className="fg-draw"
                   />
+                  <foreignObject
+                    x={arrow.mx - 95}
+                    y={arrow.my - 22}
+                    width={190}
+                    height={44}
+                    className="overflow-visible"
+                  >
+                    <div className="flex h-full items-center justify-center">
+                      <span
+                        className="fg-pill rounded-full border bg-white/95 px-2.5 py-1 text-center text-[11px] font-medium leading-tight shadow-sm sm:text-xs"
+                        style={{ borderColor: color, color }}
+                      >
+                        <span className="mr-1 font-semibold tabular-nums opacity-70">
+                          {active + 1}.
+                        </span>
+                        {step.label}
+                      </span>
+                    </div>
+                  </foreignObject>
+                </g>
+              ) : null}
+
+              {/* Actors as draggable node cards, revealed as the story reaches them */}
+              {nodes.map(node => {
+                if (visible <= revealOf(node.id)) return null;
+                const isSrc = step?.from === node.id;
+                const isDst = step?.to === node.id && step.from !== node.id;
+                // A node making its first appearance pops in: a new receiver after
+                // its arrow lands, a new sender right as its step begins.
+                const firstHere = revealOf(node.id) === active;
+                const entrance = firstHere
+                  ? isDst
+                    ? "fg-node-arrive"
+                    : "fg-node-enter"
+                  : undefined;
+                return (
+                  <foreignObject
+                    key={node.id}
+                    x={(node.x ?? W / 2) - NODE_W / 2}
+                    y={(node.y ?? H / 2) - NODE_H / 2}
+                    width={NODE_W}
+                    height={NODE_H}
+                    className="overflow-visible"
+                    onPointerDown={onNodeDown(node.id)}
+                    onPointerMove={onNodeMove(node.id)}
+                    onPointerUp={onNodeEnd(node.id)}
+                    onPointerCancel={onNodeEnd(node.id)}
+                    onLostPointerCapture={onNodeEnd(node.id)}
+                    style={{ cursor: "grab" }}
+                  >
+                    <div
+                      className={cn(
+                        "flex h-full w-full cursor-grab touch-none flex-col items-center justify-center rounded-2xl border px-2 text-center shadow-sm transition-all duration-300 active:cursor-grabbing",
+                        node.actor.accent
+                          ? "border-amber-300 bg-amber-100"
+                          : "border-gray-200 bg-white",
+                        isDst && !firstHere && "fg-arrive",
+                        entrance,
+                      )}
+                      style={
+                        isSrc || isDst
+                          ? {
+                              boxShadow: `0 0 0 3px ${color}55`,
+                              borderColor: color,
+                            }
+                          : undefined
+                      }
+                    >
+                      <span className="truncate text-xs font-semibold leading-tight text-gray-950 sm:text-sm">
+                        {node.actor.name}
+                      </span>
+                      <span className="truncate text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
+                        {node.actor.role}
+                      </span>
+                    </div>
+                  </foreignObject>
                 );
               })}
-            </g>
-
-            {/* The current action: a curved, labelled, animated arrow */}
-            {arrow && step && visible > active ? (
-              <g key={active}>
-                <path
-                  d={arrow.d}
-                  fill="none"
-                  stroke={color}
-                  strokeWidth={2.75}
-                  strokeLinecap="round"
-                  pathLength={1}
-                  markerEnd={`url(#fg-arrow-${kind})`}
-                  markerStart={
-                    kind === "talk" ? `url(#fg-arrow-${kind})` : undefined
-                  }
-                  className="fg-draw"
-                />
-                <foreignObject
-                  x={arrow.mx - 95}
-                  y={arrow.my - 22}
-                  width={190}
-                  height={44}
-                  className="overflow-visible"
-                >
-                  <div className="flex h-full items-center justify-center">
-                    <span
-                      className="fg-pill rounded-full border bg-white/95 px-2.5 py-1 text-center text-[11px] font-medium leading-tight shadow-sm sm:text-xs"
-                      style={{ borderColor: color, color }}
-                    >
-                      <span className="mr-1 font-semibold tabular-nums opacity-70">
-                        {active + 1}.
-                      </span>
-                      {step.label}
-                    </span>
-                  </div>
-                </foreignObject>
-              </g>
-            ) : null}
-
-            {/* Actors as draggable node cards, revealed as the story reaches them */}
-            {nodes.map(node => {
-              if (visible <= revealOf(node.id)) return null;
-              const isSrc = step?.from === node.id;
-              const isDst = step?.to === node.id && step.from !== node.id;
-              // A node making its first appearance pops in: a new receiver after
-              // its arrow lands, a new sender right as its step begins.
-              const firstHere = revealOf(node.id) === active;
-              const entrance = firstHere
-                ? isDst
-                  ? "fg-node-arrive"
-                  : "fg-node-enter"
-                : undefined;
-              return (
-                <foreignObject
-                  key={node.id}
-                  x={(node.x ?? W / 2) - NODE_W / 2}
-                  y={(node.y ?? H / 2) - NODE_H / 2}
-                  width={NODE_W}
-                  height={NODE_H}
-                  className="overflow-visible"
-                  onPointerDown={onNodeDown(node.id)}
-                  onPointerMove={onNodeMove(node.id)}
-                  onPointerUp={onNodeUp(node.id)}
-                  style={{ cursor: "grab" }}
-                >
-                  <div
-                    className={cn(
-                      "flex h-full w-full cursor-grab flex-col items-center justify-center rounded-2xl border px-2 text-center shadow-sm transition-all duration-300 active:cursor-grabbing",
-                      node.actor.accent
-                        ? "border-amber-300 bg-amber-100"
-                        : "border-gray-200 bg-white",
-                      isDst && !firstHere && "fg-arrive",
-                      entrance,
-                    )}
-                    style={
-                      isSrc || isDst
-                        ? {
-                            boxShadow: `0 0 0 3px ${color}55`,
-                            borderColor: color,
-                          }
-                        : undefined
-                    }
-                  >
-                    <span className="truncate text-xs font-semibold leading-tight text-gray-950 sm:text-sm">
-                      {node.actor.name}
-                    </span>
-                    <span className="truncate text-[10px] leading-tight text-muted-foreground sm:text-[11px]">
-                      {node.actor.role}
-                    </span>
-                  </div>
-                </foreignObject>
-              );
-            })}
-          </svg>
+            </svg>
+          </div>
 
           {/* Keyboard- and screen-reader-accessible step tracker */}
           <ol
