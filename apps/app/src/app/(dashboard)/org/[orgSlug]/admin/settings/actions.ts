@@ -5,6 +5,7 @@ import {
   getOrganizationBySlug,
   upsertOrganizationDefaultSettings,
   upsertOrganizationFeedbackSettings,
+  upsertOrganizationSettings,
   auditHelpers,
   verifyOrgAdminAccess,
 } from "@propsto/data/repos";
@@ -35,7 +36,10 @@ export async function updateMemberSettings(
     }
 
     // Verify against the DB, not the JWT, so a demoted admin loses access immediately
-    const membership = await verifyOrgAdminAccess(session.user.id, input.orgSlug);
+    const membership = await verifyOrgAdminAccess(
+      session.user.id,
+      input.orgSlug,
+    );
     if (!membership.success || !membership.data) {
       return { success: false, error: "Not authorized" };
     }
@@ -97,6 +101,75 @@ export async function updateMemberSettings(
     return { success: true };
   } catch (error) {
     logger("Failed to update member settings:", error);
+    return { success: false, error: "Failed to update settings" };
+  }
+}
+
+const updateMembershipSettingsSchema = z.object({
+  orgSlug: z.string(),
+  autoJoinByDomain: z.boolean(),
+});
+
+export type UpdateMembershipSettingsInput = z.infer<
+  typeof updateMembershipSettingsSchema
+>;
+
+export async function updateMembershipSettings(
+  input: UpdateMembershipSettingsInput,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify against the DB, not the JWT, so a demoted admin loses access immediately
+    const membership = await verifyOrgAdminAccess(
+      session.user.id,
+      input.orgSlug,
+    );
+    if (!membership.success || !membership.data) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    const orgResult = await getOrganizationBySlug(input.orgSlug);
+    if (!orgResult.success || !orgResult.data) {
+      return { success: false, error: "Organization not found" };
+    }
+    const org = orgResult.data;
+    const current = org.organizationSettings;
+
+    // Preserve the other general settings; only the domain-join toggle is editable here
+    const saved = await upsertOrganizationSettings(org.id, {
+      allowUserInvites: current?.allowUserInvites ?? true,
+      autoJoinByDomain: input.autoJoinByDomain,
+      enableGroupManagement: current?.enableGroupManagement ?? true,
+      requireEmailVerification: current?.requireEmailVerification ?? true,
+      enableSSOIntegration: current?.enableSSOIntegration ?? false,
+    });
+    // The repo returns failures instead of throwing; don't audit or report success
+    if (!saved.success) {
+      return { success: false, error: "Failed to update settings" };
+    }
+
+    if ((current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain) {
+      await auditHelpers.logSettingsUpdate(
+        org.id,
+        session.user.id,
+        "membership_settings",
+        {
+          autoJoinByDomain: {
+            old: current?.autoJoinByDomain ?? false,
+            new: input.autoJoinByDomain,
+          },
+        },
+      );
+    }
+
+    revalidatePath(`/org/${input.orgSlug}/admin/settings`);
+    return { success: true };
+  } catch (error) {
+    logger("Failed to update membership settings:", error);
     return { success: false, error: "Failed to update settings" };
   }
 }

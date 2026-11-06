@@ -4,6 +4,7 @@ import { createLogger } from "@propsto/logger";
 import { db } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
+import { emailMatchesDomain } from "../utils/domain-membership";
 import { generateUniqueSlug } from "./slug";
 import { ensureOrgFeedbackLink } from "./feedback-link";
 
@@ -115,9 +116,24 @@ export async function resendOrganizationInvite(
   inviteId: string,
   organizationId: string,
   expiresAt: Date,
+  hostedDomain?: string | null,
 ) {
   try {
     logger("resendOrganizationInvite", { inviteId, organizationId });
+    // A Workspace org invites company addresses only. Resending refreshes the token
+    // (and revives a revoked/expired invite), so an off-domain invite issued before
+    // the policy can't be brought back this way.
+    if (hostedDomain) {
+      const existing = await db.organizationInvite.findFirst({
+        where: { id: inviteId, organizationId },
+        select: { email: true },
+      });
+      if (existing && !emailMatchesDomain(existing.email, hostedDomain)) {
+        throw new Error(
+          `Invite a @${hostedDomain} address — personal emails can't be invited`,
+        );
+      }
+    }
     // Single conditional update: an acceptance that lands first makes this a no-op error
     const invite = await db.organizationInvite.update({
       where: { id: inviteId, organizationId, acceptedAt: null },

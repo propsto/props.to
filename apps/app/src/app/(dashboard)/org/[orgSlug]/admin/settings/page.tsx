@@ -13,6 +13,7 @@ import { Label } from "@propsto/ui/atoms/label";
 import { Input } from "@propsto/ui/atoms/input";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { MemberSettingsForm } from "./member-settings-form";
+import { MembershipSettingsForm } from "./membership-settings-form";
 import { OrgSlugForm } from "./org-slug-form";
 import { FeedbackSettingsForm } from "./feedback-settings-form";
 
@@ -100,6 +101,18 @@ export default async function OrgAdminSettings({
           orgSlug={orgSlug}
           defaultSettings={memberSettings}
         />
+
+        {/* Membership - domain auto-join, only meaningful for Workspace orgs */}
+        {org.hostedDomain && (
+          <MembershipSettingsForm
+            orgSlug={orgSlug}
+            hostedDomain={org.hostedDomain}
+            defaultSettings={{
+              autoJoinByDomain:
+                org.organizationSettings?.autoJoinByDomain ?? false,
+            }}
+          />
+        )}
 
         {/* Feedback Settings - Editable */}
         <FeedbackSettingsForm

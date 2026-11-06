@@ -63,7 +63,9 @@ export function InviteDialog({
         message: message.trim() || undefined,
       });
 
-      if (result.success && result.results) {
+      // When every address fails the action reports success: false, but the
+      // per-address reasons still need showing
+      if (result.results && result.results.length > 0) {
         const failed = result.results.filter(r => !r.success);
         if (failed.length === 0) {
           setOpen(false);

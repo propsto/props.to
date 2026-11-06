@@ -183,3 +183,53 @@ export async function resetJoinableUser(
   await sql`DELETE FROM "User" WHERE id = ${userId}`;
   await sql`DELETE FROM "Slug" WHERE slug = ${slug} AND scope = 'GLOBAL'`;
 }
+
+/**
+ * Set the org's domain auto-join flag (off by default; joining by domain is
+ * opt-in) and return its previous value, or null when the org had no settings
+ * row, so a spec can put it back with restoreAutoJoinByDomain.
+ */
+export async function setAutoJoinByDomain(
+  hostedDomain: string,
+  enabled: boolean,
+): Promise<boolean | null> {
+  const sql = conn();
+  const rows = await sql<{ orgId: string; prev: boolean | null }[]>`
+    SELECT o.id AS "orgId", s."autoJoinByDomain" AS prev
+    FROM "Organization" o
+    LEFT JOIN "OrganizationSettings" s ON s."organizationId" = o.id
+    WHERE o."hostedDomain" = ${hostedDomain}
+    LIMIT 1
+  `;
+  const row = rows[0];
+  if (!row)
+    throw new Error(`No organization with hostedDomain ${hostedDomain}`);
+  await sql`
+    INSERT INTO "OrganizationSettings" (id, "organizationId", "autoJoinByDomain", "updatedAt")
+    VALUES (${`e2e-settings-${row.orgId}`}, ${row.orgId}, ${enabled}, now())
+    ON CONFLICT ("organizationId") DO UPDATE
+      SET "autoJoinByDomain" = EXCLUDED."autoJoinByDomain", "updatedAt" = now()
+  `;
+  return row.prev;
+}
+
+/** Undo setAutoJoinByDomain: restore the previous flag, or drop the row it created. */
+export async function restoreAutoJoinByDomain(
+  hostedDomain: string,
+  previous: boolean | null,
+): Promise<void> {
+  const sql = conn();
+  if (previous === null) {
+    await sql`
+      DELETE FROM "OrganizationSettings"
+      WHERE id LIKE 'e2e-settings-%' AND "organizationId" =
+        (SELECT id FROM "Organization" WHERE "hostedDomain" = ${hostedDomain} LIMIT 1)
+    `;
+    return;
+  }
+  await sql`
+    UPDATE "OrganizationSettings" SET "autoJoinByDomain" = ${previous}, "updatedAt" = now()
+    WHERE "organizationId" =
+      (SELECT id FROM "Organization" WHERE "hostedDomain" = ${hostedDomain} LIMIT 1)
+  `;
+}

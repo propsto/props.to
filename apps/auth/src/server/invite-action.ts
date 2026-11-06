@@ -18,6 +18,8 @@ const MESSAGES = {
   used: "This invitation has already been used or revoked.",
   "wrong-account":
     "This invitation was sent to a different email address. Sign in with that account to accept it.",
+  "off-domain":
+    "This organization only adds members from its company email domain. Ask an admin to invite your work address.",
 };
 
 export async function acceptInviteAction(
@@ -41,7 +43,11 @@ export async function acceptInviteAction(
   // Compare against the DB user, not the JWT copy
   const dbUser = await getUser({ id: session.user.id });
   if (!dbUser.data) return { error: "Invitation not found." };
-  const rejection = inviteRejection(invite, dbUser.data);
+  const rejection = inviteRejection(
+    invite,
+    dbUser.data,
+    invite.organization?.hostedDomain,
+  );
   if (rejection) return { error: MESSAGES[rejection] };
 
   // Always consume the token, even for an existing member, so it cannot be reused by another account

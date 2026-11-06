@@ -4,16 +4,17 @@ import { signInByPassword } from "../../auth/utils/auth-methods";
 /**
  * Invite lifecycle end to end (pilot readiness gate 1), using the preview outbox
  * (EMAIL_PROVIDER=outbox) to read the invite email back through /api/preview-mail,
- * which only serves mail addressed to the signed-in user (so carol reads her own invite).
+ * which only serves mail addressed to the signed-in user (so dana reads her own invite).
  *
- * Runs as mike (Acme OWNER) and invites carol (Globex owner, not an Acme member).
- * Note: accepting makes carol an Acme member, so this file is not idempotent on a
+ * Runs as mike (Acme OWNER) and invites dana (an acme.com address, not an Acme
+ * member: Acme is a Workspace org, so only company addresses can be invited).
+ * Note: accepting makes dana an Acme member, so this file is not idempotent on a
  * database that is not reseeded (previews reseed on every build).
  */
 
 const AUTH_URL = process.env.AUTH_URL ?? "";
 const APP_URL = process.env.PROPSTO_APP_URL ?? "";
-const INVITEE = "carol.white@globex.com";
+const INVITEE = "dana.price@acme.com";
 const INVITER = "mike.ryan@example.com";
 
 async function signInAs(page: Page, email: string): Promise<void> {
@@ -135,7 +136,7 @@ test.describe
 
       // Joining gave her a link to receive Acme feedback on
       await page.goto(`${APP_URL}/links`);
-      await expect(page.getByText("Carol at Acme")).toBeVisible({
+      await expect(page.getByText("Dana at Acme")).toBeVisible({
         timeout: 15000,
       });
     });

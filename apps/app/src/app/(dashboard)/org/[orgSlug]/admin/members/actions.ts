@@ -17,6 +17,7 @@ import {
   auditHelpers,
 } from "@propsto/data/repos";
 import { sendOrgInviteEmail } from "@propsto/email/send/org-invite";
+import { emailMatchesDomain } from "@propsto/data/utils/domain-membership";
 import { revalidatePath } from "next/cache";
 import { constServer } from "@propsto/constants/server";
 import type { OrganizationRole } from "@prisma/client";
@@ -88,6 +89,18 @@ export async function inviteMembersAction(
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       results.push({ email, success: false, error: "Invalid email address" });
+      continue;
+    }
+
+    // A Workspace org invites company addresses only: a personal email can't be
+    // invited — the person links a personal account after joining (or auto-joins
+    // by domain). Orgs without a verified domain are unrestricted.
+    if (org.hostedDomain && !emailMatchesDomain(email, org.hostedDomain)) {
+      results.push({
+        email,
+        success: false,
+        error: `Invite a @${org.hostedDomain} address — personal emails can't be invited`,
+      });
       continue;
     }
 
@@ -216,6 +229,7 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
     inviteId,
     orgId,
     expiresAt,
+    org.hostedDomain,
   );
 
   if (!refreshResult.success || !refreshResult.data) {
