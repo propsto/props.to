@@ -339,6 +339,31 @@ export function FlowGraph({
         : edgePath(src.x ?? 0, src.y ?? 0, dst.x ?? 0, dst.y ?? 0)
       : null;
 
+  // Progressive reveal: a node (or its faint link) appears only once the step
+  // that first references it has been reached, so the graph builds up step by
+  // step instead of showing every state at once.
+  const reveal = useMemo(() => {
+    const first = new Array<number>(actors.length).fill(
+      Number.POSITIVE_INFINITY,
+    );
+    steps.forEach((s, i) => {
+      first[s.from] = Math.min(first[s.from] ?? Infinity, i);
+      first[s.to] = Math.min(first[s.to] ?? Infinity, i);
+    });
+    return first;
+  }, [actors.length, steps]);
+  const pairReveal = useMemo(() => {
+    const m = new Map<string, number>();
+    steps.forEach((s, i) => {
+      if (s.from === s.to) return;
+      const key = s.from < s.to ? `${s.from}-${s.to}` : `${s.to}-${s.from}`;
+      if (!m.has(key)) m.set(key, i);
+    });
+    return m;
+  }, [steps]);
+  const revealOf = (id: number): number =>
+    reveal[id] ?? Number.POSITIVE_INFINITY;
+
   return (
     <div ref={rootRef}>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -373,6 +398,9 @@ export function FlowGraph({
                 const na = nodeAt(a);
                 const nb = nodeAt(b);
                 if (!na || !nb) return null;
+                const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+                // Hold the link back until its step introduces it.
+                if (visible <= (pairReveal.get(key) ?? Infinity)) return null;
                 const touched =
                   step &&
                   ((step.from === a && step.to === b) ||
@@ -391,7 +419,7 @@ export function FlowGraph({
             </g>
 
             {/* The current action: a curved, labelled, animated arrow */}
-            {arrow && step ? (
+            {arrow && step && visible > active ? (
               <g key={active}>
                 <path
                   d={arrow.d}
@@ -428,10 +456,19 @@ export function FlowGraph({
               </g>
             ) : null}
 
-            {/* Actors as draggable node cards */}
+            {/* Actors as draggable node cards, revealed as the story reaches them */}
             {nodes.map(node => {
+              if (visible <= revealOf(node.id)) return null;
               const isSrc = step?.from === node.id;
               const isDst = step?.to === node.id && step.from !== node.id;
+              // A node making its first appearance pops in: a new receiver after
+              // its arrow lands, a new sender right as its step begins.
+              const firstHere = revealOf(node.id) === active;
+              const entrance = firstHere
+                ? isDst
+                  ? "fg-node-arrive"
+                  : "fg-node-enter"
+                : undefined;
               return (
                 <foreignObject
                   key={node.id}
@@ -451,7 +488,8 @@ export function FlowGraph({
                       node.actor.accent
                         ? "border-amber-300 bg-amber-100"
                         : "border-gray-200 bg-white",
-                      isDst && "fg-arrive",
+                      isDst && !firstHere && "fg-arrive",
+                      entrance,
                     )}
                     style={
                       isSrc || isDst
