@@ -54,6 +54,8 @@ Claude can do option A for you. Say "do option A".
 
 ## 3. Google sign-in: choose testing mode
 
+**Updated 2026-10-31.** Production now uses the OAuth client `416995438172-ph92…` from Google Cloud project `amiable-dreamer-513315-m9` (redirect URI `https://auth.props.to/api/auth/callback/google`, JS origin `https://auth.props.to`). Both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` were replaced on the Vercel **auth** project for Production, Preview and Development, and auth production was redeployed. The previous client (`423725527626-8…`) is no longer referenced by auth. The **app** project still carries Google vars from 2023 that nothing reads. Later the same day: the Admin SDK API was enabled in that project (the Directory check had returned 403 until then), the client secret was rotated after the old one appeared in Vercel logs, and `DEBUG` plus `DEBUG_AUTH` were removed from auth Production (Auth.js debug printed the provider config and tokens). PR #131 makes the logger redact secrets and PR #132 fixes returning Google users being sent to account linking. Steps 2, 3, 4 and 6 below now apply to the new client and its project's consent screen.
+
 **Why.** Pilot companies sign in with Google. On first login, props.to asks Google's Admin Directory API whether the person is a Workspace **super admin**. That's how an admin gets to create their company's org, and how everyone else auto-joins it. That check needs the `admin.directory.user.readonly` scope. Publishing an app that requests it to the general public needs Google's verification review: privacy policy, demo video, domain checks, usually weeks. "Testing" mode skips the review but only lets in people you list, up to 100. For one pilot company, testing mode is the right call. Every pilot user will see a "Google hasn't verified this app" screen once and click Continue; tell them in advance. Testing mode also expires Google refresh tokens after 7 days. props.to only uses Google at sign-in, so that doesn't affect it.
 
 **Steps.**
@@ -72,7 +74,7 @@ https://auth.props.to/api/auth/callback/google
 
 ## 4. Allow the pilot domain
 
-**Refocus 2026-11-06: the pilot is now Cresteo (`cresteo.com`), the founder's employer.** On 2026-10-26 the team-level `GOOGLE_ALLOWED_HOSTED_DOMAINS` was set to `props.to,jugacompany.com` (all environments, auth production redeployed) while the pilot was Juga. It must now change to `props.to,cresteo.com` — do the steps below and redeploy auth. Steps 3, 6, 8 and 9, the data agreement and `.github/PILOT_READINESS.md` now say Cresteo.
+**Done — verified 2026-11-06: the pilot is now Cresteo (`cresteo.com`), the founder's employer, and the team-level `GOOGLE_ALLOWED_HOSTED_DOMAINS` already includes `cresteo.com` alongside `props.to`.** If the value changed without a redeploy, redeploy **auth** once before the first Cresteo sign-in — the variable is read at server start. (History: it was `props.to,jugacompany.com` from 2026-10-26, while the pilot was Juga.) Steps 3, 6, 8 and 9, the data agreement and `.github/PILOT_READINESS.md` now say Cresteo.
 
 **Why.** `GOOGLE_ALLOWED_HOSTED_DOMAINS` is the server-side gate on which Google Workspace domains may sign in at all. It is currently set team-wide to `props.to` only (the readiness plan said "empty", which was wrong). So Cresteo employees would be turned away even after step 3.
 
