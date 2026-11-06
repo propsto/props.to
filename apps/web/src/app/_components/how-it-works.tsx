@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, MessageSquareHeartIcon } from "lucide-react";
-import { SequenceDiagram, type Actor, type Step } from "./sequence-diagram";
+import { cn } from "@propsto/ui/lib/utils";
+import { FlowGraph, type Actor, type Step } from "./flow-graph";
 
 // Who the visitor is, who reports to them, and who reports to those people.
 // Plural labels read as "your <label>" in the diagram.
@@ -68,6 +69,7 @@ type Target =
   | { kind: "direct" }
   | { kind: "peers" }
   | { kind: "skip"; group: string }
+  | { kind: "entity" }
   | { kind: "company" };
 
 function targetLabel(target: Target, reports: string | null): string {
@@ -80,6 +82,8 @@ function targetLabel(target: Target, reports: string | null): string {
       return `my ${reports ?? "team"}`;
     case "skip":
       return `their ${target.group}`;
+    case "entity":
+      return "a product or service";
     case "company":
       return "everyone at my company";
   }
@@ -231,6 +235,63 @@ function buildStory(role: Role, reports: string | null, target: Target): Story {
         },
       ],
       takeaway: "Use as much structure as you need, and nothing more.",
+    };
+  }
+
+  if (target.kind === "entity") {
+    return {
+      title: "Collect feedback on a product, service or event.",
+      actors: [
+        { name: "You", role: role.short },
+        { name: "Anyone", role: "customers or teammates" },
+        { name: "props.to", role: "holds and moderates", accent: true },
+        { name: "Your product", role: "what you ship" },
+      ],
+      steps: [
+        {
+          from: 0,
+          to: 2,
+          label: "Add a product, service or event",
+          detail:
+            "Create an entity and share its link. No account is needed to give feedback on it.",
+        },
+        {
+          from: 1,
+          to: 2,
+          label: "Anyone can weigh in",
+          detail:
+            "A customer, a partner or a teammate submits feedback, named or anonymous.",
+        },
+        {
+          from: 2,
+          to: 0,
+          label: "Outside feedback waits for your review",
+          detail:
+            "Feedback from non-members is held for moderation, so nothing reaches the record unseen.",
+        },
+        {
+          from: 0,
+          to: 2,
+          label: "Approve what's fair, decline the rest",
+          detail:
+            "You moderate in one place. Approved feedback goes through; the rest never appears.",
+        },
+        {
+          from: 2,
+          to: 3,
+          label: "It's recorded on the product",
+          detail:
+            "Approved feedback collects on the entity, tagged with your company's values.",
+        },
+        {
+          from: 3,
+          to: 0,
+          label: "See what people value over time",
+          detail:
+            "Patterns across the feedback show what's working and what to fix next.",
+        },
+      ],
+      takeaway: "Open feedback from anyone, with an admin in the loop.",
     };
   }
 
@@ -461,7 +522,7 @@ function targetsFor(role: Role, reports: string | null): Target[] {
             group,
           })),
         ];
-  return role.admin ? [...base, { kind: "company" }] : base;
+  return role.admin ? [...base, { kind: "entity" }, { kind: "company" }] : base;
 }
 
 export default function HowItWorks({
@@ -498,6 +559,58 @@ export default function HowItWorks({
     changed.current = true;
     fn();
   };
+
+  // Ready-made use cases, so visitors who'd rather not fill in the blanks can
+  // still discover each flow and watch it play in the diagram.
+  const presets: {
+    label: string;
+    roleId: string;
+    reports: string | null;
+    targetKey: string;
+  }[] = [
+    {
+      label: "Feedback you keep",
+      roleId: "ic",
+      reports: null,
+      targetKey: "self",
+    },
+    {
+      label: "Recognize a teammate",
+      roleId: "ic",
+      reports: null,
+      targetKey: "peers",
+    },
+    {
+      label: "Grow your team",
+      roleId: "lead",
+      reports: "developers",
+      targetKey: "direct",
+    },
+    {
+      label: "Reach skip-level reports",
+      roleId: "clevel",
+      reports: "directors",
+      targetKey: "skip:managers",
+    },
+    {
+      label: "Moderate product feedback",
+      roleId: "clevel",
+      reports: "directors",
+      targetKey: "entity",
+    },
+    {
+      label: "Set up your company",
+      roleId: "clevel",
+      reports: "directors",
+      targetKey: "company",
+    },
+  ];
+  const applyPreset = (preset: (typeof presets)[number]): void =>
+    update(() => {
+      setRoleId(preset.roleId);
+      setReports(preset.reports);
+      setTargetKey(preset.targetKey);
+    });
 
   return (
     <section id="how-it-works" className="relative bg-gray-50">
@@ -554,6 +667,36 @@ export default function HowItWorks({
             .
           </p>
 
+          <div className="mx-auto mb-10 max-w-4xl">
+            <p className="mb-3 text-center text-sm font-medium text-muted-foreground">
+              Or jump straight to a use case
+            </p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {presets.map(preset => {
+                const current =
+                  preset.roleId === role.id &&
+                  (preset.reports ?? null) === reports &&
+                  preset.targetKey === targetId(target);
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => applyPreset(preset)}
+                    aria-pressed={current}
+                    className={cn(
+                      "rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-primary",
+                      current
+                        ? "border-gray-900 bg-gray-900 text-white"
+                        : "border-gray-300 bg-white text-gray-700 hover:border-gray-500 hover:text-gray-900",
+                    )}
+                  >
+                    {preset.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div
             ref={storyRef}
             className="scroll-mt-24 rounded-[2rem] border border-black/5 bubble-bg-3 p-4 shadow-md sm:p-8"
@@ -561,7 +704,7 @@ export default function HowItWorks({
             <h3 className="mx-auto mb-8 max-w-3xl text-center text-2xl font-semibold tracking-tight text-balance text-gray-950 sm:text-3xl">
               {story.title}
             </h3>
-            <SequenceDiagram
+            <FlowGraph
               key={sentence}
               actors={story.actors}
               steps={story.steps}
