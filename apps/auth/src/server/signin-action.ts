@@ -4,6 +4,7 @@ import { constServer } from "@propsto/constants/server";
 import { createLogger } from "@propsto/logger";
 import { redirect } from "next/navigation";
 import { signIn } from "@/server/auth.server";
+import { isAllowedRedirect } from "@/lib/callback-url";
 import { type SigninFormType, SigninFormSchema } from "@/app/types";
 
 const logger = createLogger("auth");
@@ -26,6 +27,19 @@ export async function signInAction(
 
   const { password: formPassword, signInMethod } = data;
 
+  // Where to return after sign-in (e.g. an invite link), kept only if it is ours
+  const rawCallbackUrl = formData.get("callbackUrl");
+  const callbackUrl =
+    typeof rawCallbackUrl === "string" &&
+    rawCallbackUrl &&
+    isAllowedRedirect(
+      rawCallbackUrl,
+      constServer.AUTH_URL,
+      constServer.PROPSTO_HOST,
+    )
+      ? rawCallbackUrl
+      : undefined;
+
   // No password sent: always ask for one, before looking the account up, whether or not it
   // exists or has a password (accounts without one use "forgot password"). Anything else is
   // an enumeration oracle.
@@ -44,6 +58,7 @@ export async function signInAction(
     result = await signIn(provider, {
       ...data,
       redirect: false,
+      ...(callbackUrl ? { redirectTo: callbackUrl } : {}),
     });
   } catch (e) {
     if (e instanceof Error) {
@@ -74,6 +89,11 @@ export async function signInAction(
     // confirmation after a few seconds, and relabels submit to a resend.
     if (signInMethod === "email") {
       return { code: "verify-request", values: data, button: "Resend link" };
+    }
+    // Back through the sign-in page, which applies the onboarding gate and
+    // then sends a finished account on to the callback URL
+    if (callbackUrl) {
+      redirect(`/?callbackUrl=${encodeURIComponent(callbackUrl)}`);
     }
     // Only allow relative URLs (not protocol-relative like //evil.com) or URLs to our domain
     const isRelativeUrl = result.startsWith("/") && !result.startsWith("//");

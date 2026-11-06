@@ -40,7 +40,7 @@ export default async function SigninPage({
           Enter your email address to get a link to sign in or sign up
         </p>
       </div>
-      <SigninForm />
+      <SigninForm callbackUrl={callbackUrl} />
     </div>
   );
 }
