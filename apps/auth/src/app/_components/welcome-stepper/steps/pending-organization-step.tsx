@@ -16,10 +16,13 @@ export type PendingOrganizationFormValues = z.infer<
 
 interface StepComponentProps {
   hostedDomain?: string | null;
+  // The org exists but this user can't auto-join it — they need an invite.
+  inviteOnly?: boolean;
 }
 
 export function StepComponent({
   hostedDomain,
+  inviteOnly = false,
 }: StepComponentProps): React.ReactElement {
   // Extract organization name from domain (e.g., "acme.com" -> "Acme")
   const orgNameFromDomain = hostedDomain
@@ -35,11 +38,14 @@ export function StepComponent({
         </div>
         <div>
           <h3 className="text-lg font-semibold">
-            {orgNameFromDomain} isn&apos;t on Props.to yet
+            {inviteOnly
+              ? `${orgNameFromDomain} is invite-only`
+              : `${orgNameFromDomain} isn't on Props.to yet`}
           </h3>
           <p className="text-sm text-muted-foreground">
-            Your organization hasn&apos;t been set up on Props.to by an
-            administrator.
+            {inviteOnly
+              ? "This organization adds members by invitation."
+              : "Your organization hasn't been set up on Props.to by an administrator."}
           </p>
         </div>
       </div>
@@ -51,9 +57,9 @@ export function StepComponent({
             <span className="font-medium">What this means</span>
           </div>
           <p className="text-sm text-muted-foreground">
-            A Google Workspace administrator from {hostedDomain} needs to sign
-            in to Props.to first to set up your organization. Once they do,
-            you&apos;ll be able to join automatically.
+            {inviteOnly
+              ? `${orgNameFromDomain} is on Props.to, but it adds members by invitation. Ask an admin from ${hostedDomain} to invite you, then open the invite link to join.`
+              : `A Google Workspace administrator from ${hostedDomain} needs to sign in to Props.to first to set up your organization. Once they do, you'll be able to join automatically.`}
           </p>
         </div>
 
@@ -66,7 +72,10 @@ export function StepComponent({
             <li>- Your personal Props.to account is ready to use</li>
             <li>- You can receive feedback at your personal profile</li>
             <li>
-              - When {orgNameFromDomain} is set up, you&apos;ll be notified
+              -{" "}
+              {inviteOnly
+                ? `When an admin invites you, you'll be able to join ${orgNameFromDomain}`
+                : `When ${orgNameFromDomain} is set up, you'll be notified`}
             </li>
             <li>
               - All your feedback history will be preserved on your personal

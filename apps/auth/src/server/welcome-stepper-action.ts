@@ -21,6 +21,7 @@ import {
   isPersonalEmailAvailable,
 } from "@propsto/data/repos";
 import { sendPersonalEmailVerification } from "@propsto/email/send/user";
+import { mayAutoJoinByDomain } from "@propsto/data/utils/domain-membership";
 import { type OrganizationJoinFormValues } from "@components/welcome-stepper/steps/organization-join-step";
 import { type PersonalFormValues } from "@components/welcome-stepper/steps/personal-step";
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
@@ -350,6 +351,8 @@ export async function organizationHandler(
         },
         organizationSettings: {
           allowUserInvites: organizationSettings.allowUserInvites,
+          // Opt-in later from Settings; a new org starts invite-only
+          autoJoinByDomain: false,
           enableGroupManagement: organizationSettings.enableGroupManagement,
           requireEmailVerification:
             organizationSettings.requireEmailVerification,
@@ -449,6 +452,22 @@ export async function organizationJoinHandler(
     }
 
     const organization = orgResult.data;
+
+    // Domain auto-join is opt-in. Enforced here, not just in the UI, so a direct
+    // POST to this handler can't bypass an invite-only org.
+    if (
+      !mayAutoJoinByDomain({
+        autoJoinByDomain:
+          organization.organizationSettings?.autoJoinByDomain ?? false,
+        isGoogleWorkspaceAdmin,
+      })
+    ) {
+      return {
+        success: false,
+        error:
+          "This organization only adds members by invitation. Ask an admin to invite you.",
+      };
+    }
 
     // Determine the role based on Google Workspace admin status
     const role = isGoogleWorkspaceAdmin ? "ADMIN" : "MEMBER";

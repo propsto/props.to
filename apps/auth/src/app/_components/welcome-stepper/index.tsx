@@ -84,12 +84,14 @@ export function WelcomeStepper({
   user,
   initialStep,
   orgStatus,
+  orgInviteOnly = false,
   linkStatus = "none",
   callbackUrl,
 }: Readonly<{
   user: WelcomeUser;
   initialStep: StepNames;
   orgStatus: OrganizationStatus;
+  orgInviteOnly?: boolean;
   linkStatus?: LinkAccountStatus;
   callbackUrl?: string; // validated by the welcome page
 }>): React.ReactElement {
@@ -392,7 +394,10 @@ export function WelcomeStepper({
       />
     ),
     "pending-organization": () => (
-      <PendingOrganizationStepComponent hostedDomain={user.hostedDomain} />
+      <PendingOrganizationStepComponent
+        hostedDomain={user.hostedDomain}
+        inviteOnly={orgInviteOnly}
+      />
     ),
   };
 

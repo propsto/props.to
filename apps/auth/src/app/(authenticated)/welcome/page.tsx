@@ -12,6 +12,7 @@ import {
   isUserMemberOfDomain,
   getPendingAccountLink,
 } from "@propsto/data/repos";
+import { mayAutoJoinByDomain } from "@propsto/data/utils/domain-membership";
 import { canUserMoveOn } from "@/lib/post-auth-check";
 import { constServer } from "@propsto/constants/server";
 import { isAllowedRedirect } from "@/lib/callback-url";
@@ -102,6 +103,9 @@ export default async function WelcomePage({
 
   // Check if organization exists for user's domain and if user is already a member
   let orgStatus: OrganizationStatus = "none";
+  // Org exists for the domain but this user can't auto-join it (invite-only):
+  // tells the pending step to say "ask for an invite", not "not set up yet".
+  let orgInviteOnly = false;
   if (user?.hostedDomain) {
     // First check if user is already a member of an org with this domain
     const membershipResult = await isUserMemberOfDomain(
@@ -115,7 +119,16 @@ export default async function WelcomePage({
       // Check if org exists for this domain
       const orgResult = await getOrganizationByHostedDomain(user.hostedDomain);
       if (orgResult.success && orgResult.data) {
-        orgStatus = "exists";
+        const mayJoin = mayAutoJoinByDomain({
+          autoJoinByDomain:
+            orgResult.data.organizationSettings?.autoJoinByDomain ?? false,
+          isGoogleWorkspaceAdmin: user.isGoogleWorkspaceAdmin ?? false,
+        });
+        // When they can't auto-join, route to the non-blocking pending step
+        // (same as "no org") so onboarding isn't a dead end on a join they
+        // can't complete — the invite flow adds them separately.
+        orgStatus = mayJoin ? "exists" : "not_exists";
+        orgInviteOnly = !mayJoin;
       } else {
         orgStatus = "not_exists";
       }
@@ -141,6 +154,7 @@ export default async function WelcomePage({
       }}
       initialStep={initialStep}
       orgStatus={orgStatus}
+      orgInviteOnly={orgInviteOnly}
       linkStatus={linkStatus}
       callbackUrl={callbackUrl}
     />

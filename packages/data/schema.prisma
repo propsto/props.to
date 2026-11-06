@@ -887,6 +887,9 @@ model OrganizationSettings {
   organization             Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId           String       @unique
   allowUserInvites         Boolean      @default(true)
+  // Slack-style: anyone signing in with a @hostedDomain Google account joins
+  // without an invite. Off by default — domain members join by invitation.
+  autoJoinByDomain         Boolean      @default(false)
   enableGroupManagement    Boolean      @default(true)
   requireEmailVerification Boolean      @default(true)
   enableSSOIntegration     Boolean      @default(false)

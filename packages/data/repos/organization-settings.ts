@@ -14,6 +14,7 @@ export type OrganizationDefaultUserSettings = {
 
 export type OrganizationGeneralSettings = {
   allowUserInvites: boolean;
+  autoJoinByDomain: boolean;
   enableGroupManagement: boolean;
   requireEmailVerification: boolean;
   enableSSOIntegration: boolean;
@@ -44,6 +45,7 @@ export const defaultOrganizationCreationSettings: OrganizationCreationSettings =
     },
     organizationSettings: {
       allowUserInvites: true,
+      autoJoinByDomain: false,
       enableGroupManagement: true,
       requireEmailVerification: true,
       enableSSOIntegration: true,
@@ -104,6 +106,7 @@ export async function upsertOrganizationSettings(
       where: { organizationId },
       update: {
         allowUserInvites: settings.allowUserInvites,
+        autoJoinByDomain: settings.autoJoinByDomain,
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
@@ -112,6 +115,7 @@ export async function upsertOrganizationSettings(
       create: {
         organizationId,
         allowUserInvites: settings.allowUserInvites,
+        autoJoinByDomain: settings.autoJoinByDomain,
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
