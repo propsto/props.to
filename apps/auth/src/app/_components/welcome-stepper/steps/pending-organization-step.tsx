@@ -59,7 +59,7 @@ export function StepComponent({
           <p className="text-sm text-muted-foreground">
             {inviteOnly
               ? `${orgNameFromDomain} is on Props.to, but it adds members by invitation. Ask an admin from ${hostedDomain} to invite you, then open the invite link to join.`
-              : `A Google Workspace administrator from ${hostedDomain} needs to sign in to Props.to first to set up your organization. Once they do, you'll be able to join automatically.`}
+              : `A Google Workspace administrator from ${hostedDomain} needs to sign in to Props.to first to set up your organization. Once they do, they can invite you, or turn on automatic joining for ${hostedDomain}.`}
           </p>
         </div>
 

@@ -140,13 +140,17 @@ export async function updateMembershipSettings(
     const current = org.organizationSettings;
 
     // Preserve the other general settings; only the domain-join toggle is editable here
-    await upsertOrganizationSettings(org.id, {
+    const saved = await upsertOrganizationSettings(org.id, {
       allowUserInvites: current?.allowUserInvites ?? true,
       autoJoinByDomain: input.autoJoinByDomain,
       enableGroupManagement: current?.enableGroupManagement ?? true,
       requireEmailVerification: current?.requireEmailVerification ?? true,
       enableSSOIntegration: current?.enableSSOIntegration ?? false,
     });
+    // The repo returns failures instead of throwing; don't audit or report success
+    if (!saved.success) {
+      return { success: false, error: "Failed to update settings" };
+    }
 
     if ((current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain) {
       await auditHelpers.logSettingsUpdate(

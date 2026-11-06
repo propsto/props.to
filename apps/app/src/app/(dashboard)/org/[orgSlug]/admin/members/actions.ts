@@ -229,6 +229,7 @@ export async function resendInviteAction(orgSlug: string, inviteId: string) {
     inviteId,
     orgId,
     expiresAt,
+    org.hostedDomain,
   );
 
   if (!refreshResult.success || !refreshResult.data) {

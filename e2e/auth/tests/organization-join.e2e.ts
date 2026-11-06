@@ -4,6 +4,8 @@ import {
   seedJoinableUser,
   memberRoleOf,
   resetJoinableUser,
+  setAutoJoinByDomain,
+  restoreAutoJoinByDomain,
   closeDb,
   hasDbUrl,
 } from "../utils/db";
@@ -22,9 +24,15 @@ const USER_ID = "e2e-joiner-user";
 const SLUG_ID = "e2e-joiner-slug";
 const SLUG = "e2ejoiner";
 const EMAIL = "e2e.joiner@acme.com";
+// Domain auto-join is opt-in, so Acme must allow it for a plain member to join.
+let previousAutoJoin: boolean | null = null;
 
 test.describe("onboarding: join organization", () => {
   test.skip(!hasDbUrl, "requires DATABASE_URL for DB setup");
+
+  test.beforeAll(async () => {
+    previousAutoJoin = await setAutoJoinByDomain("acme.com", true);
+  });
 
   test.beforeEach(async () => {
     await seedJoinableUser({
@@ -41,6 +49,7 @@ test.describe("onboarding: join organization", () => {
 
   test.afterAll(async () => {
     await resetJoinableUser(USER_ID, SLUG);
+    await restoreAutoJoinByDomain("acme.com", previousAutoJoin);
     await closeDb();
   });
 
