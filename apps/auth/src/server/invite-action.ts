@@ -7,7 +7,7 @@ import {
   acceptOrganizationInvite,
   getUser,
 } from "@propsto/data/repos";
-import { auth, updateSession } from "@/server/auth.server";
+import { auth, updateSession, signOut } from "@/server/auth.server";
 import { inviteRejection } from "@/lib/invite";
 
 export type AcceptInviteState = { error?: string } | undefined;
@@ -54,4 +54,16 @@ export async function acceptInviteAction(
 
   // ponytail: members have no org landing page yet (gate 4), so land on the dashboard
   redirect(constServer.PROPSTO_APP_URL);
+}
+
+// Sign out of the current (wrong) account and return to this invite, so the
+// person can sign in as the invited address and accept it. Without this the
+// "Wrong Account" screen is a dead end.
+export async function switchAccountAction(formData: FormData): Promise<void> {
+  const token = formData.get("token");
+  const inviteUrl =
+    typeof token === "string" && token
+      ? `${constServer.AUTH_URL}/invite?token=${encodeURIComponent(token)}`
+      : constServer.AUTH_URL;
+  await signOut({ redirectTo: inviteUrl });
 }
