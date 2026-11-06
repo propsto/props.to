@@ -15,3 +15,83 @@
 .animate-progress {
   animation: progress 8s linear forwards;
 }
+
+/* Flow graph (how-it-works): an action arrow draws itself, its label pops in,
+   and the receiving node gives a small nod. */
+@keyframes fg-draw-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.fg-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: fg-draw-in 0.7s ease forwards;
+}
+
+@keyframes fg-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fg-pill {
+  transform-origin: center;
+  animation: fg-pop-in 0.45s ease 0.2s both;
+}
+
+@keyframes fg-arrive {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.fg-arrive {
+  animation: fg-arrive 0.6s ease 0.35s;
+}
+
+/* A node making its first appearance pops in. A new sender shows with its step;
+   a new receiver waits for its arrow to land first. */
+@keyframes fg-node-in {
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fg-node-enter {
+  animation: fg-node-in 0.4s ease both;
+}
+
+.fg-node-arrive {
+  animation: fg-node-in 0.45s ease 0.4s both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-draw,
+  .fg-pill,
+  .fg-arrive,
+  .fg-node-enter,
+  .fg-node-arrive {
+    animation: none;
+  }
+}
