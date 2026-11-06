@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, MessageSquareHeartIcon } from "lucide-react";
-import { SequenceDiagram, type Actor, type Step } from "./sequence-diagram";
+import { FlowGraph, type Actor, type Step } from "./flow-graph";
 
 // Who the visitor is, who reports to them, and who reports to those people.
 // Plural labels read as "your <label>" in the diagram.
@@ -561,7 +561,7 @@ export default function HowItWorks({
             <h3 className="mx-auto mb-8 max-w-3xl text-center text-2xl font-semibold tracking-tight text-balance text-gray-950 sm:text-3xl">
               {story.title}
             </h3>
-            <SequenceDiagram
+            <FlowGraph
               key={sentence}
               actors={story.actors}
               steps={story.steps}

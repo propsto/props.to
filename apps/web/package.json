@@ -20,6 +20,7 @@
     "@propsto/logger": "workspace:*",
     "@propsto/ui": "workspace:*",
     "@vercel/analytics": "1.5.0",
+    "d3-force": "^3.0.1",
     "react-hook-form": "7.60.0"
   },
   "peerDependencies": {
@@ -40,5 +41,8 @@
     "tailwindcss": "*",
     "typescript": "*",
     "zod": "*"
+  },
+  "devDependencies": {
+    "@types/d3-force": "^3.0.10"
   }
 }
