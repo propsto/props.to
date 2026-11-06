@@ -148,6 +148,8 @@ export function FlowGraph({
   const nodesRef = useRef<GNode[]>([]);
   const simRef = useRef<Simulation<GNode, undefined> | null>(null);
   const dragId = useRef<number | null>(null);
+  // With reduced motion the simulation stays stopped; drags move cards directly.
+  const reducedRef = useRef(false);
 
   // Undirected pairs that appear in any step: the graph's static "map".
   const pairs = useMemo(() => {
@@ -180,6 +182,7 @@ export function FlowGraph({
     const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    reducedRef.current = reduced;
     const nodes = nodesRef.current;
     const links = pairs.map(([source, target]) => ({ source, target }));
 
@@ -298,6 +301,18 @@ export function FlowGraph({
     return { x: point.x, y: point.y };
   };
 
+  // Pin a dragged card at the pointer. With reduced motion no simulation tick
+  // will copy fx/fy into x/y, so place (and clamp) the card directly.
+  const placeNode = (node: GNode, p: { x: number; y: number }): void => {
+    if (reducedRef.current) {
+      node.x = Math.max(NODE_W / 2 + 8, Math.min(W - NODE_W / 2 - 8, p.x));
+      node.y = Math.max(NODE_H / 2 + 56, Math.min(H - NODE_H / 2 - 8, p.y));
+      return;
+    }
+    node.fx = p.x;
+    node.fy = p.y;
+  };
+
   const onNodeDown =
     (id: number) =>
     (event: ReactPointerEvent): void => {
@@ -310,12 +325,9 @@ export function FlowGraph({
       } catch {
         // pointer capture may be unavailable; dragging still works without it
       }
-      sim.alphaTarget(0.25).restart();
+      if (!reducedRef.current) sim.alphaTarget(0.25).restart();
       const p = toSvg(event);
-      if (p) {
-        node.fx = p.x;
-        node.fy = p.y;
-      }
+      if (p) placeNode(node, p);
       setFrame(f => f + 1);
     };
   const onNodeMove =
@@ -325,8 +337,7 @@ export function FlowGraph({
       const node = nodesRef.current[id];
       const p = toSvg(event);
       if (!node || !p) return;
-      node.fx = p.x;
-      node.fy = p.y;
+      placeNode(node, p);
       // Re-render directly: in reduced-motion mode no tick callback is running.
       setFrame(f => f + 1);
     };
@@ -347,7 +358,7 @@ export function FlowGraph({
         node.fx = null;
         node.fy = null;
       }
-      simRef.current?.alphaTarget(0);
+      if (!reducedRef.current) simRef.current?.alphaTarget(0);
       setFrame(f => f + 1);
     };
 
