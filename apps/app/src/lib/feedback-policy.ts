@@ -20,6 +20,7 @@ export async function getFeedbackPolicy(
     organizationId: string | null;
     userId: string | null;
     entityId?: string | null;
+    groupId?: string | null;
   },
   userId?: string,
 ): Promise<FeedbackPolicy> {
@@ -43,10 +44,11 @@ export async function getFeedbackPolicy(
     : null;
   const isMember = Boolean(membership?.data);
   const enabled = feedback?.enableOrganizationFeedback ?? true;
-  // Entity links (feedback on a product, event, service) take anyone: signed in
-  // or not, named or anonymous, whatever the member settings say. Outsiders'
-  // submissions always wait for an admin; there is no recipient to exempt.
-  if (link.entityId) {
+  // Entity links (feedback on a product, event, service) and team links (the
+  // group is the recipient) take anyone: signed in or not, named or anonymous,
+  // whatever the member settings say. Outsiders' submissions always wait for
+  // an admin; there is no recipient person to exempt.
+  if (link.entityId || (link.groupId && !link.userId)) {
     return {
       enabled,
       allowAnonymous: true,

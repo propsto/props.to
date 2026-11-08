@@ -328,11 +328,14 @@ async function main() {
     },
   });
 
-  // Create Marketing Group with ORGANIZATION scope slug
+  // Create Marketing Group with ORGANIZATION scope slug. PUBLIC so the
+  // team-feedback E2E can reach /acme/marketing signed out (a client would).
   const marketingGroup = await prisma.group.create({
     data: {
       id: SEED_IDS.marketing,
       name: "Marketing",
+      description: "The Acme marketing team",
+      visibility: "PUBLIC",
       organization: { connect: { id: acme.id } },
       slug: {
         create: {
@@ -343,6 +346,25 @@ async function main() {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
+    },
+  });
+
+  // A subgroup of Marketing: the parent page lists it, its page loads
+  await prisma.group.create({
+    data: {
+      name: "Launch Crew",
+      description: "Product launches",
+      visibility: "PUBLIC",
+      parent: { connect: { id: marketingGroup.id } },
+      organization: { connect: { id: acme.id } },
+      slug: {
+        create: {
+          slug: "launch-crew",
+          scope: "ORGANIZATION",
+          scopedToOrgId: acme.id,
+        },
+      },
+      users: { connect: { id: SEED_IDS.jane } },
     },
   });
 
@@ -512,6 +534,19 @@ async function main() {
       slug: "carol-globex",
       userId: carol.id,
       organizationId: globex.id,
+      templateId: propsTemplate,
+      isActive: true,
+    },
+  });
+
+  // Team link: the Marketing group is the recipient (no userId), so
+  // submissions land on the team's record, never a member's
+  await prisma.feedbackLink.create({
+    data: {
+      name: "Feedback for Marketing",
+      slug: "team",
+      groupId: marketingGroup.id,
+      organizationId: acme.id,
       templateId: propsTemplate,
       isActive: true,
     },

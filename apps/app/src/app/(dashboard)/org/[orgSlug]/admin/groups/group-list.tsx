@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { Button } from "@propsto/ui/atoms/button";
 import {
   ChevronRight,
+  Link2,
   MoreHorizontal,
   Pencil,
   Trash2,
@@ -37,7 +38,7 @@ import {
 } from "@propsto/ui/atoms/dialog";
 import { EditGroupDialog } from "./edit-group-dialog";
 import { ManageMembersDialog } from "./manage-members-dialog";
-import { deleteGroupAction } from "./actions";
+import { createTeamLinkAction, deleteGroupAction } from "./actions";
 import { toast } from "@propsto/ui/atoms/sonner";
 import type { GroupWithMembers } from "@propsto/data/repos";
 
@@ -68,6 +69,19 @@ export function GroupList({
     null,
   );
   const [isPending, startTransition] = useTransition();
+
+  const handleTeamLink = (group: GroupWithMembers) => {
+    startTransition(async () => {
+      const result = await createTeamLinkAction(orgSlug, group.id);
+      if (result.success) {
+        toast.success(
+          `Team link created${result.path ? `: ${result.path}` : ""}`,
+        );
+      } else {
+        toast.error(result.error ?? "Failed to create team link");
+      }
+    });
+  };
 
   const handleDelete = () => {
     if (!deletingGroup) return;
@@ -189,6 +203,10 @@ export function GroupList({
                     >
                       <Users className="mr-2 h-4 w-4" />
                       Manage Members
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTeamLink(group)}>
+                      <Link2 className="mr-2 h-4 w-4" />
+                      Team feedback link
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => setDeletingGroup(group)}

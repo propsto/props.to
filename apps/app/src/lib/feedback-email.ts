@@ -1,4 +1,4 @@
-import { getUser } from "@propsto/data/repos";
+import { getGroupAdminRecipients, getUser } from "@propsto/data/repos";
 import { sendFeedbackReceivedEmail } from "@propsto/email";
 import { constServer } from "@propsto/constants/server";
 import { createLogger } from "@propsto/logger";
@@ -45,5 +45,49 @@ export async function notifyFeedbackRecipient(input: {
     });
   } catch (emailError) {
     logger("Failed to send feedback notification email:", emailError);
+  }
+}
+
+// Tells a team's leads (group admins) their team received feedback. Same
+// timing as notifyFeedbackRecipient: on submit when unmoderated, on approval
+// when moderated. Never throws; a failed send must not fail either.
+export async function notifyTeamFeedbackAdmins(input: {
+  groupId: string;
+  fields: { id: string; type: string }[];
+  fieldsData: Record<string, unknown>;
+  isAnonymous: boolean;
+  senderName?: string | null;
+  feedbackType: string;
+  values?: string[];
+}): Promise<void> {
+  try {
+    const result = await getGroupAdminRecipients(input.groupId);
+    if (!result.success || !result.data) return;
+    const { groupName, groupPath, admins } = result.data;
+    const textAnswer = (type: string): string | undefined =>
+      input.fields
+        .filter(f => f.type === type)
+        .map(f => input.fieldsData[f.id])
+        .find((v): v is string => typeof v === "string");
+    const feedbackPreview = textAnswer("TEXTAREA") ?? textAnswer("TEXT");
+
+    for (const admin of admins) {
+      if (!admin.email) continue;
+      await sendFeedbackReceivedEmail(admin.email, {
+        recipientName: admin.firstName ?? admin.email.split("@")[0],
+        feedbackPreview: input.isAnonymous ? undefined : feedbackPreview,
+        senderName: input.isAnonymous
+          ? undefined
+          : (input.senderName ?? undefined),
+        isAnonymous: input.isAnonymous,
+        // Reads as "… sent you team Marketing feedback"
+        feedbackType: `team ${groupName}`,
+        values: input.values,
+        // Team feedback is read on the group's page, not the lead's own list
+        dashboardUrl: `${constServer.PROPSTO_APP_URL}${groupPath}`,
+      });
+    }
+  } catch (emailError) {
+    logger("Failed to send team feedback notification email:", emailError);
   }
 }
