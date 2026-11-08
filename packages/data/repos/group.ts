@@ -779,6 +779,8 @@ export async function getGroupFeedback(
 export async function getGroupAdminRecipients(groupId: string): Promise<
   HandleEvent<{
     groupName: string;
+    // Where team feedback is read: the group's public page
+    groupPath: string;
     admins: { email: string | null; firstName: string | null }[];
   } | null>
 > {
@@ -788,6 +790,8 @@ export async function getGroupAdminRecipients(groupId: string): Promise<
       where: { id: groupId },
       select: {
         name: true,
+        slug: { select: { slug: true } },
+        organization: { select: { slug: { select: { slug: true } } } },
         admins: {
           select: { user: { select: { email: true, firstName: true } } },
         },
@@ -796,6 +800,7 @@ export async function getGroupAdminRecipients(groupId: string): Promise<
     if (!group) return handleSuccess(null);
     return handleSuccess({
       groupName: group.name,
+      groupPath: `/${group.organization.slug.slug}/${group.slug.slug}`,
       admins: group.admins.map(a => a.user),
     });
   } catch (e) {

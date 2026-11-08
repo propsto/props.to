@@ -63,7 +63,7 @@ export async function notifyTeamFeedbackAdmins(input: {
   try {
     const result = await getGroupAdminRecipients(input.groupId);
     if (!result.success || !result.data) return;
-    const { groupName, admins } = result.data;
+    const { groupName, groupPath, admins } = result.data;
     const textAnswer = (type: string): string | undefined =>
       input.fields
         .filter(f => f.type === type)
@@ -83,7 +83,8 @@ export async function notifyTeamFeedbackAdmins(input: {
         // Reads as "… sent you team Marketing feedback"
         feedbackType: `team ${groupName}`,
         values: input.values,
-        dashboardUrl: `${constServer.PROPSTO_APP_URL}/feedback`,
+        // Team feedback is read on the group's page, not the lead's own list
+        dashboardUrl: `${constServer.PROPSTO_APP_URL}${groupPath}`,
       });
     }
   } catch (emailError) {

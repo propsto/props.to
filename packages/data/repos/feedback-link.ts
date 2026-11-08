@@ -155,7 +155,8 @@ export async function createGroupFeedbackLink(data: {
       templateId = fallback.id;
     }
 
-    // Slug is unique within the group
+    // Slug is unique within the group (partial unique index); a concurrent
+    // creation that wins the slug surfaces as P2002, retried with a fresh one
     let slug = data.slug ?? "team";
     const existingSlug = await db.feedbackLink.findFirst({
       where: { slug, groupId: data.groupId },
@@ -164,19 +165,90 @@ export async function createGroupFeedbackLink(data: {
       slug = generateLinkSlug();
     }
 
-    const link = await db.feedbackLink.create({
-      data: {
-        slug,
-        name: data.name,
-        groupId: data.groupId,
-        organizationId: data.organizationId,
-        templateId,
-        visibility: data.visibility ?? "PRIVATE",
-        feedbackType: data.feedbackType ?? "RECOGNITION",
-      },
-      include: feedbackLinkInclude,
-    });
+    const createLink = async (linkSlug: string) =>
+      db.feedbackLink.create({
+        data: {
+          slug: linkSlug,
+          name: data.name,
+          groupId: data.groupId,
+          organizationId: data.organizationId,
+          templateId,
+          visibility: data.visibility ?? "PRIVATE",
+          feedbackType: data.feedbackType ?? "RECOGNITION",
+        },
+        include: feedbackLinkInclude,
+      });
+
+    let link;
+    try {
+      link = await createLink(slug);
+    } catch (e) {
+      if ((e as { code?: string }).code !== "P2002") throw e;
+      link = await createLink(generateLinkSlug());
+    }
     return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// An org's team links (group-recipient), for the admin takedown controls
+export async function getOrganizationTeamLinks(organizationId: string): Promise<
+  HandleEvent<
+    Prisma.FeedbackLinkGetPayload<{
+      include: {
+        group: { select: { name: true; slug: { select: { slug: true } } } };
+        template: { select: { name: true } };
+        _count: { select: { feedbacks: true } };
+      };
+    }>[]
+  >
+> {
+  try {
+    logger("getOrganizationTeamLinks", { organizationId });
+    const links = await db.feedbackLink.findMany({
+      where: {
+        organizationId,
+        userId: null,
+        entityId: null,
+        groupId: { not: null },
+      },
+      include: {
+        group: { select: { name: true, slug: { select: { slug: true } } } },
+        template: { select: { name: true } },
+        _count: { select: { feedbacks: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return handleSuccess(links);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Pause or resume a team link. Bound to the org and to team links only, so an
+// admin can take a leaked team URL down without touching members' links.
+export async function setGroupLinkActive(
+  linkId: string,
+  organizationId: string,
+  isActive: boolean,
+): Promise<HandleEvent<boolean>> {
+  try {
+    logger("setGroupLinkActive", { linkId, organizationId, isActive });
+    const result = await db.feedbackLink.updateMany({
+      where: {
+        id: linkId,
+        organizationId,
+        userId: null,
+        entityId: null,
+        groupId: { not: null },
+      },
+      data: { isActive },
+    });
+    if (result.count === 0) {
+      return handleError(new Error("Team link not found"));
+    }
+    return handleSuccess(true);
   } catch (e) {
     return handleError(e);
   }

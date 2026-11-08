@@ -5,7 +5,9 @@ import {
   getOrganizationBySlug,
   getOrganizationFeedbackLinks,
   getOrganizationManagedLinks,
+  getOrganizationTeamLinks,
 } from "@propsto/data/repos";
+import { TeamLinkToggle } from "./team-link-toggle";
 import { notFound } from "next/navigation";
 import { Button } from "@propsto/ui/atoms/button";
 import {
@@ -61,6 +63,11 @@ export default async function OrgAdminLinks({
   const activeLinks = links.filter(l => l.isActive).length;
   const totalResponses = links.reduce((sum, l) => sum + l._count.feedbacks, 0);
 
+  // Team links (the group is the recipient): pausing here is the takedown
+  // control for a leaked team URL, since these belong to no member
+  const teamLinksResult = await getOrganizationTeamLinks(org.id);
+  const teamLinks = teamLinksResult.success ? teamLinksResult.data : [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -107,6 +114,60 @@ export default async function OrgAdminLinks({
           </CardContent>
         </Card>
       </div>
+
+      {/* Team Links */}
+      {teamLinks.length > 0 && (
+        <Card data-testid="team-links">
+          <CardHeader>
+            <CardTitle>Team Links</CardTitle>
+            <CardDescription>
+              Feedback links whose recipient is a team. Pause one to stop it
+              accepting submissions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Team</TableHead>
+                  <TableHead>Link Name</TableHead>
+                  <TableHead>URL</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Responses</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teamLinks.map(link => (
+                  <TableRow key={link.id}>
+                    <TableCell className="font-medium">
+                      {link.group?.name}
+                    </TableCell>
+                    <TableCell>{link.name}</TableCell>
+                    <TableCell>
+                      <code className="text-sm">
+                        /{orgSlug}/{link.group?.slug.slug}/{link.slug}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={link.isActive ? "default" : "secondary"}>
+                        {link.isActive ? "Active" : "Paused"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{link._count.feedbacks}</TableCell>
+                    <TableCell>
+                      <TeamLinkToggle
+                        linkId={link.id}
+                        isActive={link.isActive}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Links Table */}
       <Card>
