@@ -105,7 +105,7 @@ Release test: leaked link is paused within a minute from the UI. Removed member 
 - [x] Dashboard "recent feedback" renders only a count. Render the list or drop the card. Done: last 5 approved items plus "View all N".
 - [x] Org landing at `/<org>` on the public site is stub text. Either a real page or a redirect. Done: org name plus active, non-hidden member links (managed and group links left out); members-only or feedback-off orgs show outsiders the name only, and members without a PUBLIC profile are never listed.
 - [x] Rate limit is 10/min/IP on public submit. An office behind one NAT will hit it. Raise, or key on link+IP. Done: 10/min per link+IP, 120/min per-IP ceiling.
-- [ ] Rehearsal with two orgs, one dual-member user, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send. Still two orgs with one pilot company: production will hold the founder's props.to org next to Cresteo's, so tenant isolation has to hold. Run it on a preview with the seeded Acme and Globex.
+- [x] Rehearsal with two orgs, one dual-member user, a plain member, a removed member, a wrong-account invite, a fresh link, a moderation bypass attempt, and a failed email send. Still two orgs with one pilot company: production will hold the founder's props.to org next to Cresteo's, so tenant isolation has to hold. Run 2026-11-08 on the PR #166 preview with the seeded Acme and Globex: all scenarios pass; the failed-email send is not exercisable with the outbox provider (send-result checks are the gate 2 fix). Full results in `docs/pilot-rehearsal.md`.
 
 ## Decide before gate 3
 
