@@ -16,6 +16,8 @@ import {
   getUserFeedbackLinks,
   getUser as _getUser,
   getGroupForPublicPage,
+  getGroupFeedback,
+  getFeedbackTemplate,
   getOrganizationById,
   getOrganizationFeedbackLinks,
   getOrganizationSettings,
@@ -86,6 +88,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@propsto/ui/atoms/avatar";
 import { FeedbackSubmissionForm } from "./_components/feedback-form";
 import { auth } from "@/server/auth.server";
+import { labelAnswers } from "@/lib/template-fields";
+import { formatDistanceToNow } from "date-fns";
 import { constServer } from "@propsto/constants/server";
 import {
   feedbackRefusal,
@@ -500,8 +504,9 @@ async function handleGroupPage(
   orgSlug: string,
   groupSlug: string,
 ): Promise<React.ReactNode> {
-  // Get group data with visibility check (no auth for public pages)
-  const groupResult = await getGroupForPublicPage(groupId);
+  // Visibility follows the viewer: ORGANIZATION groups show to signed-in members
+  const session = await auth();
+  const groupResult = await getGroupForPublicPage(groupId, session?.user?.id);
 
   if (!groupResult.success || !groupResult.data) {
     notFound();
@@ -520,8 +525,54 @@ async function handleGroupPage(
     return orgSlugRecord?.slug ?? null;
   };
 
+  // Approved team feedback is the team's record, shown to org members only
+  let teamFeedback: {
+    id: string;
+    from: string;
+    when: Date;
+    answers: { key: string; label: string; value: unknown }[];
+  }[] = [];
+  if (group.viewerIsMember) {
+    const fbResult = await getGroupFeedback(group.id, { take: 10 });
+    const items = fbResult.success ? fbResult.data.feedbacks : [];
+    const templateIds = [...new Set(items.map(f => f.templateId))];
+    const templates = await Promise.all(templateIds.map(getFeedbackTemplate));
+    const fieldsByTemplate = new Map(
+      templateIds.map((id, i) => [id, templates[i]?.data?.fields ?? []]),
+    );
+    teamFeedback = items.map(f => ({
+      id: f.id.toString(),
+      from:
+        f.visibility === "ANONYMOUS"
+          ? "Anonymous"
+          : [f.submitter?.firstName, f.submitter?.lastName]
+              .filter(Boolean)
+              .join(" ") ||
+            f.submitterName ||
+            f.submitterEmail ||
+            "Anonymous",
+      when: f.createdAt,
+      answers: labelAnswers(
+        fieldsByTemplate.get(f.templateId) ?? [],
+        (f.fieldsData as Record<string, unknown> | null) ?? {},
+      ),
+    }));
+  }
+
   return (
     <div className="max-w-2xl mx-auto">
+      {/* Parent breadcrumb */}
+      {group.parent && (
+        <p className="mb-4 text-sm text-muted-foreground">
+          <a
+            href={`/${orgSlug}/${group.parent.slug.slug}`}
+            className="hover:underline"
+          >
+            ← {group.parent.name}
+          </a>
+        </p>
+      )}
+
       {/* Group Header */}
       <div className="text-center mb-8">
         <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
@@ -554,6 +605,37 @@ async function handleGroupPage(
                     {link.template.name}
                   </p>
                 )}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Subgroups */}
+      {group.children.length > 0 && (
+        <div className="mb-8" data-testid="subgroups">
+          <h2 className="text-lg font-semibold mb-4">Teams</h2>
+          <div className="grid gap-4">
+            {group.children.map(child => (
+              <a
+                key={child.id}
+                href={`/${orgSlug}/${child.slug.slug}`}
+                className="block p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-medium">{child.name}</h3>
+                    {child.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {child.description}
+                      </p>
+                    )}
+                  </div>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {child.memberCount} member
+                    {child.memberCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
               </a>
             ))}
           </div>
@@ -603,6 +685,31 @@ async function handleGroupPage(
           })}
         </div>
       </div>
+
+      {/* Approved team feedback, visible to org members */}
+      {teamFeedback.length > 0 && (
+        <div className="mt-8" data-testid="team-feedback">
+          <h2 className="text-lg font-semibold mb-4">Team feedback</h2>
+          <div className="grid gap-4">
+            {teamFeedback.map(f => (
+              <div key={f.id} className="p-4 border rounded-lg">
+                <p className="text-sm text-muted-foreground mb-2">
+                  From {f.from} ·{" "}
+                  {formatDistanceToNow(f.when, { addSuffix: true })}
+                </p>
+                {f.answers.map(a => (
+                  <div key={a.key}>
+                    <p className="text-sm font-medium">{a.label}</p>
+                    <p className="text-sm whitespace-pre-wrap text-muted-foreground">
+                      {String(a.value)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -847,7 +954,10 @@ async function handleGroupFeedbackLink(
   _organizationId: string,
 ): Promise<React.ReactNode> {
   // Get the group for visibility check and header info
-  const groupResult = await getGroupForPublicPage(groupId);
+  const groupResult = await getGroupForPublicPage(
+    groupId,
+    (await auth())?.user?.id,
+  );
 
   if (!groupResult.success || !groupResult.data) {
     notFound();

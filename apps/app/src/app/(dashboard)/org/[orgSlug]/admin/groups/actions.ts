@@ -13,6 +13,7 @@ import {
   addGroupAdmin,
   removeGroupAdmin,
   getOrganizationMembers,
+  createGroupFeedbackLink,
 } from "@propsto/data/repos";
 
 interface ActionResult {
@@ -125,6 +126,40 @@ export async function deleteGroupAction(
 
   revalidatePath(`/org/${orgSlug}/admin/groups`);
   return { success: true };
+}
+
+// Create a team feedback link: the group is the recipient, so submissions go
+// to the team's page and its leads, never to a member's personal record.
+export async function createTeamLinkAction(
+  orgSlug: string,
+  groupId: string,
+): Promise<ActionResult & { path?: string }> {
+  const { error, orgId } = await verifyGroupInOrg(orgSlug, groupId);
+  if (error || !orgId)
+    return { success: false, error: error ?? "Group not found" };
+
+  const group = await getGroup(groupId);
+  if (!group.success || !group.data) {
+    return { success: false, error: "Group not found" };
+  }
+
+  const result = await createGroupFeedbackLink({
+    groupId,
+    organizationId: orgId,
+    name: `Feedback for ${group.data.name}`,
+  });
+  if (!result.success) {
+    return {
+      success: false,
+      error: result.error ?? "Failed to create team link",
+    };
+  }
+
+  revalidatePath(`/org/${orgSlug}/admin/groups`);
+  return {
+    success: true,
+    path: `/${orgSlug}/${group.data.slug.slug}/${result.data.slug}`,
+  };
 }
 
 export async function updateGroupMembersAction(

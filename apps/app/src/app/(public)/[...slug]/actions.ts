@@ -7,7 +7,10 @@ import {
 } from "@propsto/data/repos";
 import type { FeedbackVisibility, Prisma } from "@prisma/client";
 import { checkFeedbackRateLimit } from "@/lib/ratelimit";
-import { notifyFeedbackRecipient } from "@/lib/feedback-email";
+import {
+  notifyFeedbackRecipient,
+  notifyTeamFeedbackAdmins,
+} from "@/lib/feedback-email";
 import { auth } from "@/server/auth.server";
 import { feedbackRefusal, getFeedbackPolicy } from "@/lib/feedback-policy";
 import { z } from "zod";
@@ -193,10 +196,13 @@ export async function submitFeedbackAction(
   }
 
   // Create the feedback
-  // Entity feedback has no recipient person: it belongs to the entity alone
+  // Entity and team feedback have no recipient person: entity feedback belongs
+  // to the entity, team feedback to the group (groupId is passed below)
   const recipient = link.entityId
     ? { entityId: link.entityId, context: sanitizedInput.context }
-    : { userId: link.userId ?? undefined };
+    : link.userId
+      ? { userId: link.userId }
+      : {};
   const feedbackResult = await createFeedback({
     ...recipient,
     // A signed-in submitter is recorded so their Sent list shows it; anonymous stays unlinked
@@ -223,17 +229,30 @@ export async function submitFeedbackAction(
     };
   }
 
-  // Moderated feedback notifies the recipient on approval instead
+  // Moderated feedback notifies on approval instead. Team feedback goes to the
+  // group's leads; person feedback to its recipient; entity feedback to nobody.
   if (!policy.moderated) {
-    await notifyFeedbackRecipient({
-      recipientId: link.userId,
-      fields: link.template.fields,
-      fieldsData,
-      isAnonymous,
-      senderName: sanitizedInput.submitterName,
-      feedbackType: link.feedbackType,
-      values: valueNames,
-    });
+    if (!link.userId && !link.entityId && link.groupId) {
+      await notifyTeamFeedbackAdmins({
+        groupId: link.groupId,
+        fields: link.template.fields,
+        fieldsData,
+        isAnonymous,
+        senderName: sanitizedInput.submitterName,
+        feedbackType: link.feedbackType,
+        values: valueNames,
+      });
+    } else {
+      await notifyFeedbackRecipient({
+        recipientId: link.userId,
+        fields: link.template.fields,
+        fieldsData,
+        isAnonymous,
+        senderName: sanitizedInput.submitterName,
+        feedbackType: link.feedbackType,
+        values: valueNames,
+      });
+    }
   }
 
   return { success: true };

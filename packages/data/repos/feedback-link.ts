@@ -123,6 +123,65 @@ export async function createFeedbackLink(data: {
   }
 }
 
+// Create a team feedback link: the group itself is the recipient (no userId),
+// so submissions never land on a member's personal record. Template defaults
+// to a system default when none is given.
+export async function createGroupFeedbackLink(data: {
+  groupId: string;
+  organizationId: string;
+  name: string;
+  templateId?: string;
+  slug?: string;
+  visibility?: FeedbackVisibility;
+  feedbackType?: FeedbackType;
+}): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  try {
+    logger("createGroupFeedbackLink", {
+      groupId: data.groupId,
+      name: data.name,
+    });
+    let templateId = data.templateId;
+    if (templateId) {
+      await assertTemplateUsable(templateId, {
+        organizationId: data.organizationId,
+      });
+    } else {
+      const fallback = await db.feedbackTemplate.findFirst({
+        where: { isDefault: true, deletedAt: null },
+        orderBy: { name: "desc" }, // "Quick Props" over "360° Feedback"
+        select: { id: true },
+      });
+      if (!fallback) throw new Error("No default template available");
+      templateId = fallback.id;
+    }
+
+    // Slug is unique within the group
+    let slug = data.slug ?? "team";
+    const existingSlug = await db.feedbackLink.findFirst({
+      where: { slug, groupId: data.groupId },
+    });
+    if (existingSlug) {
+      slug = generateLinkSlug();
+    }
+
+    const link = await db.feedbackLink.create({
+      data: {
+        slug,
+        name: data.name,
+        groupId: data.groupId,
+        organizationId: data.organizationId,
+        templateId,
+        visibility: data.visibility ?? "PRIVATE",
+        feedbackType: data.feedbackType ?? "RECOGNITION",
+      },
+      include: feedbackLinkInclude,
+    });
+    return handleSuccess(link);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Get feedback link by ID
 export async function getFeedbackLink(
   id: string,

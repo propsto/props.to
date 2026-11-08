@@ -91,8 +91,9 @@ const feedbackInclude = Prisma.validator<Prisma.FeedbackInclude>()({
 // same transaction and maxResponses is enforced on the locked row, so two
 // concurrent submissions cannot both slip under the cap.
 export async function createFeedback(data: {
-  // Exactly one: the recipient person, or the entity the feedback is about
-  // (entity feedback has no recipient, so it never reaches a personal record)
+  // Exactly one recipient: a person, an entity, or a group (groupId with
+  // neither of the others). Entity and group feedback has no recipient person,
+  // so it never reaches a personal record.
   userId?: string;
   entityId?: string;
   context?: string; // Entity feedback only: what the visitor was looking at
@@ -118,8 +119,13 @@ export async function createFeedback(data: {
       entityId: data.entityId,
       templateId: data.templateId,
     });
-    if (Boolean(data.userId) === Boolean(data.entityId)) {
+    // Exactly one recipient: a person, an entity, or (with neither) a group.
+    // groupId beside a userId stays context, not a recipient.
+    if (data.userId && data.entityId) {
       throw new Error("Feedback needs a recipient or an entity, not both");
+    }
+    if (!data.userId && !data.entityId && !data.groupId) {
+      throw new Error("Feedback needs a recipient: a person, entity, or group");
     }
     const feedback = await db.$transaction(async tx => {
       if (data.linkId) {

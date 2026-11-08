@@ -9,7 +9,10 @@ import {
   verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { auth } from "@/server/auth.server";
-import { notifyFeedbackRecipient } from "@/lib/feedback-email";
+import {
+  notifyFeedbackRecipient,
+  notifyTeamFeedbackAdmins,
+} from "@/lib/feedback-email";
 
 type Result = { success: true } | { success: false; error: string };
 
@@ -51,20 +54,33 @@ export async function moderateFeedbackAction(
     resourceId: feedbackId,
     details: feedback.entityId
       ? { entityId: feedback.entityId }
-      : { recipientId: feedback.userId },
+      : feedback.userId
+        ? { recipientId: feedback.userId }
+        : { groupId: feedback.groupId },
   });
 
   if (decision === "approve") {
     const template = await getFeedbackTemplate(feedback.templateId);
-    await notifyFeedbackRecipient({
-      recipientId: feedback.userId,
+    const notification = {
       fields: template.data?.fields ?? [],
       fieldsData: (feedback.fieldsData as Record<string, unknown> | null) ?? {},
       isAnonymous: feedback.visibility === "ANONYMOUS",
       senderName: feedback.submitterName ?? feedback.submitter?.firstName,
       feedbackType: feedback.feedbackType,
       values: feedback.values.map(v => v.value.name),
-    });
+    };
+    // Team feedback goes to the group's leads; entity feedback to nobody
+    if (feedback.groupId && !feedback.userId && !feedback.entityId) {
+      await notifyTeamFeedbackAdmins({
+        groupId: feedback.groupId,
+        ...notification,
+      });
+    } else {
+      await notifyFeedbackRecipient({
+        recipientId: feedback.userId,
+        ...notification,
+      });
+    }
   }
 
   revalidatePath(`/org/${orgSlug}/admin/moderation`);

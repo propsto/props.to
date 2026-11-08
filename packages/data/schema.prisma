@@ -564,7 +564,8 @@ model TemplateField {
 // Feedback is ALWAYS tied to a user's personal account for permanent traceability
 model Feedback {
   id             BigInt           @id @default(autoincrement())
-  // The recipient person. Null exactly when entityId is set (DB check constraint):
+  // The recipient person. Exactly one recipient: person, entity, or group
+  // (userId and entityId both NULL with groupId set; DB check constraint):
   // feedback about an entity belongs to the org, never to a person's record
   user           User?            @relation("ReceivedFeedback", fields: [userId], references: [id], onDelete: Restrict)
   userId         String?
@@ -631,7 +632,8 @@ model FeedbackLink {
   id             String             @id @default(cuid())
   slug           String // Short URL slug (e.g., "leadership-2024")
   name           String // User-friendly name for the link
-  // The person the link collects feedback for. Null exactly when entityId is set (DB check constraint)
+  // The person the link collects feedback for. Exactly one recipient: person,
+  // entity, or group (userId and entityId both NULL with groupId set; DB check constraint)
   user           User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String?
   entity         Entity?            @relation(fields: [entityId], references: [id], onDelete: Cascade)

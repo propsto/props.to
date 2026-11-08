@@ -13,7 +13,9 @@ export type GroupWithMembers = Prisma.GroupGetPayload<{
     slug: true;
     organization: { select: { id: true; name: true } };
     parent: { select: { id: true; name: true } };
-    children: { select: { id: true; name: true; slug: { select: { slug: true } } } };
+    children: {
+      select: { id: true; name: true; slug: { select: { slug: true } } };
+    };
     users: {
       select: {
         id: true;
@@ -30,7 +32,9 @@ export type GroupWithMembers = Prisma.GroupGetPayload<{
         };
       };
     };
-    _count: { select: { feedbacks: true; feedbackLinks: true; children: true } };
+    _count: {
+      select: { feedbacks: true; feedbackLinks: true; children: true };
+    };
   };
 }>;
 
@@ -38,7 +42,9 @@ const groupInclude = Prisma.validator<Prisma.GroupInclude>()({
   slug: true,
   organization: { select: { id: true, name: true } },
   parent: { select: { id: true, name: true } },
-  children: { select: { id: true, name: true, slug: { select: { slug: true } } } },
+  children: {
+    select: { id: true, name: true, slug: { select: { slug: true } } },
+  },
   users: {
     select: {
       id: true,
@@ -88,11 +94,17 @@ export async function createGroup(data: {
       }
 
       if (parentGroup.organizationId !== data.organizationId) {
-        return handleError(new Error("Parent group must be in the same organization"));
+        return handleError(
+          new Error("Parent group must be in the same organization"),
+        );
       }
 
       if (parentGroup.parentGroupId) {
-        return handleError(new Error("Maximum nesting depth is 2 levels (subgroups cannot have subgroups)"));
+        return handleError(
+          new Error(
+            "Maximum nesting depth is 2 levels (subgroups cannot have subgroups)",
+          ),
+        );
       }
     }
 
@@ -231,16 +243,24 @@ export async function updateGroup(
       }
 
       if (parentGroup.organizationId !== currentGroup.organizationId) {
-        return handleError(new Error("Parent group must be in the same organization"));
+        return handleError(
+          new Error("Parent group must be in the same organization"),
+        );
       }
 
       if (parentGroup.parentGroupId) {
-        return handleError(new Error("Maximum nesting depth is 2 levels (subgroups cannot have subgroups)"));
+        return handleError(
+          new Error(
+            "Maximum nesting depth is 2 levels (subgroups cannot have subgroups)",
+          ),
+        );
       }
 
       // Cannot set as parent if current group already has children
       if (currentGroup.children.length > 0) {
-        return handleError(new Error("Cannot make a group with subgroups into a subgroup"));
+        return handleError(
+          new Error("Cannot make a group with subgroups into a subgroup"),
+        );
       }
     }
 
@@ -261,6 +281,22 @@ export async function deleteGroup(
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
     logger("deleteGroup", { id });
+    // Team-recipient rows would be stranded by SetNull (and then violate the
+    // one-recipient constraint), so a group that has received team feedback or
+    // carries team links cannot be deleted; deactivate its links instead.
+    const teamRows = await db.feedbackLink.count({
+      where: { groupId: id, userId: null, entityId: null },
+    });
+    const teamFeedback = await db.feedback.count({
+      where: { groupId: id, userId: null, entityId: null },
+    });
+    if (teamRows > 0 || teamFeedback > 0) {
+      return handleError(
+        new Error(
+          "This group has team feedback links or feedback and cannot be deleted",
+        ),
+      );
+    }
     const group = await db.group.delete({
       where: { id },
       include: groupInclude,
@@ -514,7 +550,19 @@ export type PublicGroupData = {
     template: { name: string } | null;
     isActive: boolean;
     isHidden: boolean;
+    userId: string | null;
+    entityId: string | null;
   }>;
+  // Subgroups the viewer may see, and the parent when the viewer may see it
+  children: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    slug: { slug: string };
+    memberCount: number;
+  }>;
+  parent: { name: string; slug: { slug: string } } | null;
+  viewerIsMember: boolean;
 };
 
 // Get group for public page display (respects visibility)
@@ -556,6 +604,25 @@ export async function getGroupForPublicPage(
             template: { select: { name: true } },
             isActive: true,
             isHidden: true,
+            userId: true,
+            entityId: true,
+          },
+        },
+        parent: {
+          select: {
+            name: true,
+            visibility: true,
+            slug: { select: { slug: true } },
+          },
+        },
+        children: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            visibility: true,
+            slug: { select: { slug: true } },
+            _count: { select: { users: true } },
           },
         },
       },
@@ -565,30 +632,47 @@ export async function getGroupForPublicPage(
       return handleSuccess(null);
     }
 
-    // Check visibility
+    // Membership decides ORGANIZATION-visibility for the group, its parent
+    // and its subgroups in one place
+    const isMember = viewerUserId
+      ? Boolean(
+          await db.organizationMember.findFirst({
+            where: {
+              userId: viewerUserId,
+              organizationId: group.organizationId,
+            },
+          }),
+        )
+      : false;
+
     if (group.visibility === "PRIVATE") {
       return handleSuccess(null);
     }
-
-    if (group.visibility === "ORGANIZATION") {
-      // Must be org member to view
-      if (!viewerUserId) {
-        return handleSuccess(null);
-      }
-
-      const isMember = await db.organizationMember.findFirst({
-        where: {
-          userId: viewerUserId,
-          organizationId: group.organizationId,
-        },
-      });
-
-      if (!isMember) {
-        return handleSuccess(null);
-      }
+    if (group.visibility === "ORGANIZATION" && !isMember) {
+      return handleSuccess(null);
     }
 
-    return handleSuccess(group as unknown as PublicGroupData);
+    const visibleTo = (v: string): boolean =>
+      v === "PUBLIC" || (v === "ORGANIZATION" && isMember);
+    const { parent, children, ...rest } = group;
+
+    return handleSuccess({
+      ...rest,
+      children: children
+        .filter(c => visibleTo(c.visibility))
+        .map(c => ({
+          id: c.id,
+          name: c.name,
+          description: c.description,
+          slug: c.slug,
+          memberCount: c._count.users,
+        })),
+      parent:
+        parent && visibleTo(parent.visibility)
+          ? { name: parent.name, slug: parent.slug }
+          : null,
+      viewerIsMember: isMember,
+    } as PublicGroupData);
   } catch (e) {
     return handleError(e);
   }
@@ -648,7 +732,7 @@ export async function getGroupFeedback(
   HandleEvent<{
     feedbacks: Prisma.FeedbackGetPayload<{
       include: {
-        user: {
+        submitter: {
           select: { id: true; firstName: true; lastName: true; image: true };
         };
         template: { select: { name: true } };
@@ -659,13 +743,20 @@ export async function getGroupFeedback(
 > {
   try {
     logger("getGroupFeedback", { groupId, options });
-    const where: Prisma.FeedbackWhereInput = { groupId, status: "APPROVED" };
+    // Team-recipient rows only: a person's feedback that merely carries the
+    // group as context stays on the person's record, never on the team's page
+    const where: Prisma.FeedbackWhereInput = {
+      groupId,
+      status: "APPROVED",
+      userId: null,
+      entityId: null,
+    };
 
     const [feedbacks, total] = await Promise.all([
       db.feedback.findMany({
         where,
         include: {
-          user: {
+          submitter: {
             select: { id: true, firstName: true, lastName: true, image: true },
           },
           template: { select: { name: true } },
@@ -678,6 +769,35 @@ export async function getGroupFeedback(
     ]);
 
     return handleSuccess({ feedbacks, total });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// The leads to notify about team feedback: the group's name and each admin's
+// email, nothing else leaves the repo
+export async function getGroupAdminRecipients(groupId: string): Promise<
+  HandleEvent<{
+    groupName: string;
+    admins: { email: string | null; firstName: string | null }[];
+  } | null>
+> {
+  try {
+    logger("getGroupAdminRecipients", { groupId });
+    const group = await db.group.findUnique({
+      where: { id: groupId },
+      select: {
+        name: true,
+        admins: {
+          select: { user: { select: { email: true, firstName: true } } },
+        },
+      },
+    });
+    if (!group) return handleSuccess(null);
+    return handleSuccess({
+      groupName: group.name,
+      admins: group.admins.map(a => a.user),
+    });
   } catch (e) {
     return handleError(e);
   }

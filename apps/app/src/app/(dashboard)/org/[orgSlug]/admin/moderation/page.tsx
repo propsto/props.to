@@ -80,7 +80,9 @@ export default async function OrgAdminModeration({
                   <CardTitle className="text-base">
                     {feedback.entity
                       ? `About ${feedback.entity.name}`
-                      : `To ${personName(feedback.user)}`}
+                      : feedback.user
+                        ? `To ${personName(feedback.user)}`
+                        : `To team ${feedback.group?.name ?? "(deleted group)"}`}
                   </CardTitle>
                   <CardDescription>
                     From {from}
