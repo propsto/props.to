@@ -99,7 +99,7 @@ test.describe.serial("team feedback", () => {
     expect(res.ok(), `preview-mail returned ${res.status()}`).toBe(true);
     const emails = (await res.json()) as { html: string }[];
     expect(
-      emails.some(e => e.html.includes("team Marketing")),
+      emails.some(e => /team marketing/i.test(e.html)),
       "no team feedback notification in the lead's outbox",
     ).toBe(true);
     await john.context().close();
