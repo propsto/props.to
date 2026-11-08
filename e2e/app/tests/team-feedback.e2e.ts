@@ -36,7 +36,10 @@ test.describe.serial("team feedback", () => {
     });
     const page = await context.newPage();
     await page.goto(`${APP_URL}/acme/marketing`);
-    await expect(page.getByRole("heading", { name: "Marketing" })).toBeVisible({
+    // exact: "Feedback for Marketing" is also a heading on this page
+    await expect(
+      page.getByRole("heading", { name: "Marketing", exact: true }),
+    ).toBeVisible({
       timeout: 15000,
     });
     await expect(
@@ -46,7 +49,7 @@ test.describe.serial("team feedback", () => {
 
     await page.goto(`${APP_URL}/acme/launch-crew`);
     await expect(
-      page.getByRole("heading", { name: "Launch Crew" }),
+      page.getByRole("heading", { name: "Launch Crew", exact: true }),
     ).toBeVisible();
     await expect(page.getByText("← Marketing")).toBeVisible();
     await context.close();
