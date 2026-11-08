@@ -60,26 +60,32 @@ jobs:
   # preview deployments. Without the label there are none, so report them here instead.
   # A later labelled deploy posts Vercel's real statuses over these.
   e2e-gated:
-    name: Run E2E Tests
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview') }}
+    # On a labelled PR this job must not carry the required name: a label toggle after
+    # the real run could create a newer check run that masks it. The job always runs
+    # (no job-level if) because a job skipped at job level shows the raw, unevaluated
+    # expression as its check-run name.
+    name: "${{ contains(github.event.pull_request.labels.*.name, 'preview') && 'E2E stand-in (labelled no-op)' || 'Run E2E Tests' }}"
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SHA: ${{ github.event.pull_request.head.sha }}
     steps:
       # Fork PRs get a read-only token and never get previews; a maintainer handles them
-      - if: github.event.pull_request.head.repo.full_name == github.repository
+      - if: github.event.pull_request.head.repo.full_name == github.repository && !contains(github.event.pull_request.labels.*.name, 'preview')
         run: |
-          # The event's labels can be stale by the time this queued run starts
+          # The event's labels can be stale by the time this queued run starts. This run
+          # holds the required name, so concluding green here would mask a failed real
+          # run; fail instead — the label's own deployment run reports over it.
           PR=${{ github.event.pull_request.number }}
           if gh api "repos/${{ github.repository }}/issues/$PR/labels" --jq '.[].name' | grep -qx preview; then
-            echo "Labelled since this event, so the preview deployment reports these statuses"
-            exit 0
+            echo "::error::Labelled since this event; only the preview's real E2E run may report the required check."
+            exit 1
           fi
           for project in web app auth; do
             gh api -X POST "repos/${{ github.repository }}/statuses/$SHA" \
               -f state=success -f context="Vercel – $project" \
               -f description="No preview label, so no preview build" >/dev/null
           done
-      - run: |
+      - if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview') }}
+        run: |
           echo "No preview label, so no preview and no E2E run. Add the preview label to build previews and run E2E."

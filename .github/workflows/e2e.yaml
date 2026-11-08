@@ -11,8 +11,11 @@ on:
 
 jobs:
   e2e:
-    name: Run E2E Tests
-    # Always run to report a status (required check can't be skipped)
+    # Branch protection takes the NEWEST check run named "Run E2E Tests" on a SHA, so a
+    # skip-only run (other app's deploy, pending state) finishing after the full run can
+    # mask its failure (happened on PR #167). Only the run that actually tests may carry
+    # the required name; every other event reports under a name nothing requires.
+    name: "${{ (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview – app') && 'Run E2E Tests' || format('E2E skip ({0}: {1})', github.event.deployment.environment, github.event.deployment_status.state) }}"
     runs-on: ubuntu-latest
     concurrency:
       # Per environment, so skip-only events (auth/web previews) can't cancel the real app run
@@ -111,6 +114,7 @@ jobs:
           HEAD=$(gh api repos/${{ github.repository }}/pulls/${{ steps.pr.outputs.number }} --jq .head.sha)
           if [ "$HEAD" != "${{ github.event.deployment.sha }}" ]; then
             echo "⏭️ ${{ github.event.deployment.sha }} is no longer the PR head ($HEAD), skipping"
+            echo "superseded=true" >> $GITHUB_OUTPUT
             echo "both_ready=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -156,11 +160,14 @@ jobs:
             echo "both_ready=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Skip if not all previews ready
-        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready != 'true'
+      - name: Fail if previews never became ready
+        if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready != 'true' && steps.check-previews.outputs.superseded != 'true'
         run: |
-          echo "Not all previews are ready yet. Skipping E2E tests."
-          echo "This workflow will run again when the other preview is deployed."
+          # This run is the only writer of the required check; passing without testing
+          # would be a silent green. No later event retests: only the app deploy's
+          # success event gets past the gate. Push a commit to rebuild and retry.
+          echo "::error::Previews never became ready, so no tests ran."
+          exit 1
 
       - name: Checkout code
         if: steps.should-run.outputs.should_run == 'true' && steps.check-previews.outputs.both_ready == 'true'
