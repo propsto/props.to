@@ -60,7 +60,9 @@ jobs:
   # preview deployments. Without the label there are none, so report them here instead.
   # A later labelled deploy posts Vercel's real statuses over these.
   e2e-gated:
-    name: Run E2E Tests
+    # On a labelled PR this job must not carry the required name even as skipped: a
+    # label toggle after the real run could create a newer check run that masks it.
+    name: "${{ contains(github.event.pull_request.labels.*.name, 'preview') && 'E2E stand-in (labelled, skipped)' || 'Run E2E Tests' }}"
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview') }}
     runs-on: ubuntu-latest
     env:
