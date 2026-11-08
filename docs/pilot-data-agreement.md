@@ -42,7 +42,7 @@ What happens today when an admin removes a member from the org (Members page):
 
 ## Sign-off
 
-| Party              | Name | Date |
-| ------------------ | ---- | ---- |
-| props.to (founder) |      |      |
-| Cresteo            |      |      |
+| Party              | Name                | Date       |
+| ------------------ | ------------------- | ---------- |
+| props.to (founder) | Leonardo Giovanetti | 2026-11-06 |
+| Cresteo            |                     |            |
