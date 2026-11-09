@@ -64,6 +64,19 @@ const groupInclude = Prisma.validator<Prisma.GroupInclude>()({
   _count: { select: { feedbacks: true, feedbackLinks: true, children: true } },
 });
 
+// Every id-addressed group function is scoped to the org, so an id from
+// another org never matches
+async function assertGroupInOrg(
+  id: string,
+  organizationId: string,
+): Promise<void> {
+  const group = await db.group.findFirst({
+    where: { id, organizationId },
+    select: { id: true },
+  });
+  if (!group) throw new Error("Group not found");
+}
+
 // Create a group
 export async function createGroup(data: {
   name: string;
@@ -162,14 +175,15 @@ export async function createGroup(data: {
   }
 }
 
-// Get group by ID
+// Get group by ID within an organization
 export async function getGroup(
   id: string,
+  organizationId: string,
 ): Promise<HandleEvent<GroupWithMembers | null>> {
   try {
-    logger("getGroup", { id });
-    const group = await db.group.findUnique({
-      where: { id },
+    logger("getGroup", { id, organizationId });
+    const group = await db.group.findFirst({
+      where: { id, organizationId },
       include: groupInclude,
     });
     return handleSuccess(group);
@@ -211,6 +225,7 @@ export async function getGroupBySlug(
 // Update group
 export async function updateGroup(
   id: string,
+  organizationId: string,
   data: {
     name?: string;
     description?: string;
@@ -219,33 +234,26 @@ export async function updateGroup(
   },
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("updateGroup", { id, data });
+    logger("updateGroup", { id, organizationId, data });
+
+    const currentGroup = await db.group.findFirst({
+      where: { id, organizationId },
+      select: { children: { select: { id: true } } },
+    });
+    if (!currentGroup) {
+      return handleError(new Error("Group not found"));
+    }
 
     // Validate parent group nesting depth if changing parent
     if (data.parentGroupId !== undefined && data.parentGroupId !== null) {
-      const [currentGroup, parentGroup] = await Promise.all([
-        db.group.findUnique({
-          where: { id },
-          select: { organizationId: true, children: { select: { id: true } } },
-        }),
-        db.group.findUnique({
-          where: { id: data.parentGroupId },
-          select: { parentGroupId: true, organizationId: true },
-        }),
-      ]);
-
-      if (!currentGroup) {
-        return handleError(new Error("Group not found"));
-      }
+      // A parent from another org never matches
+      const parentGroup = await db.group.findFirst({
+        where: { id: data.parentGroupId, organizationId },
+        select: { parentGroupId: true },
+      });
 
       if (!parentGroup) {
         return handleError(new Error("Parent group not found"));
-      }
-
-      if (parentGroup.organizationId !== currentGroup.organizationId) {
-        return handleError(
-          new Error("Parent group must be in the same organization"),
-        );
       }
 
       if (parentGroup.parentGroupId) {
@@ -265,7 +273,7 @@ export async function updateGroup(
     }
 
     const group = await db.group.update({
-      where: { id },
+      where: { id, organizationId },
       data,
       include: groupInclude,
     });
@@ -278,9 +286,11 @@ export async function updateGroup(
 // Delete group
 export async function deleteGroup(
   id: string,
+  organizationId: string,
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("deleteGroup", { id });
+    logger("deleteGroup", { id, organizationId });
+    await assertGroupInOrg(id, organizationId);
     // Team-recipient rows would be stranded by SetNull (and then violate the
     // one-recipient constraint), so a group that has received team feedback or
     // carries team links cannot be deleted; deactivate its links instead.
@@ -298,7 +308,7 @@ export async function deleteGroup(
       );
     }
     const group = await db.group.delete({
-      where: { id },
+      where: { id, organizationId },
       include: groupInclude,
     });
     return handleSuccess(group);
@@ -360,12 +370,14 @@ export async function getUserGroups(
 // Add member to group
 export async function addGroupMember(
   groupId: string,
+  organizationId: string,
   userId: string,
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("addGroupMember", { groupId, userId });
+    logger("addGroupMember", { groupId, organizationId, userId });
+    await assertGroupInOrg(groupId, organizationId);
     const group = await db.group.update({
-      where: { id: groupId },
+      where: { id: groupId, organizationId },
       data: {
         users: { connect: { id: userId } },
       },
@@ -380,10 +392,12 @@ export async function addGroupMember(
 // Remove member from group
 export async function removeGroupMember(
   groupId: string,
+  organizationId: string,
   userId: string,
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("removeGroupMember", { groupId, userId });
+    logger("removeGroupMember", { groupId, organizationId, userId });
+    await assertGroupInOrg(groupId, organizationId);
 
     // Also remove from admins if they are one
     await db.groupAdmin.deleteMany({
@@ -391,7 +405,7 @@ export async function removeGroupMember(
     });
 
     const group = await db.group.update({
-      where: { id: groupId },
+      where: { id: groupId, organizationId },
       data: {
         users: { disconnect: { id: userId } },
       },
@@ -406,12 +420,14 @@ export async function removeGroupMember(
 // Add multiple members to group
 export async function addGroupMembers(
   groupId: string,
+  organizationId: string,
   userIds: string[],
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("addGroupMembers", { groupId, userIds });
+    logger("addGroupMembers", { groupId, organizationId, userIds });
+    await assertGroupInOrg(groupId, organizationId);
     const group = await db.group.update({
-      where: { id: groupId },
+      where: { id: groupId, organizationId },
       data: {
         users: { connect: userIds.map(id => ({ id })) },
       },
@@ -426,10 +442,12 @@ export async function addGroupMembers(
 // Remove multiple members from group
 export async function removeGroupMembers(
   groupId: string,
+  organizationId: string,
   userIds: string[],
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("removeGroupMembers", { groupId, userIds });
+    logger("removeGroupMembers", { groupId, organizationId, userIds });
+    await assertGroupInOrg(groupId, organizationId);
 
     // Also remove from admins
     await db.groupAdmin.deleteMany({
@@ -437,7 +455,7 @@ export async function removeGroupMembers(
     });
 
     const group = await db.group.update({
-      where: { id: groupId },
+      where: { id: groupId, organizationId },
       data: {
         users: { disconnect: userIds.map(id => ({ id })) },
       },
@@ -452,14 +470,16 @@ export async function removeGroupMembers(
 // Add group admin
 export async function addGroupAdmin(
   groupId: string,
+  organizationId: string,
   userId: string,
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("addGroupAdmin", { groupId, userId });
+    logger("addGroupAdmin", { groupId, organizationId, userId });
+    await assertGroupInOrg(groupId, organizationId);
 
     // First ensure user is a member
     await db.group.update({
-      where: { id: groupId },
+      where: { id: groupId, organizationId },
       data: { users: { connect: { id: userId } } },
     });
 
@@ -474,12 +494,13 @@ export async function addGroupAdmin(
       });
     }
 
-    const group = await db.group.findUnique({
-      where: { id: groupId },
+    const group = await db.group.findFirst({
+      where: { id: groupId, organizationId },
       include: groupInclude,
     });
+    if (!group) throw new Error("Group not found");
 
-    return handleSuccess(group!);
+    return handleSuccess(group);
   } catch (e) {
     return handleError(e);
   }
@@ -488,20 +509,23 @@ export async function addGroupAdmin(
 // Remove group admin
 export async function removeGroupAdmin(
   groupId: string,
+  organizationId: string,
   userId: string,
 ): Promise<HandleEvent<GroupWithMembers>> {
   try {
-    logger("removeGroupAdmin", { groupId, userId });
+    logger("removeGroupAdmin", { groupId, organizationId, userId });
+    await assertGroupInOrg(groupId, organizationId);
     await db.groupAdmin.deleteMany({
       where: { groupId, userId },
     });
 
-    const group = await db.group.findUnique({
-      where: { id: groupId },
+    const group = await db.group.findFirst({
+      where: { id: groupId, organizationId },
       include: groupInclude,
     });
+    if (!group) throw new Error("Group not found");
 
-    return handleSuccess(group!);
+    return handleSuccess(group);
   } catch (e) {
     return handleError(e);
   }
