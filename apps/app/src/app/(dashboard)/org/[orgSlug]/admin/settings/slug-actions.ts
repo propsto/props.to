@@ -11,6 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isReservedSlug } from "@propsto/constants/other";
+import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("app:org-settings");
@@ -32,6 +33,20 @@ export async function checkSlugAvailability(
   slug: string,
 ): Promise<{ available: boolean; error?: string }> {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { available: false, error: "Not authenticated" };
+    }
+
+    // Rate limit check for slug availability
+    const rateLimitResult = await checkSlugCheckRateLimit();
+    if (!rateLimitResult.success) {
+      return {
+        available: false,
+        error: "Too many requests. Please try again.",
+      };
+    }
+
     const parsed = slugSchema.safeParse(slug);
     if (!parsed.success) {
       return { available: false, error: parsed.error.issues[0]?.message };
