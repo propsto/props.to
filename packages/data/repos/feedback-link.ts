@@ -398,17 +398,19 @@ export async function updateFeedbackLink(
   }
 }
 
-// Delete feedback link
+// Delete feedback link. Scoped to the owner: another user's link id matches
+// no row, so nothing is deleted and the result is not-found.
 export async function deleteFeedbackLink(
   id: string,
-): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  userId: string,
+): Promise<HandleEvent<{ id: string }>> {
   try {
-    logger("deleteFeedbackLink", { id });
-    const link = await db.feedbackLink.delete({
-      where: { id },
-      include: feedbackLinkInclude,
+    logger("deleteFeedbackLink", { id, userId });
+    const { count } = await db.feedbackLink.deleteMany({
+      where: { id, userId },
     });
-    return handleSuccess(link);
+    if (count === 0) throw new Error("Link not found");
+    return handleSuccess({ id });
   } catch (e) {
     return handleError(e);
   }
@@ -506,35 +508,37 @@ export async function getOrganizationFeedbackLinks(
   }
 }
 
-// Deactivate a feedback link (pause)
+// Deactivate a feedback link (pause), scoped to the owner like deleteFeedbackLink
 export async function deactivateFeedbackLink(
   id: string,
-): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  userId: string,
+): Promise<HandleEvent<{ id: string }>> {
   try {
-    logger("deactivateFeedbackLink", { id });
-    const link = await db.feedbackLink.update({
-      where: { id },
+    logger("deactivateFeedbackLink", { id, userId });
+    const { count } = await db.feedbackLink.updateMany({
+      where: { id, userId },
       data: { isActive: false },
-      include: feedbackLinkInclude,
     });
-    return handleSuccess(link);
+    if (count === 0) throw new Error("Link not found");
+    return handleSuccess({ id });
   } catch (e) {
     return handleError(e);
   }
 }
 
-// Activate a feedback link (resume)
+// Activate a feedback link (resume), scoped to the owner like deleteFeedbackLink
 export async function activateFeedbackLink(
   id: string,
-): Promise<HandleEvent<FeedbackLinkWithRelations>> {
+  userId: string,
+): Promise<HandleEvent<{ id: string }>> {
   try {
-    logger("activateFeedbackLink", { id });
-    const link = await db.feedbackLink.update({
-      where: { id },
+    logger("activateFeedbackLink", { id, userId });
+    const { count } = await db.feedbackLink.updateMany({
+      where: { id, userId },
       data: { isActive: true },
-      include: feedbackLinkInclude,
     });
-    return handleSuccess(link);
+    if (count === 0) throw new Error("Link not found");
+    return handleSuccess({ id });
   } catch (e) {
     return handleError(e);
   }
