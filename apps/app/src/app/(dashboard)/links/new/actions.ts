@@ -10,7 +10,7 @@ import {
 } from "@propsto/data/repos";
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
+import { checkSlugCheckRateLimit } from "@propsto/data/utils/rate-limit";
 import { cleanLinkInput } from "@/lib/link-input";
 import { createLogger } from "@propsto/logger";
 

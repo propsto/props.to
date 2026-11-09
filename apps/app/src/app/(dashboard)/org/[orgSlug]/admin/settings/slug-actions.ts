@@ -11,7 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isReservedSlug } from "@propsto/constants/other";
-import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
+import { checkSlugCheckRateLimit } from "@propsto/data/utils/rate-limit";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("app:org-settings");

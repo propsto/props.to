@@ -2,7 +2,7 @@
 
 import { auth } from "@/server/auth.server";
 import { createFeedbackTemplate } from "@propsto/data/repos";
-import { checkAiFormRateLimit } from "@/lib/ratelimit";
+import { checkAiFormRateLimit } from "@propsto/data/utils/rate-limit";
 import { generateForm } from "@propsto/forms";
 import { constServer } from "@propsto/constants/server";
 import { FeedbackType } from "@prisma/client";

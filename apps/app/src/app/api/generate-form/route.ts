@@ -1,5 +1,5 @@
 import { auth } from "@/server/auth.server";
-import { checkAiFormRateLimit } from "@/lib/ratelimit";
+import { checkAiFormRateLimit } from "@propsto/data/utils/rate-limit";
 import { constServer } from "@propsto/constants/server";
 import { generateForm } from "@propsto/forms";
 

@@ -28,7 +28,7 @@ import { type AccountFormValues } from "@components/welcome-stepper/steps/accoun
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
 import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
 import { slugRejection } from "@/lib/slug-rule";
-import { checkPendingLinkRateLimit } from "@/lib/ratelimit";
+import { checkPendingLinkRateLimit } from "@propsto/data/utils/rate-limit";
 import { updateSession, signIn, auth } from "@propsto/auth/server";
 import { completeAccountLink } from "./complete-account-link";
 
