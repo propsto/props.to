@@ -194,7 +194,7 @@ importers:
         version: 5.2.2(react-hook-form@7.60.0(react@19.1.0))
       '@propsto/auth':
         specifier: workspace:*
-        version: link:../auth
+        version: link:../../packages/auth
       '@propsto/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -303,6 +303,9 @@ importers:
       '@hookform/resolvers':
         specifier: 4.1.3
         version: 4.1.3(react-hook-form@7.60.0(react@19.1.0))
+      '@propsto/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@propsto/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -499,7 +502,7 @@ importers:
       '@propsto/app':
         specifier: workspace:*
         version: link:../../apps/app
-      '@propsto/auth':
+      '@propsto/auth-app':
         specifier: workspace:*
         version: link:../../apps/auth
       start-server-and-test:
@@ -515,7 +518,7 @@ importers:
       '@playwright/test':
         specifier: 1.64.1
         version: 1.64.1
-      '@propsto/auth':
+      '@propsto/auth-app':
         specifier: workspace:*
         version: link:../../apps/auth
       postgres:
@@ -524,6 +527,36 @@ importers:
       start-server-and-test:
         specifier: '*'
         version: 2.0.11
+
+  packages/auth:
+    dependencies:
+      '@propsto/config':
+        specifier: workspace:*
+        version: link:../config
+      '@propsto/constants':
+        specifier: workspace:*
+        version: link:../constants
+      '@propsto/data':
+        specifier: workspace:*
+        version: link:../data
+      '@propsto/email':
+        specifier: workspace:*
+        version: link:../email
+      '@propsto/logger':
+        specifier: workspace:*
+        version: link:../logger
+      '@types/node':
+        specifier: '*'
+        version: 24.0.10
+      next-auth:
+        specifier: beta
+        version: 5.0.0-beta.32(@simplewebauthn/browser@9.0.1)(@simplewebauthn/server@9.0.2)(next@16.4.5(@opentelemetry/api@1.9.1)(@playwright/test@1.64.1)(@types/node@24.0.10)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(nodemailer@7.0.10)(react@19.1.0)
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: '*'
+        version: 4.0.9(@types/debug@4.1.12)(@types/node@24.0.10)(jiti@2.4.2)(jsdom@24.1.3)(tsx@4.20.3)(yaml@2.8.2)
 
   packages/config:
     dependencies:
@@ -10089,7 +10122,7 @@ snapshots:
 
   '@types/cors@2.8.17':
     dependencies:
-      '@types/node': 22.13.10
+      '@types/node': 24.0.10
 
   '@types/d3-array@3.2.1': {}
 
@@ -11267,7 +11300,7 @@ snapshots:
   engine.io@6.6.4:
     dependencies:
       '@types/cors': 2.8.17
-      '@types/node': 22.13.10
+      '@types/node': 24.0.10
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.7.2

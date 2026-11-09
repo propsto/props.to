@@ -1,0 +1,31 @@
+{
+  "name": "@propsto/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./edge": "./edge.ts",
+    "./server": "./server.ts",
+    "./post-auth-check": "./post-auth-check.ts",
+    "./callback-url": "./callback-url.ts",
+    "./step-completion-checks": "./step-completion-checks.ts"
+  },
+  "scripts": {
+    "lint": "eslint",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@propsto/config": "workspace:*",
+    "@propsto/constants": "workspace:*",
+    "@propsto/data": "workspace:*",
+    "@propsto/email": "workspace:*",
+    "@propsto/logger": "workspace:*"
+  },
+  "peerDependencies": {
+    "@types/node": "*",
+    "next-auth": "*",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPendingAccountLink } from "@propsto/data/repos";
-import { auth, updateSession } from "@/server/auth.server";
+import { auth, updateSession } from "@propsto/auth/server";
 import { completeAccountLink } from "@/server/complete-account-link";
 
 // Where the account-linking magic link lands. Clicking it signed the user in by email,

@@ -29,7 +29,7 @@ export {
   type WelcomeUser,
   type OrganizationStatus,
   type LinkAccountStatus,
-} from "./step-completion-checks";
+} from "@propsto/auth/step-completion-checks";
 
 import {
   stepCompletionChecks as completionChecks,
@@ -37,7 +37,7 @@ import {
   type WelcomeUser,
   type OrganizationStatus,
   type LinkAccountStatus,
-} from "./step-completion-checks";
+} from "@propsto/auth/step-completion-checks";
 
 export type { LinkAccountFormValues } from "./link-account-step";
 export type { PersonalFormValues } from "./personal-step";

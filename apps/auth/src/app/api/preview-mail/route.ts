@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { constServer } from "@propsto/constants/server";
 import { listOutboxEmails } from "@propsto/data/repos";
-import { auth } from "@/server/auth.server";
+import { auth } from "@propsto/auth/server";
 
 // Read back captured emails on preview deployments (EMAIL_PROVIDER=outbox).
 // 404 everywhere else, and the caller can only read mail addressed to themselves.

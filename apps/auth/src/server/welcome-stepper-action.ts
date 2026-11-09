@@ -29,7 +29,7 @@ import { type OrganizationFormValues } from "@components/welcome-stepper/steps/o
 import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
 import { slugRejection } from "@/lib/slug-rule";
 import { checkPendingLinkRateLimit } from "@/lib/ratelimit";
-import { updateSession, signIn, auth } from "./auth.server";
+import { updateSession, signIn, auth } from "@propsto/auth/server";
 import { completeAccountLink } from "./complete-account-link";
 
 // Every handler below takes a userId from the client; it must match the signed-in user.

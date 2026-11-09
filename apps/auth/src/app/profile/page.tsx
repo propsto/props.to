@@ -1,4 +1,4 @@
-import { auth } from "@/server/auth.server";
+import { auth } from "@propsto/auth/server";
 
 export default async function ProfilePage(): Promise<React.ReactElement> {
   const session = await auth();

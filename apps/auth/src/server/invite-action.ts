@@ -7,7 +7,7 @@ import {
   acceptOrganizationInvite,
   getUser,
 } from "@propsto/data/repos";
-import { auth, updateSession, signOut } from "@/server/auth.server";
+import { auth, updateSession, signOut } from "@propsto/auth/server";
 import { inviteRejection } from "@/lib/invite";
 
 export type AcceptInviteState = { error?: string } | undefined;

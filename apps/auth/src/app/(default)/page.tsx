@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
-import { isAllowedRedirect } from "@/lib/callback-url";
-import { auth } from "@/server/auth.server";
+import { isAllowedRedirect } from "@propsto/auth/callback-url";
+import { auth } from "@propsto/auth/server";
 import { SigninForm } from "@components/signin-form";
-import { canUserMoveOn } from "@/lib/post-auth-check";
+import { canUserMoveOn } from "@propsto/auth/post-auth-check";
 
 export default async function SigninPage({
   searchParams,

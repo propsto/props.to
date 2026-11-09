@@ -43,7 +43,7 @@ pnpm e2e        # Run Playwright E2E suites
 **Apps** (Next.js 16 + React 19):
 
 - `apps/app` - Main authenticated product experience (port 3000)
-- `apps/auth` - Auth.js identity/onboarding flows (port 3002)
+- `apps/auth` (`@propsto/auth-app`) - Auth.js identity/onboarding flows (port 3002)
 - `apps/web` - Marketing site (port 3001)
 - `apps/docs` - GitBook-backed documentation
 
@@ -55,6 +55,7 @@ pnpm e2e        # Run Playwright E2E suites
 - `@propsto/ui` - Design system using shadcn/ui + Atomic Design (atoms/molecules)
 - `@propsto/config` - Shared ESLint configs and TypeScript configs
 - `@propsto/logger` - Structured logging helpers
+- `@propsto/auth` - Shared Auth.js config (`edge`, `server`), `post-auth-check` and the redirect allow-list, used by both `apps/auth` and `apps/app`
 
 **E2E Testing**:
 
@@ -86,6 +87,7 @@ pnpm e2e        # Run Playwright E2E suites
 - Auth.js (next-auth beta) with Prisma adapter
 - Supports email/password + Google OAuth
 - Auth routes handled in `apps/auth`, shared session across subdomains via `PROPSTO_HOST`
+- The NextAuth config lives in `packages/auth`; apps never import another app's source
 
 ### Local Development Options
 

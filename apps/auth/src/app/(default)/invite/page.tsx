@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { constServer } from "@propsto/constants/server";
-import { auth } from "@/server/auth.server";
+import { auth } from "@propsto/auth/server";
 import { getOrganizationInviteByToken } from "@propsto/data/repos";
 import { inviteRejection } from "@/lib/invite";
 import { Button } from "@propsto/ui/atoms/button";
