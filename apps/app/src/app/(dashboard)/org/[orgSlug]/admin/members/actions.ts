@@ -20,6 +20,7 @@ import { sendOrgInviteEmail } from "@propsto/email/send/org-invite";
 import { emailMatchesDomain } from "@propsto/data/utils/domain-membership";
 import { revalidatePath } from "next/cache";
 import { constServer } from "@propsto/constants/server";
+import { inviteBatchError } from "@/lib/admin-input";
 import type { OrganizationRole } from "@prisma/client";
 
 const INVITE_EXPIRY_HOURS = 24;
@@ -58,6 +59,12 @@ export async function inviteMembersAction(
   const { error, userId, orgId, userName } = await verifyAdminAccess(orgSlug);
   if (error || !userId || !orgId) {
     return { success: false, error: error ?? "Organization not found" };
+  }
+
+  // Refuse an oversized batch or message before any invite or email is created
+  const batchError = inviteBatchError(data.emails, data.message);
+  if (batchError) {
+    return { success: false, error: batchError };
   }
 
   // Server-side role check: an ADMIN must not be able to mint an OWNER invite
