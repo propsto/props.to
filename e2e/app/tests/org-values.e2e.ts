@@ -31,7 +31,7 @@ async function deleteLeftovers(page: Page): Promise<void> {
     .filter({ hasText: new RegExp(`^${PREFIX}`) });
   while (await leftovers.count()) {
     const name = (
-      await leftovers.first().locator(".font-medium").innerText()
+      await leftovers.first().locator("span.font-medium").innerText()
     ).trim();
     await page.getByRole("button", { name: `Delete ${name}` }).click();
     await page.getByRole("button", { name: /^delete$/i }).click();

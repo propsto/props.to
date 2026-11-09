@@ -335,18 +335,22 @@ export async function setOrganizationMemberLevel(
           })
         : null;
 
-      // An archived level cannot be newly assigned; a member already on it keeps it
+      // An archived level cannot be newly assigned; a member already on it keeps it.
+      // The share lock makes a concurrent archive wait for this assignment to commit.
       const level = levelId
-        ? await tx.orgLevel.findFirst({
-            where: {
-              id: levelId,
-              organizationId,
-              ...(levelId === member.levelId ? {} : { archivedAt: null }),
-            },
-            select: { id: true, name: true },
-          })
+        ? ((
+            await tx.$queryRaw<
+              { id: string; name: string; archivedAt: Date | null }[]
+            >`
+              SELECT id, name, "archivedAt" FROM "OrgLevel"
+              WHERE id = ${levelId} AND "organizationId" = ${organizationId}
+              FOR SHARE`
+          )[0] ?? null)
         : null;
-      if (levelId && !level) {
+      if (
+        levelId &&
+        (!level || (level.archivedAt !== null && levelId !== member.levelId))
+      ) {
         throw new Error("Level not found");
       }
 
