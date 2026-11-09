@@ -22,7 +22,7 @@ import {
   notifyConversationSubject,
   notifyOrgAdminsOfEscalation,
 } from "@/lib/conversation-email";
-import { STAGES, personName } from "@/lib/conversation-labels";
+import { STAGES, STAGE_LABELS, personName } from "@/lib/conversation-labels";
 
 export type StepPayload = {
   stage: string;
@@ -105,7 +105,9 @@ function parseStep(
   const stage = STAGES.find(s => s === payload.stage);
   if (!stage) return { error: "Invalid stage" };
   if (!canAddStage(access, stage)) {
-    return { error: "Only an organization admin can record the final step" };
+    return {
+      error: `Only an organization admin can record the step "${STAGE_LABELS[stage]}"`,
+    };
   }
   const sharedNote = payload.sharedNote.trim();
   if (!sharedNote) return { error: "What the member hears is required" };
