@@ -219,6 +219,7 @@ model OrganizationMember {
   notificationPreferences OrgMemberNotificationPrefs?
 
   @@unique([userId, organizationId])
+  @@index([organizationId])
 }
 
 // Per-organization notification preferences (overrides user defaults when in org context)
@@ -260,6 +261,7 @@ model Group {
   children      Group[] @relation("GroupHierarchy") // Subgroups within this group
 
   @@unique([slugId, organizationId])
+  @@index([organizationId])
 }
 
 // User model (user with personal account, can belong to multiple organizations)
@@ -625,6 +627,10 @@ model Feedback {
 
   @@index([conversationId])
   @@index([entityId])
+  @@index([userId, status, createdAt])
+  @@index([organizationId, status, createdAt])
+  @@index([submitterId])
+  @@index([linkId])
 }
 
 // FeedbackLink model (shareable links for receiving feedback)
