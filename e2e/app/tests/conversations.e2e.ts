@@ -210,7 +210,7 @@ test.describe
       const john = await signedIn(browser, LEAD);
       await john.goto(`${APP_URL}/org/acme`);
       await expect(
-        john.getByRole("heading", { name: "Acme Inc." }),
+        john.getByRole("heading", { name: "Acme Inc.", exact: true }),
       ).toBeVisible({ timeout: 15000 });
       await expect(john.getByTestId("led-members")).toHaveCount(0);
       await john.goto(SUBJECT_PAGE);
