@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from "@propsto/ui/atoms/card";
 import { auth } from "@/server/auth.server";
+import { getOrgLayers } from "@/lib/org-layers";
 import { nextStages } from "@propsto/data/utils/conversation-stages";
 import {
   canAddStage,
@@ -56,6 +57,10 @@ export default async function MemberConversationsPage({
     notFound();
   }
   const org = membership.data.organization;
+  const layers = await getOrgLayers(org.id);
+  if (!layers.conversations) {
+    notFound();
+  }
   const member = await getOrgMemberBySlug(org.id, memberSlug);
   if (!member.success || !member.data) {
     notFound();
@@ -102,7 +107,7 @@ export default async function MemberConversationsPage({
         <OpenConversationDialog
           orgSlug={orgSlug}
           memberSlug={memberSlug}
-          values={values}
+          values={layers.values ? values : undefined}
           stages={allowedStages}
         />
       </div>

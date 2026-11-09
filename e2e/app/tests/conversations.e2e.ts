@@ -189,4 +189,70 @@ test.describe
     await expect(rita.getByText("Page not found")).toBeVisible();
     await rita.context().close();
   });
+
+  test("an admin turns conversations off: the lead gets 404 and no link shows, then back on", async ({
+    page,
+    browser,
+  }) => {
+    try {
+      await setConversations(page, false);
+
+      // The member row has no Conversations link
+      await page.goto(`${APP_URL}/org/acme/admin/members`);
+      await expect(
+        page.getByRole("cell", { name: /jane\.smith@acme\.com/ }),
+      ).toBeVisible({ timeout: 15000 });
+      await expect(
+        page.getByRole("link", { name: "Conversations about Jane Smith" }),
+      ).toHaveCount(0);
+
+      // The lead loses the card and the page
+      const john = await signedIn(browser, LEAD);
+      await john.goto(`${APP_URL}/org/acme`);
+      await expect(
+        john.getByRole("heading", { name: "Acme Inc." }),
+      ).toBeVisible({ timeout: 15000 });
+      await expect(john.getByTestId("led-members")).toHaveCount(0);
+      await john.goto(SUBJECT_PAGE);
+      await expect(john.getByText("Page not found")).toBeVisible();
+      await john.context().close();
+    } finally {
+      // Back on, so the other conversation tests and retries see the default
+      await setConversations(page, true);
+    }
+
+    await page.goto(`${APP_URL}/org/acme/admin/members`);
+    await expect(
+      page.getByRole("link", { name: "Conversations about Jane Smith" }),
+    ).toBeVisible({ timeout: 15000 });
+  });
 });
+
+// Sets the org's conversations switch from admin settings, whatever its state
+async function setConversations(page: Page, on: boolean): Promise<void> {
+  await page.goto(`${APP_URL}/org/acme/admin/settings`);
+  const card = page
+    .locator('[data-slot="card"]')
+    .filter({ hasText: "Auto-join by email domain" });
+  const toggle = card.getByRole("switch", { name: "Conversations" });
+  await expect(toggle).toBeVisible({ timeout: 15000 });
+  if ((await toggle.isChecked()) === on) return;
+  const save = card.getByRole("button", { name: "Save Changes" });
+  await toggle.click();
+  // The server action POSTs to this page; wait for it before reloading
+  await Promise.all([
+    page.waitForResponse(
+      r =>
+        r.request().method() === "POST" &&
+        r.url().includes("/org/acme/admin/settings"),
+    ),
+    save.click(),
+  ]);
+  await expect(save).toBeDisabled({ timeout: 15000 });
+  await page.reload();
+  if (on) {
+    await expect(toggle).toBeChecked();
+  } else {
+    await expect(toggle).not.toBeChecked();
+  }
+}

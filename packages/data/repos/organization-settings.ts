@@ -18,6 +18,8 @@ export type OrganizationGeneralSettings = {
   enableGroupManagement: boolean;
   requireEmailVerification: boolean;
   enableSSOIntegration: boolean;
+  // Omitted keeps the stored value (new rows default to on)
+  enableConversations?: boolean;
 };
 
 export type OrganizationFeedbackSettings = {
@@ -110,6 +112,7 @@ export async function upsertOrganizationSettings(
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
+        enableConversations: settings.enableConversations,
         updatedAt: new Date(),
       },
       create: {
@@ -119,6 +122,7 @@ export async function upsertOrganizationSettings(
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
+        enableConversations: settings.enableConversations,
       },
     });
 

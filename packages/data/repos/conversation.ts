@@ -532,7 +532,15 @@ export async function getOrganizationAdmins(organizationId: string) {
 function subjectStillMember(userId: string) {
   return {
     subjectUserId: userId,
-    organization: { members: { some: { userId } } },
+    organization: {
+      members: { some: { userId } },
+      // Orgs that turned conversations off drop out of the member's view; no
+      // settings row means the default, which is on
+      OR: [
+        { organizationSettings: { is: null } },
+        { organizationSettings: { is: { enableConversations: true } } },
+      ],
+    },
   };
 }
 

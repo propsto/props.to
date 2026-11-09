@@ -88,6 +88,45 @@ describe("settings actions", () => {
     expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledOnce();
   });
 
+  it("membership settings: turning conversations off saves it and audits the change", async () => {
+    repos.upsertOrganizationSettings.mockResolvedValue({
+      success: true,
+      data: {},
+    });
+
+    // Only the changed switch is sent; auto-join keeps the stored value
+    repos.getOrganizationBySlug.mockResolvedValue({
+      success: true,
+      data: {
+        ...org,
+        organizationSettings: {
+          autoJoinByDomain: true,
+          enableConversations: true,
+        },
+      },
+    });
+
+    const result = await updateMembershipSettings({
+      orgSlug: "acme",
+      enableConversations: false,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(repos.upsertOrganizationSettings).toHaveBeenCalledWith(
+      "org_1",
+      expect.objectContaining({
+        autoJoinByDomain: true,
+        enableConversations: false,
+      }),
+    );
+    expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledWith(
+      "org_1",
+      "user_1",
+      "membership_settings",
+      { enableConversations: { old: true, new: false } },
+    );
+  });
+
   it("invalid input is refused before any session or DB call", async () => {
     const results = await Promise.all([
       updateMemberSettings({

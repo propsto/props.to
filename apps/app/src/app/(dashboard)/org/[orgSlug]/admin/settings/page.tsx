@@ -102,17 +102,17 @@ export default async function OrgAdminSettings({
           defaultSettings={memberSettings}
         />
 
-        {/* Membership - domain auto-join, only meaningful for Workspace orgs */}
-        {org.hostedDomain && (
-          <MembershipSettingsForm
-            orgSlug={orgSlug}
-            hostedDomain={org.hostedDomain}
-            defaultSettings={{
-              autoJoinByDomain:
-                org.organizationSettings?.autoJoinByDomain ?? false,
-            }}
-          />
-        )}
+        {/* Membership - domain auto-join (Workspace orgs) and conversations */}
+        <MembershipSettingsForm
+          orgSlug={orgSlug}
+          hostedDomain={org.hostedDomain}
+          defaultSettings={{
+            autoJoinByDomain:
+              org.organizationSettings?.autoJoinByDomain ?? false,
+            enableConversations:
+              org.organizationSettings?.enableConversations ?? true,
+          }}
+        />
 
         {/* Feedback Settings - Editable */}
         <FeedbackSettingsForm

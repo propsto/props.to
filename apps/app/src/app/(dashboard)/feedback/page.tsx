@@ -66,7 +66,7 @@ export default async function FeedbackPage({
         </Button>
       </div>
 
-      {values.length > 0 && (
+      {valueGroups.length > 0 && (
         <nav
           aria-label="Filter by value"
           className="flex flex-wrap items-center gap-2 px-4 lg:px-6"

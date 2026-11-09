@@ -121,7 +121,10 @@ export async function updateMemberSettings(
 
 const updateMembershipSettingsSchema = z.object({
   orgSlug: z.string(),
-  autoJoinByDomain: z.boolean(),
+  // Each switch is sent only when it changed, so a stale page does not
+  // overwrite the other one with what it loaded
+  autoJoinByDomain: z.boolean().optional(),
+  enableConversations: z.boolean().optional(),
 });
 
 export type UpdateMembershipSettingsInput = z.infer<
@@ -159,10 +162,16 @@ export async function updateMembershipSettings(
     const org = orgResult.data;
     const current = org.organizationSettings;
 
-    // Preserve the other general settings; only the domain-join toggle is editable here
+    const autoJoinByDomain =
+      input.autoJoinByDomain ?? current?.autoJoinByDomain ?? false;
+    const enableConversations =
+      input.enableConversations ?? current?.enableConversations ?? true;
+
+    // Preserve the other general settings; only domain join and conversations are editable here
     const saved = await upsertOrganizationSettings(org.id, {
       allowUserInvites: current?.allowUserInvites ?? true,
-      autoJoinByDomain: input.autoJoinByDomain,
+      autoJoinByDomain,
+      enableConversations,
       enableGroupManagement: current?.enableGroupManagement ?? true,
       requireEmailVerification: current?.requireEmailVerification ?? true,
       enableSSOIntegration: current?.enableSSOIntegration ?? false,
@@ -172,21 +181,31 @@ export async function updateMembershipSettings(
       return { success: false, error: "Failed to update settings" };
     }
 
-    if ((current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain) {
+    const changes: Record<string, { old: boolean; new: boolean }> = {};
+    if ((current?.autoJoinByDomain ?? false) !== autoJoinByDomain) {
+      changes.autoJoinByDomain = {
+        old: current?.autoJoinByDomain ?? false,
+        new: autoJoinByDomain,
+      };
+    }
+    if ((current?.enableConversations ?? true) !== enableConversations) {
+      changes.enableConversations = {
+        old: current?.enableConversations ?? true,
+        new: enableConversations,
+      };
+    }
+    if (Object.keys(changes).length > 0) {
       await auditHelpers.logSettingsUpdate(
         org.id,
         session.user.id,
         "membership_settings",
-        {
-          autoJoinByDomain: {
-            old: current?.autoJoinByDomain ?? false,
-            new: input.autoJoinByDomain,
-          },
-        },
+        changes,
       );
     }
 
     revalidatePath(`/org/${input.orgSlug}/admin/settings`);
+    // The conversations switch changes the member pages and the sidebar
+    revalidatePath(`/org/${input.orgSlug}`, "layout");
     return { success: true };
   } catch (error) {
     logger("Failed to update membership settings:", error);
