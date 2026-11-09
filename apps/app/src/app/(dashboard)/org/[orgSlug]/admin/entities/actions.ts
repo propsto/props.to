@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/server/auth.server";
+import { cleanLinkInput } from "@/lib/link-input";
 import {
   verifyOrgAdminAccess,
   createAuditLog,
@@ -135,19 +136,10 @@ export async function createEntityLinkAction(
   const entity = await getEntity(entityId, access.orgId);
   if (!entity.data) return { success: false, error: "Entity not found" };
 
-  const name = data.name.trim().slice(0, MAX_NAME);
-  if (!name) return { success: false, error: "Name is required" };
-  const slug = data.slug?.trim().toLowerCase() || undefined;
-  if (slug && !isValidSlugFormat(slug)) {
-    return {
-      success: false,
-      error: "Slug must be 3-30 lowercase letters, numbers or dashes",
-    };
-  }
-  // The public route serves "thanks" as the confirmation page
-  if (slug === "thanks") {
-    return { success: false, error: "That slug is reserved" };
-  }
+  const cleaned = cleanLinkInput({ name: data.name, slug: data.slug });
+  if (!cleaned.success) return { success: false, error: cleaned.error };
+  const name = cleaned.name!;
+  const slug = cleaned.slug;
 
   // The repo refuses a template that is neither a default nor the org's
   const result = await createEntityFeedbackLink({

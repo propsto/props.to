@@ -8,6 +8,7 @@ import {
   verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
+import { cleanLinkInput } from "@/lib/link-input";
 import type { FeedbackVisibility, FeedbackType } from "@prisma/client";
 
 interface CreateManagedLinkInput {
@@ -33,12 +34,15 @@ export async function createManagedLinkAction(
     return { success: false, error: "Only admins can create managed links" };
   }
 
+  const cleaned = cleanLinkInput({ name: input.name, slug: input.slug });
+  if (!cleaned.success) return { success: false, error: cleaned.error };
+
   const result = await createManagedFeedbackLink({
     organizationId: adminCheck.data.organization.id,
     managedByUserId: session.user.id,
     templateId: input.templateId,
-    name: input.name,
-    slug: input.slug,
+    name: cleaned.name!,
+    slug: cleaned.slug,
     visibility: input.visibility,
     feedbackType: input.feedbackType,
   });
@@ -75,13 +79,17 @@ export async function updateManagedLinkAction(
     return { success: false, error: "Only admins can update managed links" };
   }
 
-  const result = await updateManagedFeedbackLink(input.linkId, adminCheck.data.organization.id, {
-    name: input.name,
-    templateId: input.templateId,
-    isActive: input.isActive,
-    visibility: input.visibility,
-    feedbackType: input.feedbackType,
-  });
+  const result = await updateManagedFeedbackLink(
+    input.linkId,
+    adminCheck.data.organization.id,
+    {
+      name: input.name,
+      templateId: input.templateId,
+      isActive: input.isActive,
+      visibility: input.visibility,
+      feedbackType: input.feedbackType,
+    },
+  );
 
   if (!result.success) {
     return { success: false, error: "Failed to update managed link" };

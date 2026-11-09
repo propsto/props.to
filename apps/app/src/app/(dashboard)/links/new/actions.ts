@@ -11,6 +11,7 @@ import {
 import { FeedbackType, FeedbackVisibility } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { checkSlugCheckRateLimit } from "@/lib/ratelimit";
+import { cleanLinkInput } from "@/lib/link-input";
 import { createLogger } from "@propsto/logger";
 
 const logger = createLogger("app:links");
@@ -39,6 +40,10 @@ export async function createLinkAction(
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
   }
+
+  const cleaned = cleanLinkInput({ name: input.name, slug: input.slug });
+  if (!cleaned.success) return { success: false, error: cleaned.error };
+  if (!cleaned.slug) return { success: false, error: "URL slug is required" };
 
   // Verify org membership if creating an org link
   if (input.organizationId) {
@@ -85,8 +90,8 @@ export async function createLinkAction(
 
   const result = await createFeedbackLink({
     userId: session.user.id,
-    name: input.name,
-    slug: input.slug,
+    name: cleaned.name!,
+    slug: cleaned.slug,
     templateId: input.templateId,
     feedbackType: input.feedbackType,
     visibility: input.visibility,
