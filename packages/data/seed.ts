@@ -23,24 +23,16 @@ const SEED_IDS = {
   globex: "00000000-0000-0000-0000-000000000011",
   // Group
   marketing: "00000000-0000-0000-0000-000000000020",
-  // Integration (BigInt - use numeric strings)
-  instagram: BigInt(50),
-  // Uri (BigInt - use numeric strings)
-  mikeInstagram: BigInt(60),
 };
 
 async function main() {
   // Clean up existing data in reverse dependency order
   await prisma.emailOutbox.deleteMany();
   await prisma.organizationInvite.deleteMany(); // invitedBy is RESTRICT, so before users
-  await prisma.uriClaim.deleteMany();
-  await prisma.uri.deleteMany();
-  await prisma.integration.deleteMany();
   await prisma.goal.deleteMany();
   await prisma.feedbackValue.deleteMany();
   await prisma.feedback.deleteMany();
   await prisma.feedbackLink.deleteMany();
-  await prisma.feedbackRequest.deleteMany();
   await prisma.templateField.deleteMany();
   await prisma.groupAdmin.deleteMany();
   await prisma.group.deleteMany();
@@ -693,43 +685,6 @@ async function main() {
       status: "IN_PROGRESS",
       progress: 30,
       targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-    },
-  });
-
-  const mikeInstagramUri = await prisma.uri.create({
-    data: {
-      id: SEED_IDS.mikeInstagram,
-      uri: "https://instagram.com/mike.ryan",
-      user: { connect: { id: mike.id } },
-    },
-  });
-
-  // Create UriClaim for Mike Ryan
-  await prisma.uriClaim.create({
-    data: {
-      user: { connect: { id: mike.id } },
-      uri: { connect: { id: mikeInstagramUri.id } },
-      claimedAt: new Date(),
-    },
-  });
-
-  // Create Integration and Uri for Mike Ryan (Instagram) with GLOBAL scope
-  await prisma.integration.create({
-    data: {
-      id: SEED_IDS.instagram,
-      hostname: "instagram.com",
-      uris: {
-        connect: {
-          id: mikeInstagramUri.id,
-        },
-      },
-      slug: {
-        create: {
-          slug: "instagram",
-          scope: "GLOBAL",
-          scopedToOrgId: null,
-        },
-      },
     },
   });
 
