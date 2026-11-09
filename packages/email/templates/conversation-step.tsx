@@ -26,7 +26,7 @@ interface ConversationStepEmailProps {
 export function ConversationStepEmail({
   recipientName = "there",
   orgName = "your organization",
-  stageLabel = "Direct feedback",
+  stageLabel,
   reviewDate,
   hasConsequence = false,
   url = "https://app.props.to/conversations",
