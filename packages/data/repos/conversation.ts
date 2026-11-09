@@ -6,6 +6,7 @@ import type {
   OrganizationRole,
 } from "@prisma/client";
 import { db } from "../db";
+import { stageOrder } from "../utils/conversation-stages";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
 
@@ -32,12 +33,6 @@ export type CreateConversationInput = {
 export type ConversationViewerContext = {
   orgRole: OrganizationRole | null;
   leadsSubject: boolean;
-};
-
-const STAGE_ORDER: Record<ConversationStage, number> = {
-  DIRECT: 0,
-  REPEATED: 1,
-  FINAL: 2,
 };
 
 function optionalText(text: string | null | undefined): string | null {
@@ -235,8 +230,8 @@ export async function addConversationStep(
         distinct: ["stage"],
         select: { stage: true },
       });
-      const highest = Math.max(-1, ...reached.map(r => STAGE_ORDER[r.stage]));
-      if (STAGE_ORDER[step.stage] < highest) {
+      const highest = Math.max(-1, ...reached.map(r => stageOrder(r.stage)));
+      if (stageOrder(step.stage) < highest) {
         throw new Error("A step cannot go back to an earlier stage");
       }
 

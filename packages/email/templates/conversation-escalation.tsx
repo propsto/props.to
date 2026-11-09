@@ -28,7 +28,7 @@ export function ConversationEscalationEmail({
   orgName = "your organization",
   memberName = "a member",
   ownerName = "their lead",
-  stageLabel = "Repeated without change",
+  stageLabel,
   url = "https://app.props.to",
 }: ConversationEscalationEmailProps): React.ReactElement {
   return (

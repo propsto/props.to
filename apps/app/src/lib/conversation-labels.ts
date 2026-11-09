@@ -1,13 +1,7 @@
-import type { ConversationStage, ConversationStatus } from "@prisma/client";
+import type { ConversationStatus } from "@prisma/client";
 
-// The three steps of the escalation path, in order
-export const STAGES: ConversationStage[] = ["DIRECT", "REPEATED", "FINAL"];
-
-export const STAGE_LABELS: Record<ConversationStage, string> = {
-  DIRECT: "Direct feedback",
-  REPEATED: "Repeated without change",
-  FINAL: "Final conversation",
-};
+// The escalation path is defined once, in @propsto/data
+export { STAGES, STAGE_LABELS } from "@propsto/data/utils/conversation-stages";
 
 export const STATUS_LABELS: Record<ConversationStatus, string> = {
   OPEN: "Open",
