@@ -3,18 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@propsto/ui/atoms/button";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { reorderLevelsAction } from "./actions";
+import { Archive, ArchiveRestore, ArrowDown, ArrowUp } from "lucide-react";
+import { reorderLevelsAction, setLevelArchivedAction } from "./actions";
 import { LevelDialog, type OrgLevel } from "./level-dialog";
 
 interface LevelListProps {
   levels: (OrgLevel & { memberCount: number })[];
   orgSlug: string;
+  // Archived rows: no reordering or editing, Restore instead of Archive
+  archived?: boolean;
 }
 
 export function LevelList({
   levels,
   orgSlug,
+  archived = false,
 }: LevelListProps): React.ReactNode {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +37,28 @@ export function LevelList({
     }
   };
 
+  const setArchived = async (level: OrgLevel) => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await setLevelArchivedAction(orgSlug, level.id, !archived);
+      if (!result.success) {
+        setError(
+          result.error ?? `Failed to ${archived ? "restore" : "archive"} level`,
+        );
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
       {error && <p className="pb-4 text-sm text-destructive">{error}</p>}
-      <ol className="divide-y">
+      <ol
+        className="divide-y"
+        data-testid={archived ? "archived-levels" : "active-levels"}
+      >
         {levels.map((level, index) => (
           <li
             key={level.id}
@@ -59,25 +80,42 @@ export function LevelList({
             </div>
 
             <div className="flex items-center gap-2">
+              {archived ? null : (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => void move(index, -1)}
+                    disabled={busy || index === 0}
+                    aria-label={`Move ${level.name} up`}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => void move(index, 1)}
+                    disabled={busy || index === levels.length - 1}
+                    aria-label={`Move ${level.name} down`}
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <LevelDialog orgSlug={orgSlug} level={level} />
+                </>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => void move(index, -1)}
-                disabled={busy || index === 0}
-                aria-label={`Move ${level.name} up`}
+                onClick={() => void setArchived(level)}
+                disabled={busy}
+                aria-label={`${archived ? "Restore" : "Archive"} ${level.name}`}
               >
-                <ArrowUp className="h-4 w-4" />
+                {archived ? (
+                  <ArchiveRestore className="h-4 w-4" />
+                ) : (
+                  <Archive className="h-4 w-4" />
+                )}
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => void move(index, 1)}
-                disabled={busy || index === levels.length - 1}
-                aria-label={`Move ${level.name} down`}
-              >
-                <ArrowDown className="h-4 w-4" />
-              </Button>
-              <LevelDialog orgSlug={orgSlug} level={level} />
             </div>
           </li>
         ))}

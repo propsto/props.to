@@ -22,15 +22,18 @@ export default async function OrgAdminValues({
   // Page-level guard: the layout's notFound does not stop this page from rendering data.
   const { org } = await requireOrgAdmin(orgSlug);
 
-  const valuesResult = await getOrgValues(org.id);
-  const values = valuesResult.success
+  const valuesResult = await getOrgValues(org.id, { includeArchived: true });
+  const allValues = valuesResult.success
     ? valuesResult.data.map(v => ({
         id: v.id,
         name: v.name,
         description: v.description,
         feedbackCount: v._count.feedbacks,
+        archived: v.archivedAt !== null,
       }))
     : [];
+  const values = allValues.filter(v => !v.archived);
+  const archivedValues = allValues.filter(v => v.archived);
 
   return (
     <div className="space-y-6">
@@ -51,8 +54,9 @@ export default async function OrgAdminValues({
             <Badge variant="secondary">{values.length}</Badge>
           </CardTitle>
           <CardDescription>
-            Shown in this order on feedback forms. With no values, forms show no
-            value picker.
+            Shown in this order on feedback forms. With no active values, forms
+            show no value picker. Archived values leave the picker; feedback
+            already tagged keeps showing them.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,9 +64,21 @@ export default async function OrgAdminValues({
             <ValueList values={values} orgSlug={orgSlug} />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No values yet. Create one to get started.
+              {archivedValues.length > 0
+                ? "No active values. Create or restore one to show the picker."
+                : "No values yet. Create one to get started."}
             </p>
           )}
+          {archivedValues.length > 0 ? (
+            <details className="mt-6 border-t pt-4">
+              <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
+                Archived ({archivedValues.length})
+              </summary>
+              <div className="pt-4">
+                <ValueList values={archivedValues} orgSlug={orgSlug} archived />
+              </div>
+            </details>
+          ) : null}
         </CardContent>
       </Card>
     </div>

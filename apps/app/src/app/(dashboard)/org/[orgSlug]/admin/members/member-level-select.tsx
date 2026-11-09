@@ -9,10 +9,11 @@ interface MemberLevelSelectProps {
   userId: string;
   name: string;
   levelId: string | null;
-  levels: { id: string; name: string }[];
+  levels: { id: string; name: string; archived: boolean }[];
 }
 
 // Level select for one member row. The server checks the level belongs to the org.
+// Archived levels are offered only to the member already on one.
 export function MemberLevelSelect({
   orgSlug,
   userId,
@@ -38,11 +39,13 @@ export function MemberLevelSelect({
       }}
     >
       <option value="">No level</option>
-      {levels.map(level => (
-        <option key={level.id} value={level.id}>
-          {level.name}
-        </option>
-      ))}
+      {levels
+        .filter(level => !level.archived || level.id === levelId)
+        .map(level => (
+          <option key={level.id} value={level.id}>
+            {level.archived ? `${level.name} (archived)` : level.name}
+          </option>
+        ))}
     </select>
   );
 }

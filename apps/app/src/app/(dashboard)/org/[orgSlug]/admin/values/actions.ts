@@ -7,6 +7,7 @@ import {
   createOrgValue,
   updateOrgValue,
   reorderOrgValues,
+  setOrgValueArchived,
   deleteOrgValue,
   type CreateOrgValueInput,
   type UpdateOrgValueInput,
@@ -140,6 +141,36 @@ export async function deleteValueAction(orgSlug: string, valueId: string) {
       resourceType: "value",
       resourceId: valueId,
       details: { name: result.data.name },
+    });
+    revalidatePath(`/org/${orgSlug}/admin/values`);
+  }
+
+  return result;
+}
+
+/**
+ * Archive an org value so it leaves pickers, or restore it
+ */
+export async function setValueArchivedAction(
+  orgSlug: string,
+  valueId: string,
+  archived: boolean,
+) {
+  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
+  if (error || !orgId || !userId) {
+    return { success: false, error: error ?? "Organization not found" };
+  }
+
+  const result = await setOrgValueArchived(valueId, orgId, archived);
+
+  if (result.success) {
+    await createAuditLog({
+      organizationId: orgId,
+      actorId: userId,
+      action: "VALUE_UPDATED",
+      resourceType: "value",
+      resourceId: valueId,
+      details: { name: result.data.name, archived },
     });
     revalidatePath(`/org/${orgSlug}/admin/values`);
   }
