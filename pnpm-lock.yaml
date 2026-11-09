@@ -740,9 +740,6 @@ importers:
       '@ai-sdk/openai':
         specifier: ^3.0.27
         version: 3.0.27(zod@4.2.1)
-      '@json-render/core':
-        specifier: ^0.3.0
-        version: 0.3.0(zod@4.2.1)
       ai:
         specifier: ^6.0.82
         version: 6.0.82(zod@4.2.1)
@@ -1950,11 +1947,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@json-render/core@0.3.0':
-    resolution: {integrity: sha512-/Om3SNSNkOOkcx07luCBizN8stDrpQ0haclo8iv+1U40WpTjNsJ5u4vt8GIrKMjr/Cdm+cCoV+PiwGEZ/m1yVQ==}
-    peerDependencies:
-      zod: ^4.0.0
 
   '@ljharb/through@2.3.14':
     resolution: {integrity: sha512-ajBvlKpWucBB17FuQYUShqpqy8GRgYEpJW0vWJbUu1CV9lWyrDCapy0lScU8T8Z6qn49sSwJB3+M+evYIdGg+A==}
@@ -8591,10 +8583,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  '@json-render/core@0.3.0(zod@4.2.1)':
-    dependencies:
-      zod: 4.2.1
 
   '@ljharb/through@2.3.14':
     dependencies:

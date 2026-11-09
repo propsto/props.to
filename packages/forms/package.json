@@ -6,8 +6,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
-    ".": "./index.ts",
-    "./providers/*": "./providers/*.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "lint": "eslint",
@@ -15,7 +14,6 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.27",
-    "@json-render/core": "^0.3.0",
     "ai": "^6.0.82",
     "zod": "4.2.1"
   },
