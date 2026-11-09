@@ -170,7 +170,11 @@ export async function createConversation(input: CreateConversationInput) {
 
       if (input.valueId) {
         const value = await tx.orgValue.findFirst({
-          where: { id: input.valueId, organizationId: input.organizationId },
+          where: {
+            id: input.valueId,
+            organizationId: input.organizationId,
+            archivedAt: null,
+          },
           select: { id: true },
         });
         if (!value) {
