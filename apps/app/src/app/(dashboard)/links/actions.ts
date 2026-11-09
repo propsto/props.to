@@ -17,7 +17,7 @@ type LinkActionResult = { success: true } | { success: false; error: string };
 // owner to still be a member: a removed member cannot touch the org's links.
 async function withOwnedLink(
   linkId: string,
-  mutate: (id: string) => Promise<{ success: boolean }>,
+  mutate: (id: string, userId: string) => Promise<{ success: boolean }>,
 ): Promise<LinkActionResult> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -34,7 +34,9 @@ async function withOwnedLink(
     });
     if (!membership.data) return { success: false, error: "Link not found" };
   }
-  const result = await mutate(link.data.id);
+  // The repo also matches on the owner, so the write never touches a link
+  // that is not the session user's
+  const result = await mutate(link.data.id, session.user.id);
   if (!result.success) {
     return { success: false, error: "Failed to update link" };
   }
