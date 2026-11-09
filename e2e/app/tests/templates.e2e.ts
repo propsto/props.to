@@ -171,3 +171,57 @@ test.describe("Feedback Templates", () => {
     });
   });
 });
+
+test.describe("Organization template categories", () => {
+  // Mike Ryan is seeded as OWNER of acme org
+  const orgSlug = "acme";
+
+  test("should create an org template with an org category and list it", async ({
+    page,
+    baseURL,
+  }) => {
+    const stamp = Date.now();
+    const categoryName = `E2E Category ${stamp}`;
+    const templateName = `E2E Org Template ${stamp}`;
+
+    // Create a custom category
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/categories`);
+    await page.waitForLoadState("networkidle");
+    await page.getByRole("button", { name: /new category/i }).click();
+    await expect(page.getByRole("dialog")).toBeVisible({ timeout: 5000 });
+    await page.getByLabel("Name").fill(categoryName);
+    await page.getByRole("button", { name: /create category/i }).click();
+    await expect(page.getByRole("dialog")).not.toBeVisible({ timeout: 5000 });
+    await expect(page.getByText(categoryName)).toBeVisible({ timeout: 5000 });
+
+    // Create an org template in that category
+    await page.goto(`${baseURL}/org/${orgSlug}/admin/templates/new`);
+    await page.waitForLoadState("networkidle");
+    await expect(
+      page.getByRole("heading", { name: /create organization template/i }),
+    ).toBeVisible({ timeout: 15000 });
+
+    await page.getByLabel(/template name/i).fill(templateName);
+
+    const categorySection = page
+      .getByText("Category", { exact: true })
+      .locator("..");
+    await categorySection.getByRole("combobox").click();
+    const categoryOption = page.getByRole("option", { name: categoryName });
+    await expect(categoryOption).toBeVisible({ timeout: 5000 });
+    await categoryOption.click();
+    await expect(categorySection.getByRole("combobox")).toHaveText(
+      categoryName,
+    );
+
+    await page.getByRole("button", { name: /create template/i }).click();
+    await page.waitForURL(new RegExp(`/org/${orgSlug}/admin/templates$`), {
+      timeout: 20000,
+    });
+
+    // The templates list shows the template with its category
+    const row = page.getByRole("row").filter({ hasText: templateName });
+    await expect(row).toBeVisible({ timeout: 15000 });
+    await expect(row.getByRole("cell", { name: categoryName })).toBeVisible();
+  });
+});

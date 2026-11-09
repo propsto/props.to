@@ -6,6 +6,7 @@ import {
   verifyOrgAdminAccess,
   createFeedbackTemplate,
   getOrganizationBySlug,
+  getOrganizationCategories,
   setOrganizationDefaultTemplate,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
@@ -46,6 +47,7 @@ interface CreateOrgTemplateInput {
   name: string;
   description?: string;
   feedbackType: FeedbackType;
+  categoryId?: string;
   fields: FormField[];
   orgSlug: string;
 }
@@ -76,11 +78,23 @@ export async function createOrgTemplateAction(
     return { success: false, error: "Organization not found" };
   }
 
+  // A category must be one of this org's categories or a global one
+  if (input.categoryId) {
+    const categoriesResult = await getOrganizationCategories(orgResult.data.id);
+    if (
+      !categoriesResult.success ||
+      !categoriesResult.data.some(c => c.id === input.categoryId)
+    ) {
+      return { success: false, error: "Category not found" };
+    }
+  }
+
   // Create template for organization
   const result = await createFeedbackTemplate({
     name: input.name,
     description: input.description,
     feedbackType: input.feedbackType,
+    categoryId: input.categoryId,
     isPublic: false,
     organizationId: orgResult.data.id,
     fields: input.fields.map((field, index) => ({
