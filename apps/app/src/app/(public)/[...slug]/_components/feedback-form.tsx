@@ -52,6 +52,7 @@ interface FeedbackSubmissionFormProps {
   link: PublicFeedbackLink;
   basePath: string;
   allowAnonymous?: boolean;
+  // Present only when the org uses the values layer
   values?: PublicOrgValue[];
   recipientLevel?: RecipientLevel;
   // Entity links: what the visitor is giving feedback on (?context=), read-only
@@ -62,7 +63,7 @@ export function FeedbackSubmissionForm({
   link,
   basePath,
   allowAnonymous = true,
-  values = [],
+  values,
   recipientLevel,
   context,
 }: FeedbackSubmissionFormProps): React.JSX.Element {
@@ -79,11 +80,12 @@ export function FeedbackSubmissionForm({
   const [answers, setAnswers] = useState<FieldAnswers>({});
   const [valueIds, setValueIds] = useState<string[]>([]);
   const fields = link.template.fields;
-  const tickedExpectations = recipientLevel
-    ? values.filter(
-        v => valueIds.includes(v.id) && recipientLevel.expectations[v.id],
-      )
-    : [];
+  const tickedExpectations =
+    recipientLevel && values
+      ? values.filter(
+          v => valueIds.includes(v.id) && recipientLevel.expectations[v.id],
+        )
+      : [];
 
   const setAnswer = (id: string, value: FieldAnswer | undefined): void =>
     setAnswers(prev => {
@@ -181,8 +183,8 @@ export function FeedbackSubmissionForm({
             </div>
           )}
 
-          {/* Org values picker: only when the org defines values */}
-          {values.length > 0 && (
+          {/* Org values picker: only when the org uses the values layer */}
+          {values && (
             <fieldset className="space-y-2">
               <legend className="text-sm font-medium leading-none">
                 Which values did they show?

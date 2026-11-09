@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@propsto/ui/atoms/card";
+import { getOrgLayers } from "@/lib/org-layers";
 import { RubricEditor } from "./rubric-editor";
 import { ExpectationGrid } from "./expectation-grid";
 
@@ -23,9 +24,10 @@ export default async function OrgAdminLevelDetail({
   const { orgSlug, levelId } = await params;
   const { org } = await requireOrgAdmin(orgSlug);
 
-  const [levelResult, valuesResult] = await Promise.all([
+  const [levelResult, valuesResult, layers] = await Promise.all([
     getOrgLevel(levelId, org.id),
     getOrgValues(org.id),
+    getOrgLayers(org.id),
   ]);
   if (!levelResult.success || !levelResult.data) {
     notFound();
@@ -72,7 +74,7 @@ export default async function OrgAdminLevelDetail({
         </CardContent>
       </Card>
 
-      {values.length > 0 && (
+      {layers.values && (
         <Card>
           <CardHeader>
             <CardTitle>Value expectations</CardTitle>

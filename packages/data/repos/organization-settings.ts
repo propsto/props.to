@@ -18,6 +18,8 @@ export type OrganizationGeneralSettings = {
   enableGroupManagement: boolean;
   requireEmailVerification: boolean;
   enableSSOIntegration: boolean;
+  // Omitted keeps the stored value (new rows default to on)
+  enableConversations?: boolean;
 };
 
 export type OrganizationFeedbackSettings = {
@@ -110,6 +112,7 @@ export async function upsertOrganizationSettings(
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
+        enableConversations: settings.enableConversations,
         updatedAt: new Date(),
       },
       create: {
@@ -119,6 +122,39 @@ export async function upsertOrganizationSettings(
         enableGroupManagement: settings.enableGroupManagement,
         requireEmailVerification: settings.requireEmailVerification,
         enableSSOIntegration: settings.enableSSOIntegration,
+        enableConversations: settings.enableConversations,
+      },
+    });
+
+    return handleSuccess(result);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+// Set only the given switches; the update leaves every other column as
+// stored, so overlapping saves of different switches cannot undo each other
+export async function updateOrganizationSettingsSwitches(
+  organizationId: string,
+  switches: Pick<
+    Partial<OrganizationGeneralSettings>,
+    "autoJoinByDomain" | "enableConversations"
+  >,
+) {
+  try {
+    logger("updateOrganizationSettingsSwitches", { organizationId, switches });
+
+    const result = await db.organizationSettings.upsert({
+      where: { organizationId },
+      update: {
+        autoJoinByDomain: switches.autoJoinByDomain,
+        enableConversations: switches.enableConversations,
+      },
+      // A new row takes the schema defaults for anything not given
+      create: {
+        organizationId,
+        autoJoinByDomain: switches.autoJoinByDomain,
+        enableConversations: switches.enableConversations,
       },
     });
 

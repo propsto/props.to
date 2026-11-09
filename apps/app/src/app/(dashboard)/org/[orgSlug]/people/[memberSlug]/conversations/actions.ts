@@ -13,6 +13,7 @@ import {
   resolveConversation,
 } from "@propsto/data/repos";
 import { auth } from "@/server/auth.server";
+import { getOrgLayers } from "@/lib/org-layers";
 import {
   canAddStage,
   getConversationAccess,
@@ -62,6 +63,10 @@ async function authorize(
     return { error: "Not authorized" };
   }
   const org = membership.data.organization;
+  const layers = await getOrgLayers(org.id);
+  if (!layers.conversations) {
+    return { error: "Conversations are turned off for this organization" };
+  }
   const member = await getOrgMemberBySlug(org.id, memberSlug);
   if (!member.success || !member.data) return { error: "Member not found" };
   const subject = member.data.user;

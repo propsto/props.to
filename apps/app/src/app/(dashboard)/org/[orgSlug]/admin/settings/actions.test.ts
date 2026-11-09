@@ -9,7 +9,7 @@ const repos = vi.hoisted(() => ({
   getOrganizationBySlug: vi.fn(),
   upsertOrganizationDefaultSettings: vi.fn(),
   upsertOrganizationFeedbackSettings: vi.fn(),
-  upsertOrganizationSettings: vi.fn(),
+  updateOrganizationSettingsSwitches: vi.fn(),
   verifyOrgAdminAccess: vi.fn(),
   auditHelpers: { logSettingsUpdate: vi.fn() },
 }));
@@ -86,6 +86,42 @@ describe("settings actions", () => {
 
     expect(result).toEqual({ success: true });
     expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledOnce();
+  });
+
+  it("membership settings: turning conversations off saves it and audits the change", async () => {
+    repos.updateOrganizationSettingsSwitches.mockResolvedValue({
+      success: true,
+      data: {},
+    });
+
+    // Only the changed switch is sent; auto-join keeps the stored value
+    repos.getOrganizationBySlug.mockResolvedValue({
+      success: true,
+      data: {
+        ...org,
+        organizationSettings: {
+          autoJoinByDomain: true,
+          enableConversations: true,
+        },
+      },
+    });
+
+    const result = await updateMembershipSettings({
+      orgSlug: "acme",
+      enableConversations: false,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(repos.updateOrganizationSettingsSwitches).toHaveBeenCalledWith(
+      "org_1",
+      { autoJoinByDomain: undefined, enableConversations: false },
+    );
+    expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledWith(
+      "org_1",
+      "user_1",
+      "membership_settings",
+      { enableConversations: { old: true, new: false } },
+    );
   });
 
   it("invalid input is refused before any session or DB call", async () => {

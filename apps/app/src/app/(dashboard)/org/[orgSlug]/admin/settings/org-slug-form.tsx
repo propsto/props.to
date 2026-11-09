@@ -37,7 +37,11 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps) {
+export function OrgSlugForm({
+  currentSlug,
+  orgName,
+  isOwner,
+}: OrgSlugFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [slug, setSlug] = useState(currentSlug);
@@ -54,21 +58,24 @@ export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps)
   const hasChanges = slug.toLowerCase() !== currentSlug;
 
   // Check slug availability when it changes
-  const checkAvailability = useCallback(async (slugToCheck: string) => {
-    if (slugToCheck === currentSlug) {
-      setAvailability({ available: true, checking: false });
-      return;
-    }
+  const checkAvailability = useCallback(
+    async (slugToCheck: string) => {
+      if (slugToCheck === currentSlug) {
+        setAvailability({ available: true, checking: false });
+        return;
+      }
 
-    setAvailability((prev) => ({ ...prev, checking: true }));
+      setAvailability(prev => ({ ...prev, checking: true }));
 
-    const result = await checkSlugAvailability(slugToCheck);
-    setAvailability({
-      available: result.available,
-      error: result.error,
-      checking: false,
-    });
-  }, [currentSlug]);
+      const result = await checkSlugAvailability(slugToCheck);
+      setAvailability({
+        available: result.available,
+        error: result.error,
+        checking: false,
+      });
+    },
+    [currentSlug],
+  );
 
   useEffect(() => {
     if (debouncedSlug && debouncedSlug !== currentSlug) {
@@ -86,7 +93,7 @@ export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps)
 
     startTransition(async () => {
       const result = await updateOrgSlug(currentSlug, slug.toLowerCase());
-      
+
       if (result.success && result.newSlug) {
         setSaveSuccess(true);
         // Redirect to new URL after brief success message
@@ -125,7 +132,7 @@ export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps)
             <Input
               id="orgSlug"
               value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
+              onChange={e => handleSlugChange(e.target.value)}
               disabled={!isOwner || isPending}
               placeholder="your-org"
               className="max-w-[200px]"
@@ -136,9 +143,11 @@ export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps)
             {!availability.checking && hasChanges && availability.available && (
               <Check className="h-4 w-4 text-green-500" />
             )}
-            {!availability.checking && hasChanges && !availability.available && (
-              <AlertCircle className="h-4 w-4 text-destructive" />
-            )}
+            {!availability.checking &&
+              hasChanges &&
+              !availability.available && (
+                <AlertCircle className="h-4 w-4 text-destructive" />
+              )}
           </div>
           {!isOwner && (
             <p className="text-sm text-muted-foreground">
@@ -167,9 +176,7 @@ export function OrgSlugForm({ currentSlug, orgName, isOwner }: OrgSlugFormProps)
           </div>
         </div>
 
-        {saveError && (
-          <p className="text-sm text-destructive">{saveError}</p>
-        )}
+        {saveError && <p className="text-sm text-destructive">{saveError}</p>}
 
         {saveSuccess && (
           <p className="text-sm text-green-500">
