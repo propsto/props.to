@@ -9,6 +9,9 @@ export default defineConfig({
   use: {
     baseURL: process.env.PROPSTO_APP_URL,
     ...devices["Desktop Chrome"],
+    // Failed tests keep a trace (network, console, DOM) in test-results/,
+    // which the E2E workflow already uploads as an artifact.
+    trace: "retain-on-failure",
   },
   projects: [
     {
