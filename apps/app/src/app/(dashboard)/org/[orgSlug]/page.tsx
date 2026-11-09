@@ -22,6 +22,7 @@ import {
 } from "@propsto/ui/atoms/card";
 import { LinkList } from "@/app/_components/link-list";
 import { auth } from "@/server/auth.server";
+import { getOrgLayers } from "@/lib/org-layers";
 
 interface OrgLandingPageProps {
   params: Promise<{ orgSlug: string }>;
@@ -46,21 +47,31 @@ export default async function OrgLandingPage({
   const { organization: org, role } = membership.data;
   const isAdmin = role === "OWNER" || role === "ADMIN";
 
-  const [linksResult, managedResult, templatesResult, levelResult, ledResult] =
-    await Promise.all([
-      getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
-      getAvailableManagedLinks(userId, org.id),
-      getOrganizationTemplates(org.id),
-      getMemberLevel(org.id, userId),
-      getLedMembers(org.id, userId),
-    ]);
+  // Only the level and led-member reads wait for the layer lookup
+  const layered = getOrgLayers(org.id).then(layers =>
+    Promise.all([
+      layers.levels ? getMemberLevel(org.id, userId) : null,
+      layers.conversations ? getLedMembers(org.id, userId) : null,
+    ]),
+  );
+  const [
+    linksResult,
+    managedResult,
+    templatesResult,
+    [levelResult, ledResult],
+  ] = await Promise.all([
+    getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
+    getAvailableManagedLinks(userId, org.id),
+    getOrganizationTemplates(org.id),
+    layered,
+  ]);
   const links = linksResult.success ? linksResult.data.links : [];
   const managed = managedResult.success ? managedResult.data.available : [];
   const templates = templatesResult.success ? templatesResult.data : [];
   // The levels layer: no level assigned, no rubric card
-  const level = levelResult.success ? levelResult.data : null;
-  // The process layer: group admins see the people they lead
-  const led = ledResult.success ? ledResult.data : [];
+  const level = levelResult?.success ? levelResult.data : null;
+  // The conversations layer: group admins see the people they lead
+  const led = ledResult?.success ? ledResult.data : [];
 
   return (
     <div className="flex flex-col gap-6 p-6">

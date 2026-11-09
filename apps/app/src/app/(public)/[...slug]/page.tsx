@@ -97,6 +97,7 @@ import {
   showsRecipientLevel,
 } from "@/lib/feedback-policy";
 import { publicLinkPath } from "@/lib/public-link-path";
+import { getOrgLayers } from "@/lib/org-layers";
 import type { FeedbackLinkWithRelations } from "@propsto/data/repos/feedback-link";
 import { UserProfileHeader } from "./_components/user-profile-header";
 
@@ -743,10 +744,14 @@ async function gatedFeedbackForm(
       </Card>
     );
   }
-  // The org's values layer: no rows, no picker
-  const valuesResult = link.organizationId
-    ? await getOrgValues(link.organizationId)
+  const layers = link.organizationId
+    ? await getOrgLayers(link.organizationId)
     : null;
+  // The org's values layer: no active rows, no picker
+  const valuesResult =
+    link.organizationId && layers?.values
+      ? await getOrgValues(link.organizationId)
+      : null;
   const values = valuesResult?.success
     ? valuesResult.data.map(({ id, name, description }) => ({
         id,
@@ -757,6 +762,7 @@ async function gatedFeedbackForm(
   // The levels layer: expectations are internal, see showsRecipientLevel
   const levelResult =
     showRecipientLevel &&
+    layers?.levels &&
     link.organizationId &&
     link.userId &&
     showsRecipientLevel(link, policy)
@@ -772,7 +778,7 @@ async function gatedFeedbackForm(
       }}
       basePath={basePath}
       allowAnonymous={policy.allowAnonymous}
-      values={values}
+      values={valuesResult?.success ? values : undefined}
       recipientLevel={
         level
           ? {

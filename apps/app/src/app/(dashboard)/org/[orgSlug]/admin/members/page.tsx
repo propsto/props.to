@@ -28,6 +28,7 @@ import { InviteDialog } from "./invite-dialog";
 import { PendingInvites } from "./pending-invites";
 import { MemberActions } from "./member-actions";
 import { MemberLevelSelect } from "./member-level-select";
+import { getOrgLayers } from "@/lib/org-layers";
 
 function memberName(user: {
   firstName: string | null;
@@ -51,10 +52,11 @@ export default async function OrgAdminMembers({
     role: actorRole,
   } = await requireOrgAdmin(orgSlug);
 
-  const [orgResult, invitesResult, levelsResult] = await Promise.all([
+  const [orgResult, invitesResult, levelsResult, layers] = await Promise.all([
     getOrganizationBySlugWithMembers(orgSlug),
     listPendingOrganizationInvites(adminOrg.id),
     getOrgLevels(adminOrg.id, { includeArchived: true }),
+    getOrgLayers(adminOrg.id),
   ]);
   if (!orgResult.success || !orgResult.data) {
     return notFound();
@@ -71,13 +73,13 @@ export default async function OrgAdminMembers({
   }));
 
   // Archived levels stay listed so a member already on one still shows it;
-  // the level column shows only once the org has active levels
+  // the level column shows only once the org uses the levels layer
   const levels = (levelsResult.data ?? []).map(l => ({
     id: l.id,
     name: l.name,
     archived: l.archivedAt !== null,
   }));
-  const hasActiveLevels = levels.some(l => !l.archived);
+  const hasActiveLevels = layers.levels;
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -168,7 +170,7 @@ export default async function OrgAdminMembers({
                     {new Date(member.joinedAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right">
-                    {member.userId !== actorId ? (
+                    {layers.conversations && member.userId !== actorId ? (
                       <Link
                         href={`/org/${orgSlug}/people/${member.user.slug.slug}/conversations`}
                         className="mr-2 text-sm underline-offset-4 hover:underline"

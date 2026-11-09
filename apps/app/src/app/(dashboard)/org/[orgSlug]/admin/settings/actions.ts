@@ -5,7 +5,7 @@ import {
   getOrganizationBySlug,
   upsertOrganizationDefaultSettings,
   upsertOrganizationFeedbackSettings,
-  upsertOrganizationSettings,
+  updateOrganizationSettingsSwitches,
   auditHelpers,
   verifyOrgAdminAccess,
 } from "@propsto/data/repos";
@@ -121,7 +121,10 @@ export async function updateMemberSettings(
 
 const updateMembershipSettingsSchema = z.object({
   orgSlug: z.string(),
-  autoJoinByDomain: z.boolean(),
+  // Each switch is sent only when it changed, so a stale page does not
+  // overwrite the other one with what it loaded
+  autoJoinByDomain: z.boolean().optional(),
+  enableConversations: z.boolean().optional(),
 });
 
 export type UpdateMembershipSettingsInput = z.infer<
@@ -159,34 +162,47 @@ export async function updateMembershipSettings(
     const org = orgResult.data;
     const current = org.organizationSettings;
 
-    // Preserve the other general settings; only the domain-join toggle is editable here
-    const saved = await upsertOrganizationSettings(org.id, {
-      allowUserInvites: current?.allowUserInvites ?? true,
+    // Only the switches the form sent; every other column stays as stored
+    const saved = await updateOrganizationSettingsSwitches(org.id, {
       autoJoinByDomain: input.autoJoinByDomain,
-      enableGroupManagement: current?.enableGroupManagement ?? true,
-      requireEmailVerification: current?.requireEmailVerification ?? true,
-      enableSSOIntegration: current?.enableSSOIntegration ?? false,
+      enableConversations: input.enableConversations,
     });
     // The repo returns failures instead of throwing; don't audit or report success
     if (!saved.success) {
       return { success: false, error: "Failed to update settings" };
     }
 
-    if ((current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain) {
+    const changes: Record<string, { old: boolean; new: boolean }> = {};
+    if (
+      input.autoJoinByDomain !== undefined &&
+      (current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain
+    ) {
+      changes.autoJoinByDomain = {
+        old: current?.autoJoinByDomain ?? false,
+        new: input.autoJoinByDomain,
+      };
+    }
+    if (
+      input.enableConversations !== undefined &&
+      (current?.enableConversations ?? true) !== input.enableConversations
+    ) {
+      changes.enableConversations = {
+        old: current?.enableConversations ?? true,
+        new: input.enableConversations,
+      };
+    }
+    if (Object.keys(changes).length > 0) {
       await auditHelpers.logSettingsUpdate(
         org.id,
         session.user.id,
         "membership_settings",
-        {
-          autoJoinByDomain: {
-            old: current?.autoJoinByDomain ?? false,
-            new: input.autoJoinByDomain,
-          },
-        },
+        changes,
       );
     }
 
     revalidatePath(`/org/${input.orgSlug}/admin/settings`);
+    // The conversations switch changes the member pages and the sidebar
+    revalidatePath(`/org/${input.orgSlug}`, "layout");
     return { success: true };
   } catch (error) {
     logger("Failed to update membership settings:", error);

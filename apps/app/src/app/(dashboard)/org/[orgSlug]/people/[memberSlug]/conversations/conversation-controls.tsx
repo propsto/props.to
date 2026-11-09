@@ -125,7 +125,8 @@ export function OpenConversationDialog({
   values,
   stages,
 }: Ctx & {
-  values: { id: string; name: string }[];
+  // Present only when the org uses the values layer
+  values?: { id: string; name: string }[];
   stages: ConversationStage[];
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
@@ -159,7 +160,7 @@ export function OpenConversationDialog({
             );
           }}
         >
-          {values.length > 0 ? (
+          {values ? (
             <div className="space-y-1">
               <Label htmlFor="open-value">Value</Label>
               <select

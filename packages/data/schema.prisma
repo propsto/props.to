@@ -903,6 +903,9 @@ model OrganizationSettings {
   enableGroupManagement    Boolean      @default(true)
   requireEmailVerification Boolean      @default(true)
   enableSSOIntegration     Boolean      @default(false)
+  // The conversations layer: leads and admins record escalation steps about
+  // members. On by default; an org without that process turns it off.
+  enableConversations      Boolean      @default(true)
   createdAt                DateTime     @default(now())
   updatedAt                DateTime     @updatedAt
 }
