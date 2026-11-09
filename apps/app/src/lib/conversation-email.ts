@@ -6,6 +6,7 @@ import {
 } from "@propsto/email";
 import { constServer } from "@propsto/constants/server";
 import { createLogger } from "@propsto/logger";
+import { stageDefinition } from "@propsto/data/utils/conversation-stages";
 import { STAGE_LABELS } from "./conversation-labels";
 
 const logger = createLogger("app:conversation");
@@ -36,7 +37,7 @@ export async function notifyConversationSubject(input: {
   }
 }
 
-// From the second step on, owners and admins hear there is a recurring
+// From the stages that notify admins on, owners and admins hear there is a recurring
 // problem being worked on. The step owner is not mailed about their own step,
 // and a subject who is also an admin gets the subject notice instead.
 export async function notifyOrgAdminsOfEscalation(input: {
@@ -50,7 +51,7 @@ export async function notifyOrgAdminsOfEscalation(input: {
   ownerName: string;
   stage: ConversationStage;
 }): Promise<void> {
-  if (input.stage === "DIRECT") return;
+  if (!stageDefinition(input.stage).notifiesAdmins) return;
   try {
     const admins = await getOrganizationAdmins(input.organizationId);
     const url = `${constServer.PROPSTO_APP_URL}/org/${input.orgSlug}/people/${input.memberSlug}/conversations`;

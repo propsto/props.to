@@ -17,7 +17,11 @@ import {
   CardTitle,
 } from "@propsto/ui/atoms/card";
 import { auth } from "@/server/auth.server";
-import { getConversationAccess } from "@/server/conversation-access";
+import { nextStages } from "@propsto/data/utils/conversation-stages";
+import {
+  canAddStage,
+  getConversationAccess,
+} from "@/server/conversation-access";
 import {
   STAGES,
   STAGE_LABELS,
@@ -77,14 +81,10 @@ export default async function MemberConversationsPage({
     id: f.id.toString(),
     label: `${f.template.name} · ${f.createdAt.toLocaleDateString()}`,
   }));
-  // Admins may record the final step; leads stop at the second
-  const allowedStages = STAGES.filter(
-    stage => stage !== "FINAL" || access.canCreateFinal,
-  );
-  const stagesFrom = (reached: ConversationStage[]): ConversationStage[] => {
-    const highest = Math.max(-1, ...reached.map(s => STAGES.indexOf(s)));
-    return allowedStages.filter(stage => STAGES.indexOf(stage) >= highest);
-  };
+  // Stages that require an admin are offered to admins only
+  const allowedStages = STAGES.filter(stage => canAddStage(access, stage));
+  const stagesFrom = (reached: ConversationStage[]): ConversationStage[] =>
+    nextStages(reached).filter(stage => allowedStages.includes(stage));
   const subjectName = personName(subject);
 
   return (

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { getConversationViewerContext } from "@propsto/data/repos";
+import { CONVERSATION_STAGES } from "@propsto/data/utils/conversation-stages";
 import {
   canAddStage,
   getConversationAccess,
@@ -64,6 +65,16 @@ describe("resolveConversationAccess", () => {
       expect(canAddStage(access, "FINAL")).toBe(true);
     },
   );
+
+  it("keeps a lead to the stages that do not require an admin", () => {
+    const lead = resolveConversationAccess("lead", SUBJECT, {
+      orgRole: "MEMBER",
+      leadsSubject: true,
+    });
+    for (const { stage, requiresAdmin } of CONVERSATION_STAGES) {
+      expect(canAddStage(lead, stage)).toBe(!requiresAdmin);
+    }
+  });
 
   it("gives a member who does not lead the subject nothing", () => {
     const access = resolveConversationAccess("peer", SUBJECT, {

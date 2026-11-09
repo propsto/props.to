@@ -3,6 +3,7 @@ import {
   getConversationViewerContext,
   type ConversationViewerContext,
 } from "@propsto/data/repos";
+import { stageDefinition } from "@propsto/data/utils/conversation-stages";
 
 export type ConversationAccess = {
   // Viewer is the person the conversation is about
@@ -13,7 +14,7 @@ export type ConversationAccess = {
   canReadInternal: boolean;
   // Open conversations, add steps, attach evidence, resolve
   canWrite: boolean;
-  // Only org admins may escalate to the final stage
+  // Only org admins may record a stage that requires an admin
   canCreateFinal: boolean;
 };
 
@@ -36,7 +37,7 @@ function isOrgAdmin(role: OrganizationRole | null): boolean {
  *   also an org admin or a lead elsewhere.
  * - A lead (group admin of any group the subject is in) and org admins read
  *   everything and write.
- * - Only org admins may create a FINAL step.
+ * - Only org admins may record a step at a stage that requires an admin.
  * - Anyone else, including non-members and other members, gets nothing.
  */
 export function resolveConversationAccess(
@@ -85,7 +86,7 @@ export function canAddStage(
   stage: ConversationStage,
 ): boolean {
   if (!access.canWrite) return false;
-  return stage !== "FINAL" || access.canCreateFinal;
+  return !stageDefinition(stage).requiresAdmin || access.canCreateFinal;
 }
 
 /**
