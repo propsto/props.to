@@ -25,7 +25,10 @@ import {
   getOrgValues,
   getUserOrganizationMembership,
 } from "@propsto/data/repos";
-import { checkRateLimit, EMAIL_LOOKUP_RATE_LIMIT } from "@propsto/data/utils";
+import {
+  checkRateLimit,
+  EMAIL_LOOKUP_RATE_LIMIT,
+} from "@propsto/data/utils/rate-limit";
 
 // Cache expensive queries to dedupe between generateMetadata and page render
 const resolveSlugBase = cache(_resolveSlug);

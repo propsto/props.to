@@ -6,7 +6,7 @@ import {
   getOrgValues,
 } from "@propsto/data/repos";
 import type { FeedbackVisibility, Prisma } from "@prisma/client";
-import { checkFeedbackRateLimit } from "@/lib/ratelimit";
+import { checkFeedbackRateLimit } from "@propsto/data/utils/rate-limit";
 import {
   notifyFeedbackRecipient,
   notifyTeamFeedbackAdmins,

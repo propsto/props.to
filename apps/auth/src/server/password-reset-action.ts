@@ -8,7 +8,7 @@ import {
   type ResetPasswordFormType,
   resetPasswordFormSchema,
 } from "@/app/types";
-import { checkPasswordResetRateLimit } from "@/lib/ratelimit";
+import { checkPasswordResetRateLimit } from "@propsto/data/utils/rate-limit";
 
 const logger = createLogger("auth");
 

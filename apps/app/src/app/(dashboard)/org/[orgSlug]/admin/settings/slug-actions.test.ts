@@ -13,7 +13,7 @@ const checkSlugCheckRateLimit = vi.hoisted(() => vi.fn());
 
 vi.mock("@propsto/data/repos", () => repos);
 vi.mock("@/server/auth.server", () => ({ auth }));
-vi.mock("@/lib/ratelimit", () => ({ checkSlugCheckRateLimit }));
+vi.mock("@propsto/data/utils/rate-limit", () => ({ checkSlugCheckRateLimit }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@propsto/logger", () => ({ createLogger: () => () => undefined }));
 

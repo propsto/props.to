@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { checkFeedbackRateLimit } from "./ratelimit";
+import { checkAiFormRateLimit, checkFeedbackRateLimit } from "./rate-limit";
 
 vi.mock("@propsto/constants/server", () => ({
   constServer: { UPSTASH_REDIS_REST_URL: "x", UPSTASH_REDIS_REST_TOKEN: "y" },
@@ -44,5 +44,15 @@ describe("checkFeedbackRateLimit", () => {
     // 12 calls so far; per-IP ceiling is 120
     for (let i = 0; i < 108; i++) await submit(`link-${i}`);
     expect(await submit("link-z")).toBe(false);
+  });
+});
+
+describe("checkAiFormRateLimit", () => {
+  it("allows 20 generations per user, then refuses", async () => {
+    for (let i = 0; i < 20; i++)
+      expect((await checkAiFormRateLimit("user_1")).success).toBe(true);
+    expect((await checkAiFormRateLimit("user_1")).success).toBe(false);
+    // Another user has their own allowance
+    expect((await checkAiFormRateLimit("user_2")).success).toBe(true);
   });
 });

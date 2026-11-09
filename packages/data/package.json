@@ -32,6 +32,8 @@
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/logger": "workspace:*",
+    "@upstash/ratelimit": "^2.0.5",
+    "@upstash/redis": "^1.36.2",
     "bcryptjs": "3.0.3"
   },
   "devDependencies": {
@@ -41,6 +43,7 @@
   },
   "peerDependencies": {
     "dotenv": "*",
+    "next": "*",
     "tsx": "*",
     "typescript": "*",
     "uuid": "*"
