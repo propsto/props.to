@@ -32,6 +32,8 @@ const ratelimit = createLimiter(10, "1 m");
 // Everyone in an office behind one NAT shares an IP, so the IP-wide ceiling
 // on public submits is high; the tight limit is per link+IP
 const feedbackIpCeiling = createLimiter(120, "1 m");
+// Each AI form generation is a paid OpenAI call
+const aiFormLimiter = createLimiter(20, "1 h");
 
 export interface RateLimitResult {
   success: boolean;
@@ -114,4 +116,14 @@ export async function checkPasswordResetRateLimit(
   const ip = await getClientIp();
   const identifier = email ? `reset:${email}` : `reset:${ip}`;
   return checkRateLimit(identifier);
+}
+
+/**
+ * Rate limit check for AI form generation
+ * Limit: 20 generations per hour per user
+ */
+export async function checkAiFormRateLimit(
+  userId: string,
+): Promise<RateLimitResult> {
+  return checkRateLimit(`ai-form:${userId}`, aiFormLimiter);
 }
