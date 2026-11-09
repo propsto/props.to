@@ -12,8 +12,11 @@ import {
 } from "./group";
 
 // The org scope is checked in the where clause, so a fake that matches on
-// both id and organizationId stands in for the database
+// both id and organizationId stands in for the database. A Globex group
+// exists too, so a missing org filter would find it.
 const GROUP = { id: "group_acme", organizationId: "org_acme" };
+const OTHER_ORG_GROUP = { id: "group_globex", organizationId: "org_globex" };
+const GROUPS = [GROUP, OTHER_ORG_GROUP];
 
 const db = vi.hoisted(() => ({
   group: {
@@ -35,16 +38,21 @@ vi.mock("../db", () => ({
   Prisma: {
     validator: () => (value: unknown) => value,
     PrismaClientKnownRequestError: class extends Error {},
+    PrismaClientValidationError: class extends Error {},
+    PrismaClientUnknownRequestError: class extends Error {},
+    PrismaClientInitializationError: class extends Error {},
+    PrismaClientRustPanicError: class extends Error {},
   },
 }));
 vi.mock("@prisma/client", () => ({ SlugScope: {} }));
 vi.mock("@propsto/logger", () => ({ createLogger: () => () => undefined }));
 
-function matches(where: { id?: string; organizationId?: string }): boolean {
-  return (
-    where.id === GROUP.id &&
-    (where.organizationId === undefined ||
-      where.organizationId === GROUP.organizationId)
+function find(where: { id?: string; organizationId?: string }) {
+  return GROUPS.find(
+    g =>
+      g.id === where.id &&
+      (where.organizationId === undefined ||
+        g.organizationId === where.organizationId),
   );
 }
 
@@ -52,7 +60,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   db.group.findFirst.mockImplementation(
     ({ where }: { where: { id: string; organizationId?: string } }) =>
-      Promise.resolve(matches(where) ? { ...GROUP, children: [] } : null),
+      Promise.resolve(
+        find(where)
+          ? { ...find(where), children: [], parentGroupId: null }
+          : null,
+      ),
   );
   db.group.update.mockResolvedValue(GROUP);
   db.group.delete.mockResolvedValue(GROUP);
@@ -103,7 +115,7 @@ describe("group repo org scoping", () => {
 
   it("refuses a parent group from another org", async () => {
     const result = await updateGroup(GROUP.id, GROUP.organizationId, {
-      parentGroupId: "group_globex",
+      parentGroupId: OTHER_ORG_GROUP.id,
     });
 
     expect(result).toEqual(
