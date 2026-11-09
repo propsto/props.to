@@ -13,6 +13,7 @@ import {
   notifyFeedbackRecipient,
   notifyTeamFeedbackAdmins,
 } from "@/lib/feedback-email";
+import { isModerationDecision } from "@/lib/admin-input";
 
 type Result = { success: true } | { success: false; error: string };
 
@@ -29,6 +30,10 @@ export async function moderateFeedbackAction(
   const membership = await verifyOrgAdminAccess(session.user.id, orgSlug);
   if (!membership.success || !membership.data) {
     return { success: false, error: "Not authorized" };
+  }
+  // Anything but approve or reject changes nothing
+  if (!isModerationDecision(decision)) {
+    return { success: false, error: "Invalid decision" };
   }
   if (!/^\d{1,18}$/.test(feedbackId)) {
     return { success: false, error: "Feedback not found" };
@@ -84,5 +89,8 @@ export async function moderateFeedbackAction(
   }
 
   revalidatePath(`/org/${orgSlug}/admin/moderation`);
+  // The recipient's received list and the detail page show the new state
+  revalidatePath("/feedback");
+  revalidatePath(`/feedback/${feedbackId}`);
   return { success: true };
 }
