@@ -285,11 +285,12 @@ export async function organizationHandler(
   try {
     const {
       organizationName,
-      organizationSlug,
       defaultUserSettings,
       organizationSettings,
       feedbackSettings,
     } = values;
+    // Validate, check and store the same normalized slug
+    const organizationSlug = values.organizationSlug.trim().toLowerCase();
 
     // Only a Google Workspace admin can create an org, and only for their own verified domain
     const dbUser = await getUser({ id: userId });
