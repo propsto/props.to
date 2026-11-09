@@ -45,7 +45,8 @@ export async function getOrgValues(organizationId: string) {
 }
 
 /**
- * The org values tagged on a user's approved received feedback, for the received list filter
+ * The org values tagged on a user's approved received feedback, for the received list filter.
+ * Each value carries its organization so a member of several orgs can tell them apart.
  */
 export async function getReceivedFeedbackValues(userId: string) {
   try {
@@ -55,8 +56,17 @@ export async function getReceivedFeedbackValues(userId: string) {
       where: {
         feedbacks: { some: { feedback: { userId, status: "APPROVED" } } },
       },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
-      select: { id: true, name: true },
+      orderBy: [
+        { organization: { name: "asc" } },
+        { organizationId: "asc" },
+        { order: "asc" },
+        { name: "asc" },
+      ],
+      select: {
+        id: true,
+        name: true,
+        organization: { select: { id: true, name: true } },
+      },
     });
 
     return handleSuccess(values);
