@@ -33,18 +33,6 @@ async function verifyAdminAccess(orgSlug: string) {
   return { error: null, orgId: membershipResult.data.organization.id };
 }
 
-// Groups are addressed by id from the client, so confirm the id belongs to the authorized org.
-async function verifyGroupInOrg(orgSlug: string, groupId: string) {
-  const { error, orgId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId)
-    return { error: error ?? "Organization not found", orgId: null };
-  const group = await getGroup(groupId);
-  if (!group.success || !group.data || group.data.organizationId !== orgId) {
-    return { error: "Group not found", orgId: null };
-  }
-  return { error: undefined, orgId };
-}
-
 export async function createGroupAction(
   orgSlug: string,
   data: {
@@ -86,18 +74,12 @@ export async function updateGroupAction(
     parentGroupId?: string | null;
   },
 ): Promise<ActionResult> {
-  const { error, orgId } = await verifyGroupInOrg(orgSlug, id);
+  const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId)
-    return { success: false, error: error ?? "Group not found" };
+    return { success: false, error: error ?? "Organization not found" };
 
-  if (data.parentGroupId) {
-    const parent = await getGroup(data.parentGroupId);
-    if (!parent.success || parent.data?.organizationId !== orgId) {
-      return { success: false, error: "Parent group not found" };
-    }
-  }
-
-  const result = await updateGroup(id, {
+  // Scoped to the org: a group or parent id from another org is not found
+  const result = await updateGroup(id, orgId, {
     name: data.name,
     description: data.description,
     visibility: data.visibility,
@@ -115,11 +97,11 @@ export async function deleteGroupAction(
   orgSlug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { error, orgId } = await verifyGroupInOrg(orgSlug, id);
+  const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId)
-    return { success: false, error: error ?? "Group not found" };
+    return { success: false, error: error ?? "Organization not found" };
 
-  const result = await deleteGroup(id);
+  const result = await deleteGroup(id, orgId);
   if (!result.success) {
     return { success: false, error: result.error ?? "Failed to delete group" };
   }
@@ -134,11 +116,11 @@ export async function createTeamLinkAction(
   orgSlug: string,
   groupId: string,
 ): Promise<ActionResult & { path?: string }> {
-  const { error, orgId } = await verifyGroupInOrg(orgSlug, groupId);
+  const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId)
-    return { success: false, error: error ?? "Group not found" };
+    return { success: false, error: error ?? "Organization not found" };
 
-  const group = await getGroup(groupId);
+  const group = await getGroup(groupId, orgId);
   if (!group.success || !group.data) {
     return { success: false, error: "Group not found" };
   }
@@ -172,9 +154,15 @@ export async function updateGroupMembersAction(
     removeLeadIds?: string[];
   },
 ): Promise<ActionResult> {
-  const { error, orgId } = await verifyGroupInOrg(orgSlug, groupId);
+  const { error, orgId } = await verifyAdminAccess(orgSlug);
   if (error || !orgId)
-    return { success: false, error: error ?? "Group not found" };
+    return { success: false, error: error ?? "Organization not found" };
+
+  // Refuse a group id from another org before changing anything
+  const group = await getGroup(groupId, orgId);
+  if (!group.success || !group.data) {
+    return { success: false, error: "Group not found" };
+  }
 
   // Only org members can be placed in an org's group
   const members = await getOrganizationMembers(orgId);
@@ -188,7 +176,11 @@ export async function updateGroupMembersAction(
   const removeLeadIds = data.removeLeadIds ?? [];
 
   if (removeUserIds.length > 0) {
-    const removeResult = await removeGroupMembers(groupId, removeUserIds);
+    const removeResult = await removeGroupMembers(
+      groupId,
+      orgId,
+      removeUserIds,
+    );
     if (!removeResult.success) {
       return {
         success: false,
@@ -198,7 +190,7 @@ export async function updateGroupMembersAction(
   }
 
   if (addUserIds.length > 0) {
-    const addResult = await addGroupMembers(groupId, addUserIds);
+    const addResult = await addGroupMembers(groupId, orgId, addUserIds);
     if (!addResult.success) {
       return {
         success: false,
@@ -208,14 +200,14 @@ export async function updateGroupMembersAction(
   }
 
   for (const userId of removeLeadIds) {
-    const result = await removeGroupAdmin(groupId, userId);
+    const result = await removeGroupAdmin(groupId, orgId, userId);
     if (!result.success) {
       return { success: false, error: result.error ?? "Failed to remove lead" };
     }
   }
 
   for (const userId of addLeadIds) {
-    const result = await addGroupAdmin(groupId, userId);
+    const result = await addGroupAdmin(groupId, orgId, userId);
     if (!result.success) {
       return { success: false, error: result.error ?? "Failed to add lead" };
     }
