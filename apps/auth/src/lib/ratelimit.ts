@@ -96,3 +96,13 @@ export async function checkSignInRateLimit(): Promise<RateLimitResult> {
   const ip = await getClientIp();
   return checkRateLimit(`signin:${ip}`);
 }
+
+/**
+ * Rate limit check for password attempts on a pending account link
+ * Limit: 5 attempts per 15 minutes per pending-link token
+ */
+export async function checkPendingLinkRateLimit(
+  token: string,
+): Promise<RateLimitResult> {
+  return checkRateLimit(`link:${token}`);
+}
