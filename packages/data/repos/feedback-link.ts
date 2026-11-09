@@ -752,6 +752,11 @@ export async function adoptManagedLink(data: {
       return handleError(new Error("This is not a managed link"));
     }
 
+    // A paused managed link cannot be adopted; a copy would not stay paused
+    if (!managedLink.isActive) {
+      return handleError(new Error("This managed link is paused"));
+    }
+
     // Verify user is a member of the organization
     const membership = await db.organizationMember.findUnique({
       where: {
