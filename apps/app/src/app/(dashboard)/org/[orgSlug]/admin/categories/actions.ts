@@ -1,8 +1,6 @@
 "use server";
 
-import { auth } from "@/server/auth.server";
 import {
-  verifyOrgAdminAccess,
   createCategory,
   updateCategory,
   deleteCategory,
@@ -10,23 +8,12 @@ import {
   type UpdateCategoryInput,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
-
-/**
- * Verify user has admin access to the organization
- */
-async function verifyAdminAccess(orgSlug: string) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated", orgId: null };
-  }
-
-  const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
-  if (!membershipResult.success || !membershipResult.data) {
-    return { error: "Not authorized", orgId: null };
-  }
-
-  return { error: null, orgId: membershipResult.data.organization.id };
-}
+import {
+  withOrgAdmin,
+  ok,
+  fail,
+  type ActionResult,
+} from "@/server/with-org-admin";
 
 /**
  * Create a new feedback category
@@ -34,22 +21,14 @@ async function verifyAdminAccess(orgSlug: string) {
 export async function createCategoryAction(
   orgSlug: string,
   data: Omit<CreateCategoryInput, "organizationId">,
-) {
-  const { error, orgId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org }) => {
+    const result = await createCategory({ ...data, organizationId: org.id });
+    if (!result.success) return fail(result.error, "Failed to create category");
 
-  const result = await createCategory({
-    ...data,
-    organizationId: orgId,
-  });
-
-  if (result.success) {
     revalidatePath(`/org/${orgSlug}/admin/categories`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -59,19 +38,14 @@ export async function updateCategoryAction(
   orgSlug: string,
   categoryId: string,
   data: UpdateCategoryInput,
-) {
-  const { error, orgId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org }) => {
+    const result = await updateCategory(categoryId, org.id, data);
+    if (!result.success) return fail(result.error, "Failed to update category");
 
-  const result = await updateCategory(categoryId, orgId, data);
-
-  if (result.success) {
     revalidatePath(`/org/${orgSlug}/admin/categories`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -80,17 +54,12 @@ export async function updateCategoryAction(
 export async function deleteCategoryAction(
   orgSlug: string,
   categoryId: string,
-) {
-  const { error, orgId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org }) => {
+    const result = await deleteCategory(categoryId, org.id);
+    if (!result.success) return fail(result.error, "Failed to delete category");
 
-  const result = await deleteCategory(categoryId, orgId);
-
-  if (result.success) {
     revalidatePath(`/org/${orgSlug}/admin/categories`);
-  }
-
-  return result;
+    return ok();
+  });
 }

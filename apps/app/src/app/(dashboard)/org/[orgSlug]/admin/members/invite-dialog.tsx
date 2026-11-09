@@ -63,21 +63,21 @@ export function InviteDialog({
         message: message.trim() || undefined,
       });
 
-      // When every address fails the action reports success: false, but the
+      // A processed batch succeeds even when every address failed: the
       // per-address reasons still need showing
-      if (result.results && result.results.length > 0) {
-        const failed = result.results.filter(r => !r.success);
+      if (result.success) {
+        const failed = result.data.results.filter(r => !r.success);
         if (failed.length === 0) {
           setOpen(false);
           setEmailsInput("");
           setRole("MEMBER");
           setMessage("");
         } else {
-          setResults(result.results);
+          setResults(result.data.results);
           setError(`${failed.length} invitation(s) could not be sent`);
         }
       } else {
-        setError(result.error ?? "Failed to send invitations");
+        setError(result.error);
       }
     });
   };

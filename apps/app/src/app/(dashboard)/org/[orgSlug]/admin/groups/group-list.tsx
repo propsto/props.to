@@ -74,9 +74,7 @@ export function GroupList({
     startTransition(async () => {
       const result = await createTeamLinkAction(orgSlug, group.id);
       if (result.success) {
-        toast.success(
-          `Team link created${result.path ? `: ${result.path}` : ""}`,
-        );
+        toast.success(`Team link created: ${result.data.path}`);
       } else {
         toast.error(result.error ?? "Failed to create team link");
       }
