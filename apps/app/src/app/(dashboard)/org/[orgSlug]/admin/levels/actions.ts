@@ -1,9 +1,6 @@
 "use server";
 
-import { auth } from "@/server/auth.server";
 import {
-  verifyOrgAdminAccess,
-  createAuditLog,
   createOrgLevel,
   updateOrgLevel,
   reorderOrgLevels,
@@ -14,27 +11,12 @@ import {
   type UpdateOrgLevelInput,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
-
-/**
- * Verify user has admin access to the organization
- */
-async function verifyAdminAccess(orgSlug: string) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated", orgId: null, userId: null };
-  }
-
-  const membershipResult = await verifyOrgAdminAccess(session.user.id, orgSlug);
-  if (!membershipResult.success || !membershipResult.data) {
-    return { error: "Not authorized", orgId: null, userId: null };
-  }
-
-  return {
-    error: null,
-    orgId: membershipResult.data.organization.id,
-    userId: session.user.id,
-  };
-}
+import {
+  withOrgAdmin,
+  ok,
+  fail,
+  type ActionResult,
+} from "@/server/with-org-admin";
 
 /**
  * Create a new org level
@@ -42,27 +24,19 @@ async function verifyAdminAccess(orgSlug: string) {
 export async function createLevelAction(
   orgSlug: string,
   data: Omit<CreateOrgLevelInput, "organizationId">,
-) {
-  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId || !userId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await createOrgLevel({ ...data, organizationId: org.id });
+    if (!result.success) return fail(result.error, "Failed to save level");
 
-  const result = await createOrgLevel({ ...data, organizationId: orgId });
-
-  if (result.success) {
-    await createAuditLog({
-      organizationId: orgId,
-      actorId: userId,
-      action: "LEVEL_CREATED",
-      resourceType: "level",
-      resourceId: result.data.id,
-      details: { name: result.data.name },
-    });
+    await audit(
+      "LEVEL_CREATED",
+      { type: "level", id: result.data.id },
+      { name: result.data.name },
+    );
     revalidatePath(`/org/${orgSlug}/admin/levels`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -72,31 +46,23 @@ export async function updateLevelAction(
   orgSlug: string,
   levelId: string,
   data: UpdateOrgLevelInput,
-) {
-  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId || !userId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await updateOrgLevel(levelId, org.id, data);
+    if (!result.success) return fail(result.error, "Failed to save level");
 
-  const result = await updateOrgLevel(levelId, orgId, data);
-
-  if (result.success) {
-    await createAuditLog({
-      organizationId: orgId,
-      actorId: userId,
-      action: "LEVEL_UPDATED",
-      resourceType: "level",
-      resourceId: levelId,
-      details: {
+    await audit(
+      "LEVEL_UPDATED",
+      { type: "level", id: levelId },
+      {
         name: result.data.name,
         ...(data.rubric && { rubricUpdated: true }),
       },
-    });
+    );
     revalidatePath(`/org/${orgSlug}/admin/levels`);
     revalidatePath(`/org/${orgSlug}/admin/levels/${levelId}`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -106,27 +72,21 @@ export async function setLevelExpectationsAction(
   orgSlug: string,
   levelId: string,
   expectations: OrgLevelExpectationInput[],
-) {
-  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId || !userId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await setOrgLevelExpectations(levelId, org.id, expectations);
+    if (!result.success) {
+      return fail(result.error, "Failed to save expectations");
+    }
 
-  const result = await setOrgLevelExpectations(levelId, orgId, expectations);
-
-  if (result.success) {
-    await createAuditLog({
-      organizationId: orgId,
-      actorId: userId,
-      action: "LEVEL_UPDATED",
-      resourceType: "level",
-      resourceId: levelId,
-      details: { expectationsUpdated: result.data.saved },
-    });
+    await audit(
+      "LEVEL_UPDATED",
+      { type: "level", id: levelId },
+      { expectationsUpdated: result.data.saved },
+    );
     revalidatePath(`/org/${orgSlug}/admin/levels/${levelId}`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -135,26 +95,15 @@ export async function setLevelExpectationsAction(
 export async function reorderLevelsAction(
   orgSlug: string,
   orderedIds: string[],
-) {
-  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId || !userId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await reorderOrgLevels(org.id, orderedIds);
+    if (!result.success) return fail(result.error, "Failed to reorder levels");
 
-  const result = await reorderOrgLevels(orgId, orderedIds);
-
-  if (result.success) {
-    await createAuditLog({
-      organizationId: orgId,
-      actorId: userId,
-      action: "LEVEL_UPDATED",
-      resourceType: "level",
-      details: { reordered: orderedIds },
-    });
+    await audit("LEVEL_UPDATED", { type: "level" }, { reordered: orderedIds });
     revalidatePath(`/org/${orgSlug}/admin/levels`);
-  }
-
-  return result;
+    return ok();
+  });
 }
 
 /**
@@ -164,25 +113,17 @@ export async function setLevelArchivedAction(
   orgSlug: string,
   levelId: string,
   archived: boolean,
-) {
-  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
-  if (error || !orgId || !userId) {
-    return { success: false, error: error ?? "Organization not found" };
-  }
+): Promise<ActionResult> {
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await setOrgLevelArchived(levelId, org.id, archived);
+    if (!result.success) return fail(result.error, "Failed to archive level");
 
-  const result = await setOrgLevelArchived(levelId, orgId, archived);
-
-  if (result.success) {
-    await createAuditLog({
-      organizationId: orgId,
-      actorId: userId,
-      action: "LEVEL_UPDATED",
-      resourceType: "level",
-      resourceId: levelId,
-      details: { name: result.data.name, archived },
-    });
+    await audit(
+      "LEVEL_UPDATED",
+      { type: "level", id: levelId },
+      { name: result.data.name, archived },
+    );
     revalidatePath(`/org/${orgSlug}/admin/levels`);
-  }
-
-  return result;
+    return ok();
+  });
 }

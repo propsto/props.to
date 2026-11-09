@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/server/auth.server";
 import { cleanLinkInput } from "@/lib/link-input";
 import {
-  verifyOrgAdminAccess,
-  createAuditLog,
+  withOrgAdmin,
+  ok,
+  fail,
+  type ActionResult,
+} from "@/server/with-org-admin";
+import {
   createEntity,
   updateEntity,
   deleteEntity,
@@ -14,21 +17,8 @@ import {
   isValidSlugFormat,
 } from "@propsto/data/repos";
 
-type ActionResult = { success: true } | { success: false; error: string };
-
 const MAX_NAME = 100;
 const MAX_DESCRIPTION = 500;
-
-async function verifyAdminAccess(orgSlug: string) {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  const membership = await verifyOrgAdminAccess(session.user.id, orgSlug);
-  if (!membership.success || !membership.data) return null;
-  return {
-    orgId: membership.data.organization.id,
-    userId: session.user.id,
-  };
-}
 
 function cleanEntityInput(data: {
   name: string;
@@ -49,30 +39,26 @@ export async function createEntityAction(
   orgSlug: string,
   data: { name: string; slug: string; description?: string },
 ): Promise<ActionResult> {
-  const access = await verifyAdminAccess(orgSlug);
-  if (!access) return { success: false, error: "Not authorized" };
-  const input = cleanEntityInput(data);
-  if (typeof input === "string") return { success: false, error: input };
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const input = cleanEntityInput(data);
+    if (typeof input === "string") return fail(input);
 
-  const result = await createEntity({
-    organizationId: access.orgId,
-    name: input.name,
-    slug: input.slug,
-    description: input.description ?? undefined,
+    const result = await createEntity({
+      organizationId: org.id,
+      name: input.name,
+      slug: input.slug,
+      description: input.description ?? undefined,
+    });
+    if (!result.success) return fail(result.error, "Failed to create entity");
+
+    await audit(
+      "ENTITY_CREATED",
+      { type: "entity", id: result.data.id },
+      { name: input.name, slug: input.slug },
+    );
+    revalidatePath(`/org/${orgSlug}/admin/entities`);
+    return ok();
   });
-  if (!result.success) {
-    return { success: false, error: result.error ?? "Failed to create entity" };
-  }
-  await createAuditLog({
-    organizationId: access.orgId,
-    actorId: access.userId,
-    action: "ENTITY_CREATED",
-    resourceType: "entity",
-    resourceId: result.data.id,
-    details: { name: input.name, slug: input.slug },
-  });
-  revalidatePath(`/org/${orgSlug}/admin/entities`);
-  return { success: true };
 }
 
 export async function updateEntityAction(
@@ -80,26 +66,22 @@ export async function updateEntityAction(
   entityId: string,
   data: { name: string; slug: string; description?: string },
 ): Promise<ActionResult> {
-  const access = await verifyAdminAccess(orgSlug);
-  if (!access) return { success: false, error: "Not authorized" };
-  const input = cleanEntityInput(data);
-  if (typeof input === "string") return { success: false, error: input };
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const input = cleanEntityInput(data);
+    if (typeof input === "string") return fail(input);
 
-  // The repo matches the id within the admin's org only
-  const result = await updateEntity(entityId, access.orgId, input);
-  if (!result.success) {
-    return { success: false, error: result.error ?? "Failed to update entity" };
-  }
-  await createAuditLog({
-    organizationId: access.orgId,
-    actorId: access.userId,
-    action: "ENTITY_UPDATED",
-    resourceType: "entity",
-    resourceId: entityId,
-    details: { name: input.name, slug: input.slug },
+    // The repo matches the id within the admin's org only
+    const result = await updateEntity(entityId, org.id, input);
+    if (!result.success) return fail(result.error, "Failed to update entity");
+
+    await audit(
+      "ENTITY_UPDATED",
+      { type: "entity", id: entityId },
+      { name: input.name, slug: input.slug },
+    );
+    revalidatePath(`/org/${orgSlug}/admin/entities`);
+    return ok();
   });
-  revalidatePath(`/org/${orgSlug}/admin/entities`);
-  return { success: true };
 }
 
 // Deletes the entity with its links and feedback
@@ -107,23 +89,18 @@ export async function deleteEntityAction(
   orgSlug: string,
   entityId: string,
 ): Promise<ActionResult> {
-  const access = await verifyAdminAccess(orgSlug);
-  if (!access) return { success: false, error: "Not authorized" };
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const result = await deleteEntity(entityId, org.id);
+    if (!result.success) return fail(result.error, "Failed to delete entity");
 
-  const result = await deleteEntity(entityId, access.orgId);
-  if (!result.success) {
-    return { success: false, error: result.error ?? "Failed to delete entity" };
-  }
-  await createAuditLog({
-    organizationId: access.orgId,
-    actorId: access.userId,
-    action: "ENTITY_DELETED",
-    resourceType: "entity",
-    resourceId: entityId,
-    details: { name: result.data.name },
+    await audit(
+      "ENTITY_DELETED",
+      { type: "entity", id: entityId },
+      { name: result.data.name },
+    );
+    revalidatePath(`/org/${orgSlug}/admin/entities`);
+    return ok();
   });
-  revalidatePath(`/org/${orgSlug}/admin/entities`);
-  return { success: true };
 }
 
 export async function createEntityLinkAction(
@@ -131,35 +108,31 @@ export async function createEntityLinkAction(
   entityId: string,
   data: { name: string; slug?: string; templateId: string },
 ): Promise<ActionResult> {
-  const access = await verifyAdminAccess(orgSlug);
-  if (!access) return { success: false, error: "Not authorized" };
-  const entity = await getEntity(entityId, access.orgId);
-  if (!entity.data) return { success: false, error: "Entity not found" };
+  return withOrgAdmin(orgSlug, async ({ org, audit }) => {
+    const entity = await getEntity(entityId, org.id);
+    if (!entity.data) return fail("Entity not found");
 
-  const cleaned = cleanLinkInput({ name: data.name, slug: data.slug });
-  if (!cleaned.success) return { success: false, error: cleaned.error };
-  const name = cleaned.name!;
-  const slug = cleaned.slug;
+    const cleaned = cleanLinkInput({ name: data.name, slug: data.slug });
+    if (!cleaned.success) return fail(cleaned.error);
+    const name = cleaned.name!;
+    const slug = cleaned.slug;
 
-  // The repo refuses a template that is neither a default nor the org's
-  const result = await createEntityFeedbackLink({
-    entityId,
-    organizationId: access.orgId,
-    templateId: data.templateId,
-    name,
-    slug,
+    // The repo refuses a template that is neither a default nor the org's
+    const result = await createEntityFeedbackLink({
+      entityId,
+      organizationId: org.id,
+      templateId: data.templateId,
+      name,
+      slug,
+    });
+    if (!result.success) return fail(result.error, "Failed to create link");
+
+    await audit(
+      "ENTITY_LINK_CREATED",
+      { type: "entity", id: entityId },
+      { name, slug: result.data.slug, linkId: result.data.id },
+    );
+    revalidatePath(`/org/${orgSlug}/admin/entities`);
+    return ok();
   });
-  if (!result.success) {
-    return { success: false, error: result.error ?? "Failed to create link" };
-  }
-  await createAuditLog({
-    organizationId: access.orgId,
-    actorId: access.userId,
-    action: "ENTITY_LINK_CREATED",
-    resourceType: "entity",
-    resourceId: entityId,
-    details: { name, slug: result.data.slug, linkId: result.data.id },
-  });
-  revalidatePath(`/org/${orgSlug}/admin/entities`);
-  return { success: true };
 }
