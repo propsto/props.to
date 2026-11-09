@@ -37,15 +37,26 @@ function cleanName(name: string): string {
   return trimmed;
 }
 
+export type ListOrgLevelsOptions = {
+  // Archived levels are left out unless asked for (admin pages list them apart)
+  includeArchived?: boolean;
+};
+
 /**
- * Get an organization's levels in display order
+ * Get an organization's active levels in display order
  */
-export async function getOrgLevels(organizationId: string) {
+export async function getOrgLevels(
+  organizationId: string,
+  { includeArchived = false }: ListOrgLevelsOptions = {},
+) {
   try {
-    logger("getOrgLevels", { organizationId });
+    logger("getOrgLevels", { organizationId, includeArchived });
 
     const levels = await db.orgLevel.findMany({
-      where: { organizationId },
+      where: {
+        organizationId,
+        ...(includeArchived ? {} : { archivedAt: null }),
+      },
       orderBy: [{ order: "asc" }, { name: "asc" }],
       include: { _count: { select: { members: true } } },
     });
@@ -258,7 +269,7 @@ export async function getMemberLevel(organizationId: string, userId: string) {
 
 /**
  * Set the display order of an organization's levels.
- * orderedIds must list exactly the organization's levels.
+ * orderedIds must list exactly the organization's active levels.
  */
 export async function reorderOrgLevels(
   organizationId: string,
@@ -268,7 +279,7 @@ export async function reorderOrgLevels(
     logger("reorderOrgLevels", { organizationId, orderedIds });
 
     const current = await db.orgLevel.findMany({
-      where: { organizationId },
+      where: { organizationId, archivedAt: null },
       select: { id: true },
     });
     const currentIds = new Set(current.map(l => l.id));
@@ -324,9 +335,14 @@ export async function setOrganizationMemberLevel(
           })
         : null;
 
+      // An archived level cannot be newly assigned; a member already on it keeps it
       const level = levelId
         ? await tx.orgLevel.findFirst({
-            where: { id: levelId, organizationId },
+            where: {
+              id: levelId,
+              organizationId,
+              ...(levelId === member.levelId ? {} : { archivedAt: null }),
+            },
             select: { id: true, name: true },
           })
         : null;
@@ -343,6 +359,57 @@ export async function setOrganizationMemberLevel(
     });
 
     return handleSuccess(change);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Archive or restore a level of this organization. An archived level leaves
+ * pickers and selects; whatever already references it keeps showing its name.
+ * A restored level goes back at the end of the active list.
+ */
+export async function setOrgLevelArchived(
+  levelId: string,
+  organizationId: string,
+  archived: boolean,
+) {
+  try {
+    logger("setOrgLevelArchived", { levelId, organizationId, archived });
+
+    // Lock the org row so a restore appends in turn with concurrent creates
+    const level = await db.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${organizationId} FOR UPDATE`;
+
+      const existing = await tx.orgLevel.findFirst({
+        where: { id: levelId, organizationId },
+      });
+      if (!existing) {
+        throw new Error("Level not found");
+      }
+      if ((existing.archivedAt !== null) === archived) {
+        return existing;
+      }
+
+      if (archived) {
+        return tx.orgLevel.update({
+          where: { id: levelId },
+          data: { archivedAt: new Date() },
+        });
+      }
+
+      const last = await tx.orgLevel.findFirst({
+        where: { organizationId, archivedAt: null },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+      return tx.orgLevel.update({
+        where: { id: levelId },
+        data: { archivedAt: null, order: (last?.order ?? -1) + 1 },
+      });
+    });
+
+    return handleSuccess(level);
   } catch (e) {
     return handleError(e);
   }

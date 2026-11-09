@@ -415,6 +415,7 @@ model OrgValue {
   feedbacks      FeedbackValue[]
   expectations   OrgLevelValueExpectation[]
   conversations  Conversation[]
+  archivedAt     DateTime? // Archived values leave pickers; tagged feedback keeps the name
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
 
@@ -447,6 +448,7 @@ model OrgLevel {
   rubric         Json                       @default("[]") // Ordered list of { title, body } sections
   members        OrganizationMember[]
   expectations   OrgLevelValueExpectation[]
+  archivedAt     DateTime? // Archived levels leave selects; members keep the level they have
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
 

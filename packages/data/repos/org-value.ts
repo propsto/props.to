@@ -25,15 +25,26 @@ function cleanName(name: string): string {
   return trimmed;
 }
 
+export type ListOrgValuesOptions = {
+  // Archived values are left out unless asked for (admin pages list them apart)
+  includeArchived?: boolean;
+};
+
 /**
- * Get an organization's values in display order
+ * Get an organization's active values in display order
  */
-export async function getOrgValues(organizationId: string) {
+export async function getOrgValues(
+  organizationId: string,
+  { includeArchived = false }: ListOrgValuesOptions = {},
+) {
   try {
-    logger("getOrgValues", { organizationId });
+    logger("getOrgValues", { organizationId, includeArchived });
 
     const values = await db.orgValue.findMany({
-      where: { organizationId },
+      where: {
+        organizationId,
+        ...(includeArchived ? {} : { archivedAt: null }),
+      },
       orderBy: [{ order: "asc" }, { name: "asc" }],
       include: { _count: { select: { feedbacks: true } } },
     });
@@ -164,7 +175,7 @@ export async function updateOrgValue(
 
 /**
  * Set the display order of an organization's values.
- * orderedIds must list exactly the organization's values.
+ * orderedIds must list exactly the organization's active values.
  */
 export async function reorderOrgValues(
   organizationId: string,
@@ -174,7 +185,7 @@ export async function reorderOrgValues(
     logger("reorderOrgValues", { organizationId, orderedIds });
 
     const current = await db.orgValue.findMany({
-      where: { organizationId },
+      where: { organizationId, archivedAt: null },
       select: { id: true },
     });
     const currentIds = new Set(current.map(v => v.id));
@@ -231,6 +242,57 @@ export async function deleteOrgValue(valueId: string, organizationId: string) {
     });
 
     return handleSuccess({ deleted: true, name });
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
+/**
+ * Archive or restore a value of this organization. An archived value leaves
+ * pickers and selects; whatever already references it keeps showing its name.
+ * A restored value goes back at the end of the active list.
+ */
+export async function setOrgValueArchived(
+  valueId: string,
+  organizationId: string,
+  archived: boolean,
+) {
+  try {
+    logger("setOrgValueArchived", { valueId, organizationId, archived });
+
+    // Lock the org row so a restore appends in turn with concurrent creates
+    const value = await db.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "Organization" WHERE id = ${organizationId} FOR UPDATE`;
+
+      const existing = await tx.orgValue.findFirst({
+        where: { id: valueId, organizationId },
+      });
+      if (!existing) {
+        throw new Error("Value not found");
+      }
+      if ((existing.archivedAt !== null) === archived) {
+        return existing;
+      }
+
+      if (archived) {
+        return tx.orgValue.update({
+          where: { id: valueId },
+          data: { archivedAt: new Date() },
+        });
+      }
+
+      const last = await tx.orgValue.findFirst({
+        where: { organizationId, archivedAt: null },
+        orderBy: { order: "desc" },
+        select: { order: true },
+      });
+      return tx.orgValue.update({
+        where: { id: valueId },
+        data: { archivedAt: null, order: (last?.order ?? -1) + 1 },
+      });
+    });
+
+    return handleSuccess(value);
   } catch (e) {
     return handleError(e);
   }
