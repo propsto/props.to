@@ -1,6 +1,9 @@
 import { auth } from "@/server/auth.server";
 import { requireOrgAdmin } from "@/server/require-org-admin";
-import { getOrganizationBySlug } from "@propsto/data/repos";
+import {
+  getOrganizationBySlug,
+  getOrganizationCategories,
+} from "@propsto/data/repos";
 import { notFound } from "next/navigation";
 import { CreateOrgTemplateForm } from "./create-org-template-form";
 
@@ -26,6 +29,16 @@ export default async function NewOrgTemplatePage({
     return notFound();
   }
 
+  // Org categories first, then the global ones
+  const categoriesResult = await getOrganizationCategories(orgResult.data.id);
+  const categories = categoriesResult.success
+    ? categoriesResult.data.map(category => ({
+        id: category.id,
+        name: category.name,
+        isGlobal: category.organizationId === null,
+      }))
+    : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -35,7 +48,7 @@ export default async function NewOrgTemplatePage({
         </p>
       </div>
 
-      <CreateOrgTemplateForm orgSlug={orgSlug} />
+      <CreateOrgTemplateForm orgSlug={orgSlug} categories={categories} />
     </div>
   );
 }
