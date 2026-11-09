@@ -27,8 +27,15 @@ export type UpdateMemberSettingsInput = z.infer<
 >;
 
 export async function updateMemberSettings(
-  input: UpdateMemberSettingsInput,
+  rawInput: UpdateMemberSettingsInput,
 ): Promise<{ success: boolean; error?: string }> {
+  // Server actions take whatever the client sends; refuse it before any DB call
+  const parsed = updateMemberSettingsSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid settings" };
+  }
+  const input = parsed.data;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -52,12 +59,19 @@ export async function updateMemberSettings(
     const org = orgResult.data;
     const currentSettings = org.defaultUserSettings;
 
-    // Upsert the settings
-    await upsertOrganizationDefaultSettings(org.id, {
+    // The repo returns failures instead of throwing; don't audit or report success
+    const saved = await upsertOrganizationDefaultSettings(org.id, {
       defaultProfileVisibility: input.defaultProfileVisibility,
       allowExternalFeedback: input.allowExternalFeedback,
       requireApprovalForPublicProfiles: input.requireApprovalForPublicProfiles,
     });
+    if (!saved.success) {
+      logger("Failed to save member settings:", saved.error);
+      return {
+        success: false,
+        error: saved.error ?? "Failed to update settings",
+      };
+    }
 
     // Log the audit event
     const changes: Record<string, { old: unknown; new: unknown }> = {};
@@ -115,8 +129,14 @@ export type UpdateMembershipSettingsInput = z.infer<
 >;
 
 export async function updateMembershipSettings(
-  input: UpdateMembershipSettingsInput,
+  rawInput: UpdateMembershipSettingsInput,
 ): Promise<{ success: boolean; error?: string }> {
+  const parsed = updateMembershipSettingsSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid settings" };
+  }
+  const input = parsed.data;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -187,8 +207,14 @@ export type UpdateFeedbackSettingsInput = z.infer<
 
 export async function updateFeedbackSettingsAction(
   orgSlug: string,
-  input: UpdateFeedbackSettingsInput,
+  rawInput: UpdateFeedbackSettingsInput,
 ): Promise<{ success: boolean; error?: string }> {
+  const parsed = updateFeedbackSettingsSchema.safeParse(rawInput);
+  if (typeof orgSlug !== "string" || !parsed.success) {
+    return { success: false, error: "Invalid settings" };
+  }
+  const input = parsed.data;
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -209,8 +235,8 @@ export async function updateFeedbackSettingsAction(
     const org = orgResult.data;
     const currentSettings = org.feedbackSettings;
 
-    // Upsert the settings
-    await upsertOrganizationFeedbackSettings(org.id, {
+    // The repo returns failures instead of throwing; don't audit or report success
+    const saved = await upsertOrganizationFeedbackSettings(org.id, {
       enableOrganizationFeedback:
         currentSettings?.enableOrganizationFeedback ?? true,
       allowAnonymousFeedback: input.allowAnonymousFeedback,
@@ -219,6 +245,13 @@ export async function updateFeedbackSettingsAction(
       allowMemberFormCreation: input.allowMemberFormCreation,
       defaultTemplateId: currentSettings?.defaultTemplateId ?? null,
     });
+    if (!saved.success) {
+      logger("Failed to save feedback settings:", saved.error);
+      return {
+        success: false,
+        error: saved.error ?? "Failed to update settings",
+      };
+    }
 
     // Log the audit event
     const changes: Record<string, { old: unknown; new: unknown }> = {};
@@ -269,7 +302,7 @@ export async function updateFeedbackSettingsAction(
     revalidatePath(`/org/${orgSlug}/admin/settings`);
     return { success: true };
   } catch (error) {
-    console.error("Failed to update feedback settings:", error);
+    logger("Failed to update feedback settings:", error);
     return { success: false, error: "Failed to update settings" };
   }
 }
