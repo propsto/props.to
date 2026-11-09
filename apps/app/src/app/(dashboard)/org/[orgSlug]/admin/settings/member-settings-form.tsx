@@ -39,13 +39,13 @@ export function MemberSettingsForm({
   const [error, setError] = useState<string | null>(null);
 
   const [visibility, setVisibility] = useState(
-    defaultSettings.defaultProfileVisibility
+    defaultSettings.defaultProfileVisibility,
   );
   const [allowExternal, setAllowExternal] = useState(
-    defaultSettings.allowExternalFeedback
+    defaultSettings.allowExternalFeedback,
   );
   const [requireApproval, setRequireApproval] = useState(
-    defaultSettings.requireApprovalForPublicProfiles
+    defaultSettings.requireApprovalForPublicProfiles,
   );
 
   const handleSubmit = () => {
@@ -82,14 +82,15 @@ export function MemberSettingsForm({
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="visibility">Default Profile Visibility</Label>
-          <Select value={visibility} onValueChange={(v) => setVisibility(v as typeof visibility)}>
+          <Select
+            value={visibility}
+            onValueChange={v => setVisibility(v as typeof visibility)}
+          >
             <SelectTrigger id="visibility" className="w-full max-w-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ORGANIZATION">
-                Organization Only
-              </SelectItem>
+              <SelectItem value="ORGANIZATION">Organization Only</SelectItem>
               <SelectItem value="PUBLIC">Public</SelectItem>
               <SelectItem value="PRIVATE">Private</SelectItem>
             </SelectContent>
@@ -115,7 +116,9 @@ export function MemberSettingsForm({
 
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="approval">Require Approval for Public Profiles</Label>
+            <Label htmlFor="approval">
+              Require Approval for Public Profiles
+            </Label>
             <p className="text-xs text-muted-foreground">
               Admins must approve before members can make profiles public
             </p>
@@ -127,14 +130,9 @@ export function MemberSettingsForm({
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <Button
-          onClick={handleSubmit}
-          disabled={isPending || !hasChanges}
-        >
+        <Button onClick={handleSubmit} disabled={isPending || !hasChanges}>
           {isPending ? "Saving..." : "Save Changes"}
         </Button>
       </CardContent>
