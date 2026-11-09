@@ -54,7 +54,7 @@ export default async function OrgAdminMembers({
   const [orgResult, invitesResult, levelsResult] = await Promise.all([
     getOrganizationBySlugWithMembers(orgSlug),
     listPendingOrganizationInvites(adminOrg.id),
-    getOrgLevels(adminOrg.id),
+    getOrgLevels(adminOrg.id, { includeArchived: true }),
   ]);
   if (!orgResult.success || !orgResult.data) {
     return notFound();
@@ -70,11 +70,14 @@ export default async function OrgAdminMembers({
     invitedBy: inv.invitedBy,
   }));
 
-  // The level column shows only once the org has levels
+  // Archived levels stay listed so a member already on one still shows it;
+  // the level column shows only once the org has active levels
   const levels = (levelsResult.data ?? []).map(l => ({
     id: l.id,
     name: l.name,
+    archived: l.archivedAt !== null,
   }));
+  const hasActiveLevels = levels.some(l => !l.archived);
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -114,7 +117,7 @@ export default async function OrgAdminMembers({
                 <TableHead>Member</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Role</TableHead>
-                {levels.length > 0 ? <TableHead>Level</TableHead> : null}
+                {hasActiveLevels ? <TableHead>Level</TableHead> : null}
                 <TableHead>Joined</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -150,7 +153,7 @@ export default async function OrgAdminMembers({
                       {member.role}
                     </Badge>
                   </TableCell>
-                  {levels.length > 0 ? (
+                  {hasActiveLevels ? (
                     <TableCell>
                       <MemberLevelSelect
                         orgSlug={orgSlug}

@@ -22,15 +22,18 @@ export default async function OrgAdminLevels({
   // Page-level guard: the layout's notFound does not stop this page from rendering data.
   const { org } = await requireOrgAdmin(orgSlug);
 
-  const levelsResult = await getOrgLevels(org.id);
-  const levels = levelsResult.success
+  const levelsResult = await getOrgLevels(org.id, { includeArchived: true });
+  const allLevels = levelsResult.success
     ? levelsResult.data.map(l => ({
         id: l.id,
         name: l.name,
         summary: l.summary,
         memberCount: l._count.members,
+        archived: l.archivedAt !== null,
       }))
     : [];
+  const levels = allLevels.filter(l => !l.archived);
+  const archivedLevels = allLevels.filter(l => l.archived);
 
   return (
     <div className="space-y-6">
@@ -52,7 +55,8 @@ export default async function OrgAdminLevels({
           </CardTitle>
           <CardDescription>
             Shown in this order, junior to senior. Assign a member&apos;s level
-            on the Members page.
+            on the Members page. Archived levels can no longer be assigned;
+            members already on one keep it.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -60,9 +64,21 @@ export default async function OrgAdminLevels({
             <LevelList levels={levels} orgSlug={orgSlug} />
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
-              No levels yet. Create one to get started.
+              {archivedLevels.length > 0
+                ? "No active levels. Create or restore one to assign it."
+                : "No levels yet. Create one to get started."}
             </p>
           )}
+          {archivedLevels.length > 0 ? (
+            <details className="mt-6 border-t pt-4">
+              <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
+                Archived ({archivedLevels.length})
+              </summary>
+              <div className="pt-4">
+                <LevelList levels={archivedLevels} orgSlug={orgSlug} archived />
+              </div>
+            </details>
+          ) : null}
         </CardContent>
       </Card>
     </div>

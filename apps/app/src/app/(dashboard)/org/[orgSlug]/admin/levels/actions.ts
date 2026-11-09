@@ -7,6 +7,7 @@ import {
   createOrgLevel,
   updateOrgLevel,
   reorderOrgLevels,
+  setOrgLevelArchived,
   setOrgLevelExpectations,
   type CreateOrgLevelInput,
   type OrgLevelExpectationInput,
@@ -149,6 +150,36 @@ export async function reorderLevelsAction(
       action: "LEVEL_UPDATED",
       resourceType: "level",
       details: { reordered: orderedIds },
+    });
+    revalidatePath(`/org/${orgSlug}/admin/levels`);
+  }
+
+  return result;
+}
+
+/**
+ * Archive an org level so it leaves pickers, or restore it
+ */
+export async function setLevelArchivedAction(
+  orgSlug: string,
+  levelId: string,
+  archived: boolean,
+) {
+  const { error, orgId, userId } = await verifyAdminAccess(orgSlug);
+  if (error || !orgId || !userId) {
+    return { success: false, error: error ?? "Organization not found" };
+  }
+
+  const result = await setOrgLevelArchived(levelId, orgId, archived);
+
+  if (result.success) {
+    await createAuditLog({
+      organizationId: orgId,
+      actorId: userId,
+      action: "LEVEL_UPDATED",
+      resourceType: "level",
+      resourceId: levelId,
+      details: { name: result.data.name, archived },
     });
     revalidatePath(`/org/${orgSlug}/admin/levels`);
   }
