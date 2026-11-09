@@ -7,6 +7,15 @@ import { signIn } from "@/server/auth.server";
 import { isAllowedRedirect } from "@/lib/callback-url";
 import { type SigninFormType, SigninFormSchema } from "@/app/types";
 
+// A prefix check would accept https://app.props.to.evil.com
+function isAppOrigin(url: string): boolean {
+  try {
+    return new URL(url).origin === new URL(constServer.PROPSTO_APP_URL).origin;
+  } catch {
+    return false;
+  }
+}
+
 const logger = createLogger("auth");
 
 export async function signInAction(
@@ -97,7 +106,7 @@ export async function signInAction(
     }
     // Only allow relative URLs (not protocol-relative like //evil.com) or URLs to our domain
     const isRelativeUrl = result.startsWith("/") && !result.startsWith("//");
-    if (isRelativeUrl || result.startsWith(constServer.PROPSTO_APP_URL)) {
+    if (isRelativeUrl || isAppOrigin(result)) {
       redirect(result);
     }
   }

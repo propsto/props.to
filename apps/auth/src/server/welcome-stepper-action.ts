@@ -27,6 +27,8 @@ import { type PersonalFormValues } from "@components/welcome-stepper/steps/perso
 import { type AccountFormValues } from "@components/welcome-stepper/steps/account-step";
 import { type OrganizationFormValues } from "@components/welcome-stepper/steps/organization-step";
 import { type LinkAccountFormValues } from "@components/welcome-stepper/steps/link-account-step";
+import { slugRejection } from "@/lib/slug-rule";
+import { checkPendingLinkRateLimit } from "@/lib/ratelimit";
 import { updateSession, signIn, auth } from "./auth.server";
 import { completeAccountLink } from "./complete-account-link";
 
@@ -168,6 +170,21 @@ export async function accountHandler(
         };
       }
 
+      // A new username must be a valid, non-reserved top-level slug. The
+      // generated default is left alone so an untouched form still submits.
+      const usernameChanged =
+        trimmedUsername.toLowerCase() !== currentUser.slug.slug;
+      const usernameError = usernameChanged
+        ? slugRejection(trimmedUsername)
+        : null;
+      if (usernameError) {
+        return {
+          success: false,
+          error: usernameError,
+          fieldErrors: { username: [usernameError] },
+        };
+      }
+
       // Check for collision in GLOBAL scope (personal usernames + org slugs)
       const existingSlug = await db.slug.findFirst({
         where: {
@@ -284,6 +301,16 @@ export async function organizationHandler(
         success: false,
         error:
           "Only a Google Workspace admin can create an organization for their domain",
+      };
+    }
+
+    // Org slugs share the top-level namespace with dashboard routes
+    const orgSlugError = slugRejection(organizationSlug);
+    if (orgSlugError) {
+      return {
+        success: false,
+        error: orgSlugError,
+        fieldErrors: { organizationSlug: [orgSlugError] },
       };
     }
 
@@ -639,6 +666,18 @@ export async function linkAccountHandler(
     }
 
     if (verificationMethod === "password") {
+      // Anyone holding the pending-link token could otherwise guess passwords freely
+      const rateLimit = await checkPendingLinkRateLimit(pendingLinkToken);
+      if (!rateLimit.success) {
+        return {
+          success: false,
+          error: "Too many attempts. Please try again later.",
+          fieldErrors: {
+            password: ["Too many attempts. Please try again later."],
+          },
+        };
+      }
+
       // Verify password using the data package function
       const passwordResult = await verifyUserPassword({
         email: pendingData.email,
