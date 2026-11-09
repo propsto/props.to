@@ -9,7 +9,7 @@ const repos = vi.hoisted(() => ({
   getOrganizationBySlug: vi.fn(),
   upsertOrganizationDefaultSettings: vi.fn(),
   upsertOrganizationFeedbackSettings: vi.fn(),
-  upsertOrganizationSettings: vi.fn(),
+  updateOrganizationSettingsSwitches: vi.fn(),
   verifyOrgAdminAccess: vi.fn(),
   auditHelpers: { logSettingsUpdate: vi.fn() },
 }));
@@ -89,7 +89,7 @@ describe("settings actions", () => {
   });
 
   it("membership settings: turning conversations off saves it and audits the change", async () => {
-    repos.upsertOrganizationSettings.mockResolvedValue({
+    repos.updateOrganizationSettingsSwitches.mockResolvedValue({
       success: true,
       data: {},
     });
@@ -112,12 +112,9 @@ describe("settings actions", () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(repos.upsertOrganizationSettings).toHaveBeenCalledWith(
+    expect(repos.updateOrganizationSettingsSwitches).toHaveBeenCalledWith(
       "org_1",
-      expect.objectContaining({
-        autoJoinByDomain: true,
-        enableConversations: false,
-      }),
+      { autoJoinByDomain: undefined, enableConversations: false },
     );
     expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledWith(
       "org_1",

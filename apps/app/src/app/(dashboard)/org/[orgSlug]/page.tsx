@@ -47,15 +47,24 @@ export default async function OrgLandingPage({
   const { organization: org, role } = membership.data;
   const isAdmin = role === "OWNER" || role === "ADMIN";
 
-  const layers = await getOrgLayers(org.id);
-  const [linksResult, managedResult, templatesResult, levelResult, ledResult] =
-    await Promise.all([
-      getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
-      getAvailableManagedLinks(userId, org.id),
-      getOrganizationTemplates(org.id),
+  // Only the level and led-member reads wait for the layer lookup
+  const layered = getOrgLayers(org.id).then(layers =>
+    Promise.all([
       layers.levels ? getMemberLevel(org.id, userId) : null,
       layers.conversations ? getLedMembers(org.id, userId) : null,
-    ]);
+    ]),
+  );
+  const [
+    linksResult,
+    managedResult,
+    templatesResult,
+    [levelResult, ledResult],
+  ] = await Promise.all([
+    getUserFeedbackLinks(userId, { organizationId: org.id, take: 50 }),
+    getAvailableManagedLinks(userId, org.id),
+    getOrganizationTemplates(org.id),
+    layered,
+  ]);
   const links = linksResult.success ? linksResult.data.links : [];
   const managed = managedResult.success ? managedResult.data.available : [];
   const templates = templatesResult.success ? templatesResult.data : [];

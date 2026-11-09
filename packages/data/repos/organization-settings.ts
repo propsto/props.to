@@ -132,6 +132,38 @@ export async function upsertOrganizationSettings(
   }
 }
 
+// Set only the given switches; the update leaves every other column as
+// stored, so overlapping saves of different switches cannot undo each other
+export async function updateOrganizationSettingsSwitches(
+  organizationId: string,
+  switches: Pick<
+    Partial<OrganizationGeneralSettings>,
+    "autoJoinByDomain" | "enableConversations"
+  >,
+) {
+  try {
+    logger("updateOrganizationSettingsSwitches", { organizationId, switches });
+
+    const result = await db.organizationSettings.upsert({
+      where: { organizationId },
+      update: {
+        autoJoinByDomain: switches.autoJoinByDomain,
+        enableConversations: switches.enableConversations,
+      },
+      // A new row takes the schema defaults for anything not given
+      create: {
+        organizationId,
+        autoJoinByDomain: switches.autoJoinByDomain,
+        enableConversations: switches.enableConversations,
+      },
+    });
+
+    return handleSuccess(result);
+  } catch (e) {
+    return handleError(e);
+  }
+}
+
 // Create or update organization feedback settings
 export async function upsertOrganizationFeedbackSettings(
   organizationId: string,

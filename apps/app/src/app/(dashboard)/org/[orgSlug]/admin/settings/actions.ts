@@ -5,7 +5,7 @@ import {
   getOrganizationBySlug,
   upsertOrganizationDefaultSettings,
   upsertOrganizationFeedbackSettings,
-  upsertOrganizationSettings,
+  updateOrganizationSettingsSwitches,
   auditHelpers,
   verifyOrgAdminAccess,
 } from "@propsto/data/repos";
@@ -162,19 +162,10 @@ export async function updateMembershipSettings(
     const org = orgResult.data;
     const current = org.organizationSettings;
 
-    const autoJoinByDomain =
-      input.autoJoinByDomain ?? current?.autoJoinByDomain ?? false;
-    const enableConversations =
-      input.enableConversations ?? current?.enableConversations ?? true;
-
-    // Preserve the other general settings; only domain join and conversations are editable here
-    const saved = await upsertOrganizationSettings(org.id, {
-      allowUserInvites: current?.allowUserInvites ?? true,
-      autoJoinByDomain,
-      enableConversations,
-      enableGroupManagement: current?.enableGroupManagement ?? true,
-      requireEmailVerification: current?.requireEmailVerification ?? true,
-      enableSSOIntegration: current?.enableSSOIntegration ?? false,
+    // Only the switches the form sent; every other column stays as stored
+    const saved = await updateOrganizationSettingsSwitches(org.id, {
+      autoJoinByDomain: input.autoJoinByDomain,
+      enableConversations: input.enableConversations,
     });
     // The repo returns failures instead of throwing; don't audit or report success
     if (!saved.success) {
@@ -182,16 +173,22 @@ export async function updateMembershipSettings(
     }
 
     const changes: Record<string, { old: boolean; new: boolean }> = {};
-    if ((current?.autoJoinByDomain ?? false) !== autoJoinByDomain) {
+    if (
+      input.autoJoinByDomain !== undefined &&
+      (current?.autoJoinByDomain ?? false) !== input.autoJoinByDomain
+    ) {
       changes.autoJoinByDomain = {
         old: current?.autoJoinByDomain ?? false,
-        new: autoJoinByDomain,
+        new: input.autoJoinByDomain,
       };
     }
-    if ((current?.enableConversations ?? true) !== enableConversations) {
+    if (
+      input.enableConversations !== undefined &&
+      (current?.enableConversations ?? true) !== input.enableConversations
+    ) {
       changes.enableConversations = {
         old: current?.enableConversations ?? true,
-        new: enableConversations,
+        new: input.enableConversations,
       };
     }
     if (Object.keys(changes).length > 0) {
