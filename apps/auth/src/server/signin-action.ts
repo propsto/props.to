@@ -3,8 +3,8 @@
 import { constServer } from "@propsto/constants/server";
 import { createLogger } from "@propsto/logger";
 import { redirect } from "next/navigation";
-import { signIn } from "@/server/auth.server";
-import { isAllowedRedirect } from "@/lib/callback-url";
+import { signIn } from "@propsto/auth/server";
+import { isAllowedRedirect } from "@propsto/auth/callback-url";
 import { type SigninFormType, SigninFormSchema } from "@/app/types";
 
 // A prefix check would accept https://app.props.to.evil.com

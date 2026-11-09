@@ -1,5 +1,5 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
-import { nextAuthConfig as edgeNextAuthConfig } from "@propsto/auth/edge.config";
+import { nextAuthConfig as edgeNextAuthConfig } from "@propsto/auth/edge";
 
 export const nextAuthConfig = {
   ...edgeNextAuthConfig,

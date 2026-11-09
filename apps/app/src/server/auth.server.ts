@@ -1,5 +1,5 @@
 import NextAuth, { type NextAuthConfig } from "next-auth";
-import { nextAuthConfig as edgeNextAuthConfig } from "@propsto/auth/server.config";
+import { nextAuthConfig as edgeNextAuthConfig } from "@propsto/auth/server";
 
 // Extend the shared config with custom pages
 export const nextAuthConfig = {

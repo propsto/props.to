@@ -1,11 +1,6 @@
 {
-  "name": "@propsto/auth",
+  "name": "@propsto/auth-app",
   "description": "Authentication app for props.to",
-  "exports": {
-    "./edge.config": "./src/server/auth.edge.ts",
-    "./server.config": "./src/server/auth.server.ts",
-    "./post-auth-check": "./src/lib/post-auth-check.ts"
-  },
   "scripts": {
     "build": "pnpm dotenv -- next build",
     "vercel-build": "cd ../.. && turbo run build --filter=@propsto/data && cd apps/auth && next build",
@@ -20,6 +15,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "4.1.3",
+    "@propsto/auth": "workspace:*",
     "@propsto/config": "workspace:*",
     "@propsto/constants": "workspace:*",
     "@propsto/data": "workspace:*",

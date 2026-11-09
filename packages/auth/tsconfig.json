@@ -1,0 +1,8 @@
+{
+  "extends": "@propsto/config/tsconfig/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": ["**/*.ts", "../../global.d.ts"],
+  "exclude": ["node_modules"]
+}

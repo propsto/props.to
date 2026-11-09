@@ -228,7 +228,7 @@ All sensitive configuration lives in `.env` and is validated by the `@propsto/co
 4. Launch the desired surfaces behind your process manager (pm2, systemd, Docker, etc.):
    ```bash
    pnpm --filter @propsto/web start   # Marketing site (port 3001 by default)
-   pnpm --filter @propsto/auth start  # Authentication surface (port 3002)
+   pnpm --filter @propsto/auth-app start  # Authentication surface (port 3002)
    pnpm --filter @propsto/app start   # Product app (port 3000)
    ```
    Update your proxy to map each public hostname to the correct local port. For Dockerized hosting, place these commands in distinct containers built from the same artifact (`pnpm build` results).

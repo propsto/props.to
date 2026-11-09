@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { type User } from "next-auth";
-import { auth } from "@/server/auth.server";
+import { auth } from "@propsto/auth/server";
 import { WelcomeStepper } from "@components/welcome-stepper";
 import {
   stepNames,
@@ -13,9 +13,9 @@ import {
   getPendingAccountLink,
 } from "@propsto/data/repos";
 import { mayAutoJoinByDomain } from "@propsto/data/utils/domain-membership";
-import { canUserMoveOn } from "@/lib/post-auth-check";
+import { canUserMoveOn } from "@propsto/auth/post-auth-check";
 import { constServer } from "@propsto/constants/server";
-import { isAllowedRedirect } from "@/lib/callback-url";
+import { isAllowedRedirect } from "@propsto/auth/callback-url";
 
 export default async function WelcomePage({
   searchParams,

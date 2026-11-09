@@ -6,8 +6,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "DEBUG=@propsto:* turbo run --filter !@propsto/email dev",
-    "dev:app": "DEBUG=@propsto:* turbo run @propsto/app#dev @propsto/auth#dev @propsto/email#maildev @propsto/data#db-studio",
-    "dev:auth": "DEBUG=@propsto:* turbo run @propsto/auth#dev @propsto/email#maildev @propsto/data#db-studio",
+    "dev:app": "DEBUG=@propsto:* turbo run @propsto/app#dev @propsto/auth-app#dev @propsto/email#maildev @propsto/data#db-studio",
+    "dev:auth": "DEBUG=@propsto:* turbo run @propsto/auth-app#dev @propsto/email#maildev @propsto/data#db-studio",
     "dev:email": "DEBUG=@propsto:* turbo run @propsto/email#dev",
     "dev:nuke": "turbo run @propsto/data#db-nuke",
     "dev:setup": "turbo run @propsto/data#db-setup",

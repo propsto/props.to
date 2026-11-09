@@ -9,7 +9,7 @@
     "test:ci": "pnpm dotenv -- pw-test --reporter=line"
   },
   "dependencies": {
-    "@propsto/auth": "workspace:*",
+    "@propsto/auth-app": "workspace:*",
     "postgres": "3.4.7"
   },
   "peerDependencies": {

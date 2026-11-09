@@ -1,4 +1,4 @@
-// More config options in file://./auth.server.ts
+// More config options in file://./server.ts
 
 import NextAuth from "next-auth";
 import { type JWT } from "next-auth/jwt";
@@ -18,7 +18,7 @@ import {
   createPendingAccountLink,
 } from "@propsto/data/repos";
 import { createLogger } from "@propsto/logger";
-import { isAllowedRedirect } from "../lib/callback-url";
+import { isAllowedRedirect } from "./callback-url";
 
 const logger = createLogger("auth");
 const secureCookies = constServer.PROPSTO_ENV === "production";
@@ -63,7 +63,7 @@ export const nextAuthConfig = {
     authorized({ auth }) {
       return Boolean(auth);
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ account, profile }) {
       // Handle Google OAuth sign-in
       if (account?.provider === "google" && profile) {
         const googleProfile = profile as { hd?: string; email?: string };
@@ -184,7 +184,6 @@ export const nextAuthConfig = {
       user,
       account,
       trigger,
-      session,
     }: {
       token: JWT;
       user?: NextAuthUser | AdapterUser;
