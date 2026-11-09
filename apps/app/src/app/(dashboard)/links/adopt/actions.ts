@@ -8,6 +8,7 @@ import {
   getUserOrgSlug,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
+import { cleanLinkInput } from "@/lib/link-input";
 
 // Infer the inner type from getAvailableManagedLinks
 type ManagedLinksResult = Awaited<ReturnType<typeof getAvailableManagedLinks>>;
@@ -68,10 +69,15 @@ export async function adoptManagedLinkAction(
     return { success: false as const, error: "Not authenticated" };
   }
 
+  const cleaned = cleanLinkInput({ slug: customSlug });
+  if (!cleaned.success) {
+    return { success: false as const, error: cleaned.error };
+  }
+
   const result = await adoptManagedLink({
     sourceManagedId,
     userId: session.user.id,
-    slug: customSlug || undefined,
+    slug: cleaned.slug,
   });
 
   if (!result.success) {
