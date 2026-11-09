@@ -10,6 +10,7 @@ import { Button } from "@propsto/ui/atoms/button";
 import { Badge } from "@propsto/ui/atoms/badge";
 import { Plus } from "lucide-react";
 import { Pager, parsePage } from "@/app/_components/pager";
+import { groupValuesByOrg } from "./value-groups";
 
 const PAGE_SIZE = 20;
 
@@ -32,6 +33,8 @@ export default async function FeedbackPage({
   const valuesResult = await getReceivedFeedbackValues(userId);
   const values = valuesResult.success ? valuesResult.data : [];
   const activeValue = values.find(v => v.id === params.value);
+  // A member of several orgs sees each org's values under its name
+  const valueGroups = groupValuesByOrg(values);
 
   // Get feedback received by the user
   const feedbackResult = await getFeedbackForUser(userId, {
@@ -71,19 +74,33 @@ export default async function FeedbackPage({
           <Link href="/feedback">
             <Badge variant={activeValue ? "outline" : "default"}>All</Badge>
           </Link>
-          {values.map(value => (
-            <Link
-              key={value.id}
-              href={`/feedback?value=${value.id}`}
-              aria-current={value.id === activeValue?.id ? "page" : undefined}
-            >
-              <Badge
-                variant={value.id === activeValue?.id ? "default" : "outline"}
-              >
-                {value.name}
-              </Badge>
-            </Link>
-          ))}
+          {valueGroups.length === 1
+            ? valueGroups[0].values.map(value => (
+                <ValueChip
+                  key={value.id}
+                  value={value}
+                  active={value.id === activeValue?.id}
+                />
+              ))
+            : valueGroups.map(group => (
+                <div
+                  key={group.organization.id}
+                  role="group"
+                  aria-label={group.organization.name}
+                  className="flex flex-wrap items-center gap-2"
+                >
+                  <span className="text-sm text-muted-foreground">
+                    {group.organization.name}
+                  </span>
+                  {group.values.map(value => (
+                    <ValueChip
+                      key={value.id}
+                      value={value}
+                      active={value.id === activeValue?.id}
+                    />
+                  ))}
+                </div>
+              ))}
         </nav>
       )}
 
@@ -104,5 +121,22 @@ export default async function FeedbackPage({
         )}
       </div>
     </div>
+  );
+}
+
+function ValueChip({
+  value,
+  active,
+}: {
+  value: { id: string; name: string };
+  active: boolean;
+}): React.ReactNode {
+  return (
+    <Link
+      href={`/feedback?value=${value.id}`}
+      aria-current={active ? "page" : undefined}
+    >
+      <Badge variant={active ? "default" : "outline"}>{value.name}</Badge>
+    </Link>
   );
 }
