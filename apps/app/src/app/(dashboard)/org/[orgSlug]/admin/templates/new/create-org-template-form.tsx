@@ -27,7 +27,9 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@propsto/ui/atoms/select";
@@ -69,6 +71,7 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500).optional(),
   feedbackType: z.nativeEnum(FeedbackType),
+  categoryId: z.string(),
   fields: z.array(fieldSchema).min(1, "At least one field is required"),
 });
 
@@ -83,6 +86,9 @@ const feedbackTypeOptions = [
   { value: "SELF_ASSESSMENT", label: "Self Assessment" },
   { value: "ANONYMOUS", label: "Anonymous Feedback" },
 ];
+
+// Radix Select items cannot have an empty value
+const NO_CATEGORY = "none";
 
 const fieldTypeOptions = [
   { value: "TEXT", label: "Text (single line)" },
@@ -173,16 +179,27 @@ function OptionsEditor({
   );
 }
 
+interface TemplateCategoryOption {
+  id: string;
+  name: string;
+  isGlobal: boolean;
+}
+
 interface CreateOrgTemplateFormProps {
   orgSlug: string;
+  categories: TemplateCategoryOption[];
 }
 
 export function CreateOrgTemplateForm({
   orgSlug,
+  categories,
 }: CreateOrgTemplateFormProps): React.JSX.Element {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  const orgCategories = categories.filter(c => !c.isGlobal);
+  const globalCategories = categories.filter(c => c.isGlobal);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -190,6 +207,7 @@ export function CreateOrgTemplateForm({
       name: "",
       description: "",
       feedbackType: "RECOGNITION",
+      categoryId: NO_CATEGORY,
       fields: [
         {
           label: "Feedback",
@@ -213,6 +231,8 @@ export function CreateOrgTemplateForm({
         name: values.name,
         description: values.description,
         feedbackType: values.feedbackType,
+        categoryId:
+          values.categoryId === NO_CATEGORY ? undefined : values.categoryId,
         fields: values.fields,
         orgSlug,
       });
@@ -302,6 +322,54 @@ export function CreateOrgTemplateForm({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="categoryId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={NO_CATEGORY}>No category</SelectItem>
+                      {orgCategories.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Custom categories</SelectLabel>
+                          {orgCategories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                      {globalCategories.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>System categories</SelectLabel>
+                          {globalCategories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Groups the template in the templates list. Manage categories
+                    under Categories.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
