@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  getOrganizationBySlug,
   createOrganizationInvite,
   getOrganizationInviteByEmail,
   listPendingOrganizationInvites,
@@ -43,144 +42,136 @@ export async function inviteMembersAction(
     message?: string;
   },
 ): Promise<ActionResult<{ results: InviteResult[] }>> {
-  return withOrgAdmin(
-    orgSlug,
-    async ({ userId, userName, org: { id: orgId } }) => {
-      // Refuse an oversized batch or message before any invite or email is created
-      const batchError = inviteBatchError(data.emails, data.message);
-      if (batchError) return fail(batchError);
+  return withOrgAdmin(orgSlug, async ({ userId, userName, org }) => {
+    const orgId = org.id;
+    // Refuse an oversized batch or message before any invite or email is created
+    const batchError = inviteBatchError(data.emails, data.message);
+    if (batchError) return fail(batchError);
 
-      // Server-side role check: an ADMIN must not be able to mint an OWNER invite
-      if (data.role !== "MEMBER" && data.role !== "ADMIN") {
-        return fail("Invalid role");
-      }
+    // Server-side role check: an ADMIN must not be able to mint an OWNER invite
+    if (data.role !== "MEMBER" && data.role !== "ADMIN") {
+      return fail("Invalid role");
+    }
 
-      // Check allowUserInvites setting
-      const orgResult = await getOrganizationBySlug(orgSlug);
-      if (!orgResult.success || !orgResult.data) {
-        return fail("Organization not found");
-      }
-      const org = orgResult.data;
+    // Check allowUserInvites setting
+    if (
+      org.organizationSettings &&
+      !org.organizationSettings.allowUserInvites
+    ) {
+      return fail("Invitations are disabled for this organization");
+    }
 
-      if (
-        org.organizationSettings &&
-        !org.organizationSettings.allowUserInvites
-      ) {
-        return fail("Invitations are disabled for this organization");
-      }
+    const results: InviteResult[] = [];
 
-      const results: InviteResult[] = [];
+    for (const rawEmail of data.emails) {
+      const email = rawEmail.trim().toLowerCase();
+      if (!email) continue;
 
-      for (const rawEmail of data.emails) {
-        const email = rawEmail.trim().toLowerCase();
-        if (!email) continue;
-
-        // Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          results.push({
-            email,
-            success: false,
-            error: "Invalid email address",
-          });
-          continue;
-        }
-
-        // A Workspace org invites company addresses only: a personal email can't be
-        // invited — the person links a personal account after joining (or auto-joins
-        // by domain). Orgs without a verified domain are unrestricted.
-        if (org.hostedDomain && !emailMatchesDomain(email, org.hostedDomain)) {
-          results.push({
-            email,
-            success: false,
-            error: `Invite a @${org.hostedDomain} address — personal emails can't be invited`,
-          });
-          continue;
-        }
-
-        // Already a member? (by work or personal email)
-        const existingUser = await getUserByEmail(email);
-        if (existingUser.data) {
-          const membership = await getUserOrganizationMembership({
-            userId: existingUser.data.id,
-            organizationId: orgId,
-          });
-          if (membership.data) {
-            results.push({ email, success: false, error: "Already a member" });
-            continue;
-          }
-        }
-
-        // Check for existing pending invite (expired/revoked ones are re-issued by createOrganizationInvite)
-        const existingInviteResult = await getOrganizationInviteByEmail(
-          orgId,
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        results.push({
           email,
-        );
-        if (existingInviteResult.success && existingInviteResult.data) {
-          const existing = existingInviteResult.data;
-          if (
-            !existing.revokedAt &&
-            !existing.acceptedAt &&
-            existing.expiresAt > new Date()
-          ) {
-            results.push({ email, success: false, error: "Already invited" });
-            continue;
-          }
-        }
+          success: false,
+          error: "Invalid email address",
+        });
+        continue;
+      }
 
-        const expiresAt = new Date(
-          Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000,
-        );
+      // A Workspace org invites company addresses only: a personal email can't be
+      // invited — the person links a personal account after joining (or auto-joins
+      // by domain). Orgs without a verified domain are unrestricted.
+      if (org.hostedDomain && !emailMatchesDomain(email, org.hostedDomain)) {
+        results.push({
+          email,
+          success: false,
+          error: `Invite a @${org.hostedDomain} address — personal emails can't be invited`,
+        });
+        continue;
+      }
 
-        const inviteResult = await createOrganizationInvite({
+      // Already a member? (by work or personal email)
+      const existingUser = await getUserByEmail(email);
+      if (existingUser.data) {
+        const membership = await getUserOrganizationMembership({
+          userId: existingUser.data.id,
           organizationId: orgId,
-          email,
-          role: data.role,
-          invitedById: userId,
-          message: data.message,
-          expiresAt,
         });
-
-        if (!inviteResult.success || !inviteResult.data) {
-          results.push({
-            email,
-            success: false,
-            error: inviteResult.error ?? "Failed to create invite",
-          });
+        if (membership.data) {
+          results.push({ email, success: false, error: "Already a member" });
           continue;
         }
+      }
 
-        const invite = inviteResult.data;
-        const inviteLink = `${constServer.AUTH_URL}/invite?token=${invite.token}`;
+      // Check for existing pending invite (expired/revoked ones are re-issued by createOrganizationInvite)
+      const existingInviteResult = await getOrganizationInviteByEmail(
+        orgId,
+        email,
+      );
+      if (existingInviteResult.success && existingInviteResult.data) {
+        const existing = existingInviteResult.data;
+        if (
+          !existing.revokedAt &&
+          !existing.acceptedAt &&
+          existing.expiresAt > new Date()
+        ) {
+          results.push({ email, success: false, error: "Already invited" });
+          continue;
+        }
+      }
 
-        const sent = await sendOrgInviteEmail(email, {
-          inviterName: userName,
-          orgName: org.name,
-          role: data.role,
-          inviteLink,
-          message: data.message,
-          expiresInHours: INVITE_EXPIRY_HOURS,
+      const expiresAt = new Date(
+        Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000,
+      );
+
+      const inviteResult = await createOrganizationInvite({
+        organizationId: orgId,
+        email,
+        role: data.role,
+        invitedById: userId,
+        message: data.message,
+        expiresAt,
+      });
+
+      if (!inviteResult.success || !inviteResult.data) {
+        results.push({
+          email,
+          success: false,
+          error: inviteResult.error ?? "Failed to create invite",
         });
-
-        results.push(
-          sent.success
-            ? { email, success: true }
-            : {
-                email,
-                success: false,
-                error: "Invite created but the email could not be sent",
-              },
-        );
+        continue;
       }
 
-      if (results.length === 0) {
-        return fail("Please enter at least one email address");
-      }
+      const invite = inviteResult.data;
+      const inviteLink = `${constServer.AUTH_URL}/invite?token=${invite.token}`;
 
-      revalidatePath(`/org/${orgSlug}/admin/members`);
-      return ok({ results });
-    },
-  );
+      const sent = await sendOrgInviteEmail(email, {
+        inviterName: userName,
+        orgName: org.name,
+        role: data.role,
+        inviteLink,
+        message: data.message,
+        expiresInHours: INVITE_EXPIRY_HOURS,
+      });
+
+      results.push(
+        sent.success
+          ? { email, success: true }
+          : {
+              email,
+              success: false,
+              error: "Invite created but the email could not be sent",
+            },
+      );
+    }
+
+    if (results.length === 0) {
+      return fail("Please enter at least one email address");
+    }
+
+    revalidatePath(`/org/${orgSlug}/admin/members`);
+    return ok({ results });
+  });
 }
 
 /**
@@ -206,19 +197,13 @@ export async function resendInviteAction(
   orgSlug: string,
   inviteId: string,
 ): Promise<ActionResult> {
-  return withOrgAdmin(orgSlug, async ({ userName, org: { id: orgId } }) => {
-    const orgResult = await getOrganizationBySlug(orgSlug);
-    if (!orgResult.success || !orgResult.data) {
-      return fail("Organization not found");
-    }
-    const org = orgResult.data;
-
+  return withOrgAdmin(orgSlug, async ({ userName, org }) => {
     const expiresAt = new Date(
       Date.now() + INVITE_EXPIRY_HOURS * 60 * 60 * 1000,
     );
     const refreshResult = await resendOrganizationInvite(
       inviteId,
-      orgId,
+      org.id,
       expiresAt,
       org.hostedDomain,
     );

@@ -6,13 +6,18 @@ import {
   isSlugAvailableExcludingOrg,
   updateOrganizationSlug,
   auditHelpers,
-  verifyOrgAdminAccess,
 } from "@propsto/data/repos";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isReservedSlug } from "@propsto/constants/other";
 import { checkSlugCheckRateLimit } from "@propsto/data/utils/rate-limit";
 import { createLogger } from "@propsto/logger";
+import {
+  withOrgAdmin,
+  ok,
+  fail,
+  type ActionResult,
+} from "@/server/with-org-admin";
 
 const logger = createLogger("app:org-settings");
 
@@ -77,71 +82,62 @@ export async function checkSlugAvailability(
 export async function updateOrgSlug(
   currentSlug: string,
   newSlug: string,
-): Promise<{ success: boolean; error?: string; newSlug?: string }> {
+): Promise<ActionResult<{ newSlug: string }>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: "Not authenticated" };
-    }
+    return await withOrgAdmin(currentSlug, async ({ userId, org, role }) => {
+      // Only owners can change the slug; the role comes from the DB, not the JWT
+      if (role !== "OWNER") {
+        return fail("Only organization owners can change the URL");
+      }
 
-    // Verify user is OWNER of this org (only owners can change slug), from the DB not the JWT
-    const membership = await verifyOrgAdminAccess(session.user.id, currentSlug);
-    if (!membership.data || membership.data.role !== "OWNER") {
-      return {
-        success: false,
-        error: "Only organization owners can change the URL",
-      };
-    }
+      // Validate new slug
+      const parsed = slugSchema.safeParse(newSlug);
+      if (!parsed.success) return fail(parsed.error.issues[0]?.message);
 
-    // Validate new slug
-    const parsed = slugSchema.safeParse(newSlug);
-    if (!parsed.success) {
-      return { success: false, error: parsed.error.issues[0]?.message };
-    }
+      const normalizedSlug = newSlug.toLowerCase();
 
-    const normalizedSlug = newSlug.toLowerCase();
+      // Check reserved
+      if (isReservedSlug(normalizedSlug)) {
+        return fail("This URL is reserved");
+      }
 
-    // Check reserved
-    if (isReservedSlug(normalizedSlug)) {
-      return { success: false, error: "This URL is reserved" };
-    }
+      // Check availability (excluding current org's slug)
+      const availableResult = await isSlugAvailableExcludingOrg(
+        normalizedSlug,
+        currentSlug,
+      );
+      if (!availableResult.success) {
+        return fail("Failed to check availability");
+      }
+      if (!availableResult.data) {
+        return fail("This URL is already taken");
+      }
 
-    // Check availability (excluding current org's slug)
-    const availableResult = await isSlugAvailableExcludingOrg(
-      normalizedSlug,
-      currentSlug,
-    );
-    if (!availableResult.success) {
-      return { success: false, error: "Failed to check availability" };
-    }
-    if (!availableResult.data) {
-      return { success: false, error: "This URL is already taken" };
-    }
+      // Update the slug
+      const updateResult = await updateOrganizationSlug(
+        currentSlug,
+        normalizedSlug,
+      );
+      if (!updateResult.success || !updateResult.data) {
+        return fail("Organization not found");
+      }
 
-    // Update the slug
-    const updateResult = await updateOrganizationSlug(
-      currentSlug,
-      normalizedSlug,
-    );
-    if (!updateResult.success || !updateResult.data) {
-      return { success: false, error: "Organization not found" };
-    }
+      // Log the audit event
+      await auditHelpers.logOrgUrlChange(
+        org.id,
+        userId,
+        currentSlug,
+        normalizedSlug,
+      );
 
-    // Log the audit event
-    await auditHelpers.logOrgUrlChange(
-      updateResult.data.organizationId,
-      session.user.id,
-      currentSlug,
-      normalizedSlug,
-    );
+      // Revalidate old and new paths
+      revalidatePath(`/org/${currentSlug}`, "layout");
+      revalidatePath(`/org/${normalizedSlug}`, "layout");
 
-    // Revalidate old and new paths
-    revalidatePath(`/org/${currentSlug}`, "layout");
-    revalidatePath(`/org/${normalizedSlug}`, "layout");
-
-    return { success: true, newSlug: normalizedSlug };
+      return ok({ newSlug: normalizedSlug });
+    });
   } catch (error) {
     logger("Failed to update org slug:", error);
-    return { success: false, error: "Failed to update URL" };
+    return fail("Failed to update URL");
   }
 }

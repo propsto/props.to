@@ -6,7 +6,7 @@ import {
 } from "./actions";
 
 const repos = vi.hoisted(() => ({
-  getOrganizationBySlug: vi.fn(),
+  createAuditLog: vi.fn(),
   upsertOrganizationDefaultSettings: vi.fn(),
   upsertOrganizationFeedbackSettings: vi.fn(),
   updateOrganizationSettingsSwitches: vi.fn(),
@@ -22,6 +22,7 @@ vi.mock("@propsto/logger", () => ({ createLogger: () => () => undefined }));
 
 const org = {
   id: "org_1",
+  name: "Acme",
   defaultUserSettings: null,
   organizationSettings: null,
   feedbackSettings: null,
@@ -50,9 +51,8 @@ beforeEach(() => {
   auth.mockResolvedValue({ user: { id: "user_1" } });
   repos.verifyOrgAdminAccess.mockResolvedValue({
     success: true,
-    data: { role: "ADMIN" },
+    data: { role: "ADMIN", organization: org },
   });
-  repos.getOrganizationBySlug.mockResolvedValue({ success: true, data: org });
 });
 
 describe("settings actions", () => {
@@ -82,7 +82,7 @@ describe("settings actions", () => {
 
     const result = await updateFeedbackSettingsAction("acme", feedbackInput);
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, data: undefined });
     expect(repos.auditHelpers.logSettingsUpdate).toHaveBeenCalledOnce();
   });
 
@@ -92,14 +92,18 @@ describe("settings actions", () => {
       data: {},
     });
 
-    // Only the changed switch is sent; auto-join keeps the stored value
-    repos.getOrganizationBySlug.mockResolvedValue({
+    // Only the changed switch is sent; auto-join keeps the stored value.
+    // The settings come with the membership: no second org lookup
+    repos.verifyOrgAdminAccess.mockResolvedValue({
       success: true,
       data: {
-        ...org,
-        organizationSettings: {
-          autoJoinByDomain: true,
-          enableConversations: true,
+        role: "ADMIN",
+        organization: {
+          ...org,
+          organizationSettings: {
+            autoJoinByDomain: true,
+            enableConversations: true,
+          },
         },
       },
     });
@@ -109,7 +113,7 @@ describe("settings actions", () => {
       enableConversations: false,
     });
 
-    expect(result).toEqual({ success: true });
+    expect(result).toEqual({ success: true, data: undefined });
     expect(repos.updateOrganizationSettingsSwitches).toHaveBeenCalledWith(
       "org_1",
       { autoJoinByDomain: undefined, enableConversations: false },
@@ -143,6 +147,5 @@ describe("settings actions", () => {
     }
     expect(auth).not.toHaveBeenCalled();
     expect(repos.verifyOrgAdminAccess).not.toHaveBeenCalled();
-    expect(repos.getOrganizationBySlug).not.toHaveBeenCalled();
   });
 });

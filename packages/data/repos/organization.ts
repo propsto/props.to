@@ -210,8 +210,15 @@ export async function verifyOrgAdminAccess(userId: string, orgSlug: string) {
         },
         role: { in: ["OWNER", "ADMIN"] },
       },
+      // The settings ride along so an admin action needs no second org lookup
       include: {
-        organization: true,
+        organization: {
+          include: {
+            organizationSettings: true,
+            defaultUserSettings: true,
+            feedbackSettings: true,
+          },
+        },
       },
     });
     return handleSuccess(membership);

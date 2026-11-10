@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { checkSlugAvailability } from "./slug-actions";
+import { checkSlugAvailability, updateOrgSlug } from "./slug-actions";
+import { NOT_ORG_ADMIN } from "@/server/with-org-admin";
 
 const repos = vi.hoisted(() => ({
   isSlugAvailable: vi.fn(),
   isSlugAvailableExcludingOrg: vi.fn(),
   updateOrganizationSlug: vi.fn(),
   verifyOrgAdminAccess: vi.fn(),
+  createAuditLog: vi.fn(),
   auditHelpers: { logOrgUrlChange: vi.fn() },
 }));
 const auth = vi.hoisted(() => vi.fn());
@@ -52,5 +54,62 @@ describe("checkSlugAvailability", () => {
 
     expect(result).toEqual({ available: true });
     expect(repos.isSlugAvailable).toHaveBeenCalledWith("acme-new", "GLOBAL");
+  });
+});
+
+describe("updateOrgSlug", () => {
+  const membership = (role: string) => ({
+    success: true,
+    data: { role, organization: { id: "org_1", name: "Acme" } },
+  });
+
+  beforeEach(() => {
+    repos.isSlugAvailableExcludingOrg.mockResolvedValue({
+      success: true,
+      data: true,
+    });
+    repos.updateOrganizationSlug.mockResolvedValue({
+      success: true,
+      data: { organizationId: "org_1" },
+    });
+  });
+
+  it("refuses a caller who is not an admin of the org", async () => {
+    repos.verifyOrgAdminAccess.mockResolvedValue({ success: true, data: null });
+
+    const result = await updateOrgSlug("acme", "acme-new");
+
+    expect(result).toEqual({ success: false, error: NOT_ORG_ADMIN });
+    expect(repos.updateOrganizationSlug).not.toHaveBeenCalled();
+  });
+
+  it("refuses an admin who is not the owner", async () => {
+    repos.verifyOrgAdminAccess.mockResolvedValue(membership("ADMIN"));
+
+    const result = await updateOrgSlug("acme", "acme-new");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Only organization owners can change the URL",
+    });
+    expect(repos.updateOrganizationSlug).not.toHaveBeenCalled();
+  });
+
+  it("an owner changes the slug and gets it back in data", async () => {
+    repos.verifyOrgAdminAccess.mockResolvedValue(membership("OWNER"));
+
+    const result = await updateOrgSlug("acme", "acme-new");
+
+    expect(result).toEqual({ success: true, data: { newSlug: "acme-new" } });
+    expect(repos.updateOrganizationSlug).toHaveBeenCalledWith(
+      "acme",
+      "acme-new",
+    );
+    expect(repos.auditHelpers.logOrgUrlChange).toHaveBeenCalledWith(
+      "org_1",
+      "user_1",
+      "acme",
+      "acme-new",
+    );
   });
 });

@@ -12,10 +12,15 @@ export type ActionResult<T = undefined> =
 export const NOT_SIGNED_IN = "You are not signed in";
 export const NOT_ORG_ADMIN = "You are not an admin of this organization";
 
+type AdminMembership = NonNullable<
+  Awaited<ReturnType<typeof verifyOrgAdminAccess>>["data"]
+>;
+
 export type OrgAdminContext = {
   userId: string;
   userName: string | undefined;
-  org: { id: string; name: string };
+  /** The org the membership query returned, with its settings */
+  org: AdminMembership["organization"];
   role: "OWNER" | "ADMIN";
   /** Write an audit row for this org with the signed-in admin as the actor */
   audit: (
@@ -42,8 +47,7 @@ export async function withOrgAdmin<T>(
   if (!membership.success || !membership.data) {
     return { success: false, error: NOT_ORG_ADMIN };
   }
-  const { organization, role } = membership.data;
-  const org = { id: organization.id, name: organization.name };
+  const { organization: org, role } = membership.data;
 
   return fn({
     userId,
