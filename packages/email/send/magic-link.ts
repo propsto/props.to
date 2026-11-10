@@ -18,8 +18,6 @@ export async function sendMagicLinkEmail(
       url,
       expiresInHours,
     });
-    // Resend reports failures in the response instead of throwing
-    if ("error" in sent && sent.error) throw sent.error;
     return handleSuccess(sent);
   } catch (e) {
     return handleError(e);

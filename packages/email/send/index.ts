@@ -40,13 +40,16 @@ export async function send<T extends EmailTemplateNames>(
     } as unknown as SMTPTransport.SentMessageInfo;
   }
   if (constServer.EMAIL_PROVIDER === "resend") {
-    return new Resend(constServer.RESEND_API_KEY).emails.send({
+    const response = await new Resend(constServer.RESEND_API_KEY).emails.send({
       from: constServer.EMAIL_FROM,
       to: [typeof email === "string" ? email : email.email],
       subject,
       react: chosenTemplate(...emailArgs),
       text: await render(chosenTemplate(...emailArgs), { plainText: true }),
     });
+    // Resend reports a rejected send in the response instead of throwing
+    if (response.error) throw response.error;
+    return response;
   }
   const transporter = createTransport(constServer.EMAIL_SERVER);
   return transporter.sendMail({
