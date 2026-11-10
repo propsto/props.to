@@ -17,9 +17,7 @@ const logger = createLogger("app:org-settings");
 
 const updateMemberSettingsSchema = z.object({
   orgSlug: z.string(),
-  defaultProfileVisibility: z.enum(["PUBLIC", "PRIVATE", "ORGANIZATION"]),
   allowExternalFeedback: z.boolean(),
-  requireApprovalForPublicProfiles: z.boolean(),
 });
 
 export type UpdateMemberSettingsInput = z.infer<
@@ -61,9 +59,7 @@ export async function updateMemberSettings(
 
     // The repo returns failures instead of throwing; don't audit or report success
     const saved = await upsertOrganizationDefaultSettings(org.id, {
-      defaultProfileVisibility: input.defaultProfileVisibility,
       allowExternalFeedback: input.allowExternalFeedback,
-      requireApprovalForPublicProfiles: input.requireApprovalForPublicProfiles,
     });
     if (!saved.success) {
       logger("Failed to save member settings:", saved.error);
@@ -76,29 +72,11 @@ export async function updateMemberSettings(
     // Log the audit event
     const changes: Record<string, { old: unknown; new: unknown }> = {};
     if (
-      currentSettings?.defaultProfileVisibility !==
-      input.defaultProfileVisibility
-    ) {
-      changes.defaultProfileVisibility = {
-        old: currentSettings?.defaultProfileVisibility ?? "none",
-        new: input.defaultProfileVisibility,
-      };
-    }
-    if (
       currentSettings?.allowExternalFeedback !== input.allowExternalFeedback
     ) {
       changes.allowExternalFeedback = {
         old: currentSettings?.allowExternalFeedback ?? false,
         new: input.allowExternalFeedback,
-      };
-    }
-    if (
-      currentSettings?.requireApprovalForPublicProfiles !==
-      input.requireApprovalForPublicProfiles
-    ) {
-      changes.requireApprovalForPublicProfiles = {
-        old: currentSettings?.requireApprovalForPublicProfiles ?? true,
-        new: input.requireApprovalForPublicProfiles,
       };
     }
 

@@ -368,23 +368,12 @@ export async function organizationHandler(
       ownerEmail: dbUser.data.email,
       settings: {
         defaultUserSettings: {
-          defaultProfileVisibility:
-            defaultUserSettings.defaultProfileVisibility.toUpperCase() as
-              | "PUBLIC"
-              | "PRIVATE"
-              | "ORGANIZATION",
           allowExternalFeedback: defaultUserSettings.allowExternalFeedback,
-          requireApprovalForPublicProfiles:
-            defaultUserSettings.requireApprovalForPublicProfiles,
         },
         organizationSettings: {
           allowUserInvites: organizationSettings.allowUserInvites,
           // Opt-in later from Settings; a new org starts invite-only
           autoJoinByDomain: false,
-          enableGroupManagement: organizationSettings.enableGroupManagement,
-          requireEmailVerification:
-            organizationSettings.requireEmailVerification,
-          enableSSOIntegration: organizationSettings.enableSSOIntegration,
         },
         feedbackSettings: {
           enableOrganizationFeedback:
