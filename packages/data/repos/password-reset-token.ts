@@ -1,8 +1,9 @@
 import { createLogger } from "@propsto/logger";
+import { hash } from "bcryptjs";
 import { db, Prisma } from "../db";
 import { handleError } from "../utils/error-handling";
 import { handleSuccess } from "../utils/success-handling";
-import { getUserByEmail, updateUser } from "./user";
+import { getUserByEmail } from "./user";
 
 const logger = createLogger("data");
 
@@ -63,16 +64,25 @@ export const setPasswordByToken = async (token: string, password: string) => {
     }
     const user = await getUserByEmail(tokenDetails.data.email);
     if (!user.data) throw Error("Invalid user");
-    // Consume the token before changing the password. The conditional delete
-    // matches for exactly one caller and never for an expired row, so a link
-    // works once and only inside its lifetime, whatever the caller checked.
-    const { count } = await db.passwordResetToken.deleteMany({
-      where: { id: tokenDetails.data.id, expires: { gt: new Date() } },
+    const tokenId = tokenDetails.data.id;
+    const userId = user.data.id;
+    const hashedPassword = await hash(password, 10);
+    // Consume the token and change the password in one transaction. The
+    // conditional delete matches for exactly one caller and never for an
+    // expired row, so a link works once and only inside its lifetime; if the
+    // password update fails, the token is restored and the link can be retried.
+    const updatedUser = await db.$transaction(async tx => {
+      const { count } = await tx.passwordResetToken.deleteMany({
+        where: { id: tokenId, expires: { gt: new Date() } },
+      });
+      if (count !== 1) throw Error("Invalid token details");
+      return tx.user.update({
+        where: { id: userId },
+        data: { password: hashedPassword },
+        select: { id: true, email: true },
+      });
     });
-    if (count !== 1) throw Error("Invalid token details");
-    const updatedUser = await updateUser(user.data.id, { password });
-    if (!updatedUser.data) throw Error("Couldn't update password");
-    return handleSuccess(updatedUser.data);
+    return handleSuccess(updatedUser);
   } catch (e) {
     return handleError(e);
   }
