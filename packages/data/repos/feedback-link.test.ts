@@ -3,6 +3,8 @@ import {
   activateFeedbackLink,
   deactivateFeedbackLink,
   deleteFeedbackLink,
+  getFeedbackLinkBySlug,
+  getUserFeedbackLinks,
 } from "./feedback-link";
 
 // The owner is checked in the where clause, so a fake that matches on both
@@ -10,12 +12,20 @@ import {
 // so a missing owner filter would change it.
 const LINK = { id: "link_alice", userId: "user_alice" };
 const OTHER_LINK = { id: "link_bob", userId: "user_bob" };
-const LINKS = [LINK, OTHER_LINK];
+const MANAGED = { id: "link_tpl", userId: "user_alice", isManaged: true };
+const LINKS: { id: string; userId: string; isManaged?: boolean }[] = [
+  LINK,
+  OTHER_LINK,
+  MANAGED,
+];
 
 const db = vi.hoisted(() => ({
   feedbackLink: {
     updateMany: vi.fn(),
     deleteMany: vi.fn(),
+    findFirst: vi.fn(),
+    findMany: vi.fn(),
+    count: vi.fn(),
   },
 }));
 
@@ -37,12 +47,17 @@ vi.mock("@prisma/client", () => ({
 vi.mock("../bootstrap", () => ({ BOOTSTRAP_IDS: {} }));
 vi.mock("@propsto/logger", () => ({ createLogger: () => () => undefined }));
 
-function count({ where }: { where: { id: string; userId?: string } }) {
+function count({
+  where,
+}: {
+  where: { id: string; userId?: string; isManaged?: boolean };
+}) {
   return Promise.resolve({
     count: LINKS.filter(
       l =>
         l.id === where.id &&
-        (where.userId === undefined || l.userId === where.userId),
+        (where.userId === undefined || l.userId === where.userId) &&
+        !(where.isManaged === false && l.isManaged),
     ).length,
   });
 }
@@ -85,7 +100,49 @@ describe("feedback link mutations are scoped to the owner", () => {
       expect(calls[0][0].where).toEqual({
         id: OTHER_LINK.id,
         userId: LINK.userId,
+        isManaged: false,
       });
     },
   );
+});
+
+describe("managed link templates are not member links", () => {
+  it("getFeedbackLinkBySlug never resolves a template", async () => {
+    db.feedbackLink.findFirst.mockResolvedValue(null);
+
+    const result = await getFeedbackLinkBySlug("tpl", "user_alice", "org_acme");
+
+    expect(db.feedbackLink.findFirst).toHaveBeenCalledTimes(1);
+    expect(db.feedbackLink.findFirst.mock.calls[0][0].where).toEqual({
+      slug: "tpl",
+      userId: "user_alice",
+      organizationId: "org_acme",
+      isManaged: false,
+    });
+    expect(result).toEqual(
+      expect.objectContaining({ success: true, data: null }),
+    );
+  });
+
+  it("getUserFeedbackLinks never lists templates", async () => {
+    db.feedbackLink.findMany.mockResolvedValue([]);
+    db.feedbackLink.count.mockResolvedValue(0);
+
+    await getUserFeedbackLinks("user_alice", { organizationId: "org_acme" });
+
+    const expected = expect.objectContaining({
+      userId: "user_alice",
+      isManaged: false,
+    });
+    expect(db.feedbackLink.findMany.mock.calls[0][0].where).toEqual(expected);
+    expect(db.feedbackLink.count.mock.calls[0][0].where).toEqual(expected);
+  });
+
+  it.each(mutations)("%s does not match a template", async (_name, mutate) => {
+    const result = await mutate(MANAGED.id, MANAGED.userId);
+
+    expect(result).toEqual(
+      expect.objectContaining({ success: false, error: "Link not found" }),
+    );
+  });
 });

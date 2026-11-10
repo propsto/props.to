@@ -136,6 +136,11 @@ export async function submitFeedbackAction(
 
   const link = linkResult.data;
 
+  // A managed link is a template; only its adopted copies take feedback
+  if (link.isManaged) {
+    return { success: false, error: "Feedback link not found" };
+  }
+
   // Check if link is still active
   if (!link.isActive) {
     return { success: false, error: "This feedback link is no longer active" };
