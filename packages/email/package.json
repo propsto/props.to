@@ -9,6 +9,7 @@
     "export": "email export --dir templates --outDir ../../apps/web/public/email-templates && tsx scripts/generate-index.ts",
     "lint": "eslint",
     "maildev": "pnpm exec maildev",
+    "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "eslint": "*",
     "nodemailer": "*",
     "react": "*",
-    "react-dom": "*"
+    "react-dom": "*",
+    "vitest": "*"
   }
 }
