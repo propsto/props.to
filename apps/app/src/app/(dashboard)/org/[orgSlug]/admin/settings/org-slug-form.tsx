@@ -94,14 +94,15 @@ export function OrgSlugForm({
     startTransition(async () => {
       const result = await updateOrgSlug(currentSlug, slug.toLowerCase());
 
-      if (result.success && result.newSlug) {
+      if (result.success) {
+        const { newSlug } = result.data;
         setSaveSuccess(true);
         // Redirect to new URL after brief success message
         setTimeout(() => {
-          router.push(`/org/${result.newSlug}/admin/settings`);
+          router.push(`/org/${newSlug}/admin/settings`);
         }, 1500);
       } else {
-        setSaveError(result.error ?? "Failed to update URL");
+        setSaveError(result.error);
       }
     });
   };
