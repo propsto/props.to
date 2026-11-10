@@ -56,14 +56,22 @@ export const deletePasswordResetToken = async (id: string | undefined) => {
 
 export const setPasswordByToken = async (token: string, password: string) => {
   try {
-    logger("setPasswordByToken", { token });
+    logger("setPasswordByToken");
     const tokenDetails = await getPasswordResetTokenByToken(token);
-    if (!tokenDetails.data) throw Error("Invalid token details");
+    if (!tokenDetails.data || tokenDetails.data.expires < new Date()) {
+      throw Error("Invalid token details");
+    }
     const user = await getUserByEmail(tokenDetails.data.email);
     if (!user.data) throw Error("Invalid user");
+    // Consume the token before changing the password. The conditional delete
+    // matches for exactly one caller and never for an expired row, so a link
+    // works once and only inside its lifetime, whatever the caller checked.
+    const { count } = await db.passwordResetToken.deleteMany({
+      where: { id: tokenDetails.data.id, expires: { gt: new Date() } },
+    });
+    if (count !== 1) throw Error("Invalid token details");
     const updatedUser = await updateUser(user.data.id, { password });
     if (!updatedUser.data) throw Error("Couldn't update password");
-    deletePasswordResetToken(tokenDetails.data.id);
     return handleSuccess(updatedUser.data);
   } catch (e) {
     return handleError(e);
