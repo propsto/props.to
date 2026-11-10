@@ -284,6 +284,8 @@ export async function getFeedbackLinkBySlug(
         slug,
         userId,
         organizationId: organizationId ?? null,
+        // A managed link is a template members adopt, never a public URL
+        isManaged: false,
       },
       include: feedbackLinkInclude,
     });
@@ -399,7 +401,8 @@ export async function updateFeedbackLink(
 }
 
 // Delete feedback link. Scoped to the owner: another user's link id matches
-// no row, so nothing is deleted and the result is not-found.
+// no row, so nothing is deleted and the result is not-found. Managed templates
+// are changed through the managed-link functions.
 export async function deleteFeedbackLink(
   id: string,
   userId: string,
@@ -407,7 +410,7 @@ export async function deleteFeedbackLink(
   try {
     logger("deleteFeedbackLink", { id, userId });
     const { count } = await db.feedbackLink.deleteMany({
-      where: { id, userId },
+      where: { id, userId, isManaged: false },
     });
     if (count === 0) throw new Error("Link not found");
     return handleSuccess({ id });
@@ -432,6 +435,8 @@ export async function getUserFeedbackLinks(
     logger("getUserFeedbackLinks", { userId, options });
     const where: Prisma.FeedbackLinkWhereInput = {
       userId,
+      // Managed templates are org resources; they are listed by the admin and adoption queries
+      isManaged: false,
       ...(options?.organizationId !== undefined && {
         organizationId: options.organizationId,
       }),
@@ -516,7 +521,7 @@ export async function deactivateFeedbackLink(
   try {
     logger("deactivateFeedbackLink", { id, userId });
     const { count } = await db.feedbackLink.updateMany({
-      where: { id, userId },
+      where: { id, userId, isManaged: false },
       data: { isActive: false },
     });
     if (count === 0) throw new Error("Link not found");
@@ -534,7 +539,7 @@ export async function activateFeedbackLink(
   try {
     logger("activateFeedbackLink", { id, userId });
     const { count } = await db.feedbackLink.updateMany({
-      where: { id, userId },
+      where: { id, userId, isManaged: false },
       data: { isActive: true },
     });
     if (count === 0) throw new Error("Link not found");
