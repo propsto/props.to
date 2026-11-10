@@ -8,7 +8,6 @@ on:
 
 env:
   NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
-  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
   # Main branch ID from Neon console (e.g., br-lively-thunder-28239235)
   NEON_MAIN_BRANCH_ID: ${{ vars.NEON_MAIN_BRANCH_ID }}
 
@@ -97,6 +96,8 @@ jobs:
 
       - name: Create Neon branch from production
         id: create-branch
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
         run: |
           BRANCH_NAME="migration-check-pr-${{ github.event.pull_request.number }}-$(date +%s)"
           echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
@@ -116,12 +117,17 @@ jobs:
               }]
             }")
 
-          echo "API Response: $RESPONSE"
+          # Mask every credential-bearing value before any later line can print it
+          while IFS= read -r SECRET_VALUE; do
+            if [ -n "$SECRET_VALUE" ] && [ "$SECRET_VALUE" != "null" ]; then
+              echo "::add-mask::$SECRET_VALUE"
+            fi
+          done < <(echo "$RESPONSE" | jq -r '.connection_uris[]? | .connection_uri, .connection_parameters.password')
 
           BRANCH_ID=$(echo $RESPONSE | jq -r '.branch.id')
           if [ "$BRANCH_ID" == "null" ] || [ -z "$BRANCH_ID" ]; then
             echo "::error::Failed to create Neon branch"
-            echo $RESPONSE
+            echo "$RESPONSE" | jq -r '.message // .code // "no error message in the response"'
             exit 1
           fi
 
@@ -130,6 +136,9 @@ jobs:
           # Get the connection string
           ENDPOINT_ID=$(echo $RESPONSE | jq -r '.endpoints[0].id')
           HOST=$(echo $RESPONSE | jq -r '.endpoints[0].host')
+          if [ -n "$HOST" ] && [ "$HOST" != "null" ]; then
+            echo "::add-mask::$HOST"
+          fi
 
           # Get connection URI (need to fetch separately with password)
           CONN_RESPONSE=$(curl -s -X GET \
@@ -138,6 +147,14 @@ jobs:
 
           CONNECTION_URI=$(echo $CONN_RESPONSE | jq -r '.uri')
           echo "::add-mask::$CONNECTION_URI"
+          # Prisma prints the host, and tools may print the password alone: mask both
+          DB_PASSWORD=$(echo "$CONNECTION_URI" | sed -E 's#^[a-z]+://[^:]+:([^@]+)@.*#\1#')
+          DB_HOST=$(echo "$CONNECTION_URI" | sed -E 's#^[a-z]+://[^@]+@([^/:?]+).*#\1#')
+          for SECRET_VALUE in "$DB_PASSWORD" "$DB_HOST"; do
+            if [ -n "$SECRET_VALUE" ] && [ "$SECRET_VALUE" != "$CONNECTION_URI" ]; then
+              echo "::add-mask::$SECRET_VALUE"
+            fi
+          done
           echo "connection_uri=$CONNECTION_URI" >> $GITHUB_OUTPUT
 
       - name: Run migration dry-run
@@ -150,6 +167,8 @@ jobs:
 
       - name: Delete Neon branch
         if: always()
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
         run: |
           BRANCH_ID="${{ steps.create-branch.outputs.branch_id }}"
           if [ -n "$BRANCH_ID" ] && [ "$BRANCH_ID" != "null" ]; then
