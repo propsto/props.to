@@ -38,13 +38,18 @@ export async function newPasswordAction(
   }
 
   const result = await setPasswordByToken(data.token, data.password);
-  if (!result.success) return result;
+  if (!result.success) {
+    logger("newPasswordAction > setPasswordByToken no success");
+    return {
+      success: false,
+      message: "This reset link is invalid or has expired. Request a new one.",
+    };
+  }
 
+  // The password is already changed: a failed notification must not report failure
   const emailSent = await sendPasswordChanged(result.data.email);
-
   if (!emailSent.success) {
     logger("newPasswordAction > sendPasswordChanged no success");
-    return { success: false, message: "Unexpected error" };
   }
 
   redirect("/");
