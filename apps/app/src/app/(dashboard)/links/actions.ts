@@ -24,7 +24,11 @@ async function withOwnedLink(
     return { success: false, error: "Unauthorized" };
   }
   const link = await getFeedbackLink(linkId);
-  if (!link.success || link.data?.userId !== session.user.id) {
+  if (
+    !link.success ||
+    link.data?.userId !== session.user.id ||
+    link.data.isManaged
+  ) {
     return { success: false, error: "Link not found" };
   }
   if (link.data.organizationId) {
