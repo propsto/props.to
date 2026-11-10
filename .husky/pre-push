@@ -1,1 +1,1 @@
-pnpm test
+pnpm exec turbo run test --filter='!@propsto/data'
