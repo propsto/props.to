@@ -6,21 +6,21 @@ import { configDefaults, defineConfig } from "vitest/config";
 loadEnv({ path: join(__dirname, "../../.env") });
 
 // The repo tests truncate every table, so they never run against the database in
-// DATABASE_URL itself: they use TEST_DATABASE_URL, or the same server with a
-// `_test` database next to it. `prisma migrate deploy` creates it when missing.
+// DATABASE_URL itself: they use TEST_DATABASE_URL as given, or the same server
+// with a `<name>_test` database next to DATABASE_URL's (always a different one).
+// `prisma migrate deploy` creates it when missing.
 function testDatabaseUrl(): string {
   if (process.env.PROPSTO_ENV === "production") {
     throw new Error(
       "Refusing to run the repo tests with PROPSTO_ENV=production",
     );
   }
+  if (process.env.TEST_DATABASE_URL) return process.env.TEST_DATABASE_URL;
   const url = new URL(
-    process.env.TEST_DATABASE_URL ??
-      process.env.DATABASE_URL ??
-      "postgresql://postgres@localhost:5432/postgres",
+    process.env.DATABASE_URL ?? "postgresql://postgres@localhost:5432/postgres",
   );
   const name = url.pathname.replace(/^\//, "") || "postgres";
-  url.pathname = `/${name.endsWith("_test") ? name : `${name}_test`}`;
+  url.pathname = `/${name}_test`;
   return url.toString();
 }
 

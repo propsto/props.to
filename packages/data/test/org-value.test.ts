@@ -60,6 +60,12 @@ describe("reorderOrgValues", () => {
     expect((await reorderOrgValues(org.id, [c, b, a, "x"])).success).toBe(
       false,
     );
+    // Same length, no duplicates, but one id is another organization's value
+    const other = await createOrganization("other");
+    const [foreign] = await valuesOf(other.id, ["Foreign"]);
+    expect((await reorderOrgValues(org.id, [c, b, foreign])).success).toBe(
+      false,
+    );
 
     expect((await reorderOrgValues(org.id, [c, a, b])).success).toBe(true);
     const listed = await getOrgValues(org.id);
