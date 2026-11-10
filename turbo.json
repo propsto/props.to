@@ -97,6 +97,10 @@
     },
     "lint": {},
     "test": {
+      "cache": false,
+      "env": [
+        "TEST_DATABASE_URL"
+      ],
       "outputs": []
     },
     "start": {
