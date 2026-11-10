@@ -136,6 +136,9 @@ jobs:
           # Get the connection string
           ENDPOINT_ID=$(echo $RESPONSE | jq -r '.endpoints[0].id')
           HOST=$(echo $RESPONSE | jq -r '.endpoints[0].host')
+          if [ -n "$HOST" ] && [ "$HOST" != "null" ]; then
+            echo "::add-mask::$HOST"
+          fi
 
           # Get connection URI (need to fetch separately with password)
           CONN_RESPONSE=$(curl -s -X GET \
@@ -144,10 +147,14 @@ jobs:
 
           CONNECTION_URI=$(echo $CONN_RESPONSE | jq -r '.uri')
           echo "::add-mask::$CONNECTION_URI"
+          # Prisma prints the host, and tools may print the password alone: mask both
           DB_PASSWORD=$(echo "$CONNECTION_URI" | sed -E 's#^[a-z]+://[^:]+:([^@]+)@.*#\1#')
-          if [ -n "$DB_PASSWORD" ] && [ "$DB_PASSWORD" != "$CONNECTION_URI" ]; then
-            echo "::add-mask::$DB_PASSWORD"
-          fi
+          DB_HOST=$(echo "$CONNECTION_URI" | sed -E 's#^[a-z]+://[^@]+@([^/:?]+).*#\1#')
+          for SECRET_VALUE in "$DB_PASSWORD" "$DB_HOST"; do
+            if [ -n "$SECRET_VALUE" ] && [ "$SECRET_VALUE" != "$CONNECTION_URI" ]; then
+              echo "::add-mask::$SECRET_VALUE"
+            fi
+          done
           echo "connection_uri=$CONNECTION_URI" >> $GITHUB_OUTPUT
 
       - name: Run migration dry-run
