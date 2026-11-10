@@ -63,12 +63,12 @@
         ".next/**"
       ]
     },
-    "@propsto/constants#test": {
+    "@propsto/constants#env-check": {
       "outputs": []
     },
     "dev": {
       "dependsOn": [
-        "@propsto/constants#test"
+        "@propsto/constants#env-check"
       ],
       "cache": false,
       "persistent": true
@@ -96,6 +96,13 @@
       "cache": false
     },
     "lint": {},
+    "test": {
+      "cache": false,
+      "env": [
+        "TEST_DATABASE_URL"
+      ],
+      "outputs": []
+    },
     "start": {
       "persistent": true,
       "cache": false

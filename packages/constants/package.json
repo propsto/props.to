@@ -10,8 +10,8 @@
   "scripts": {
     "check-env": "pnpm tsx check-env.ts",
     "dotenv": "dotenv -e ../../.env",
-    "lint": "eslint",
-    "test": "pnpm dotenv -- pnpm check-env"
+    "env-check": "pnpm dotenv -- pnpm check-env",
+    "lint": "eslint"
   },
   "dependencies": {
     "@propsto/config": "workspace:*",
