@@ -12,8 +12,8 @@
     "next-dev": "next dev --hostname=$PROPSTO_APP_HOSTNAME --port=$PROPSTO_APP_PORT",
     "next-start": "next start --hostname=$PROPSTO_APP_HOSTNAME --port=$PROPSTO_APP_PORT",
     "start": "pnpm dotenv -- pnpm next-start",
-    "test:unit": "vitest run --passWithNoTests",
-    "test:unit:watch": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
