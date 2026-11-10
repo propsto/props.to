@@ -786,9 +786,7 @@ model OrganizationDefaultUserSettings {
   id                               String            @id @default(cuid())
   organization                     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId                   String            @unique
-  defaultProfileVisibility         ProfileVisibility @default(ORGANIZATION)
   allowExternalFeedback            Boolean           @default(false)
-  requireApprovalForPublicProfiles Boolean           @default(true)
   createdAt                        DateTime          @default(now())
   updatedAt                        DateTime          @updatedAt
 }
@@ -802,9 +800,6 @@ model OrganizationSettings {
   // Slack-style: anyone signing in with a @hostedDomain Google account joins
   // without an invite. Off by default — domain members join by invitation.
   autoJoinByDomain         Boolean      @default(false)
-  enableGroupManagement    Boolean      @default(true)
-  requireEmailVerification Boolean      @default(true)
-  enableSSOIntegration     Boolean      @default(false)
   // The conversations layer: leads and admins record escalation steps about
   // members. On by default; an org without that process turns it off.
   enableConversations      Boolean      @default(true)

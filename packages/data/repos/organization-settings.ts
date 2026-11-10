@@ -7,17 +7,12 @@ const logger = createLogger("data");
 
 // Types for organization settings
 export type OrganizationDefaultUserSettings = {
-  defaultProfileVisibility: "PUBLIC" | "PRIVATE" | "ORGANIZATION";
   allowExternalFeedback: boolean;
-  requireApprovalForPublicProfiles: boolean;
 };
 
 export type OrganizationGeneralSettings = {
   allowUserInvites: boolean;
   autoJoinByDomain: boolean;
-  enableGroupManagement: boolean;
-  requireEmailVerification: boolean;
-  enableSSOIntegration: boolean;
   // Omitted keeps the stored value (new rows default to on)
   enableConversations?: boolean;
 };
@@ -41,16 +36,11 @@ export type OrganizationCreationSettings = {
 export const defaultOrganizationCreationSettings: OrganizationCreationSettings =
   {
     defaultUserSettings: {
-      defaultProfileVisibility: "ORGANIZATION",
       allowExternalFeedback: false,
-      requireApprovalForPublicProfiles: true,
     },
     organizationSettings: {
       allowUserInvites: true,
       autoJoinByDomain: false,
-      enableGroupManagement: true,
-      requireEmailVerification: true,
-      enableSSOIntegration: true,
     },
     feedbackSettings: {
       enableOrganizationFeedback: true,
@@ -75,18 +65,12 @@ export async function upsertOrganizationDefaultUserSettings(
     const result = await db.organizationDefaultUserSettings.upsert({
       where: { organizationId },
       update: {
-        defaultProfileVisibility: settings.defaultProfileVisibility,
         allowExternalFeedback: settings.allowExternalFeedback,
-        requireApprovalForPublicProfiles:
-          settings.requireApprovalForPublicProfiles,
         updatedAt: new Date(),
       },
       create: {
         organizationId,
-        defaultProfileVisibility: settings.defaultProfileVisibility,
         allowExternalFeedback: settings.allowExternalFeedback,
-        requireApprovalForPublicProfiles:
-          settings.requireApprovalForPublicProfiles,
       },
     });
 
@@ -109,9 +93,6 @@ export async function upsertOrganizationSettings(
       update: {
         allowUserInvites: settings.allowUserInvites,
         autoJoinByDomain: settings.autoJoinByDomain,
-        enableGroupManagement: settings.enableGroupManagement,
-        requireEmailVerification: settings.requireEmailVerification,
-        enableSSOIntegration: settings.enableSSOIntegration,
         enableConversations: settings.enableConversations,
         updatedAt: new Date(),
       },
@@ -119,9 +100,6 @@ export async function upsertOrganizationSettings(
         organizationId,
         allowUserInvites: settings.allowUserInvites,
         autoJoinByDomain: settings.autoJoinByDomain,
-        enableGroupManagement: settings.enableGroupManagement,
-        requireEmailVerification: settings.requireEmailVerification,
-        enableSSOIntegration: settings.enableSSOIntegration,
         enableConversations: settings.enableConversations,
       },
     });

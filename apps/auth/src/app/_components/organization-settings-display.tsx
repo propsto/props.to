@@ -100,26 +100,8 @@ export async function OrganizationSettingsDisplay({
           {defaultUserSettings ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  Default Profile Visibility
-                </span>
-                <Badge variant="outline">
-                  {defaultUserSettings.defaultProfileVisibility.toLowerCase()}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
                 <span className="text-sm">Allow external feedback</span>
                 {defaultUserSettings.allowExternalFeedback ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  Require approval for public profiles
-                </span>
-                {defaultUserSettings.requireApprovalForPublicProfiles ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />
@@ -154,30 +136,6 @@ export async function OrganizationSettingsDisplay({
               <div className="flex items-center justify-between">
                 <span className="text-sm">Allow user invites</span>
                 {organizationSettings.allowUserInvites ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Enable group management</span>
-                {organizationSettings.enableGroupManagement ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Require email verification</span>
-                {organizationSettings.requireEmailVerification ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Enable SSO integration</span>
-                {organizationSettings.enableSSOIntegration ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
                 ) : (
                   <XCircle className="h-4 w-4 text-red-500" />

@@ -282,7 +282,6 @@ export function WelcomeStepper({
             [
               "organizationName",
               "organizationSlug",
-              "defaultUserSettings.defaultProfileVisibility",
               "organizationSettings.allowUserInvites",
               "feedbackSettings.enableOrganizationFeedback",
             ],

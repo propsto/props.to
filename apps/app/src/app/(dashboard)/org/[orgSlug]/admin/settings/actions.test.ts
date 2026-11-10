@@ -29,9 +29,7 @@ const org = {
 
 const memberInput = {
   orgSlug: "acme",
-  defaultProfileVisibility: "PUBLIC" as const,
   allowExternalFeedback: true,
-  requireApprovalForPublicProfiles: false,
 };
 
 const feedbackInput = {
@@ -128,7 +126,7 @@ describe("settings actions", () => {
     const results = await Promise.all([
       updateMemberSettings({
         ...memberInput,
-        defaultProfileVisibility: "EVERYONE",
+        allowExternalFeedback: "yes",
       } as never),
       updateMembershipSettings({
         orgSlug: "acme",

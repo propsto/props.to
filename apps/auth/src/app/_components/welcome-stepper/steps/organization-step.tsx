@@ -32,17 +32,10 @@ const organizationSchema = z.object({
   // Store the hosted domain for the organization
   hostedDomain: z.string().optional(),
   defaultUserSettings: z.object({
-    defaultProfileVisibility: z
-      .enum(["public", "private", "organization"])
-      .default("organization"),
     allowExternalFeedback: z.boolean().default(false),
-    requireApprovalForPublicProfiles: z.boolean().default(true),
   }),
   organizationSettings: z.object({
     allowUserInvites: z.boolean().default(true),
-    enableGroupManagement: z.boolean().default(true),
-    requireEmailVerification: z.boolean().default(true),
-    enableSSOIntegration: z.boolean().default(false),
   }),
   feedbackSettings: z.object({
     enableOrganizationFeedback: z.boolean().default(true),
@@ -77,24 +70,11 @@ export function StepComponent({
   const isSlugLocked = Boolean(domainSlug);
 
   // Default user settings controllers
-  const { field: defaultProfileVisibilityField } = useController<
-    OrganizationFormValues,
-    "defaultUserSettings.defaultProfileVisibility"
-  >({
-    name: "defaultUserSettings.defaultProfileVisibility",
-    defaultValue: "organization",
-  });
   const { field: allowExternalFeedbackField } = useController<
     OrganizationFormValues,
     "defaultUserSettings.allowExternalFeedback"
   >({
     name: "defaultUserSettings.allowExternalFeedback",
-  });
-  const { field: requireApprovalField } = useController<
-    OrganizationFormValues,
-    "defaultUserSettings.requireApprovalForPublicProfiles"
-  >({
-    name: "defaultUserSettings.requireApprovalForPublicProfiles",
   });
 
   // Organization settings controllers
@@ -103,24 +83,6 @@ export function StepComponent({
     "organizationSettings.allowUserInvites"
   >({
     name: "organizationSettings.allowUserInvites",
-  });
-  const { field: enableGroupManagementField } = useController<
-    OrganizationFormValues,
-    "organizationSettings.enableGroupManagement"
-  >({
-    name: "organizationSettings.enableGroupManagement",
-  });
-  const { field: requireEmailVerificationField } = useController<
-    OrganizationFormValues,
-    "organizationSettings.requireEmailVerification"
-  >({
-    name: "organizationSettings.requireEmailVerification",
-  });
-  const { field: enableSSOField } = useController<
-    OrganizationFormValues,
-    "organizationSettings.enableSSOIntegration"
-  >({
-    name: "organizationSettings.enableSSOIntegration",
   });
 
   // Feedback settings controllers
@@ -249,29 +211,6 @@ export function StepComponent({
       {/* Hidden field to store hostedDomain */}
       <input type="hidden" {...register("hostedDomain")} />
 
-      <div className="space-y-2">
-        <Label className="block text-sm font-medium text-primary">
-          Default Profile Visibility
-        </Label>
-        <Select
-          value={defaultProfileVisibilityField.value}
-          onValueChange={defaultProfileVisibilityField.onChange}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select default visibility" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="organization">
-              Organization Only - Recommended for most organizations
-            </SelectItem>
-            <SelectItem value="public">Public - Visible to everyone</SelectItem>
-            <SelectItem value="private">
-              Private - Only visible to the user
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       <div className="flex items-center space-x-2">
         <Checkbox
           id="allowExternalFeedback"
@@ -280,17 +219,6 @@ export function StepComponent({
         />
         <Label htmlFor="allowExternalFeedback" className="text-sm">
           Allow users to receive feedback from external sources by default
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="requireApproval"
-          checked={requireApprovalField.value}
-          onCheckedChange={requireApprovalField.onChange}
-        />
-        <Label htmlFor="requireApproval" className="text-sm">
-          Require admin approval for users to make their profiles public
         </Label>
       </div>
 
@@ -305,38 +233,6 @@ export function StepComponent({
         </Label>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="enableGroupManagement"
-          checked={enableGroupManagementField.value}
-          onCheckedChange={enableGroupManagementField.onChange}
-        />
-        <Label htmlFor="enableGroupManagement" className="text-sm">
-          Enable group management (teams, departments, etc.)
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="requireEmailVerification"
-          checked={requireEmailVerificationField.value}
-          onCheckedChange={requireEmailVerificationField.onChange}
-        />
-        <Label htmlFor="requireEmailVerification" className="text-sm">
-          Require email verification for new users
-        </Label>
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="enableSSO"
-          checked={enableSSOField.value}
-          onCheckedChange={enableSSOField.onChange}
-        />
-        <Label htmlFor="enableSSO" className="text-sm">
-          Enable SSO integration (Google Workspace, etc.)
-        </Label>
-      </div>
       <div className="flex items-center space-x-2">
         <Checkbox
           id="enableOrgFeedback"
@@ -415,15 +311,10 @@ export const defaults = (user?: WelcomeUser): OrganizationFormValues => {
     organizationSlug: domainPrefix.toLowerCase(),
     hostedDomain,
     defaultUserSettings: {
-      defaultProfileVisibility: "organization",
       allowExternalFeedback: false,
-      requireApprovalForPublicProfiles: true,
     },
     organizationSettings: {
       allowUserInvites: true,
-      enableGroupManagement: true,
-      requireEmailVerification: true,
-      enableSSOIntegration: hostedDomain ? true : false, // Default to true for Google Workspace
     },
     feedbackSettings: {
       enableOrganizationFeedback: true,

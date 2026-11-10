@@ -48,12 +48,8 @@ export default async function OrgAdminSettings({
 
   // Default settings if none exist
   const memberSettings = {
-    defaultProfileVisibility:
-      org.defaultUserSettings?.defaultProfileVisibility ?? "ORGANIZATION",
     allowExternalFeedback:
       org.defaultUserSettings?.allowExternalFeedback ?? false,
-    requireApprovalForPublicProfiles:
-      org.defaultUserSettings?.requireApprovalForPublicProfiles ?? true,
   } as const;
 
   return (

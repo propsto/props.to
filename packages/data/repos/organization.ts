@@ -177,9 +177,7 @@ export async function getMembershipByOrgSlug(userId: string, orgSlug: string) {
 export async function upsertOrganizationDefaultSettings(
   organizationId: string,
   settings: {
-    defaultProfileVisibility?: "PUBLIC" | "ORGANIZATION" | "PRIVATE";
     allowExternalFeedback?: boolean;
-    requireApprovalForPublicProfiles?: boolean;
   },
 ) {
   try {

@@ -112,7 +112,6 @@ test.describe("Organization Admin Panel", () => {
 
     // Should see Member Defaults card with form
     await expect(page.getByText("Member Defaults")).toBeVisible();
-    await expect(page.getByText("Default Profile Visibility")).toBeVisible();
     await expect(page.getByText("Allow External Feedback")).toBeVisible();
 
     // Should see save button (disabled by default when no changes)
