@@ -1,2 +1,16 @@
+# Refuse env files (catches `git add -f` too) and scan staged changes for secrets.
+# NUL-delimited so Git does not quote unusual paths; only an exact `.env.example` basename is allowed.
+env_files=$(git diff --cached --name-only -z --diff-filter=ACMR | grep -zE '(^|/)\.env' | grep -zvE '(^|/)\.env\.example$' | tr '\0' '\n')
+if [ -n "$env_files" ]; then
+  printf '%s\n' "$env_files" >&2
+  echo "pre-commit: refusing to commit the env file(s) listed above. Run: git restore --staged <file>" >&2
+  exit 1
+fi
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --pre-commit --staged --redact --no-banner || exit 1
+else
+  echo "pre-commit: gitleaks not installed, secret scan skipped (brew install gitleaks)" >&2
+fi
+
 pnpm lint-staged
 pnpm lint && pnpm type-check
