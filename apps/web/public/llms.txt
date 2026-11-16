@@ -17,7 +17,7 @@ The name comes from the phrase "props to", meaning giving someone credit or resp
 - Values: tag feedback with what the company cares about (for example Ownership, Candor, Craft).
 - Levels: show what's expected at each career step.
 - Groups, leads and conversations: leads keep the one on ones and can reach skip-level reports.
-- Escalation: a fair, visible three-step process. Leads record steps 1 and 2, the person is told at step 2, and they see every shared step but never internal notes.
+- Escalation: a fair, visible three-step process. Leads record steps 1 and 2 and an admin records step 3. The person is told at every step; owners and admins are told from step 2. The person sees every shared step but never internal notes.
 - Moderation: approve or decline outside feedback before it is recorded.
 - Google Workspace sign-in; teammates join through the company domain.
 
