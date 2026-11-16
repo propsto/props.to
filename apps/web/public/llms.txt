@@ -1,0 +1,51 @@
+# Props.to
+
+> Props.to is an open-source feedback and recognition platform for individuals and companies. Each person gets a personal feedback link (props.to/<username>) that teammates, clients and communities use to give signed or anonymous feedback ("props") at the moment it matters. Feedback lives in the person's own account, so they keep it when they change jobs. Companies add optional layers on top: values, career levels, groups and leads, moderation, and a documented escalation path. Personal use is free forever; the code is AGPL-3.0 and self-hostable.
+
+The name comes from the phrase "props to", meaning giving someone credit or respect.
+
+## What it is
+
+- Personal feedback links: share props.to/<username> (or a link per project, client or moment) right after a launch, a delivery or a decision, while context is fresh. Givers don't need an account.
+- Signed or anonymous: the person giving feedback chooses.
+- Portable record: feedback about you belongs to you. It stays in your personal account across employers; a company keeps only what was shared with it.
+- Companion to one on ones, never a replacement: feedback is captured when it happens and brought to the next one on one.
+- Products, services and events: organizations can collect outside feedback on them, held for review before it is recorded.
+
+## Company layers (optional)
+
+- Values: tag feedback with what the company cares about (for example Ownership, Candor, Craft).
+- Levels: show what's expected at each career step.
+- Groups, leads and conversations: leads keep the one on ones and can reach skip-level reports.
+- Escalation: a fair, visible three-step process. Leads record steps 1 and 2, the person is told at step 2, and they see every shared step but never internal notes.
+- Moderation: approve or decline outside feedback before it is recorded.
+- Google Workspace sign-in; teammates join through the company domain.
+
+## How it compares
+
+- Peer recognition tools (Bonusly, HeyTaco, Kudos): those focus on frequent, often gamified shout-outs inside Slack or Teams, and the history stays with the employer. Props.to focuses on timely, substantive feedback that the person keeps.
+- Testimonial collectors (Senja, Testimonial.to): those gather praise for marketing pages. Props.to covers feedback from teammates, managers and clients, public or private.
+- LinkedIn recommendations: public, signed and tied to one network. Props.to also supports anonymous and private feedback and works inside companies.
+- Performance review suites: Props.to is a lightweight companion to existing one on ones, not an HR system.
+
+## Pricing
+
+- Personal: free forever. Your own feedback links, signed or anonymous feedback, keep your feedback across companies.
+- Company, hosted: free for a 3-month pilot, then US$4 per member a month. Owners and admins are free.
+- Company, self-hosted: open source under AGPL-3.0 on your own infrastructure; commercial licensing and support available on request. Members still link their personal props.to account to keep what they receive.
+
+## Status
+
+Early access. Request access at https://props.to/request-early-access.
+
+## Links
+
+- [Website](https://props.to): product overview, pricing and FAQ
+- [Request early access](https://props.to/request-early-access): personal accounts and the company pilot
+- [Source code](https://github.com/propsto/props.to): AGPL-3.0 monorepo (Next.js, Prisma, Postgres)
+- [Issues and roadmap](https://github.com/propsto/props.to/issues)
+
+## Optional
+
+- [Terms of service](https://props.to/terms)
+- [Privacy policy](https://props.to/privacy)

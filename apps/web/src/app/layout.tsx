@@ -28,8 +28,11 @@ const interTight = InterTight({
 });
 
 export const metadata: Metadata = {
-  title: "Props.to",
-  description: "Open Source Feedback Infrastructure",
+  metadataBase: new URL("https://props.to"),
+  title: "Props.to: feedback and props you keep",
+  description:
+    "Open-source feedback and recognition platform. A personal feedback link for teams, clients and communities, signed or anonymous, that stays yours when you change jobs. Optional company layers for values, levels and moderation.",
+  alternates: { types: { "text/plain": "/llms.txt" } },
   openGraph: {
     images: ["https://props.to/api/og"],
   },

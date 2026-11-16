@@ -3,7 +3,7 @@
 
 <p align="center" style="margin-top: 20px">
   <p align="center">
-  Open Source Feedback Infrastructure
+  Open-source feedback and recognition: a personal feedback link you keep across jobs
   <br>
     <a href="https://props.to"><strong>Learn more »</strong></a>
     <br />
